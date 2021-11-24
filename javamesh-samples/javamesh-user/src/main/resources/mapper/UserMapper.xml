@@ -7,7 +7,7 @@
         WHERE role_name = #{role}
     </select>
     <select id="selectUserByName" parameterType="String" resultType="com.huawei.user.entity.UserEntity">
-        SELECT user_id AS userName, user_name AS nickName, password, role_name AS role
+        SELECT user_id AS userName, user_name AS nickName, password, role_name AS role,enabled
         FROM NUSER n
         WHERE n.user_id = #{userName}
     </select>

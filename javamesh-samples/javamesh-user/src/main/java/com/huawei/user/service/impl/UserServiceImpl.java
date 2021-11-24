@@ -4,18 +4,29 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.huawei.user.common.api.CommonResult;
 import com.huawei.user.common.constant.FailedInfo;
+import com.huawei.user.common.exception.Asserts;
+import com.huawei.user.common.util.JwtTokenUtil;
 import com.huawei.user.common.util.PageUtil;
 import com.huawei.user.common.util.UserFeignClient;
+import com.huawei.user.entity.JwtUser;
 import com.huawei.user.entity.UserEntity;
 import com.huawei.user.mapper.UserMapper;
 import com.huawei.user.service.UserService;
 import feign.FeignException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -23,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
+@Slf4j
 @Service
 public class UserServiceImpl implements UserService {
     private static final String SUCCESS = "success";
@@ -39,6 +51,11 @@ public class UserServiceImpl implements UserService {
     private static final int PASSWORD_LENGTH = 10;
 
     private static final String PASSWORD_DIRECTORY = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
 
 
     @Resource
@@ -50,6 +67,26 @@ public class UserServiceImpl implements UserService {
     @Override
     public JSONObject login(String username, String password, String nativeLanguage, String userTimezone) {
         return userFeignClient.login(username, password, nativeLanguage, userTimezone);
+    }
+
+    @Override
+    public String login(String username, String password) {
+        String token = null;
+        try {
+            UserDetails userDetails = loadUserByUsername(username);
+            if (!passwordEncoder.matches(password, userDetails.getPassword())) {
+                Asserts.fail("密码不正确");
+            }
+            if (!userDetails.isEnabled()) {
+                Asserts.fail("帐号已被禁用");
+            }
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            token = jwtTokenUtil.generateToken(userDetails);
+        } catch (AuthenticationException e) {
+            log.warn("登录异常:{}", e.getMessage());
+        }
+        return token;
     }
 
     @Override
@@ -122,7 +159,8 @@ public class UserServiceImpl implements UserService {
         if (count > 0) {
             return FailedInfo.USERNAME_EXISTS;
         }
-        String password = encodePassword(userName, entity.getPassword());
+        //String password = encodePassword(userName, entity.getPassword());
+        String password = passwordEncoder.encode(entity.getPassword());
         entity.setPassword(password);
         String role = entity.getRole();
         entity.setRole("USER");
@@ -267,7 +305,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public String updateUser(UserEntity user) {
         String userName = user.getUserName();
-        if(userName.equals("admin")){
+        if (userName.equals("admin")) {
             return FailedInfo.CANNOT_UPDATE_ADMIN;
         }
         String role = user.getRole();
@@ -289,6 +327,17 @@ public class UserServiceImpl implements UserService {
             return SUCCESS;
         }
         return FailedInfo.UPDATE_USER_FAIL;
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) {
+        UserEntity user = mapper.selectUserByName(username);
+        if (user != null) {
+            String role = mapper.getRoleByUserName(user.getUserName());
+            List<String> auth = mapper.getAuthByRole(role);
+            return new JwtUser(user,auth);
+        }
+        throw new UsernameNotFoundException("用户名或密码不存在");
     }
 
     private String generatePassword() {

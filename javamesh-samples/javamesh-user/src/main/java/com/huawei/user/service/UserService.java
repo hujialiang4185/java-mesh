@@ -3,8 +3,10 @@ package com.huawei.user.service;
 import com.alibaba.fastjson.JSONObject;
 import com.huawei.user.common.api.CommonResult;
 import com.huawei.user.entity.UserEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 
 public interface UserService {
@@ -30,4 +32,8 @@ public interface UserService {
     CommonResult resetPwd(UserEntity user);
 
     String updateUser(UserEntity user);
+
+    UserDetails loadUserByUsername(String username);
+
+    String login(String username, String password);
 }

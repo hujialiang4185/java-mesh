@@ -5,13 +5,12 @@ import com.huawei.user.common.api.CommonResult;
 import com.huawei.user.entity.UserEntity;
 import com.huawei.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 @RestController()
@@ -21,8 +20,12 @@ public class UserController {
 
     @Autowired
     private UserService service;
+    @Value("${jwt.tokenHeader}")
+    private String tokenHeader;
+    @Value("${jwt.tokenHead}")
+    private String tokenHead;
 
-    @PostMapping("/user/login")
+    /*@PostMapping("/user/login")
     public CommonResult login(HttpServletResponse response, @RequestBody JSONObject params) {
         String username = params.getString("username");
         String password = params.getString("password");
@@ -40,6 +43,17 @@ public class UserController {
         } else {
             return CommonResult.failed("用户名或密码不存在");
         }
+    }*/
+    @PostMapping("/user/login")
+    public CommonResult login(HttpServletResponse response, @RequestBody JSONObject params) {
+        String username = params.getString("username");
+        String password = params.getString("password");
+        String token = service.login(username,password);
+        if (token == null) {
+            return CommonResult.validateFailed("用户名或密码错误");
+        }
+        response.setHeader(tokenHeader,tokenHead+token);
+        return CommonResult.success();
     }
 
     @GetMapping("/user/me")
