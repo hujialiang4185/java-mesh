@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
@@ -35,14 +36,13 @@ public class EmergencyScriptController {
 
     @GetMapping("/script")
     public CommonResult<List<EmergencyScript>> listScript(
-            HttpServletRequest request,
             @RequestParam(value = "script_name", required = false) String scriptName,
             @RequestParam(value = "owner", required = false) String scriptUser,
             @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
             @RequestParam(value = "current", defaultValue = "1") int current,
             @RequestParam(value = "sorter", defaultValue = "update_time") String sorter,
             @RequestParam(value = "order", defaultValue = "DESC") String order) {
-        return service.listScript(request, scriptName, scriptUser, pageSize, current, sorter, order);
+        return service.listScript(scriptName, scriptUser, pageSize, current, sorter, order);
     }
 
     /**
@@ -82,7 +82,7 @@ public class EmergencyScriptController {
      * @return {@link CommonResult} 上传结果
      */
     @PostMapping("/script/upload")
-    public CommonResult uploadScript(HttpServletRequest request,
+    public CommonResult uploadScript(Principal principal,
                                      @RequestParam(value = "script_name") String scriptName,
                                      @RequestParam(value = "submit_info") String submitInfo,
                                      @RequestParam(value = "account", required = false) String serverUser,
@@ -105,7 +105,7 @@ public class EmergencyScriptController {
         script.setIsPublic(isPublic);
         script.setPassword(password);
         script.setPasswordMode(passwordMode);
-        int result = service.uploadScript(request, script, file);
+        int result = service.uploadScript(principal.getName(), script, file);
         if (result == ResultCode.SCRIPT_NAME_EXISTS) {
             return CommonResult.failed(FailedInfo.SCRIPT_NAME_EXISTS);
         } else if (result == ResultCode.PARAM_INVALID) {
@@ -134,8 +134,8 @@ public class EmergencyScriptController {
 
     @PostMapping("/script")
     @ResponseBody
-    public CommonResult insertScript(HttpServletRequest request, @RequestBody EmergencyScript script) {
-        int result = service.insertScript(request, script);
+    public CommonResult insertScript(Principal principal, @RequestBody EmergencyScript script) {
+        int result = service.insertScript(principal.getName(), script);
         if (result == ResultCode.SCRIPT_NAME_EXISTS) {
             return CommonResult.failed(FailedInfo.SCRIPT_NAME_EXISTS);
         } else if (result == ResultCode.PARAM_INVALID) {
@@ -148,8 +148,8 @@ public class EmergencyScriptController {
     }
 
     @PutMapping("/script")
-    public CommonResult updateScript(HttpServletRequest request, @RequestBody EmergencyScript script) {
-        int count = service.updateScript(request, script);
+    public CommonResult updateScript(@RequestBody EmergencyScript script) {
+        int count = service.updateScript(script);
         if (count == 1) {
             return CommonResult.success(count);
         } else if (count == ResultCode.SCRIPT_NAME_EXISTS) {
@@ -160,8 +160,8 @@ public class EmergencyScriptController {
     }
 
     @GetMapping("/script/search")
-    public CommonResult searchScript(HttpServletRequest request, @RequestParam(value = "value", required = false) String scriptName) {
-        List<String> scriptNames = service.searchScript(request, scriptName);
+    public CommonResult searchScript(@RequestParam(value = "value", required = false) String scriptName) {
+        List<String> scriptNames = service.searchScript(scriptName);
         return CommonResult.success(scriptNames);
     }
 
@@ -172,8 +172,8 @@ public class EmergencyScriptController {
     }
 
     @PostMapping("/script/submitReview")
-    public CommonResult submitReview(HttpServletRequest request, @RequestBody EmergencyScript script) {
-        String result = service.submitReview(request, script);
+    public CommonResult submitReview(@RequestBody EmergencyScript script) {
+        String result = service.submitReview(script);
         if (result.equals(SUCCESS)) {
             return CommonResult.success(result);
         } else {
@@ -184,15 +184,15 @@ public class EmergencyScriptController {
     @PostMapping("/script/approve")
     public CommonResult approve(@RequestBody Map<String, Object> map) {
         int count = service.approve(map);
-        if(count == 0){
+        if (count == 0) {
             return CommonResult.failed(FailedInfo.APPROVE_FAIL);
-        } else{
+        } else {
             return CommonResult.success(SUCCESS);
         }
     }
 
     @PostMapping("/script/debug")
-    public CommonResult debugScript(@RequestBody Map<String,Integer> param) {
+    public CommonResult debugScript(@RequestBody Map<String, Integer> param) {
         return service.debugScript(param.get("script_id"));
     }
 
@@ -203,7 +203,7 @@ public class EmergencyScriptController {
         if (lineIndex <= 0) {
             lineIndex = 1;
         }
-        return service.debugLog(id,lineIndex);
+        return service.debugLog(id, lineIndex);
     }
 
 }

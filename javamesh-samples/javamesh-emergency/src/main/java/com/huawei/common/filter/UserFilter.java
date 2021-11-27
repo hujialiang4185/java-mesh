@@ -1,3 +1,4 @@
+/*
 package com.huawei.common.filter;
 
 import com.alibaba.fastjson.JSONObject;
@@ -66,3 +67,4 @@ public class UserFilter implements Filter {
         Filter.super.destroy();
     }
 }
+*/

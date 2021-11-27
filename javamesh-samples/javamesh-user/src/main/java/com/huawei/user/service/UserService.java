@@ -7,23 +7,26 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.security.Principal;
 import java.util.Map;
 
 public interface UserService {
 
     JSONObject login(String username, String password, String nativeLanguage, String userTimezone);
 
-    CommonResult getUserInfo(HttpServletRequest request);
+    /*CommonResult getUserInfo(HttpServletRequest request);*/
 
-    String logout();
+    CommonResult getUserInfo(HttpServletResponse response,String userName);
 
-    String changePwd(HttpServletRequest request,Map<String, String> param);
+    /*String logout();*/
+
+    String changePwd(String userName,Map<String, String> param);
 
     String register(UserEntity entity);
 
     CommonResult listUser(String nickName, String userName, String role, String status, int pageSize, int current, String sorter, String order);
 
-    String suspend(HttpServletRequest request, String[] usernames);
+    String suspend(String userName, String[] usernames);
 
     String enable(String[] usernames);
 

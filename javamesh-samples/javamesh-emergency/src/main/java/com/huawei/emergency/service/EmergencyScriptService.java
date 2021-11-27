@@ -13,25 +13,25 @@ import java.util.List;
 import java.util.Map;
 
 public interface EmergencyScriptService {
-    CommonResult<List<EmergencyScript>> listScript(HttpServletRequest request, String scriptName, String scriptUser, int pageSize, int current, String sorter, String order);
+    CommonResult<List<EmergencyScript>> listScript(String scriptName, String scriptUser, int pageSize, int current, String sorter, String order);
 
     int deleteScripts(int[] scriptIds);
 
     void downloadScript(int scriptId, HttpServletResponse response);
 
-    int uploadScript(HttpServletRequest request,EmergencyScript script,MultipartFile file);
+    int uploadScript(String userName,EmergencyScript script,MultipartFile file);
 
     EmergencyScript selectScript(int scriptId);
 
-    int insertScript(HttpServletRequest request, EmergencyScript script);
+    int insertScript(String userName, EmergencyScript script);
 
-    int updateScript(HttpServletRequest request, EmergencyScript script);
+    int updateScript(EmergencyScript script);
 
-    List<String> searchScript(HttpServletRequest request, String scriptName);
+    List<String> searchScript(String scriptName);
 
     EmergencyScript getScriptByName(String scriptName);
 
-    String submitReview(HttpServletRequest request,EmergencyScript script);
+    String submitReview(EmergencyScript script);
 
     int approve(Map<String, Object> map);
 

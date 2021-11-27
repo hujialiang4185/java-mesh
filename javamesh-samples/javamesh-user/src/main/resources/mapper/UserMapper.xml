@@ -7,33 +7,33 @@
         WHERE role_name = #{role}
     </select>
     <select id="selectUserByName" parameterType="String" resultType="com.huawei.user.entity.UserEntity">
-        SELECT user_id AS userName, user_name AS nickName, password, role_name AS role,enabled
-        FROM NUSER n
-        WHERE n.user_id = #{userName}
+        SELECT user_name, nick_name, password, role_name AS role,enabled
+        FROM emergency_user
+        WHERE user_name = #{userName}
     </select>
     <select id="countByName" parameterType="String" resultType="Integer">
         SELECT COUNT(1)
-        FROM NUSER
-        WHERE user_id = #{userName}
+        FROM emergency_user
+        WHERE user_name = #{userName}
     </select>
-    <update id="changePassword" parameterType="String">
-        UPDATE NUSER
-        SET password = #{password}
-        WHERE user_id = #{userName}
+    <update id="changePassword">
+        UPDATE emergency_user
+        SET password = #{password},last_modified_date=#{timestamp}
+        WHERE user_name = #{userName}
     </update>
 
     <insert id="insertUser" parameterType="com.huawei.user.entity.UserEntity">
-        INSERT INTO NUSER (created_date, last_modified_date,password, enabled, role_name, user_id, user_name)
+        INSERT INTO emergency_user (created_date, last_modified_date,password, enabled, role_name, user_name, nick_name)
         values (#{createTime}, #{updateTime},#{password}, #{enabled}, #{role}, #{userName}, #{nickName})
     </insert>
 
     <select id="listUser" parameterType="com.huawei.user.entity.UserEntity"
             resultType="com.huawei.user.entity.UserEntity">
         SELECT
-        n.user_id AS userName,
-        n.user_name AS nickName,
+        user_name,
+        nick_name,
         CASE
-        r.role_name
+        role_name
         WHEN 'ADMIN' THEN
         '管理员'
         WHEN 'APPROVER' THEN
@@ -50,55 +50,36 @@
         '失效'
         END AS enabled
         FROM
-        NUSER n,emergency_role r
+        emergency_user
         <where>
-            n.role_name!='SUPER_USER' AND n.role_name!='SYSTEM_USER' AND n.user_id = r.user_name
             <if test="userName!=null and userName!=''">
-                AND n.user_id LIKE CONCAT('%',#{userName},'%')
+                AND user_name LIKE CONCAT('%',#{userName},'%')
             </if>
             <if test="nickName!=null and nickName!=''">
-                AND n.user_name LIKE CONCAT('%',#{nickName},'%')
+                AND nick_name LIKE CONCAT('%',#{nickName},'%')
             </if>
             <if test="role!=null and role!=''">
-                AND r.role_name = #{role}
+                AND role_name = #{role}
             </if>
             <if test="enabled!=null and enabled!=''">
-                AND n.enabled = #{enabled}
+                AND enabled = #{enabled}
             </if>
         </where>
     </select>
 
     <update id="updateEnableByName">
-        UPDATE NUSER
-        SET enabled = #{enable}
-        WHERE user_id IN
+        UPDATE emergency_user
+        SET enabled = #{enable},last_modified_date=#{timestamp}
+        WHERE user_name IN
         <foreach collection="usernames" item="userName" index="index" open="(" close=")" separator=",">
             #{userName}
         </foreach>
     </update>
 
-    <update id="updatePwdByName">
-        UPDATE NUSER
-        SET password = #{password}
-        WHERE user_id = #{userName}
-    </update>
 
     <update id="updateUser" parameterType="com.huawei.user.entity.UserEntity">
-        UPDATE NUSER
+        UPDATE emergency_user
         SET user_name = #{nickName},role_name = #{role},last_modified_date=#{updateTime}
-        WHERE user_id = #{userName}
-    </update>
-
-    <select id="getRoleByUserName" parameterType="String" resultType="String">
-        SELECT role_name
-        FROM emergency_role
         WHERE user_name = #{userName}
-    </select>
-
-    <insert id="insertRole" parameterType="com.huawei.user.entity.UserEntity">
-        INSERT INTO emergency_role (user_name,role_name) VALUES (#{userName},#{role})
-    </insert>
-    <update id="updateRole" parameterType="com.huawei.user.entity.UserEntity">
-        UPDATE emergency_role SET role_name=#{role} WHERE user_name=#{userName}
     </update>
 </mapper>

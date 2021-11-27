@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,7 +26,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -90,14 +90,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public CommonResult getUserInfo(HttpServletRequest request) {
-        try {
-            JSONObject userInfo = userFeignClient.getUserInfo();
-            String userId = (String) userInfo.get("userId");
-            String role = mapper.getRoleByUserName(userId);
-            List<String> auth = mapper.getAuthByRole(role);
-            UserEntity user = new UserEntity(userId, (String) userInfo.get("userName"), role, auth);
-            switch (role) {
+    public CommonResult getUserInfo(HttpServletResponse response,String userName) {
+        UserEntity user = mapper.selectUserByName(userName);
+        if (user != null) {
+            List<String> auth = mapper.getAuthByRole(user.getRole());
+            user.setAuth(auth);
+            switch (user.getRole()){
                 case "ADMIN":
                     user.setRole(ROLE_ADMIN);
                     break;
@@ -108,18 +106,17 @@ public class UserServiceImpl implements UserService {
                     user.setRole(ROLE_OPERATOR);
             }
             return CommonResult.success(user);
-        } catch (FeignException e) {
-            return CommonResult.failed("Get userInfo timeout. ");
         }
+        return CommonResult.failed(FailedInfo.GET_USER_FAILED);
     }
 
-    @Override
+    /*@Override
     public String logout() {
         return userFeignClient.logout();
-    }
+    }*/
 
     @Override
-    public String changePwd(HttpServletRequest request, Map<String, String> param) {
+    public String changePwd(String userName, Map<String, String> param) {
         String oldPassword = param.get("old_password");
         String password = param.get("password");
         String confirm = param.get("confirm");
@@ -128,23 +125,15 @@ public class UserServiceImpl implements UserService {
         } else if (!password.equals(confirm)) {
             return FailedInfo.CONFIRM_PASSWORD_ERROR;
         } else {
-            UserEntity userInfo = (UserEntity) request.getSession().getAttribute("userInfo");
-            String userName = userInfo.getUserName();
-
-            // 原密码加密
-            String encodeOldPassword = encodePassword(userName, oldPassword);
-
-            // 新密码加密
-            String encodeNewPassword = encodePassword(userName, password);
             UserEntity user = mapper.selectUserByName(userName);
 
             // 原密码错误返回信息
-            if (!user.getPassword().equals(encodeOldPassword)) {
+            if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
                 return FailedInfo.PASSWORD_ERROR;
             }
 
             // 修改密码
-            int count = mapper.changePassword(userName, encodeNewPassword);
+            int count = mapper.changePassword(userName, passwordEncoder.encode(password), getTimestamp());
             if (count != 1) {
                 return FailedInfo.CHANGE_PASSWORD_FAILED;
             }
@@ -159,16 +148,9 @@ public class UserServiceImpl implements UserService {
         if (count > 0) {
             return FailedInfo.USERNAME_EXISTS;
         }
-        //String password = encodePassword(userName, entity.getPassword());
         String password = passwordEncoder.encode(entity.getPassword());
         entity.setPassword(password);
         String role = entity.getRole();
-        entity.setRole("USER");
-        Timestamp timestamp = getTimestamp();
-        entity.setCreateTime(timestamp);
-        entity.setUpdateTime(timestamp);
-        entity.setEnabled("T");
-        count = mapper.insertUser(entity);
         switch (role) {
             case ROLE_OPERATOR:
                 entity.setRole("OPERATOR");
@@ -176,7 +158,11 @@ public class UserServiceImpl implements UserService {
             case ROLE_APPROVER:
                 entity.setRole("APPROVER");
         }
-        count = mapper.insertRole(entity);
+        Timestamp timestamp = getTimestamp();
+        entity.setCreateTime(timestamp);
+        entity.setUpdateTime(timestamp);
+        entity.setEnabled("T");
+        count = mapper.insertUser(entity);
         if (count == 1) {
             return SUCCESS;
         }
@@ -220,15 +206,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String suspend(HttpServletRequest request, String[] usernames) {
-        UserEntity user = (UserEntity) request.getSession().getAttribute("userInfo");
-        String userName = user.getUserName();
+    public String suspend(String userName, String[] usernames) {
         for (String name : usernames) {
             if (name.equals(userName) || name.equals("admin")) {
                 return FailedInfo.SUSPEND_NOT_SELF_OR_ADMIN;
             }
         }
-        int count = mapper.updateEnableByName(usernames, "F");
+        Timestamp timestamp = getTimestamp();
+        int count = mapper.updateEnableByName(usernames, "F", timestamp);
         int length = usernames.length;
         if (count == length) {
             return SUCCESS;
@@ -242,7 +227,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String enable(String[] usernames) {
-        int count = mapper.updateEnableByName(usernames, "T");
+        Timestamp timestamp = getTimestamp();
+        int count = mapper.updateEnableByName(usernames, "T", timestamp);
         int length = usernames.length;
         if (count == length) {
             return SUCCESS;
@@ -261,15 +247,9 @@ public class UserServiceImpl implements UserService {
             return CommonResult.failed(FailedInfo.USERNAME_EXISTS);
         }
         String password = generatePassword();
-        String encodePassword = encodePassword(userName, password);
+        String encodePassword = passwordEncoder.encode(password);
         user.setPassword(encodePassword);
         String role = user.getRole();
-        user.setRole("USER");
-        Timestamp timestamp = getTimestamp();
-        user.setCreateTime(timestamp);
-        user.setUpdateTime(timestamp);
-        user.setEnabled("T");
-        count = mapper.insertUser(user);
         switch (role) {
             case ROLE_OPERATOR:
                 user.setRole("OPERATOR");
@@ -280,7 +260,11 @@ public class UserServiceImpl implements UserService {
             case ROLE_ADMIN:
                 user.setRole("ADMIN");
         }
-        mapper.insertRole(user);
+        Timestamp timestamp = getTimestamp();
+        user.setCreateTime(timestamp);
+        user.setUpdateTime(timestamp);
+        user.setEnabled("T");
+        count = mapper.insertUser(user);
         user.setPassword(password);
         if (count == 1) {
             return CommonResult.success(user);
@@ -294,7 +278,7 @@ public class UserServiceImpl implements UserService {
         String userName = user.getUserName();
         String password = generatePassword();
         user.setPassword(password);
-        int count = mapper.updatePwdByName(userName, encodePassword(userName, password));
+        int count = mapper.changePassword(userName, passwordEncoder.encode(password), getTimestamp());
         if (count == 1) {
             return CommonResult.success(user);
         } else {
@@ -309,9 +293,6 @@ public class UserServiceImpl implements UserService {
             return FailedInfo.CANNOT_UPDATE_ADMIN;
         }
         String role = user.getRole();
-        user.setRole("USER");
-        user.setUpdateTime(getTimestamp());
-        int count = mapper.updateUser(user);
         switch (role) {
             case ROLE_OPERATOR:
                 user.setRole("OPERATOR");
@@ -322,7 +303,8 @@ public class UserServiceImpl implements UserService {
             case ROLE_ADMIN:
                 user.setRole("ADMIN");
         }
-        mapper.updateRole(user);
+        user.setUpdateTime(getTimestamp());
+        int count = mapper.updateUser(user);
         if (count == 1) {
             return SUCCESS;
         }
@@ -333,9 +315,8 @@ public class UserServiceImpl implements UserService {
     public UserDetails loadUserByUsername(String username) {
         UserEntity user = mapper.selectUserByName(username);
         if (user != null) {
-            String role = mapper.getRoleByUserName(user.getUserName());
-            List<String> auth = mapper.getAuthByRole(role);
-            return new JwtUser(user,auth);
+            List<String> auth = mapper.getAuthByRole(user.getRole());
+            return new JwtUser(user, auth);
         }
         throw new UsernameNotFoundException("用户名或密码不存在");
     }

@@ -56,7 +56,6 @@ jwt:
   expiration: 604800 #JWT的超期限时间(60*60*24*7)
   tokenHead: 'Bearer '  #JWT负载中拿到开头
 #用户名
-user_name: admin
 key: 1234123412341234
 decisionEngine.url: http://100.94.174.17:8089/hercules-controller-0.0.1
 jsch:
@@ -76,3 +75,4 @@ secure:
       - /api/user/login
       - /api/user/registe
       - /api/user/logout
+      - /api/user/me

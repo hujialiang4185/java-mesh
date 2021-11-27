@@ -103,24 +103,4 @@ public class HistoryServiceImpl implements HistoryService {
             }
         }
     }
-
-    public static void main(String[] args) throws UnsupportedEncodingException {
-
-        SecretKey secretKey = SecureUtil.generateKey("AES");
-        System.out.println(new String(secretKey.getEncoded(),"gbk"));
-        AES aes = SecureUtil.aes("1234123412341234".getBytes(StandardCharsets.UTF_8));
-        byte[] encrypt = aes.encrypt("123456");
-        byte[] encode = Base64.getEncoder().encode(encrypt);
-        String s = new String(encode, "utf-8");
-        System.out.println(s);
-        byte[] decode = Base64.getDecoder().decode(s);
-        byte[] decrypt = aes.decrypt(decode);
-        System.out.println(new String(decrypt,"utf-8"));
-        /*byte[] decrypt = aes.decrypt("decode".getBytes());
-        byte[] decode = Base64.getDecoder().decode(decrypt);
-        System.out.println(new String(decrypt));
-        byte[] encrypt = aes.encrypt(decrypt);
-        byte[] encode = Base64.getEncoder().encode(encrypt);*/
-        //System.out.println(new String(encode));
-    }
 }

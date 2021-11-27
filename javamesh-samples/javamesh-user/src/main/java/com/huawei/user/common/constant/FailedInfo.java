@@ -18,6 +18,7 @@ public class FailedInfo {
     public static final String UPDATE_USER_FAIL = "修改用户失败";
     public static final String ENCODE_PASSWORD_FAIL = "密码加密失败";
     public static final String CANNOT_UPDATE_ADMIN = "不能修改admin用户";
+    public static final String GET_USER_FAILED = "获取用户信息失败";
 
     private FailedInfo() {
     }

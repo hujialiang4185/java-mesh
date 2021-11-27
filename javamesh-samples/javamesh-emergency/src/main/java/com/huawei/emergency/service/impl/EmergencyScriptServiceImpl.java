@@ -18,6 +18,10 @@ import com.huawei.script.exec.log.LogRespone;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,7 +31,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -68,10 +73,12 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     private EmergencyExecService execService;
 
     @Override
-    public CommonResult<List<EmergencyScript>> listScript(HttpServletRequest request, String scriptName, String scriptUser, int pageSize, int current, String sorter, String order) {
-        User user = (User) request.getSession().getAttribute("userInfo");
+    public CommonResult<List<EmergencyScript>> listScript(String scriptName, String scriptUser, int pageSize, int current, String sorter, String order) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Collection<? extends GrantedAuthority> userAuths = authentication.getAuthorities();
+        List<String> userAuth = new ArrayList<>();
+        userAuths.forEach(u->userAuth.add(u.getAuthority()));
         String auth;
-        List<String> userAuth = user.getAuth();
         if (userAuth.contains(AUTH_ADMIN)) {
             auth = AUTH_ADMIN;
         } else if (userAuth.contains(AUTH_APPROVER)) {
@@ -84,7 +91,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         } else {
             PageHelper.orderBy(sorter + System.lineSeparator() + "DESC");
         }
-        List<EmergencyScript> emergencyScripts = mapper.listScript(user.getUserName(), auth, scriptName, scriptUser);
+        List<EmergencyScript> emergencyScripts = mapper.listScript(authentication.getName(), auth, scriptName, scriptUser);
         String scriptStatus;
         for (EmergencyScript script : emergencyScripts) {
             scriptStatus = script.getScriptStatus();
@@ -158,7 +165,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     }
 
     @Override
-    public int uploadScript(HttpServletRequest request, EmergencyScript script, MultipartFile file) {
+    public int uploadScript(String userName, EmergencyScript script, MultipartFile file) {
         if ("undefined".equals(script.getServerIp())) {
             script.setServerIp(null);
         }
@@ -167,9 +174,10 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         }
         try {
             InputStream inputStream = file.getInputStream();
-            String content = FileUtil.streamToString(inputStream);
-            script.setContent(content);
-            return insertScript(request, script);
+            String scriptName = file.getResource().getFilename();
+            script.setScriptName(scriptName.substring(0,scriptName.lastIndexOf(".")));
+            script.setContent(FileUtil.streamToString(inputStream));
+            return insertScript(userName, script);
         } catch (IOException e) {
             throw new ApiException(e);
         }
@@ -189,7 +197,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     }
 
     @Override
-    public int insertScript(HttpServletRequest request, EmergencyScript script) {
+    public int insertScript(String userName, EmergencyScript script) {
         if (isParamInvalid(script)) {
             return ResultCode.PARAM_INVALID;
         }
@@ -199,8 +207,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         if (count > 0) {
             return ResultCode.SCRIPT_NAME_EXISTS;
         }
-        User user = (User) request.getSession().getAttribute("userInfo");
-        script.setScriptUser(user.getUserName());
+        script.setScriptUser(userName);
         script.setContent(FileUtil.streamToString(new ByteArrayInputStream(script.getContent().getBytes(StandardCharsets.UTF_8))));
         extracted(script);
         count = mapper.insertSelective(script);
@@ -211,7 +218,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     }
 
     @Override
-    public int updateScript(HttpServletRequest request, EmergencyScript script) {
+    public int updateScript(EmergencyScript script) {
         if (isParamInvalid(script)) {
             return ResultCode.PARAM_INVALID;
         }
@@ -232,10 +239,13 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     }
 
     @Override
-    public List<String> searchScript(HttpServletRequest request, String scriptName) {
-        User user = (User) request.getSession().getAttribute("userInfo");
-        String userName = user.getUserName();
-        String auth = user.getAuth().contains("admin") ? "admin" : "";
+    public List<String> searchScript(String scriptName) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Collection<? extends GrantedAuthority> userAuths = authentication.getAuthorities();
+        List<String> userAuth = new ArrayList<>();
+        userAuths.forEach(u->userAuth.add(u.getAuthority()));
+        String userName = authentication.getName();
+        String auth = userAuth.contains("admin") ? "admin" : "";
         return mapper.searchScript(scriptName, userName, auth);
     }
 
@@ -253,11 +263,14 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     }
 
     @Override
-    public String submitReview(HttpServletRequest request, EmergencyScript script) {
+    public String submitReview(EmergencyScript script) {
         script.setScriptStatus(TYPE_ONE);
-        User user = (User) request.getSession().getAttribute("userInfo");
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Collection<? extends GrantedAuthority> userAuths = authentication.getAuthorities();
+        List<String> userAuth = new ArrayList<>();
+        userAuths.forEach(u->userAuth.add(u.getAuthority()));
         int count;
-        if (user.getAuth().contains("admin") || user.getUserName().equals(mapper.selectUserById(script.getScriptId()))) {
+        if (userAuth.contains("admin") || authentication.getName().equals(mapper.selectUserById(script.getScriptId()))) {
             count = mapper.updateByPrimaryKeySelective(script);
         } else {
             return FailedInfo.INSUFFICIENT_PERMISSIONS;

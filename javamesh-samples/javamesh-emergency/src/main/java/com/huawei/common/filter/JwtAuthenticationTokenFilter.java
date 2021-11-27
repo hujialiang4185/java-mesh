@@ -1,7 +1,6 @@
-package com.huawei.user.common.filter;
+package com.huawei.common.filter;
 
-import com.huawei.user.common.util.JwtTokenUtil;
-import org.apache.commons.lang.StringUtils;
+import com.huawei.common.util.JwtTokenUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +18,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * JWT登录授权过滤器
@@ -71,7 +66,6 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         } else {
             response.setStatus(401);
         }
-
 
         //String authHeader = request.getHeader(this.tokenHeader);
         /*if (authHeader != null && authHeader.startsWith(this.tokenHead)) {
