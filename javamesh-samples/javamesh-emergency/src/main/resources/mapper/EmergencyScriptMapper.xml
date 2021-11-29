@@ -546,6 +546,9 @@
             <if test="auth!='admin' and auth!='approver'">
                 AND ((s.is_public = '0' AND s.script_user = #{userName}) OR s.is_public = '1')
             </if>
+            <if test="status!=null and status!=''">
+                AND s.script_status = '2'
+            </if>
         </where>
     </select>
 
@@ -614,6 +617,9 @@
             </if>
             <if test="auth!='admin'">
                 AND (is_public = '1' OR (is_public = '0' AND script_user = #{userName}))
+            </if>
+            <if test="status!=null and status!=''">
+                AND script_status = '2'
             </if>
         </where>
         ORDER BY update_time DESC LIMIT 5

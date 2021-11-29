@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface EmergencyScriptService {
-    CommonResult<List<EmergencyScript>> listScript(String scriptName, String scriptUser, int pageSize, int current, String sorter, String order);
+    CommonResult<List<EmergencyScript>> listScript(String scriptName, String scriptUser, int pageSize, int current, String sorter, String order,String status);
 
     int deleteScripts(int[] scriptIds);
 
@@ -27,7 +27,7 @@ public interface EmergencyScriptService {
 
     int updateScript(EmergencyScript script);
 
-    List<String> searchScript(String scriptName);
+    List<String> searchScript(String scriptName,String status);
 
     EmergencyScript getScriptByName(String scriptName);
 

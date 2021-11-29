@@ -73,11 +73,11 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     private EmergencyExecService execService;
 
     @Override
-    public CommonResult<List<EmergencyScript>> listScript(String scriptName, String scriptUser, int pageSize, int current, String sorter, String order) {
+    public CommonResult<List<EmergencyScript>> listScript(String scriptName, String scriptUser, int pageSize, int current, String sorter, String order, String status) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Collection<? extends GrantedAuthority> userAuths = authentication.getAuthorities();
         List<String> userAuth = new ArrayList<>();
-        userAuths.forEach(u->userAuth.add(u.getAuthority()));
+        userAuths.forEach(u -> userAuth.add(u.getAuthority()));
         String auth;
         if (userAuth.contains(AUTH_ADMIN)) {
             auth = AUTH_ADMIN;
@@ -91,7 +91,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         } else {
             PageHelper.orderBy(sorter + System.lineSeparator() + "DESC");
         }
-        List<EmergencyScript> emergencyScripts = mapper.listScript(authentication.getName(), auth, scriptName, scriptUser);
+        List<EmergencyScript> emergencyScripts = mapper.listScript(authentication.getName(), auth, scriptName, scriptUser,status);
         String scriptStatus;
         for (EmergencyScript script : emergencyScripts) {
             scriptStatus = script.getScriptStatus();
@@ -175,7 +175,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         try {
             InputStream inputStream = file.getInputStream();
             String scriptName = file.getResource().getFilename();
-            script.setScriptName(scriptName.substring(0,scriptName.lastIndexOf(".")));
+            script.setScriptName(scriptName.substring(0, scriptName.lastIndexOf(".")));
             script.setContent(FileUtil.streamToString(inputStream));
             return insertScript(userName, script);
         } catch (IOException e) {
@@ -239,14 +239,14 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     }
 
     @Override
-    public List<String> searchScript(String scriptName) {
+    public List<String> searchScript(String scriptName,String status) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Collection<? extends GrantedAuthority> userAuths = authentication.getAuthorities();
         List<String> userAuth = new ArrayList<>();
-        userAuths.forEach(u->userAuth.add(u.getAuthority()));
+        userAuths.forEach(u -> userAuth.add(u.getAuthority()));
         String userName = authentication.getName();
         String auth = userAuth.contains("admin") ? "admin" : "";
-        return mapper.searchScript(scriptName, userName, auth);
+        return mapper.searchScript(scriptName, userName, auth, status);
     }
 
     @Override
@@ -268,7 +268,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Collection<? extends GrantedAuthority> userAuths = authentication.getAuthorities();
         List<String> userAuth = new ArrayList<>();
-        userAuths.forEach(u->userAuth.add(u.getAuthority()));
+        userAuths.forEach(u -> userAuth.add(u.getAuthority()));
         int count;
         if (userAuth.contains("admin") || authentication.getName().equals(mapper.selectUserById(script.getScriptId()))) {
             count = mapper.updateByPrimaryKeySelective(script);
@@ -309,7 +309,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
 
     @Override
     public LogRespone debugLog(int detailId, int lineIndex) {
-        return execService.getLog(detailId,lineIndex);
+        return execService.getLog(detailId, lineIndex);
     }
 
     private void extracted(EmergencyScript script) {
