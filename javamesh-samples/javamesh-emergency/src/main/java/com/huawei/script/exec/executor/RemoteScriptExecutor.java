@@ -26,6 +26,8 @@ import org.springframework.stereotype.Component;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -77,7 +79,7 @@ public class RemoteScriptExecutor implements ScriptExecutor {
             if (session != null && StringUtils.isNotEmpty(fileName)) {
                 deleteFile(session, fileName);
             }
-            if (session != null && session.isConnected()){
+            if (session != null && session.isConnected()) {
                 session.disconnect();
             }
         }
@@ -96,6 +98,28 @@ public class RemoteScriptExecutor implements ScriptExecutor {
             LOGGER.error("Can't get remote server session.", e);
             return ExecResult.fail(e.getMessage());
         }
+    }
+
+    public ExecResult uploadFile(Session session, String uploadPath, File file) throws JSchException, IOException, SftpException {
+        ChannelSftp channel = null;
+        try (FileInputStream inputStream = new FileInputStream(file)
+        ) {
+            ExecResult createDirResult = createRemoteDir(session, uploadPath);
+            String fileName = uploadPath + System.lineSeparator() + file.getName();
+            if (!createDirResult.isSuccess()) {
+                LOGGER.error("Failed to create dir {}. {}", uploadPath, createDirResult.getMsg());
+                return createDirResult;
+            }
+            channel = (ChannelSftp) session.openChannel("sftp");
+            channel.setInputStream(inputStream);
+            channel.connect();
+            channel.put(inputStream, fileName);
+        } finally {
+            if (channel != null && channel.isConnected()) {
+                channel.disconnect();
+            }
+        }
+        return ExecResult.success("");
     }
 
     private ExecResult uploadFile(Session session, String scriptName, String scriptContent)
@@ -160,7 +184,7 @@ public class RemoteScriptExecutor implements ScriptExecutor {
      * @param command 命令
      * @param id      标识本次执行的关键字
      */
-    private ExecResult exec(Session session, String command, LogCallBack logCallback, int id) {
+    public ExecResult exec(Session session, String command, LogCallBack logCallback, int id) {
         ChannelExec channel = null;
         try {
             channel = (ChannelExec) session.openChannel("exec");

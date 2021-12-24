@@ -15,17 +15,28 @@ import com.huawei.emergency.entity.EmergencyServerExample;
 import com.huawei.emergency.mapper.EmergencyServerMapper;
 import com.huawei.emergency.service.EmergencyServerService;
 
+import com.huawei.script.exec.ExecResult;
+import com.huawei.script.exec.executor.RemoteScriptExecutor;
+import com.huawei.script.exec.session.ServerInfo;
+import com.huawei.script.exec.session.ServerSessionFactory;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpException;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 /**
@@ -39,11 +50,23 @@ import java.util.stream.Collectors;
 public class EmergencyServerServiceImpl implements EmergencyServerService {
     private static final Logger LOGGER = LoggerFactory.getLogger(EmergencyServerServiceImpl.class);
 
+    @Value("${agent.uploadPath}")
+    private String uploadPath;
+
+    @Value("${agent.name}")
+    private String agentName;
+
     @Autowired
     private PasswordUtil passwordUtil;
 
     @Autowired
     private EmergencyServerMapper serverMapper;
+
+    @Autowired
+    private RemoteScriptExecutor remoteExecutor;
+
+    @Autowired
+    private ServerSessionFactory sessionFactory;
 
     @Override
     public CommonResult<EmergencyServer> add(EmergencyServer server) {
@@ -171,6 +194,51 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
         return CommonResult.success();
     }
 
+    @Override
+    public CommonResult install(EmergencyServer server) {
+        if (server.getServerId() == null) {
+            return CommonResult.failed("请选择主机");
+        }
+        EmergencyServer remoteServer = serverMapper.selectByPrimaryKey(server.getServerId());
+        if (remoteServer == null) {
+            return CommonResult.failed("请选择正确的主机");
+        }
+        ServerInfo serverInfo = new ServerInfo(remoteServer.getServerIp(), remoteServer.getServerUser());
+        if ("1".equals(server.getHavePassword())) {
+            try {
+                serverInfo.setServerPassword(parsePassword(server));
+            } catch (UnsupportedEncodingException e) {
+                LOGGER.error("Failed to parse password, {}", e.getMessage());
+                return CommonResult.failed("获取服务器信息失败");
+            }
+        }
+        Session session = null;
+        try {
+            session = sessionFactory.getSession(serverInfo);
+            ExecResult execResult = remoteExecutor.uploadFile(session, uploadPath, new File(agentName));
+            if (!execResult.isSuccess()){
+                return CommonResult.failed("上传agent失败");
+            }
+            execResult = remoteExecutor.exec(session,
+                String.format(Locale.ROOT, "nohup java -jar %s%s%s >%s.log &", uploadPath, System.lineSeparator(), agentName, agentName),
+                null, -1);
+            if (!execResult.isSuccess()) {
+                return CommonResult.failed("启动agent失败");
+            }
+        } catch (JSchException e) {
+            LOGGER.error("Failed to connect  ip={}, {}", serverInfo.getServerIp(), e.getMessage());
+            return CommonResult.failed("连接服务器失败");
+        } catch (SftpException | IOException e) {
+            LOGGER.error("Failed to operate ip={}, {}", serverInfo.getServerIp(), e.getMessage());
+            return CommonResult.failed("操作远程服务器失败");
+        } finally {
+            if (session != null) {
+                session.disconnect();
+            }
+        }
+        return CommonResult.success();
+    }
+
     public CommonResult<EmergencyServer> generateServer(EmergencyServer source) {
         EmergencyServer newServer = new EmergencyServer();
         newServer.setServerUser(source.getServerUser());
@@ -200,5 +268,12 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
 
     public String getPassword(String serverIp, String serverUser) {
         return "123456";
+    }
+
+    public String parsePassword(EmergencyServer server) throws UnsupportedEncodingException {
+        return passwordUtil.encodePassword(
+            "0".equals(server.getPasswordMode())
+                ? server.getPassword()
+                : getPassword(server.getServerIp(), server.getServerUser()));
     }
 }

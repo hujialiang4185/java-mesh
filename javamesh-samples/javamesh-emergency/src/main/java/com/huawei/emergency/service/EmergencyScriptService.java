@@ -2,6 +2,7 @@ package com.huawei.emergency.service;
 
 import com.huawei.common.api.CommonResult;
 import com.huawei.emergency.entity.EmergencyScript;
+import com.huawei.emergency.layout.TreeResponse;
 import com.huawei.script.exec.log.LogResponse;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,4 +37,29 @@ public interface EmergencyScriptService {
     CommonResult debugScript(int scriptId);
 
     LogResponse debugLog(int detailId, int lineIndex);
+
+    /**
+     * 创建编排脚本
+     *
+     * @param script 脚本信息
+     * @return
+     */
+    CommonResult createOrchestrate(EmergencyScript script);
+
+    /**
+     * 更新编排脚本
+     *
+     * @param treeResponse
+     * @return
+     */
+    CommonResult updateOrchestrate(TreeResponse treeResponse);
+
+    /**
+     * 查询编排脚本
+     *
+     * @param scriptId 脚本Id
+     * @return
+     */
+    CommonResult queryOrchestrate(int scriptId);
+
 }

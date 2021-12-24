@@ -16,7 +16,6 @@ import com.huawei.emergency.entity.EmergencyServer;
  * @since 2021-11-29
  **/
 public interface EmergencyServerService extends EmergencyCommonService<EmergencyServer> {
-
     /**
      * 从平台获取该服务器所有可用账号
      *
@@ -38,4 +37,12 @@ public interface EmergencyServerService extends EmergencyCommonService<Emergency
     CommonResult license(EmergencyServer server);
 
     CommonResult deleteServerList(String[] serverIds, String userName);
+
+    /**
+     * 安装agent代理
+     *
+     * @param server
+     * @return
+     */
+    CommonResult install(EmergencyServer server);
 }

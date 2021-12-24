@@ -4,6 +4,8 @@
 
 package com.huawei.common.api;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * 通用返回对象
  *
@@ -12,6 +14,7 @@ package com.huawei.common.api;
  * @since 2021-10-14
  */
 public class CommonResult<T> {
+    private int code;
     // 提示信息
     private String msg;
 
@@ -24,7 +27,8 @@ public class CommonResult<T> {
     protected CommonResult() {
     }
 
-    protected CommonResult(String msg, T data, int total) {
+    protected CommonResult(int code, String msg, T data, int total) {
+        this.code = code;
         this.msg = msg;
         this.data = data;
         this.total = total;
@@ -37,7 +41,7 @@ public class CommonResult<T> {
      * @return {@link CommonResult}
      */
     public static <T> CommonResult<T> success() {
-        return new CommonResult<T>(null, null, 0);
+        return new CommonResult<T>(200, null, null, 0);
     }
 
     /**
@@ -48,7 +52,7 @@ public class CommonResult<T> {
      * @return {@link CommonResult}
      */
     public static <T> CommonResult<T> success(T data) {
-        return new CommonResult<T>(null, data, 0);
+        return new CommonResult<T>(200, null, data, 0);
     }
 
     /**
@@ -60,7 +64,7 @@ public class CommonResult<T> {
      * @return {@link CommonResult}
      */
     public static <T> CommonResult<T> success(T data, int total) {
-        return new CommonResult<T>(null, data, total);
+        return new CommonResult<T>(200, null, data, total);
     }
 
     /**
@@ -71,7 +75,7 @@ public class CommonResult<T> {
      * @return {@link CommonResult}
      */
     public static <T> CommonResult<T> failed(String msg) {
-        return new CommonResult<T>(msg, null, 0);
+        return new CommonResult<T>(500, msg, null, 0);
     }
 
     /**
@@ -82,7 +86,7 @@ public class CommonResult<T> {
      * @return {@link CommonResult}
      */
     public static <T> CommonResult<T> validateFailed(String message) {
-        return new CommonResult<T>(message, null, 0);
+        return new CommonResult<T>(500, message, null, 0);
     }
 
     public String getMsg() {
@@ -107,5 +111,10 @@ public class CommonResult<T> {
 
     public void setTotal(int total) {
         this.total = total;
+    }
+
+    @JsonIgnore
+    public boolean isSuccess() {
+        return code == 200;
     }
 }

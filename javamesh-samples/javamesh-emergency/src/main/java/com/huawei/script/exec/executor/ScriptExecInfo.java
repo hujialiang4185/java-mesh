@@ -29,6 +29,10 @@ public class ScriptExecInfo {
      */
     private String scriptContext;
     /**
+     * 脚本类型
+     */
+    private String scriptType;
+    /**
      * 脚本的存放路径
      */
     private String scriptLocation;

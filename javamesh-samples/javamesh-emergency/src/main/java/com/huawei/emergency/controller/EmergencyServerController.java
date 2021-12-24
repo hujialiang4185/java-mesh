@@ -80,11 +80,11 @@ public class EmergencyServerController {
         return serverService.deleteServerList(serverIds, parseUserName(request));
     }
 
-    /*@PostMapping
-    public CommonResult updateServer(HttpServletRequest request, @RequestBody EmergencyServer server) {
+    @PostMapping("/install")
+    public CommonResult installServer(HttpServletRequest request, @RequestBody EmergencyServer server) {
         server.setUpdateUser(parseUserName(request));
-        return serverService.update(server);
-    }*/
+        return serverService.install(server);
+    }
 
     @PostMapping("/license")
     public CommonResult license(@RequestBody EmergencyServer server) {

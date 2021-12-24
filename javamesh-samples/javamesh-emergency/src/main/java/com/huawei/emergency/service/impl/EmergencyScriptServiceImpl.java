@@ -1,18 +1,27 @@
 package com.huawei.emergency.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.FailedInfo;
 import com.huawei.common.constant.ResultCode;
+import com.huawei.common.constant.ValidEnum;
 import com.huawei.common.exception.ApiException;
+import com.huawei.common.filter.UserFilter;
 import com.huawei.common.util.EscapeUtil;
 import com.huawei.common.util.FileUtil;
 import com.huawei.common.util.PageUtil;
 import com.huawei.common.util.PasswordUtil;
+import com.huawei.emergency.entity.EmergencyElement;
+import com.huawei.emergency.entity.EmergencyElementExample;
 import com.huawei.emergency.entity.EmergencyScript;
 import com.huawei.emergency.entity.EmergencyScriptExample;
 import com.huawei.emergency.entity.User;
+import com.huawei.emergency.layout.HandlerFactory;
+import com.huawei.emergency.layout.TreeNode;
+import com.huawei.emergency.layout.TreeResponse;
+import com.huawei.emergency.mapper.EmergencyElementMapper;
 import com.huawei.emergency.mapper.EmergencyScriptMapper;
 import com.huawei.emergency.service.EmergencyExecService;
 import com.huawei.emergency.service.EmergencyScriptService;
@@ -29,6 +38,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -64,6 +75,9 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
 
     @Autowired
     private EmergencyScriptMapper mapper;
+
+    @Autowired
+    private EmergencyElementMapper elementMapper;
 
     @Autowired
     private EmergencyExecService execService;
@@ -111,7 +125,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
                     script.setStatusLabel(UNAPPROVED);
             }
         }
-        return CommonResult.success(emergencyScripts,(int)pageInfo.getTotal());
+        return CommonResult.success(emergencyScripts, (int) pageInfo.getTotal());
     }
 
     @Override
@@ -304,6 +318,131 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         return execService.getLog(detailId, lineIndex);
     }
 
+    @Override
+    public CommonResult createOrchestrate(EmergencyScript script) {
+        if (script == null || StringUtils.isEmpty(script.getScriptName())) {
+            return CommonResult.failed("请输入脚本名称");
+        }
+        EmergencyScriptExample isNameExist = new EmergencyScriptExample();
+        isNameExist.createCriteria()
+            .andScriptNameEqualTo(script.getScriptName());
+        if (mapper.countByExample(isNameExist) > 0) {
+            return CommonResult.failed("存在名称相同的脚本");
+        }
+
+        // 生成脚本信息 以及脚本编排信息
+        EmergencyScript newScript = new EmergencyScript();
+        newScript.setScriptName(script.getScriptName());
+        newScript.setIsPublic(script.getIsPublic());
+        newScript.setScriptType("3");
+        newScript.setSubmitInfo(script.getSubmitInfo());
+        newScript.setHavePassword("0");
+        newScript.setContent("");
+        newScript.setScriptUser(UserFilter.users.get().getNickName());
+        newScript.setScriptStatus("0");
+        transLateScript(newScript);
+        mapper.insertSelective(newScript);
+        generateTemplate(newScript); // 生成编排模板
+        return CommonResult.success(newScript);
+    }
+
+    /**
+     * 生成默认的编排模板
+     *
+     * @param script 脚本信息
+     */
+    private void generateTemplate(EmergencyScript script){
+        EmergencyElement rootElement = new EmergencyElement();
+        rootElement.setElementTitle(script.getScriptName());
+        rootElement.setElementType("Root");
+        rootElement.setElementNo(System.currentTimeMillis() + "-" + rootElement.getElementType());
+        rootElement.setScriptId(script.getScriptId());
+        rootElement.setCreateUser(script.getScriptUser());
+        Map<String,Object> elementParams = new HashMap<>();
+        elementParams.put("title",rootElement.getElementTitle());
+        rootElement.setElementParams(JSONObject.toJSONString(elementParams));
+        elementMapper.insertSelective(rootElement);
+        for (String handlerType : HandlerFactory.getDefaultTemplate()) {
+            EmergencyElement element = new EmergencyElement();
+            element.setElementTitle(handlerType);
+            element.setElementType(handlerType);
+            element.setElementNo(System.currentTimeMillis() + "-" + element.getElementType());
+            element.setScriptId(script.getScriptId());
+            element.setParentId(rootElement.getElementId());
+            element.setCreateUser(script.getScriptUser());
+            Map<String,Object> params = new HashMap<>();
+            params.put("title",handlerType);
+            element.setElementParams(JSONObject.toJSONString(params));
+            elementMapper.insertSelective(element);
+        }
+    }
+
+    @Override
+    public CommonResult updateOrchestrate(TreeResponse treeResponse) {
+        if ( treeResponse.getScriptId() == null || mapper.selectByPrimaryKey(treeResponse.getScriptId()) == null){
+            return CommonResult.failed("请选择脚本");
+        }
+        // 清除之前的编排关系
+        /*EmergencyElementExample currentElementsExample = new EmergencyElementExample();
+        currentElementsExample.createCriteria()
+            .andIsValidEqualTo(ValidEnum.VALID.getValue())
+            .andScriptIdEqualTo(treeResponse.getScriptId());
+        EmergencyElement updateElement = new EmergencyElement();
+        updateElement.setIsValid(ValidEnum.IN_VALID.getValue());
+        elementMapper.updateByExampleSelective(updateElement,currentElementsExample);*/
+
+        return CommonResult.success();
+    }
+
+    @Override
+    public CommonResult queryOrchestrate(int scriptId) {
+        EmergencyElementExample rootElementExample = new EmergencyElementExample();
+        rootElementExample.createCriteria()
+            .andScriptIdEqualTo(scriptId)
+            .andParentIdIsNull()
+            .andIsValidEqualTo(ValidEnum.VALID.getValue());
+        List<EmergencyElement> emergencyElements = elementMapper.selectByExampleWithBLOBs(rootElementExample);
+        if (emergencyElements.size() == 0) {
+            return CommonResult.success();
+        }
+        EmergencyElement rootElement = emergencyElements.get(0);
+        TreeNode root = new TreeNode();
+        root.setId(rootElement.getElementId());
+        root.setKey(rootElement.getElementNo());
+        root.setTitle(rootElement.getElementTitle());
+        root.setType(rootElement.getElementType());
+        root.setChildren(new ArrayList<>());
+        TreeResponse response = new TreeResponse();
+        response.setScriptId(scriptId);
+        response.setTree(root);
+        response.setMap(new HashMap<>());
+        response.getMap().put(root.getKey(), JSONObject.parseObject(rootElement.getElementParams(), Map.class));
+        handleChildren(root, response.getMap()); // 迭代寻找子节点
+        return CommonResult.success(response);
+    }
+
+    private void handleChildren(TreeNode parent, Map<String, Map> map) {
+        if (parent == null || map == null) {
+            return;
+        }
+        EmergencyElementExample elementExample = new EmergencyElementExample();
+        elementExample.createCriteria()
+            .andParentIdEqualTo(parent.getId())
+            .andIsValidEqualTo(ValidEnum.VALID.getValue());
+        List<EmergencyElement> emergencyElements = elementMapper.selectByExampleWithBLOBs(elementExample);
+        for (EmergencyElement emergencyElement : emergencyElements) {
+            TreeNode node = new TreeNode();
+            node.setId(emergencyElement.getElementId());
+            node.setKey(emergencyElement.getElementNo());
+            node.setTitle(emergencyElement.getElementTitle());
+            node.setType(emergencyElement.getElementType());
+            node.setChildren(new ArrayList<>());
+            map.put(node.getKey(), JSONObject.parseObject(emergencyElement.getElementParams(), Map.class));
+            handleChildren(node, map);
+            parent.getChildren().add(node);
+        }
+    }
+
     private void extracted(EmergencyScript script) {
         transLateScript(script);
         try {
@@ -319,7 +458,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
 
     private boolean isParamInvalid(EmergencyScript script) {
         if (script.getHavePassword().equals("havePassword") &&
-                (StringUtils.isBlank(script.getPassword()) || StringUtils.isBlank(script.getPasswordMode()))) {
+            (StringUtils.isBlank(script.getPassword()) || StringUtils.isBlank(script.getPasswordMode()))) {
             return true;
         }
         return false;

@@ -23,6 +23,8 @@ public class UserFilter implements Filter {
     @Resource
     private UserFeignClient userFeignClient;
 
+    public static final ThreadLocal<User> users = new ThreadLocal<>();
+
     @Autowired
     private UserMapper mapper;
 
@@ -52,6 +54,7 @@ public class UserFilter implements Filter {
                 List<String> auth = mapper.getAuthByRole(role);
                 user = new User(userId,(String)userInfo.get("userName"),role,auth);
                 session.setAttribute("userInfo", user);
+                users.set(user);
             } catch (FeignException e) {
                 log.error("No login. ");
                 response.setStatus(401);
