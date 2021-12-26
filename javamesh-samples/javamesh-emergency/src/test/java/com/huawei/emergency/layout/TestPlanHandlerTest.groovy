@@ -19,37 +19,42 @@ package com.huawei.emergency.layout
 
 import com.huawei.emergency.layout.controller.TransactionController
 import com.huawei.emergency.layout.template.GroovyClassTemplate
+import com.huawei.test.postprocessor.config.RegularExtractorConfig
+import com.huawei.test.postprocessor.impl.RegularExpressionExtractor
 import org.junit.Test
 
 class TestPlanHandlerTest extends GroovyTestCase {
 
-    @Test
-    void "test planHandler when scheduled"() {
-        def controller1 = new TransactionController(name: "事务控制器1", rate: 20)
-        def controller2 = new TransactionController(name: "事务控制器2", rate: 30)
-        def controller3 = new TransactionController(name: "事务控制器3", rate: 50)
-        def planHandler = new TestPlanTestElement(setTestElements: [controller1, controller2, controller3]);
-        def context = new HandlerContext(template: GroovyClassTemplate.template())
+    void "test when 100 total"() {
+        def planHandler = new TestPlanTestElement(testElements: [
+                new TransactionController(title: "事务控制器1", rate: 20),
+                new TransactionController(title: "事务控制器2", rate: 30),
+                new TransactionController(title: "事务控制器3", rate: 50)]);
+        def context = new ElementProcessContext(template: GroovyClassTemplate.template())
         planHandler.handle(context)
         context.getTemplate().print(System.out)
     }
 
-    @Test
-    void "test planHandler when serial"() {
-        def controller1 = new TransactionController(name: "事务控制器1")
-        def controller2 = new TransactionController(name: "事务控制器2")
-        def controller3 = new TransactionController(name: "事务控制器3")
-        def planHandler = new TestPlanTestElement(setTestElements: [controller1, controller2, controller3]);
-        def context = new HandlerContext(template: GroovyClassTemplate.template())
+    void "test when n*100"() {
+        def controller1 = new TransactionController(title: "事务控制器1")
+        def controller2 = new TransactionController(title: "事务控制器2")
+        def controller3 = new TransactionController(title: "事务控制器3")
+        def planHandler = new TestPlanTestElement(testElements: [controller1, controller2, controller3]);
+        def context = new ElementProcessContext(template: GroovyClassTemplate.template())
         planHandler.handle(context)
         context.getTemplate().print(System.out)
     }
 
-    void "test planHandler which was provided by Web"() {
+/*    void "test planHandler which was provided by Web"() {
         TreeResponseTest test = new TreeResponseTest();
         test.before();
-        def context = new HandlerContext(template: GroovyClassTemplate.template())
+        def context = new ElementProcessContext(template: GroovyClassTemplate.template())
         TreeResponse.parse(test.planTree).handle(context)
         context.template.print(System.out)
+    }*/
+
+    void "test"() {
+        def extract = new RegularExpressionExtractor().extract("Zzoo",new RegularExtractorConfig(new RegularExtractorConfig.Builder(regularExpression: "zoo", groupIndex: 0, matchIndex: 0, defaultValue: "Hello")))
+        println (extract)
     }
 }

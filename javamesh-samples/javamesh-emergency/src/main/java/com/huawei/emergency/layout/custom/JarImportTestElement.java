@@ -14,25 +14,26 @@
  * limitations under the License.
  */
 
-package com.huawei.emergency.layout.config;
+package com.huawei.emergency.layout.custom;
 
 import com.huawei.emergency.layout.ElementProcessContext;
+import com.huawei.emergency.layout.TestElement;
 import lombok.Data;
 
 /**
+ * jar导入组件
+ *
  * @author y30010171
- * @since 2021-12-15
+ * @since 2021-12-25
  **/
 @Data
-public class HttpCacheManager implements Config{
+public class JarImportTestElement implements TestElement {
 
-    private String name;
-    private String comment;
-    private boolean clearCookiesEachIteration;
-    private boolean useHeaderWhenGet;
-    private int maxElements;
+    private String title;
+    private String content;
 
     @Override
     public void handle(ElementProcessContext context) {
+        context.getTemplate().addImport(this.content);
     }
 }

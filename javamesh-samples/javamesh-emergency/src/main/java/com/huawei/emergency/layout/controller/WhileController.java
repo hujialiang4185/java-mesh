@@ -17,7 +17,7 @@
 package com.huawei.emergency.layout.controller;
 
 import com.huawei.emergency.layout.TestElement;
-import com.huawei.emergency.layout.HandlerContext;
+import com.huawei.emergency.layout.ElementProcessContext;
 import com.huawei.emergency.layout.template.GroovyMethodTemplate;
 import lombok.Data;
 
@@ -32,13 +32,13 @@ import java.util.Locale;
 @Data
 public class WhileController implements Controller {
 
-    private String name;
+    private String title;
     private String comment;
     private String condition;
     private List<TestElement> testElements = new ArrayList<>();
 
     @Override
-    public void handle(HandlerContext context) {
+    public void handle(ElementProcessContext context) {
         GroovyMethodTemplate currentMethod = context.getCurrentMethod();
         currentMethod.addContent(String.format(Locale.ROOT, "while (%s) {", condition), 2);
         testElements.forEach(handler -> {

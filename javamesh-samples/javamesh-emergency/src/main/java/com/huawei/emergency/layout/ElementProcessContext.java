@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 处理上下文
@@ -35,7 +36,8 @@ import java.util.Map;
  * @since 2021-12-15
  **/
 @Data
-public class HandlerContext {
+public class ElementProcessContext {
+    private AtomicInteger requestCount = new AtomicInteger();
     private Map<String,Object> params = new HashMap<>();
     private GroovyClassTemplate template = new GroovyClassTemplate();
     private boolean initParams = false;

@@ -17,7 +17,7 @@
 package com.huawei.emergency.layout.controller;
 
 import com.huawei.emergency.layout.TestElement;
-import com.huawei.emergency.layout.HandlerContext;
+import com.huawei.emergency.layout.ElementProcessContext;
 import com.huawei.emergency.layout.template.GroovyMethodTemplate;
 import lombok.Data;
 
@@ -32,14 +32,14 @@ import java.util.Locale;
 @Data
 public class LoopController implements Controller{
 
-    private String name;
+    private String title;
     private String comment;
     private boolean isForever;
     private int loopCount;
     private List<TestElement> testElements = new ArrayList<>();
 
     @Override
-    public void handle(HandlerContext context) {
+    public void handle(ElementProcessContext context) {
         GroovyMethodTemplate currentMethod = context.getCurrentMethod();
         if (loopCount <= 0){
             throw new IllegalArgumentException("循环控制器的次数不能小于等于0");

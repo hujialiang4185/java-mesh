@@ -16,15 +16,20 @@
 
 package com.huawei.emergency.layout.assertion;
 
-import com.huawei.emergency.layout.HandlerContext;
+import com.huawei.emergency.layout.ElementProcessContext;
 import lombok.Data;
+import org.apache.commons.lang.StringUtils;
+
+import java.util.Locale;
 
 /**
+ * 响应断言
+ *
  * @author y30010171
  * @since 2021-12-16
  **/
 @Data
-public class ResponseAssertion implements Assertion{
+public class ResponseAssertion implements Assertion {
 
     private String type;
     private String testField;
@@ -35,6 +40,16 @@ public class ResponseAssertion implements Assertion{
 
 
     @Override
-    public void handle(HandlerContext context) {
+    public void handle(ElementProcessContext context) {
+        if (StringUtils.isEmpty(patternToTest)) {
+            return;
+        }
+        String field = "new String(httpResult.data)";
+        if ("ResponseCode".equals(testField)) {
+            field = "new String(httpResult.statusCode)";
+        }
+        context.getCurrentMethod().addContent(
+            String.format(Locale.ROOT, "Assert.assertTrue(\"%s\", RegularAssert.assertRegular(%s,\"%s\"));",
+                failureMessage, field, patternToTest), 2);
     }
 }

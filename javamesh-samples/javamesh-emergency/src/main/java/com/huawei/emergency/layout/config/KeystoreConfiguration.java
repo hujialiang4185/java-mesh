@@ -16,7 +16,7 @@
 
 package com.huawei.emergency.layout.config;
 
-import com.huawei.emergency.layout.HandlerContext;
+import com.huawei.emergency.layout.ElementProcessContext;
 import lombok.Data;
 
 /**
@@ -32,6 +32,6 @@ public class KeystoreConfiguration implements Config {
     private int aliasEndIndex;
 
     @Override
-    public void handle(HandlerContext context) {
+    public void handle(ElementProcessContext context) {
     }
 }

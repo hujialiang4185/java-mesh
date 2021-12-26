@@ -225,6 +225,13 @@
             <version>5.0</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.huawei.hercules</groupId>
+            <artifactId>hercules-function</artifactId>
+            <version>0.0.1</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

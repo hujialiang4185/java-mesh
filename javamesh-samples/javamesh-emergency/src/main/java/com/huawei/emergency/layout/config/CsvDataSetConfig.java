@@ -16,7 +16,7 @@
 
 package com.huawei.emergency.layout.config;
 
-import com.huawei.emergency.layout.HandlerContext;
+import com.huawei.emergency.layout.ElementProcessContext;
 import com.huawei.emergency.layout.template.GroovyFieldTemplate;
 import lombok.Data;
 
@@ -38,7 +38,7 @@ public class CsvDataSetConfig implements Config {
     private String sharingMode;
 
     @Override
-    public void handle(HandlerContext context) {
+    public void handle(ElementProcessContext context) {
         if (!context.isInitParams()){
             context.getTemplate().addFiled(GroovyFieldTemplate.create("public Map<String,Object> allVariable = new HashMap<>();"));
         }

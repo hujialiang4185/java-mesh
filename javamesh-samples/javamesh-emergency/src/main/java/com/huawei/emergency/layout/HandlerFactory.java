@@ -38,9 +38,11 @@ import com.huawei.emergency.layout.custom.BeforeProcessTestElement;
 import com.huawei.emergency.layout.custom.BeforeThreadTestElement;
 import com.huawei.emergency.layout.custom.CustomCodeTestElement;
 import com.huawei.emergency.layout.custom.CustomMethodTestElement;
+import com.huawei.emergency.layout.custom.JarImportTestElement;
 import com.huawei.emergency.layout.processor.BeanShellPostProcessor;
 import com.huawei.emergency.layout.processor.Jsr223PostProcessor;
 import com.huawei.emergency.layout.processor.Jsr223PreProcessor;
+import com.huawei.emergency.layout.processor.RegularPostProcessor;
 import com.huawei.emergency.layout.sampler.HttpSampler;
 import com.huawei.emergency.layout.sampler.Jsr223Sampler;
 import com.huawei.emergency.layout.time.ConstantTimer;
@@ -70,12 +72,14 @@ public class HandlerFactory {
     static {
         GENERAL_CLASS_TYPE = Sets.newHashSet(boolean.class, Boolean.class, int.class, Integer.class, long.class, Long.class, String.class);
         allHandlerClassName.put("Root", TestPlanTestElement.class.getName());
-        allHandlerClassName.put("constant_timer", ConstantTimer.class.getName());
-        allHandlerClassName.put("http_sampler", HttpSampler.class.getName());
+        allHandlerClassName.put("ConstantTimer", ConstantTimer.class.getName());
+        allHandlerClassName.put("HTTPRequest", HttpSampler.class.getName());
+        allHandlerClassName.put("JARImport", JarImportTestElement.class.getName());
         allHandlerClassName.put("jsr223_sampler", Jsr223Sampler.class.getName());
-        allHandlerClassName.put("jsr223_pre_processor", Jsr223PreProcessor.class.getName());
-        allHandlerClassName.put("jsr223_post_processor", Jsr223PostProcessor.class.getName());
+        allHandlerClassName.put("JSR223PreProcessor", Jsr223PreProcessor.class.getName());
+        allHandlerClassName.put("JSR223PostProcessor", Jsr223PostProcessor.class.getName());
         allHandlerClassName.put("bean_shell_post_processor", BeanShellPostProcessor.class.getName());
+        allHandlerClassName.put("RegularExpressionExtractor", RegularPostProcessor.class.getName());
         allHandlerClassName.put("After", AfterTestElement.class.getName());
         allHandlerClassName.put("AfterProcess", AfterProcessTestElement.class.getName());
         allHandlerClassName.put("AfterThread", AfterThreadTestElement.class.getName());
@@ -83,10 +87,10 @@ public class HandlerFactory {
         allHandlerClassName.put("BeforeProcess", BeforeProcessTestElement.class.getName());
         allHandlerClassName.put("BeforeThread", BeforeThreadTestElement.class.getName());
         allHandlerClassName.put("custom_code", CustomCodeTestElement.class.getName());
-        allHandlerClassName.put("custom_method", CustomMethodTestElement.class.getName());
-        allHandlerClassName.put("loop_controller", LoopController.class.getName());
+        allHandlerClassName.put("TestFunc", CustomMethodTestElement.class.getName());
+        allHandlerClassName.put("LoopController", LoopController.class.getName());
         allHandlerClassName.put("TransactionController", TransactionController.class.getName());
-        allHandlerClassName.put("while_controller", WhileController.class.getName());
+        allHandlerClassName.put("WhileController", WhileController.class.getName());
         allHandlerClassName.put("Keystore_configuration", KeystoreConfiguration.class.getName());
         allHandlerClassName.put("http_request_default", HttpRequestDefault.class.getName());
         allHandlerClassName.put("http_header_manager", HttpHeaderManager.class.getName());
@@ -95,7 +99,7 @@ public class HandlerFactory {
         allHandlerClassName.put("dns_cache_manager", DnsCacheManager.class.getName());
         allHandlerClassName.put("csv_data_set_config", CsvDataSetConfig.class.getName());
         allHandlerClassName.put("counter", Counter.class.getName());
-        allHandlerClassName.put("response_assertion", ResponseAssertion.class.getName());
+        allHandlerClassName.put("ResponseAssertion", ResponseAssertion.class.getName());
     }
 
     public static List<String> getDefaultTemplate() {

@@ -18,6 +18,7 @@ package com.huawei.emergency.layout;
 
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,9 +27,9 @@ import java.util.List;
  **/
 @Data
 public class TreeNode {
-    private Integer id;
+    private Integer elementId;
     private String key;
     private String title;
     private String type;
-    private List<TreeNode> children;
+    private List<TreeNode> children = new ArrayList<>();
 }

@@ -129,4 +129,11 @@ public class LocalScriptExecutor implements ScriptExecutor {
     private String[] commands(String command, String[] params) {
         return (String[]) ArrayUtils.addAll(new String[]{SH, SH_C, command}, params);
     }
+
+    public static void main(String[] args) {
+        LocalScriptExecutor scriptExecutor = new LocalScriptExecutor();
+        ExecResult exec = scriptExecutor.exec(new String[]{"cmd", "/c", "python D:\\tmp\\test.py"}, null, -1);
+        System.out.println("exec.isSuccess() = " + exec.isSuccess());
+        System.out.println("exec.getMsg() = " + exec.getMsg());
+    }
 }

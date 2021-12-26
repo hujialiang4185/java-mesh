@@ -16,7 +16,7 @@
 
 package com.huawei.emergency.layout.controller
 
-import com.huawei.emergency.layout.HandlerContext
+import com.huawei.emergency.layout.ElementProcessContext
 import com.huawei.emergency.layout.template.GroovyClassTemplate
 import org.junit.Test
 
@@ -25,11 +25,11 @@ class TransactionalControllerTest extends GroovyTestCase {
     @Test
     void "test controller"() {
         GroovyClassTemplate template = GroovyClassTemplate
-                .create("D:\\IdeaProject\\hercules-server\\src\\main\\resources\\GroovyTemplate.groovy");
-        HandlerContext context = new HandlerContext();
+                .create("D:\\IdeaProject\\hercules-server\\src\\main\\resources\\GroovyTemplate");
+        ElementProcessContext context = new ElementProcessContext();
         context.setTemplate(template);
         TransactionController controller = new TransactionController();
-        controller.setName("事务1号");
+        controller.setTitle("事务1号");
         controller.handle(context);
         context.getTemplate().print(System.out);
         assertNull(template)

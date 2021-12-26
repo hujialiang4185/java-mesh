@@ -17,7 +17,7 @@
 package com.huawei.emergency.layout.controller;
 
 import com.huawei.emergency.layout.TestElement;
-import com.huawei.emergency.layout.HandlerContext;
+import com.huawei.emergency.layout.ElementProcessContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +41,7 @@ public class IfController implements Controller {
     }
 
     @Override
-    public void handle(HandlerContext context) {
+    public void handle(ElementProcessContext context) {
     }
 
     public List<Param> parse() {

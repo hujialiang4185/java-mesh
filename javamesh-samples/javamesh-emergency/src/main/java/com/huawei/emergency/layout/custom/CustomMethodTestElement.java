@@ -17,7 +17,7 @@
 package com.huawei.emergency.layout.custom;
 
 import com.huawei.emergency.layout.TestElement;
-import com.huawei.emergency.layout.HandlerContext;
+import com.huawei.emergency.layout.ElementProcessContext;
 import com.huawei.emergency.layout.template.GroovyMethodTemplate;
 import lombok.Data;
 import org.apache.commons.lang.StringUtils;
@@ -33,16 +33,16 @@ import java.util.Locale;
 @Data
 public class CustomMethodTestElement implements TestElement {
 
-    private String name;
+    private String title;
     private String comment;
     private String content;
     private GroovyMethodTemplate method;
 
     @Override
-    public void handle(HandlerContext context) {
+    public void handle(ElementProcessContext context) {
         if (StringUtils.isNotEmpty(content)) {
             if (context.getTemplate().containsMethod(method.getMethodName())) {
-                throw new RuntimeException(String.format(Locale.ROOT, "存在事务名称相同的事务控制器 {}", method.getMethodName()));
+                throw new RuntimeException(String.format(Locale.ROOT, "存在名称相同的方法 {}", method.getMethodName()));
             }
             GroovyMethodTemplate method = getMethod();
             method.addContent(content, 2);
@@ -53,9 +53,9 @@ public class CustomMethodTestElement implements TestElement {
     public GroovyMethodTemplate getMethod() {
         if (method == null) {
             method = new GroovyMethodTemplate()
-                .start(String.format(Locale.ROOT, "public void \"%s\"() {", name), 1)
+                .start(String.format(Locale.ROOT, "public void \"%s\"() {", title), 1)
                 .end("}", 1);
-            method.setMethodName(name);
+            method.setMethodName(title);
         }
         return method;
     }

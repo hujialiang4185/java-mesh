@@ -94,13 +94,15 @@ class Login {
     public void test() {
         println(System.currentTimeMillis())
         println(Thread.currentThread());
-        request.setHeaders([new NVPair("Cookie", "JSESSIONID=3F8DFE39DF3B9669EEC13AC3E2E403DB")] as NVPair[]);
+        request.setHeaders([new NVPair("Cookie", "JSESSIONID=3F8DFE39DF3B9669EEC13AC3E2E403DB"), new NVPair("Cookie", "JSESSIONID=3F8DFE39DF3B9669EEC13AC3E2E403DB")] as NVPair[]);
         HTTPResponse result = request.GET("http://127.0.0.1:9093/argus-emergency/api/plan?current=1&pageSize=5");
         if (result.statusCode == 301 || result.statusCode == 302) {
             grinder.logger.warn("Warning. The response may not be correct. The response code was {}.", result.statusCode);
         } else {
             assertThat(result.statusCode, Matchers.not(200));
         }
+        request.POST("","".bytes)
+        request.TR
     }
 
     @Test

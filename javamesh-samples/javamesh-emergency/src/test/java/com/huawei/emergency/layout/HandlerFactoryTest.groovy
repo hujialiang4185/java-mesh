@@ -22,13 +22,14 @@ class HandlerFactoryTest extends GroovyTestCase{
 
     void "test HandlerFactory"() {
         Map<String,Object> variables = new HashMap<>()
-        variables.put("name","事务1")
+        variables.put("title","事务1")
         variables.put("comment","第一个事务")
-        def handler = HandlerFactory.getHandler("transactional_controller", variables)
+        def handler = HandlerFactory.getHandler("TransactionController", variables)
         assertTrue(handler instanceof TransactionController)
         def transactional = (TransactionController) handler
-        assertEquals("事务1", transactional.name)
+        assertEquals("事务1", transactional.title)
         assertEquals("第一个事务", transactional.comment)
+        println(this.class.getMethod("test HandlerFactory"))
     }
 }
 

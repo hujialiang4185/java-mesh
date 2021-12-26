@@ -69,14 +69,14 @@ class TreeResponseTest extends GroovyTestCase {
 
     @Test
     void "test TreeResponse.parse()"() {
-        def parse = TreeResponse.parse(planTree);
+        def parse = TreeResponse.parse(planTree)
         assertNotNull(parse)
         def handlers = parse.testElements
         assertNotNull(handlers)
         assertEquals("解析handler类型不成功",2,handlers.size())
         assertTrue("实例化handler不成功",handlers.get(0) instanceof TransactionController)
         def transactional = (TransactionController) handlers.get(0)
-        assertEquals("name属性赋值不成功","事务1", transactional.name)
+        assertEquals("name属性赋值不成功","事务1", transactional.title)
         assertEquals("comment","第一个事务", transactional.comment)
     }
 }

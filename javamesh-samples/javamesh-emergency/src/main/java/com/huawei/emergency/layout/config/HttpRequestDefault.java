@@ -16,7 +16,7 @@
 
 package com.huawei.emergency.layout.config;
 
-import com.huawei.emergency.layout.HandlerContext;
+import com.huawei.emergency.layout.ElementProcessContext;
 import lombok.Data;
 
 import java.util.List;
@@ -41,7 +41,7 @@ public class HttpRequestDefault implements Config{
     private String body;
 
     @Override
-    public void handle(HandlerContext context) {
+    public void handle(ElementProcessContext context) {
     }
 
     @Data

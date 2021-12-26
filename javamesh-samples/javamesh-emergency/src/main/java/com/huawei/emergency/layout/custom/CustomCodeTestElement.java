@@ -17,7 +17,7 @@
 package com.huawei.emergency.layout.custom;
 
 import com.huawei.emergency.layout.TestElement;
-import com.huawei.emergency.layout.HandlerContext;
+import com.huawei.emergency.layout.ElementProcessContext;
 import lombok.Data;
 import org.apache.commons.lang.StringUtils;
 
@@ -39,7 +39,7 @@ public class CustomCodeTestElement implements TestElement {
     private static Pattern compile = Pattern.compile("^(\\//start)(.+)(\\//end)");
 
     @Override
-    public void handle(HandlerContext context) {
+    public void handle(ElementProcessContext context) {
         if (StringUtils.isNotEmpty(content)) {
             Matcher matcher = compile.matcher(content);
             while (matcher.find()) {

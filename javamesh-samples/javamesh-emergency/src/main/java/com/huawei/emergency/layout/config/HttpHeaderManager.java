@@ -16,7 +16,7 @@
 
 package com.huawei.emergency.layout.config;
 
-import com.huawei.emergency.layout.HandlerContext;
+import com.huawei.emergency.layout.ElementProcessContext;
 import lombok.Data;
 
 import java.util.HashMap;
@@ -34,6 +34,6 @@ public class HttpHeaderManager implements Config{
     private Map<String,String> headers = new HashMap<>();
 
     @Override
-    public void handle(HandlerContext context) {
+    public void handle(ElementProcessContext context) {
     }
 }

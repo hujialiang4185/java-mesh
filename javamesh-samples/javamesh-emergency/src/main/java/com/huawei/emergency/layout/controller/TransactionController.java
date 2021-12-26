@@ -17,7 +17,7 @@
 package com.huawei.emergency.layout.controller;
 
 import com.huawei.emergency.layout.TestElement;
-import com.huawei.emergency.layout.HandlerContext;
+import com.huawei.emergency.layout.ElementProcessContext;
 import com.huawei.emergency.layout.template.GroovyClassTemplate;
 import com.huawei.emergency.layout.template.GroovyFieldTemplate;
 import com.huawei.emergency.layout.template.GroovyMethodTemplate;
@@ -36,7 +36,7 @@ import java.util.Locale;
 @Data
 public class TransactionController implements Controller {
 
-    private String name;
+    private String title;
     private String comment;
     private int rate = 100;
     private boolean generateParentSample;
@@ -48,40 +48,44 @@ public class TransactionController implements Controller {
     private List<TestElement> testElements = new ArrayList<>();
 
     @Override
-    public void handle(HandlerContext context) {
+    public void handle(ElementProcessContext context) {
         GroovyClassTemplate template = context.getTemplate();
         GroovyMethodTemplate method = getMethod();
         if (template.containsMethod(method.getMethodName())) {
-            throw new RuntimeException(String.format(Locale.ROOT, "存在名称相同的方法 {}", method.getMethodName()));
+            throw new RuntimeException(String.format(Locale.ROOT, "存在名称相同的事务 {}", method.getMethodName()));
         }
         template.addMethod(method);
         template.addFiled(getField());
 
         GroovyMethodTemplate beforeProcessMethod = template.getBeforeProcessMethod();
-        beforeProcessMethod.addContent(String.format(Locale.ROOT, "%s = new GTest(%s, \"%s\")", name, GroovyClassTemplate.TEST_NUMBER_METHOD.invokeStr(), name), 2);
-        beforeProcessMethod.addContent(String.format(Locale.ROOT, "%s.record(this, \"%s\")", name, name), 2);
+        beforeProcessMethod.addContent(String.format(Locale.ROOT, "%s = new GTest(%s, \"%s\")", title, GroovyClassTemplate.TEST_NUMBER_METHOD.invokeStr(), title), 2);
+        beforeProcessMethod.addContent(String.format(Locale.ROOT, "%s.record(this, \"%s\")", title, title), 2);
+        for (TestElement testElement : testElements) {
+            context.setCurrentMethod(method);
+            testElement.handle(context);
+        }
     }
 
     public GroovyMethodTemplate getMethod() {
         if (method == null) {
             method = new GroovyMethodTemplate()
-                .start(String.format(Locale.ROOT, "public void \"%s\"() {", name), 1)
-                .addContent("", 2) // todo 解析事务标签里面的各个元件。
+                .addAnnotation("    @Test")
+                .start(String.format(Locale.ROOT, "public void \"%s\"() {", title), 1)
                 .end("}", 1);
-            method.setMethodName(name);
+            method.setMethodName(title);
         }
         return method;
     }
 
     public GroovyFieldTemplate getField() {
         if (field == null) {
-            field = GroovyFieldTemplate.create(String.format(Locale.ROOT, "    public static GTest %s;", name));
+            field = GroovyFieldTemplate.create(String.format(Locale.ROOT, "    public static GTest %s;", title));
         }
         return field;
     }
 
     public String invokeStr(){
-        return String.format(Locale.ROOT,"\"%s\"()",name);
+        return String.format(Locale.ROOT,"\"%s\"()", title);
     }
 
     @Override

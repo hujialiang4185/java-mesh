@@ -16,7 +16,7 @@
 
 package com.huawei.emergency.layout.config;
 
-import com.huawei.emergency.layout.HandlerContext;
+import com.huawei.emergency.layout.ElementProcessContext;
 import com.huawei.emergency.layout.template.GroovyMethodTemplate;
 import lombok.Data;
 
@@ -37,7 +37,7 @@ public class HttpCookieManager implements Config {
     private List<CookieValue> cookies = new ArrayList<>();
 
     @Override
-    public void handle(HandlerContext context) {
+    public void handle(ElementProcessContext context) {
         GroovyMethodTemplate beforeMethod = context.getTemplate().getBeforeMethod();
         for (CookieValue cookie : cookies) {
             beforeMethod.addContent(

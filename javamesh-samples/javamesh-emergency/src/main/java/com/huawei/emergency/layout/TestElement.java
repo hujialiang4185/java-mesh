@@ -21,5 +21,5 @@ package com.huawei.emergency.layout;
  * @since 2021-12-14
  **/
 public interface TestElement {
-    void handle(HandlerContext context);
+    void handle(ElementProcessContext context);
 }

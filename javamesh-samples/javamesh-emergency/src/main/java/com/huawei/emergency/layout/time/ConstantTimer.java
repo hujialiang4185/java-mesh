@@ -16,7 +16,7 @@
 
 package com.huawei.emergency.layout.time;
 
-import com.huawei.emergency.layout.HandlerContext;
+import com.huawei.emergency.layout.ElementProcessContext;
 import lombok.Data;
 
 import java.util.Locale;
@@ -33,7 +33,7 @@ public class ConstantTimer implements Timer {
     private long delay;
 
     @Override
-    public void handle(HandlerContext context) {
+    public void handle(ElementProcessContext context) {
         if (delay > 0) {
             context.getCurrentMethod().addContent(String.format(Locale.ROOT, "sleep(%s);", delay), 2);
         }

@@ -16,8 +16,14 @@
 
 package com.huawei.emergency.layout.processor;
 
-import com.huawei.emergency.layout.HandlerContext;
+import com.huawei.emergency.layout.ElementProcessContext;
+import com.huawei.emergency.layout.template.GroovyClassTemplate;
+import com.huawei.emergency.layout.template.GroovyFieldTemplate;
+import com.huawei.emergency.layout.template.GroovyMethodTemplate;
 import lombok.Data;
+import org.apache.commons.lang.StringUtils;
+
+import java.util.Locale;
 
 /**
  * 正则表达式提取器
@@ -26,14 +32,29 @@ import lombok.Data;
  * @since 2021-12-21
  **/
 @Data
-public class RegularPostProcessor implements PostProcessor{
+public class RegularPostProcessor implements PostProcessor {
 
-    private String name;
+    private String title;
     private String comment;
-    private String regex;
+    private String fieldToCheck;
+    private String nameOfCreateVariable;
+    private String regularExpression;
+    private int groupIndex;
+    private int matchIndex;
+    private String defaultValue = "";
+
+    private static final String FORMAT = "def %s = new RegularExpressionExtractor().extract(\"%s\"," +
+        "new RegularExtractorConfig(new RegularExtractorConfig.Builder(regularExpression: \"%s\", groupIndex: %s, matchIndex: %s, defaultValue: \"%s\")));";
 
     @Override
-    public void handle(HandlerContext context) {
-
+    public void handle(ElementProcessContext context) {
+        if (StringUtils.isEmpty(nameOfCreateVariable)) {
+            return;
+        }
+        GroovyClassTemplate template = context.getTemplate();
+        template.addImport("import com.huawei.test.postprocessor.config.RegularExtractorConfig;");
+        template.addImport("import com.huawei.test.postprocessor.impl.RegularExpressionExtractor;");
+        GroovyMethodTemplate currentMethod = context.getCurrentMethod();
+        currentMethod.addContent(String.format(Locale.ROOT, FORMAT, nameOfCreateVariable, "new String(httpResult.data)", regularExpression, groupIndex, matchIndex, defaultValue), 2);
     }
 }

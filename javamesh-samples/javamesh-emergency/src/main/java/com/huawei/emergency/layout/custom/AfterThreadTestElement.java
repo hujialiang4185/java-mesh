@@ -17,7 +17,7 @@
 package com.huawei.emergency.layout.custom;
 
 import com.huawei.emergency.layout.TestElement;
-import com.huawei.emergency.layout.HandlerContext;
+import com.huawei.emergency.layout.ElementProcessContext;
 import com.huawei.emergency.layout.ParentTestElement;
 
 import java.util.ArrayList;
@@ -32,7 +32,7 @@ public class AfterThreadTestElement implements ParentTestElement {
     private List<TestElement> testElements = new ArrayList<>();
 
     @Override
-    public void handle(HandlerContext context) {
+    public void handle(ElementProcessContext context) {
         nextElements().forEach(handler -> {
             context.setCurrentMethod(context.getTemplate().getAfterThreadMethod());
             handler.handle(context);

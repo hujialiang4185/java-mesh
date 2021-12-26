@@ -17,7 +17,7 @@
 package com.huawei.emergency.layout.sampler;
 
 import com.huawei.emergency.layout.TestElement;
-import com.huawei.emergency.layout.HandlerContext;
+import com.huawei.emergency.layout.ElementProcessContext;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -33,7 +33,7 @@ public class Jsr223Sampler implements Sampler{
     private List<TestElement> testElements = new ArrayList<>();
 
     @Override
-    public void handle(HandlerContext context) {
+    public void handle(ElementProcessContext context) {
     }
 
     @Override

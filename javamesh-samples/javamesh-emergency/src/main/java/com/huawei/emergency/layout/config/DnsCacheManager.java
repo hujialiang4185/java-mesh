@@ -16,7 +16,7 @@
 
 package com.huawei.emergency.layout.config;
 
-import com.huawei.emergency.layout.HandlerContext;
+import com.huawei.emergency.layout.ElementProcessContext;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -40,7 +40,7 @@ public class DnsCacheManager implements Config{
     private Map<String,String> staticHostTable = new HashMap<>();
 
     @Override
-    public void handle(HandlerContext context) {
+    public void handle(ElementProcessContext context) {
     }
 
     public String resolver(String url){

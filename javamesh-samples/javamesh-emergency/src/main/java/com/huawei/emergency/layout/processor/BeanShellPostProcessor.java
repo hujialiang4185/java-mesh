@@ -16,17 +16,20 @@
 
 package com.huawei.emergency.layout.processor;
 
-import com.huawei.emergency.layout.HandlerContext;
+import com.huawei.emergency.layout.ElementProcessContext;
+import com.huawei.emergency.layout.template.GroovyMethodTemplate;
 import lombok.Data;
 
 /**
+ * BeanShell后置处理器
+ *
  * @author y30010171
  * @since 2021-12-16
  **/
 @Data
 public class BeanShellPostProcessor implements PostProcessor{
 
-    private String name;
+    private String title;
     private String comment;
     private boolean resetInterpreter;
     private String parameters;
@@ -34,6 +37,10 @@ public class BeanShellPostProcessor implements PostProcessor{
     private String script;
 
     @Override
-    public void handle(HandlerContext context) {
+    public void handle(ElementProcessContext context) {
+        GroovyMethodTemplate currentMethod = context.getCurrentMethod();
+        for (String line : this.script.split(System.lineSeparator())) {
+            currentMethod.addContent(line,2);
+        }
     }
 }

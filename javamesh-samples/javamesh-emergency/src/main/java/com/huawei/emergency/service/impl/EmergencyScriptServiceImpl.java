@@ -11,16 +11,18 @@ import com.huawei.common.exception.ApiException;
 import com.huawei.common.filter.UserFilter;
 import com.huawei.common.util.EscapeUtil;
 import com.huawei.common.util.FileUtil;
-import com.huawei.common.util.PageUtil;
 import com.huawei.common.util.PasswordUtil;
 import com.huawei.emergency.entity.EmergencyElement;
 import com.huawei.emergency.entity.EmergencyElementExample;
 import com.huawei.emergency.entity.EmergencyScript;
 import com.huawei.emergency.entity.EmergencyScriptExample;
 import com.huawei.emergency.entity.User;
+import com.huawei.emergency.layout.ElementProcessContext;
 import com.huawei.emergency.layout.HandlerFactory;
+import com.huawei.emergency.layout.TestPlanTestElement;
 import com.huawei.emergency.layout.TreeNode;
 import com.huawei.emergency.layout.TreeResponse;
+import com.huawei.emergency.layout.template.GroovyClassTemplate;
 import com.huawei.emergency.mapper.EmergencyElementMapper;
 import com.huawei.emergency.mapper.EmergencyScriptMapper;
 import com.huawei.emergency.service.EmergencyExecService;
@@ -351,17 +353,19 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
      *
      * @param script 脚本信息
      */
-    private void generateTemplate(EmergencyScript script){
+    private void generateTemplate(EmergencyScript script) {
         EmergencyElement rootElement = new EmergencyElement();
         rootElement.setElementTitle(script.getScriptName());
         rootElement.setElementType("Root");
         rootElement.setElementNo(System.currentTimeMillis() + "-" + rootElement.getElementType());
         rootElement.setScriptId(script.getScriptId());
         rootElement.setCreateUser(script.getScriptUser());
-        Map<String,Object> elementParams = new HashMap<>();
-        elementParams.put("title",rootElement.getElementTitle());
+        rootElement.setSeq(1);
+        Map<String, Object> elementParams = new HashMap<>();
+        elementParams.put("title", rootElement.getElementTitle());
         rootElement.setElementParams(JSONObject.toJSONString(elementParams));
         elementMapper.insertSelective(rootElement);
+        int seq = 1;
         for (String handlerType : HandlerFactory.getDefaultTemplate()) {
             EmergencyElement element = new EmergencyElement();
             element.setElementTitle(handlerType);
@@ -370,28 +374,85 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             element.setScriptId(script.getScriptId());
             element.setParentId(rootElement.getElementId());
             element.setCreateUser(script.getScriptUser());
-            Map<String,Object> params = new HashMap<>();
-            params.put("title",handlerType);
+            Map<String, Object> params = new HashMap<>();
+            params.put("title", handlerType);
             element.setElementParams(JSONObject.toJSONString(params));
+            element.setSeq(seq);
             elementMapper.insertSelective(element);
+            seq++;
         }
     }
 
     @Override
     public CommonResult updateOrchestrate(TreeResponse treeResponse) {
-        if ( treeResponse.getScriptId() == null || mapper.selectByPrimaryKey(treeResponse.getScriptId()) == null){
+        if (treeResponse.getScriptId() == null || mapper.selectByPrimaryKey(treeResponse.getScriptId()) == null) {
             return CommonResult.failed("请选择脚本");
         }
         // 清除之前的编排关系
-        /*EmergencyElementExample currentElementsExample = new EmergencyElementExample();
+        EmergencyElementExample currentElementsExample = new EmergencyElementExample();
         currentElementsExample.createCriteria()
             .andIsValidEqualTo(ValidEnum.VALID.getValue())
             .andScriptIdEqualTo(treeResponse.getScriptId());
         EmergencyElement updateElement = new EmergencyElement();
         updateElement.setIsValid(ValidEnum.IN_VALID.getValue());
-        elementMapper.updateByExampleSelective(updateElement,currentElementsExample);*/
+        elementMapper.updateByExampleSelective(updateElement, currentElementsExample);
+        TreeNode rootNode = treeResponse.getTree();
+        if (rootNode == null) {
+            return CommonResult.success();
+        }
+        updateOrchestrate(treeResponse.getScriptId(), -1, rootNode, treeResponse.getMap(), 1);
 
+        // 生成代码
+        TestPlanTestElement parse = TreeResponse.parse(treeResponse);
+        ElementProcessContext context = new ElementProcessContext();
+        try {
+            context.setTemplate(GroovyClassTemplate.template());
+        } catch (IOException e) {
+            throw new RuntimeException("can't create groovy template.");
+        }
+        parse.handle(context);
+        try {
+            context.getTemplate().print(System.out);
+        } catch (IOException e) {
+            log.error("error");
+        }
         return CommonResult.success();
+    }
+
+    /**
+     * 处理每一个编排节点
+     *
+     * @param scriptId 脚本ID
+     * @param parentId 父节点ID
+     * @param node     当前节点
+     * @param map      参数集合
+     * @param seq 顺序号
+     */
+    private void updateOrchestrate(int scriptId, int parentId, TreeNode node, Map<String, Map> map, int seq) {
+        EmergencyElement element = new EmergencyElement();
+        element.setElementParams(JSONObject.toJSONString(map.get(node.getKey())));
+        element.setSeq(seq);
+        if (node.getElementId() == null) {
+            element.setElementTitle(node.getTitle());
+            element.setElementType(node.getType());
+            element.setElementNo(node.getKey());
+            element.setScriptId(scriptId);
+            if (parentId > 0) {
+                element.setParentId(parentId);
+            }
+            element.setCreateUser(UserFilter.users.get().getNickName());
+            elementMapper.insertSelective(element);
+        } else {
+            element.setElementId(node.getElementId());
+            element.setIsValid(ValidEnum.VALID.getValue());
+            elementMapper.updateByPrimaryKeySelective(element);
+        }
+        if (node.getChildren() == null) {
+            return;
+        }
+        for (int i = 0; i < node.getChildren().size(); i++) {
+            updateOrchestrate(scriptId, element.getElementId(), node.getChildren().get(i), map, i + 1);
+        }
     }
 
     @Override
@@ -407,7 +468,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         }
         EmergencyElement rootElement = emergencyElements.get(0);
         TreeNode root = new TreeNode();
-        root.setId(rootElement.getElementId());
+        root.setElementId(rootElement.getElementId());
         root.setKey(rootElement.getElementNo());
         root.setTitle(rootElement.getElementTitle());
         root.setType(rootElement.getElementType());
@@ -427,12 +488,12 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         }
         EmergencyElementExample elementExample = new EmergencyElementExample();
         elementExample.createCriteria()
-            .andParentIdEqualTo(parent.getId())
+            .andParentIdEqualTo(parent.getElementId())
             .andIsValidEqualTo(ValidEnum.VALID.getValue());
         List<EmergencyElement> emergencyElements = elementMapper.selectByExampleWithBLOBs(elementExample);
         for (EmergencyElement emergencyElement : emergencyElements) {
             TreeNode node = new TreeNode();
-            node.setId(emergencyElement.getElementId());
+            node.setElementId(emergencyElement.getElementId());
             node.setKey(emergencyElement.getElementNo());
             node.setTitle(emergencyElement.getElementTitle());
             node.setType(emergencyElement.getElementType());
