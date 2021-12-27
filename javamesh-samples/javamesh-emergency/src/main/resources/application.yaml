@@ -79,7 +79,7 @@ pagehelper:
   reasonable: true
 agent:
   name: ./agent.jar
-  uploadPath: /usr/local
+  uploadPath: /home/emergency/agent/
 argus:
   script:
     update: http://172.31.100.79:9090/argus/api/script

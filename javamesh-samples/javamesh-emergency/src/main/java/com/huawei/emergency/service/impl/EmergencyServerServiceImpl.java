@@ -220,7 +220,7 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
             if (!execResult.isSuccess()) {
                 return CommonResult.failed("上传agent失败");
             }
-            String remoteAgentFile = uploadPath + File.separator + agentFile.getName();
+            String remoteAgentFile = uploadPath + agentFile.getName();
             execResult = remoteExecutor.exec(session,
                 String.format(Locale.ROOT, "nohup java -jar %s >%s.log 2>&1 &", remoteAgentFile, remoteAgentFile),
                 null, -1);
