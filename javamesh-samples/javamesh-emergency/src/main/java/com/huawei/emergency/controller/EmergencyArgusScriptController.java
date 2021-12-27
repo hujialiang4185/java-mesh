@@ -61,7 +61,7 @@ public class EmergencyArgusScriptController {
      * @param path 压测脚本路径
      * @return
      */
-    @GetMapping("/orchestrate/get")
+    @GetMapping("/orchestrate")
     public CommonResult getArgusOrchestrate(@RequestParam("path") String path) {
         return argusScriptService.getArgusOrchestrate(path);
     }

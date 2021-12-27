@@ -102,6 +102,7 @@ public class EmergencyArgusScriptServiceImpl implements EmergencyArgusScriptServ
             return;
         }
         EmergencyElementExample elementExample = new EmergencyElementExample();
+        elementExample.setOrderByClause("seq");
         elementExample.createCriteria()
             .andParentIdEqualTo(parent.getElementId())
             .andIsValidEqualTo(ValidEnum.VALID.getValue());
