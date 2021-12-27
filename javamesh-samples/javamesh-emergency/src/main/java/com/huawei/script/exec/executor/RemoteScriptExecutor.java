@@ -105,15 +105,17 @@ public class RemoteScriptExecutor implements ScriptExecutor {
         try (FileInputStream inputStream = new FileInputStream(file)
         ) {
             ExecResult createDirResult = createRemoteDir(session, uploadPath);
-            String fileName = uploadPath + System.lineSeparator() + file.getName();
+            String fileName = uploadPath + File.pathSeparator + file.getName();
             if (!createDirResult.isSuccess()) {
                 LOGGER.error("Failed to create dir {}. {}", uploadPath, createDirResult.getMsg());
                 return createDirResult;
             }
+            long startUpload = System.currentTimeMillis();
             channel = (ChannelSftp) session.openChannel("sftp");
             channel.setInputStream(inputStream);
             channel.connect();
             channel.put(inputStream, fileName);
+            LOGGER.debug("upload file {} to {} cost {} ms", file.getPath(), fileName, System.currentTimeMillis() - startUpload);
         } finally {
             if (channel != null && channel.isConnected()) {
                 channel.disconnect();
