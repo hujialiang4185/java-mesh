@@ -15,6 +15,8 @@ public class EmergencyElement {
 
     private Integer scriptId;
 
+    private String argusPath;
+
     private String isValid;
 
     private String createUser;
@@ -71,6 +73,14 @@ public class EmergencyElement {
 
     public void setScriptId(Integer scriptId) {
         this.scriptId = scriptId;
+    }
+
+    public String getArgusPath() {
+        return argusPath;
+    }
+
+    public void setArgusPath(String argusPath) {
+        this.argusPath = argusPath == null ? null : argusPath.trim();
     }
 
     public String getIsValid() {

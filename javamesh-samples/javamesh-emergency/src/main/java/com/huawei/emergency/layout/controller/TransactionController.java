@@ -37,7 +37,7 @@ import java.util.Locale;
 public class TransactionController implements Controller {
 
     private String title;
-    private String comment;
+    private String comments;
     private int rate = 100;
     private boolean generateParentSample;
     private boolean includeDuration;
@@ -56,7 +56,6 @@ public class TransactionController implements Controller {
         }
         template.addMethod(method);
         template.addFiled(getField());
-
         GroovyMethodTemplate beforeProcessMethod = template.getBeforeProcessMethod();
         beforeProcessMethod.addContent(String.format(Locale.ROOT, "%s = new GTest(%s, \"%s\")", title, GroovyClassTemplate.TEST_NUMBER_METHOD.invokeStr(), title), 2);
         beforeProcessMethod.addContent(String.format(Locale.ROOT, "%s.record(this, \"%s\")", title, title), 2);

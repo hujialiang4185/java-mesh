@@ -91,12 +91,18 @@ public class GroovyMethodTemplate {
 
     public void print(OutputStream outputStream) throws IOException {
         for (int i = 0; i < annotations.size(); i++) {
+            if (annotations.get(i) == null) {
+                continue;
+            }
             outputStream.write(annotations.get(i).getBytes(StandardCharsets.UTF_8));
             outputStream.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
         }
         outputStream.write(this.header.getBytes(StandardCharsets.UTF_8));
         outputStream.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
         for (int i = 0; i < content.size(); i++) {
+            if (content.get(i) == null) {
+                continue;
+            }
             outputStream.write(content.get(i).getBytes(StandardCharsets.UTF_8));
             outputStream.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
         }

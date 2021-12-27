@@ -19,6 +19,7 @@ package com.huawei.emergency.layout.custom;
 import com.huawei.emergency.layout.ElementProcessContext;
 import com.huawei.emergency.layout.TestElement;
 import lombok.Data;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * jar导入组件
@@ -30,10 +31,13 @@ import lombok.Data;
 public class JarImportTestElement implements TestElement {
 
     private String title;
+    private String comments;
     private String content;
 
     @Override
     public void handle(ElementProcessContext context) {
-        context.getTemplate().addImport(this.content);
+        if (StringUtils.isNotEmpty(content)) {
+            context.getTemplate().addImport(this.content);
+        }
     }
 }

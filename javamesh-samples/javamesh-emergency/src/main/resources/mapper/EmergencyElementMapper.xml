@@ -8,6 +8,7 @@
     <result column="element_type" jdbcType="VARCHAR" property="elementType" />
     <result column="parent_id" jdbcType="INTEGER" property="parentId" />
     <result column="script_id" jdbcType="INTEGER" property="scriptId" />
+    <result column="argus_path" jdbcType="VARCHAR" property="argusPath" />
     <result column="is_valid" jdbcType="VARCHAR" property="isValid" />
     <result column="create_user" jdbcType="VARCHAR" property="createUser" />
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
@@ -75,8 +76,8 @@
     </where>
   </sql>
   <sql id="Base_Column_List">
-    element_id, element_no, element_title, element_type, parent_id, script_id, is_valid, 
-    create_user, create_time, seq
+    element_id, element_no, element_title, element_type, parent_id, script_id, argus_path, 
+    is_valid, create_user, create_time, seq
   </sql>
   <sql id="Blob_Column_List">
     element_params
@@ -136,13 +137,13 @@
       SELECT LAST_INSERT_ID()
     </selectKey>
     insert into emergency_element (element_no, element_title, element_type, 
-      parent_id, script_id, is_valid, 
-      create_user, create_time, seq, 
-      element_params)
+      parent_id, script_id, argus_path, 
+      is_valid, create_user, create_time, 
+      seq, element_params)
     values (#{elementNo,jdbcType=VARCHAR}, #{elementTitle,jdbcType=VARCHAR}, #{elementType,jdbcType=VARCHAR}, 
-      #{parentId,jdbcType=INTEGER}, #{scriptId,jdbcType=INTEGER}, #{isValid,jdbcType=VARCHAR}, 
-      #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{seq,jdbcType=INTEGER}, 
-      #{elementParams,jdbcType=LONGVARCHAR})
+      #{parentId,jdbcType=INTEGER}, #{scriptId,jdbcType=INTEGER}, #{argusPath,jdbcType=VARCHAR}, 
+      #{isValid,jdbcType=VARCHAR}, #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{seq,jdbcType=INTEGER}, #{elementParams,jdbcType=LONGVARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.huawei.emergency.entity.EmergencyElement">
     <selectKey keyProperty="elementId" order="AFTER" resultType="java.lang.Integer">
@@ -164,6 +165,9 @@
       </if>
       <if test="scriptId != null">
         script_id,
+      </if>
+      <if test="argusPath != null">
+        argus_path,
       </if>
       <if test="isValid != null">
         is_valid,
@@ -196,6 +200,9 @@
       </if>
       <if test="scriptId != null">
         #{scriptId,jdbcType=INTEGER},
+      </if>
+      <if test="argusPath != null">
+        #{argusPath,jdbcType=VARCHAR},
       </if>
       <if test="isValid != null">
         #{isValid,jdbcType=VARCHAR},
@@ -241,6 +248,9 @@
       <if test="record.scriptId != null">
         script_id = #{record.scriptId,jdbcType=INTEGER},
       </if>
+      <if test="record.argusPath != null">
+        argus_path = #{record.argusPath,jdbcType=VARCHAR},
+      </if>
       <if test="record.isValid != null">
         is_valid = #{record.isValid,jdbcType=VARCHAR},
       </if>
@@ -269,6 +279,7 @@
       element_type = #{record.elementType,jdbcType=VARCHAR},
       parent_id = #{record.parentId,jdbcType=INTEGER},
       script_id = #{record.scriptId,jdbcType=INTEGER},
+      argus_path = #{record.argusPath,jdbcType=VARCHAR},
       is_valid = #{record.isValid,jdbcType=VARCHAR},
       create_user = #{record.createUser,jdbcType=VARCHAR},
       create_time = #{record.createTime,jdbcType=TIMESTAMP},
@@ -286,6 +297,7 @@
       element_type = #{record.elementType,jdbcType=VARCHAR},
       parent_id = #{record.parentId,jdbcType=INTEGER},
       script_id = #{record.scriptId,jdbcType=INTEGER},
+      argus_path = #{record.argusPath,jdbcType=VARCHAR},
       is_valid = #{record.isValid,jdbcType=VARCHAR},
       create_user = #{record.createUser,jdbcType=VARCHAR},
       create_time = #{record.createTime,jdbcType=TIMESTAMP},
@@ -312,6 +324,9 @@
       <if test="scriptId != null">
         script_id = #{scriptId,jdbcType=INTEGER},
       </if>
+      <if test="argusPath != null">
+        argus_path = #{argusPath,jdbcType=VARCHAR},
+      </if>
       <if test="isValid != null">
         is_valid = #{isValid,jdbcType=VARCHAR},
       </if>
@@ -337,6 +352,7 @@
       element_type = #{elementType,jdbcType=VARCHAR},
       parent_id = #{parentId,jdbcType=INTEGER},
       script_id = #{scriptId,jdbcType=INTEGER},
+      argus_path = #{argusPath,jdbcType=VARCHAR},
       is_valid = #{isValid,jdbcType=VARCHAR},
       create_user = #{createUser,jdbcType=VARCHAR},
       create_time = #{createTime,jdbcType=TIMESTAMP},
@@ -351,6 +367,7 @@
       element_type = #{elementType,jdbcType=VARCHAR},
       parent_id = #{parentId,jdbcType=INTEGER},
       script_id = #{scriptId,jdbcType=INTEGER},
+      argus_path = #{argusPath,jdbcType=VARCHAR},
       is_valid = #{isValid,jdbcType=VARCHAR},
       create_user = #{createUser,jdbcType=VARCHAR},
       create_time = #{createTime,jdbcType=TIMESTAMP},

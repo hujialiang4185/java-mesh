@@ -431,7 +431,12 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             script.setScriptId(treeResponse.getScriptId());
             script.setContent(scriptContent);
             mapper.updateByPrimaryKeySelective(script);
-            updateArgusScript(request,treeResponse.getPath(),scriptContent); // 更新压测脚本
+
+            ArgusScript argusScript = new ArgusScript();
+            argusScript.setPath(treeResponse.getPath());
+            argusScript.setScript(scriptContent);
+            //updateArgusScript(request,treeResponse.getPath(),scriptContent); // 更新压测脚本
+            return CommonResult.success(argusScript);
         } catch (IOException e) {
             log.error("Failed to print script.{}",e);
             return CommonResult.failed("输出编排脚本失败");
@@ -439,7 +444,6 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             log.error("Failed to update argus script.{}",e);
             return CommonResult.failed("更新压测脚本失败");
         }
-        return CommonResult.success();
     }
 
     public void updateArgusScript(HttpServletRequest request, String path, String script) {

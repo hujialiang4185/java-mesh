@@ -208,17 +208,26 @@ public class GroovyClassTemplate {
 
     public void print(OutputStream outputStream) throws IOException {
         for (int i = 0; i < preDeclareClassContent.size(); i++) {
+            if (preDeclareClassContent.get(i) == null) {
+                continue;
+            }
             outputStream.write(preDeclareClassContent.get(i).getBytes(StandardCharsets.UTF_8));
             outputStream.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
         }
         outputStream.write(TEST_NUMBER_FIELD.getContent().getBytes(StandardCharsets.UTF_8));
         outputStream.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
         for (int i = 0; i < allFields.size(); i++) {
+            if (allFields.get(i) == null) {
+                continue;
+            }
             outputStream.write(allFields.get(i).getContent().getBytes(StandardCharsets.UTF_8));
             outputStream.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
         }
         outputStream.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
         for (int i = 0; i < allMethods.size(); i++) {
+            if (allMethods.get(i) == null) {
+                continue;
+            }
             allMethods.get(i).print(outputStream);
             outputStream.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
         }

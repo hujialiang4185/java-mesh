@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 import HTTPClient.Cookie
 import net.grinder.scriptengine.groovy.junit.annotation.AfterProcess;
 import net.grinder.scriptengine.groovy.junit.annotation.AfterThread;

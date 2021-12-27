@@ -33,7 +33,7 @@ import java.util.Locale;
 public class WhileController implements Controller {
 
     private String title;
-    private String comment;
+    private String comments;
     private String condition;
     private List<TestElement> testElements = new ArrayList<>();
 

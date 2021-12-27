@@ -495,6 +495,76 @@ public class EmergencyElementExample {
             return (Criteria) this;
         }
 
+        public Criteria andArgusPathIsNull() {
+            addCriterion("argus_path is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andArgusPathIsNotNull() {
+            addCriterion("argus_path is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andArgusPathEqualTo(String value) {
+            addCriterion("argus_path =", value, "argusPath");
+            return (Criteria) this;
+        }
+
+        public Criteria andArgusPathNotEqualTo(String value) {
+            addCriterion("argus_path <>", value, "argusPath");
+            return (Criteria) this;
+        }
+
+        public Criteria andArgusPathGreaterThan(String value) {
+            addCriterion("argus_path >", value, "argusPath");
+            return (Criteria) this;
+        }
+
+        public Criteria andArgusPathGreaterThanOrEqualTo(String value) {
+            addCriterion("argus_path >=", value, "argusPath");
+            return (Criteria) this;
+        }
+
+        public Criteria andArgusPathLessThan(String value) {
+            addCriterion("argus_path <", value, "argusPath");
+            return (Criteria) this;
+        }
+
+        public Criteria andArgusPathLessThanOrEqualTo(String value) {
+            addCriterion("argus_path <=", value, "argusPath");
+            return (Criteria) this;
+        }
+
+        public Criteria andArgusPathLike(String value) {
+            addCriterion("argus_path like", value, "argusPath");
+            return (Criteria) this;
+        }
+
+        public Criteria andArgusPathNotLike(String value) {
+            addCriterion("argus_path not like", value, "argusPath");
+            return (Criteria) this;
+        }
+
+        public Criteria andArgusPathIn(List<String> values) {
+            addCriterion("argus_path in", values, "argusPath");
+            return (Criteria) this;
+        }
+
+        public Criteria andArgusPathNotIn(List<String> values) {
+            addCriterion("argus_path not in", values, "argusPath");
+            return (Criteria) this;
+        }
+
+        public Criteria andArgusPathBetween(String value1, String value2) {
+            addCriterion("argus_path between", value1, value2, "argusPath");
+            return (Criteria) this;
+        }
+
+        public Criteria andArgusPathNotBetween(String value1, String value2) {
+            addCriterion("argus_path not between", value1, value2, "argusPath");
+            return (Criteria) this;
+        }
+
         public Criteria andIsValidIsNull() {
             addCriterion("is_valid is null");
             return (Criteria) this;

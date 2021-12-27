@@ -33,7 +33,7 @@ import java.util.Locale;
 public class LoopController implements Controller{
 
     private String title;
-    private String comment;
+    private String comments;
     private boolean isForever;
     private int loopCount;
     private List<TestElement> testElements = new ArrayList<>();
@@ -42,7 +42,7 @@ public class LoopController implements Controller{
     public void handle(ElementProcessContext context) {
         GroovyMethodTemplate currentMethod = context.getCurrentMethod();
         if (loopCount <= 0){
-            throw new IllegalArgumentException("循环控制器的次数不能小于等于0");
+            return;
         }
         currentMethod.addContent(String.format(Locale.ROOT,"for (i in 0..< %s) {",loopCount),2);
         testElements.forEach(handler -> {
