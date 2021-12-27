@@ -80,3 +80,6 @@ pagehelper:
 agent:
   name: ./agent.jar
   uploadPath: /usr/local
+argus:
+  script:
+    update: http://172.31.100.79:9090/argus/api/script

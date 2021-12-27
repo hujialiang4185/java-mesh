@@ -52,7 +52,7 @@ public interface EmergencyScriptService {
      * @param treeResponse
      * @return
      */
-    CommonResult updateOrchestrate(TreeResponse treeResponse);
+    CommonResult updateOrchestrate(HttpServletRequest request,TreeResponse treeResponse);
 
     /**
      * 查询编排脚本

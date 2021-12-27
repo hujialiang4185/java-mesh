@@ -12,6 +12,7 @@ import com.huawei.common.filter.UserFilter;
 import com.huawei.common.util.EscapeUtil;
 import com.huawei.common.util.FileUtil;
 import com.huawei.common.util.PasswordUtil;
+import com.huawei.emergency.dto.ArgusScript;
 import com.huawei.emergency.entity.EmergencyElement;
 import com.huawei.emergency.entity.EmergencyElementExample;
 import com.huawei.emergency.entity.EmergencyScript;
@@ -31,8 +32,15 @@ import com.huawei.script.exec.log.LogResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpRequest;
+import org.springframework.http.client.ClientHttpRequestExecution;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,6 +49,7 @@ import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,6 +92,9 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
 
     @Autowired
     private EmergencyExecService execService;
+
+    @Value("${argus.script.update}")
+    private String updateScriptUrl;
 
     @Override
     public CommonResult<List<EmergencyScript>> listScript(HttpServletRequest request, String scriptName, String scriptUser, int pageSize, int current, String sorter, String order, String status) {
@@ -384,7 +396,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     }
 
     @Override
-    public CommonResult updateOrchestrate(TreeResponse treeResponse) {
+    public CommonResult updateOrchestrate(HttpServletRequest request, TreeResponse treeResponse) {
         if (treeResponse.getScriptId() == null || mapper.selectByPrimaryKey(treeResponse.getScriptId()) == null) {
             return CommonResult.failed("请选择脚本");
         }
@@ -411,12 +423,39 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             throw new RuntimeException("can't create groovy template.");
         }
         parse.handle(context);
-        try {
-            context.getTemplate().print(System.out);
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            context.getTemplate().print(outputStream);
+            String scriptContent = outputStream.toString();
+            // 更新本地脚本内容
+            EmergencyScript script = new EmergencyScript();
+            script.setScriptId(treeResponse.getScriptId());
+            script.setContent(scriptContent);
+            mapper.updateByPrimaryKeySelective(script);
+            updateArgusScript(request,treeResponse.getPath(),scriptContent); // 更新压测脚本
         } catch (IOException e) {
-            log.error("error");
+            log.error("Failed to print script.{}",e);
+            return CommonResult.failed("输出编排脚本失败");
+        } catch (RestClientException e) {
+            log.error("Failed to update argus script.{}",e);
+            return CommonResult.failed("更新压测脚本失败");
         }
         return CommonResult.success();
+    }
+
+    public void updateArgusScript(HttpServletRequest request, String path, String script) {
+        if (StringUtils.isEmpty(path)) {
+            return;
+        }
+        RestTemplate template = new RestTemplate();
+        template.setInterceptors(Arrays.asList((httpRequest, bytes, clientHttpRequestExecution) -> {
+            httpRequest.getHeaders().add("Cookie", request.getHeader("Cookie"));
+            return clientHttpRequestExecution.execute(httpRequest, bytes);
+        }));
+        ArgusScript argusScript = new ArgusScript();
+        argusScript.setPath(path);
+        argusScript.setScript(script);
+        argusScript.setCommit(System.currentTimeMillis() + " 脚本编排提交");
+        template.put(updateScriptUrl,argusScript);
     }
 
     /**
@@ -426,7 +465,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
      * @param parentId 父节点ID
      * @param node     当前节点
      * @param map      参数集合
-     * @param seq 顺序号
+     * @param seq      顺序号
      */
     private void updateOrchestrate(int scriptId, int parentId, TreeNode node, Map<String, Map> map, int seq) {
         EmergencyElement element = new EmergencyElement();

@@ -31,6 +31,7 @@ import java.util.Map;
 public class TreeResponse {
     private TreeNode tree;
     private Integer scriptId;
+    private String path;
     private Map<String, Map> map; // key == tree.key
 
     public static TestPlanTestElement parse(TreeResponse treeResponse) {

@@ -215,12 +215,13 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
         Session session = null;
         try {
             session = sessionFactory.getSession(serverInfo);
-            ExecResult execResult = remoteExecutor.uploadFile(session, uploadPath, new File(agentName));
+            File agentFile = new File(agentName);
+            ExecResult execResult = remoteExecutor.uploadFile(session, uploadPath, agentFile);
             if (!execResult.isSuccess()){
                 return CommonResult.failed("上传agent失败");
             }
             execResult = remoteExecutor.exec(session,
-                String.format(Locale.ROOT, "nohup java -jar %s%s%s >%s.log &", uploadPath, System.lineSeparator(), agentName, agentName),
+                String.format(Locale.ROOT, "nohup java -jar %s%s%s >%s.log &", uploadPath, System.lineSeparator(), agentFile.getName(), agentFile.getName()),
                 null, -1);
             if (!execResult.isSuccess()) {
                 return CommonResult.failed("启动agent失败");

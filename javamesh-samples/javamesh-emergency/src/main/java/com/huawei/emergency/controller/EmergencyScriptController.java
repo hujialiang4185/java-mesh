@@ -215,8 +215,8 @@ public class EmergencyScriptController {
     }
 
     @PutMapping("/orchestrate")
-    public CommonResult updateOrchestrate(@RequestBody TreeResponse treeResponse) {
-        return service.updateOrchestrate(treeResponse);
+    public CommonResult updateOrchestrate(HttpServletRequest request, @RequestBody TreeResponse treeResponse) {
+        return service.updateOrchestrate(request,treeResponse);
     }
 
     @GetMapping("/orchestrate/get")
