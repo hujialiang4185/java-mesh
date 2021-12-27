@@ -15,25 +15,16 @@
  */
 
 package com.huawei.emergency.layout.template;
-/*
-import com.github.javaparser.StaticJavaParser;
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.Modifier;
-import com.github.javaparser.ast.stmt.BlockStmt;
-import com.github.javaparser.ast.type.VoidType;
-
-import org.codehaus.groovy.antlr.GroovySourceAST;
-import org.codehaus.groovy.antlr.treewalker.Visitor;
-import static net.grinder.script.Grinder.grinder;
-import org.codehaus.groovy.tools.groovydoc.SimpleGroovyClassDocAssembler;*/
 
 import lombok.Data;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -48,9 +39,7 @@ import java.util.List;
 @Data
 public class GroovyClassTemplate {
     public static final String FORMAT = "    ";
-    public static final String GROOVY_TEMPLATE = "GroovyTemplate.groovy";
-    public static final String FILENAME = "D:\\IdeaProject\\hercules-server\\src\\test\\java\\huawei\\emergency\\service\\impl\\main.groovy";
-    public static final String COPY_FILENAME = "D:\\IdeaProject\\hercules-server\\src\\test\\java\\huawei\\emergency\\service\\impl\\CopyMain.groovy";
+    public static final String GROOVY_TEMPLATE = "GroovyTemplate";
 
     private List<GroovyMethodTemplate> allMethods = new ArrayList<>();
     private List<GroovyFieldTemplate> allFields = new ArrayList<>();
@@ -85,13 +74,13 @@ public class GroovyClassTemplate {
     private List<String> preDeclareClassContent = new ArrayList<>();
 
     public static GroovyClassTemplate template() throws IOException {
-        return GroovyClassTemplate.create("D:\\IdeaProject\\githubProject\\emergency\\java-mesh\\javamesh-samples\\javamesh-emergency\\src\\main\\resources\\GroovyTemplate.groovy");
+        return create(GroovyClassTemplate.class.getClassLoader().getResourceAsStream(GROOVY_TEMPLATE));
     }
 
-    public static GroovyClassTemplate create(String fileName) throws IOException {
+    public static GroovyClassTemplate create(InputStream stream) throws IOException {
         BufferedReader bufferedReader = null;
         try {
-            bufferedReader = new BufferedReader(new FileReader(fileName));
+            bufferedReader = new BufferedReader(new InputStreamReader(stream));
             String line;
             int index = 0;
             boolean isPreClassDeclare = true;
@@ -152,6 +141,10 @@ public class GroovyClassTemplate {
                 bufferedReader.close();
             }
         }
+    }
+
+    public static GroovyClassTemplate create(String fileName) throws IOException {
+        return create(new FileInputStream(fileName));
     }
 
     public void setClassName(String classDeclareStr) {
@@ -274,51 +267,6 @@ public class GroovyClassTemplate {
             || methodStr.trim().startsWith("public void")
             || methodStr.trim().startsWith("static void")
             || methodStr.trim().startsWith("void");
-    }
-
-    public static void main(String[] args) throws IOException {
-        GroovyClassTemplate template = GroovyClassTemplate.create(FILENAME);
-        template.setClassName("class CopyMain {");
-        GroovyMethodTemplate newMethod = GroovyMethodTemplate.create("    public void say() {")
-            .addAnnotation("    @Test")
-            .addContent("        println(\"Hello, World!\");")
-            .addContent("        println(grinder.threadNumber);")
-            .end("    }");
-        template.addMethod(newMethod);
-        template.print(COPY_FILENAME);
-        /*CompilationUnit unit = new CompilationUnit();
-        unit.setPackageDeclaration("com.huawei.common.util");
-        ClassOrInterfaceDeclaration main = unit.addClass("Main").setPublic(true);
-        MethodDeclaration mainMethod = main.addMethod("main", Modifier.Keyword.PUBLIC, Modifier.Keyword.STATIC);
-        mainMethod.setType(new VoidType());
-        mainMethod.addParameter(String[].class,"args");
-        BlockStmt body = new BlockStmt();
-        body.addStatement("System.out.println(\"Hello, World!\");");
-        mainMethod.setBody(body);
-        JavadocComment javadocComment = new JavadocComment("test");
-        mainMethod.setJavadocComment(javadocComment);
-        FileOutputStream fileOutputStream = new FileOutputStream("D:\\IdeaProject\\hercules-server\\src\\main\\java\\com\\huawei\\common\\util\\Main.groovy");
-        fileOutputStream.write(unit.toString().getBytes(StandardCharsets.UTF_8));
-        fileOutputStream.flush();
-        fileOutputStream.close();*/
-
-        /*CompilationUnit parse = StaticJavaParser.parse(new File("D:\\IdeaProject\\hercules-server\\src\\test\\java\\huawei\\emergency\\service\\impl\\CopyMain.groovy"));
-        parse.getClassByName("CopyMain").get()
-            .addMethod("test1", Modifier.Keyword.PUBLIC)
-            .setType(new VoidType())
-            .addAnnotation("Test")
-            .setBody(new BlockStmt().addStatement("System.out.println(\"Hello, World!\");"));
-        System.out.println(parse);
-
-        SimpleGroovyClassDocAssembler assembler = new SimpleGroovyClassDocAssembler("",
-            "D:\\IdeaProject\\hercules-server\\src\\test\\java\\huawei\\emergency\\service\\impl\\CopyMain.groovy"
-            , null, null, null, true);
-        GroovySourceAST groovySourceAST = new GroovySourceAST();
-        assembler.visitImport(groovySourceAST, Visitor.OPENING_VISIT);
-        System.out.println(groovySourceAST);*/
-        GroovyClassTemplate groovyClassTemplate = GroovyClassTemplate
-            .create(Thread.currentThread().getContextClassLoader().getResource("").getPath() + GROOVY_TEMPLATE);
-        groovyClassTemplate.print(System.out);
     }
 
     public boolean containsMethod(String methodName) {

@@ -24,14 +24,13 @@ class TransactionalControllerTest extends GroovyTestCase {
 
     @Test
     void "test controller"() {
-        GroovyClassTemplate template = GroovyClassTemplate
-                .create("D:\\IdeaProject\\hercules-server\\src\\main\\resources\\GroovyTemplate.groovy");
+        GroovyClassTemplate template = GroovyClassTemplate.template();
         ElementProcessContext context = new ElementProcessContext();
         context.setTemplate(template);
         TransactionController controller = new TransactionController();
         controller.setTitle("事务1号");
         controller.handle(context);
         context.getTemplate().print(System.out);
-        assertNull(template)
+        assertNotNull(template)
     }
 }

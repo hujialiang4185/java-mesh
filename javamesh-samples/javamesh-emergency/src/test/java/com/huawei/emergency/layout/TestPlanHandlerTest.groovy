@@ -45,13 +45,13 @@ class TestPlanHandlerTest extends GroovyTestCase {
         context.getTemplate().print(System.out)
     }
 
-/*    void "test planHandler which was provided by Web"() {
+    void "test planHandler which was provided by Web"() {
         TreeResponseTest test = new TreeResponseTest();
         test.before();
         def context = new ElementProcessContext(template: GroovyClassTemplate.template())
         TreeResponse.parse(test.planTree).handle(context)
         context.template.print(System.out)
-    }*/
+    }
 
     void "test"() {
         def extract = new RegularExpressionExtractor().extract("Zzoo",new RegularExtractorConfig(new RegularExtractorConfig.Builder(regularExpression: "zoo", groupIndex: 0, matchIndex: 0, defaultValue: "Hello")))
