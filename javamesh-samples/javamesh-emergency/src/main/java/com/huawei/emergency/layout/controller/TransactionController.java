@@ -22,6 +22,7 @@ import com.huawei.emergency.layout.template.GroovyClassTemplate;
 import com.huawei.emergency.layout.template.GroovyFieldTemplate;
 import com.huawei.emergency.layout.template.GroovyMethodTemplate;
 import lombok.Data;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +50,9 @@ public class TransactionController implements Controller {
 
     @Override
     public void handle(ElementProcessContext context) {
+        if (StringUtils.isEmpty(title)) {
+            throw new RuntimeException("请输入事务名称");
+        }
         GroovyClassTemplate template = context.getTemplate();
         GroovyMethodTemplate method = getMethod();
         if (template.containsMethod(method.getMethodName())) {

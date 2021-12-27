@@ -40,6 +40,9 @@ public class CustomMethodTestElement implements TestElement {
 
     @Override
     public void handle(ElementProcessContext context) {
+        if (StringUtils.isEmpty(title)) {
+            throw new RuntimeException("请输入方法名称");
+        }
         if (StringUtils.isNotEmpty(content)) {
             if (context.getTemplate().containsMethod(method.getMethodName())) {
                 throw new RuntimeException(String.format(Locale.ROOT, "存在名称相同的方法 {}", method.getMethodName()));
