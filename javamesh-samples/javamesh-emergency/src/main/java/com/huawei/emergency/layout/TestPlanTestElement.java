@@ -77,13 +77,13 @@ public class TestPlanTestElement implements ParentTestElement {
         int rateTotal = allTransactional.stream()
             .mapToInt(TransactionController::getRate)
             .sum();
-        if (rateTotal == 100) {
-            generateScheduleCode(testMethod, allTransactional);
-        } else if (rateTotal == 100 * allTransactional.size()) {
+        if (rateTotal == 100 * allTransactional.size()) {
             // todo 顺序执行
             /*for (TransactionController controller : allTransactional) {
                 testMethod.addContent(String.format(Locale.ROOT, " this.%s;", controller.invokeStr()), 2);
             }*/
+        } else if (rateTotal == 100) {
+            generateScheduleCode(testMethod, allTransactional);
         } else {
             throw new RuntimeException("事务控制器压力分配不能超过100");
         }
