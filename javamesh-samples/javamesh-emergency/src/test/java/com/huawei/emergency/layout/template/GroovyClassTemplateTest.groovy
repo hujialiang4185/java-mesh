@@ -42,8 +42,7 @@ class GroovyClassTemplateTest extends GroovyTestCase {
                 .end("    }");
         template.addMethod(newMethod);
         template.print(COPY_FILENAME);
-        GroovyClassTemplate groovyClassTemplate = GroovyClassTemplate
-                .create(Thread.currentThread().getContextClassLoader().getResource("").getPath() + GROOVY_TEMPLATE);
+        GroovyClassTemplate groovyClassTemplate = GroovyClassTemplate.template();
         groovyClassTemplate.print(System.out);
     }
 
