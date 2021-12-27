@@ -25,7 +25,7 @@ class TransactionalControllerTest extends GroovyTestCase {
     @Test
     void "test controller"() {
         GroovyClassTemplate template = GroovyClassTemplate
-                .create("D:\\IdeaProject\\hercules-server\\src\\main\\resources\\GroovyTemplate");
+                .create("D:\\IdeaProject\\hercules-server\\src\\main\\resources\\GroovyTemplate.groovy");
         ElementProcessContext context = new ElementProcessContext();
         context.setTemplate(template);
         TransactionController controller = new TransactionController();

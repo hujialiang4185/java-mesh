@@ -85,7 +85,7 @@ public class GroovyClassTemplate {
     private List<String> preDeclareClassContent = new ArrayList<>();
 
     public static GroovyClassTemplate template() throws IOException {
-        return GroovyClassTemplate.create("D:\\IdeaProject\\githubProject\\emergency\\java-mesh\\javamesh-samples\\javamesh-emergency\\src\\main\\resources\\GroovyTemplate");
+        return GroovyClassTemplate.create("D:\\IdeaProject\\githubProject\\emergency\\java-mesh\\javamesh-samples\\javamesh-emergency\\src\\main\\resources\\GroovyTemplate.groovy");
     }
 
     public static GroovyClassTemplate create(String fileName) throws IOException {
