@@ -105,7 +105,7 @@ public class RemoteScriptExecutor implements ScriptExecutor {
         try (FileInputStream inputStream = new FileInputStream(file)
         ) {
             ExecResult createDirResult = createRemoteDir(session, uploadPath);
-            String fileName = uploadPath + File.pathSeparator + file.getName();
+            String fileName = uploadPath + File.separator + file.getName();
             if (!createDirResult.isSuccess()) {
                 LOGGER.error("Failed to create dir {}. {}", uploadPath, createDirResult.getMsg());
                 return createDirResult;
