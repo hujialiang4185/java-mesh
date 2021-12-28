@@ -26,9 +26,9 @@ class HttpSamplerTest extends GroovyTestCase {
 
     void "test when get"() {
         def planHandler = new TestPlanTestElement(testElements: [
-                new TransactionController(title: "事务控制器1", rate: 20),
-                new TransactionController(title: "事务控制器2", rate: 30),
-                new TransactionController(title: "事务控制器3", rate: 50, testElements:
+                new TransactionController(title: "事务控制器1", presure: 20),
+                new TransactionController(title: "事务控制器2", presure: 30),
+                new TransactionController(title: "事务控制器3", presure: 50, testElements:
                         [new HttpSampler(title: "测试",serviceName: "127.0.0.1",port: 9093,method: "Get",path: "/argus-emergency/api/plan")]
                 )
         ]);

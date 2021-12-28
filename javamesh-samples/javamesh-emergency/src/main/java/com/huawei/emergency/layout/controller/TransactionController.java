@@ -39,7 +39,7 @@ public class TransactionController implements Controller {
 
     private String title;
     private String comments;
-    private int rate = 100;
+    private int presure = 100;
     private boolean generateParentSample;
     private boolean includeDuration;
 

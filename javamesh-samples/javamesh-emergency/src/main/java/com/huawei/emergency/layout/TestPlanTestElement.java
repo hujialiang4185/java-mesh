@@ -67,15 +67,8 @@ public class TestPlanTestElement implements ParentTestElement {
             .map(handler -> (TransactionController) handler)
             .collect(Collectors.toList());
         GroovyClassTemplate template = context.getTemplate();
-        GroovyMethodTemplate testMethod = template.getTestMethod();
-        if (testMethod == null) {
-            testMethod = new GroovyMethodTemplate().start("public void test() {", 1)
-                .end("}", 1)
-                .addAnnotation("    @Test");
-            template.addMethod(testMethod);
-        }
         int rateTotal = allTransactional.stream()
-            .mapToInt(TransactionController::getRate)
+            .mapToInt(TransactionController::getPresure)
             .sum();
         if (rateTotal == 100 * allTransactional.size()) {
             // todo 顺序执行
@@ -83,7 +76,7 @@ public class TestPlanTestElement implements ParentTestElement {
                 testMethod.addContent(String.format(Locale.ROOT, " this.%s;", controller.invokeStr()), 2);
             }*/
         } else if (rateTotal == 100) {
-            generateScheduleCode(testMethod, allTransactional);
+            generateScheduleCode(allTransactional);
         } else {
             throw new RuntimeException("事务控制器压力分配不能超过100");
         }
@@ -98,7 +91,7 @@ public class TestPlanTestElement implements ParentTestElement {
         return testElements;
     }
 
-    private void generateScheduleCode(@NotNull GroovyMethodTemplate testMethod, @NotNull List<TransactionController> allTransactional) {
+    private void generateScheduleCode(@NotNull List<TransactionController> allTransactional) {
         /*testMethod.addContent("int vusers = getVusers();", 2);
         testMethod.addContent("int runThreadNum = getRunThreadNum();", 2);
         testMethod.addContent("int preRate = 0;", 2);
@@ -122,10 +115,10 @@ public class TestPlanTestElement implements ParentTestElement {
             GroovyMethodTemplate method = controller.getMethod();
             method.addContent("int vusers = getVusers();", 2);
             method.addContent("int runThreadNum = getRunThreadNum();", 2);
-            method.addContent(String.format(Locale.ROOT, "int preRunNum = vusers / 100 * %s;int runNum = vusers / 100 * (%s + %s);", preRate, preRate, controller.getRate()), 2);
+            method.addContent(String.format(Locale.ROOT, "int preRunNum = vusers / 100 * %s;int runNum = vusers / 100 * (%s + %s);", preRate, preRate, controller.getPresure()), 2);
             method.addContent("if (runThreadNum <= preRunNum || runThreadNum > runNum) ", 2);
             method.addContent("return;", 3);
-            preRate += controller.getRate();
+            preRate += controller.getPresure();
         }
     }
 }

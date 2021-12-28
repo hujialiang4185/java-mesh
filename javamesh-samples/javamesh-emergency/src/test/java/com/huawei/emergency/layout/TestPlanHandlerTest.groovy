@@ -21,15 +21,14 @@ import com.huawei.emergency.layout.controller.TransactionController
 import com.huawei.emergency.layout.template.GroovyClassTemplate
 import com.huawei.test.postprocessor.config.RegularExtractorConfig
 import com.huawei.test.postprocessor.impl.RegularExpressionExtractor
-import org.junit.Test
 
 class TestPlanHandlerTest extends GroovyTestCase {
 
     void "test when 100 total"() {
         def planHandler = new TestPlanTestElement(testElements: [
-                new TransactionController(title: "事务控制器1", rate: 20),
-                new TransactionController(title: "事务控制器2", rate: 30),
-                new TransactionController(title: "事务控制器3", rate: 50)]);
+                new TransactionController(title: "事务控制器1", presure: 20),
+                new TransactionController(title: "事务控制器2", presure: 30),
+                new TransactionController(title: "事务控制器3", presure: 50)]);
         def context = new ElementProcessContext(template: GroovyClassTemplate.template())
         planHandler.handle(context)
         context.getTemplate().print(System.out)
