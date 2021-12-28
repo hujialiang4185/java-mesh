@@ -39,12 +39,10 @@ import org.junit.runner.RunWith;
 import HTTPClient.CookieModule;
 
 @RunWith(GrinderRunner)
-class GroovyTemplate {
+class Test1 {
     public static int testNumber = 0;
     public static HTTPRequest request;
-    public Map variables;
     public static GTest TransactionController;
-    def httpResult = new HTTPResponse();
 
     @BeforeProcess
     public static void beforeProcess() {
@@ -67,8 +65,6 @@ class GroovyTemplate {
     @Before
     public void before() {
         def threadContext = HTTPPluginControl.getThreadHTTPClientContext();
-        CookieModule.addCookie(new Cookie(""), threadContext);
-        Assert.assertTrue("", RegularAssert.assertRegular("",""))
     }
 
     @Test
@@ -102,6 +98,8 @@ class GroovyTemplate {
     }
 
     public int getVusers() {
+        Assert.assertNotNull("grinder运行上下文不存在", grinder)
+        Assert.assertNotNull("grinder.properties 不存在",grinder.properties)
         int totalAgents = Integer.parseInt(grinder.getProperties().get("grinder.agents","0").toString())
         int totalProcesses = Integer.parseInt(grinder.properties.get("grinder.processes","0").toString())
         int totalThreads = Integer.parseInt(grinder.properties.get("grinder.threads","0").toString())

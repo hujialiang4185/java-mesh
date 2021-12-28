@@ -15,6 +15,7 @@ import com.huawei.emergency.entity.EmergencyExecRecordDetailExample;
 import com.huawei.emergency.entity.EmergencyExecRecordExample;
 import com.huawei.emergency.entity.EmergencyExecRecordWithBLOBs;
 import com.huawei.emergency.entity.EmergencyServer;
+import com.huawei.emergency.entity.EmergencyServerExample;
 import com.huawei.emergency.mapper.EmergencyExecRecordDetailMapper;
 import com.huawei.emergency.mapper.EmergencyExecRecordMapper;
 import com.huawei.emergency.mapper.EmergencyServerMapper;
@@ -36,9 +37,12 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -128,8 +132,8 @@ public class ExecRecordHandlerFactory {
      * @since 2021-11-04
      **/
     public class ExecRecordDetailHandler implements Runnable {
-        private final EmergencyExecRecordWithBLOBs record;
-        private final EmergencyExecRecordDetail recordDetail;
+        private final EmergencyExecRecordWithBLOBs record; // 任务信息
+        private final EmergencyExecRecordDetail recordDetail; // 任务分发明细
 
         private ExecRecordDetailHandler(EmergencyExecRecordWithBLOBs record, EmergencyExecRecordDetail recordDetail) {
             this.record = record;
@@ -242,10 +246,16 @@ public class ExecRecordHandlerFactory {
     public List<EmergencyExecRecordDetail> generateRecordDetail(EmergencyExecRecord record) {
         List<EmergencyExecRecordDetail> result = new ArrayList<>();
         if (StringUtils.isNotEmpty(record.getServerId())) {
-            String[] serverIdArr = record.getServerId().split(",");
-            for (String serverId : serverIdArr) {
-                try {
-                    EmergencyServer server = serverMapper.selectByPrimaryKey(Integer.valueOf(serverId));
+            try {
+                List<Integer> serverIdList = Arrays.stream(record.getServerId().split(","))
+                    .map(Integer::valueOf)
+                    .collect(Collectors.toList());
+                EmergencyServerExample allServerExample = new EmergencyServerExample();
+                allServerExample.createCriteria()
+                    .andServerIdIn(serverIdList)
+                    .andIsValidEqualTo(ValidEnum.VALID.getValue());
+                List<EmergencyServer> serverList = serverMapper.selectByExample(allServerExample);
+                for (EmergencyServer server : filterServer(serverList)) {
                     if (server == null) {
                         continue;
                     }
@@ -257,9 +267,9 @@ public class ExecRecordHandlerFactory {
                     recordDetail.setServerIp(server.getServerIp());
                     recordDetailMapper.insertSelective(recordDetail);
                     result.add(recordDetail);
-                } catch (NumberFormatException e) {
-                    LOGGER.error("parse record.serverId error,recordId={}. {}", record.getRecordId(), e.getMessage());
                 }
+            } catch (NumberFormatException e) {
+                LOGGER.error("parse record.serverId error,recordId={}. {}", record.getRecordId(), e.getMessage());
             }
         } else {
             EmergencyExecRecordDetail recordDetail = new EmergencyExecRecordDetail();
@@ -272,6 +282,19 @@ public class ExecRecordHandlerFactory {
         }
         return result;
     }
+
+    /**
+     * 选择分发的服务器
+     *
+     * @return
+     */
+    public List<EmergencyServer> filterServer(List<EmergencyServer> serverList) {
+        if (serverList == null || serverList.size() == 0) {
+            return Collections.EMPTY_LIST;
+        }
+        return null;
+    }
+
 
     public String parsePassword(String mode, String source) {
         if ("0".equals(mode)) {

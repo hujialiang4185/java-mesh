@@ -16,15 +16,24 @@
 
 package com.huawei
 
+import HTTPClient.Cookie
+import HTTPClient.CookieModule
+import HTTPClient.HTTPResponse
+import com.huawei.test.asserts.RegularAssert
+import net.grinder.plugin.http.HTTPPluginControl
+import net.grinder.plugin.http.HTTPRequest
+import net.grinder.script.GTest
 import net.grinder.scriptengine.groovy.junit.GrinderRunner
-
-
-
+import net.grinder.scriptengine.groovy.junit.annotation.BeforeProcess
+import net.grinder.scriptengine.groovy.junit.annotation.BeforeThread
+import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(GrinderRunner)
 class TestGrinder {
+
 
     @Test
     public void test() {
@@ -51,19 +60,22 @@ class TestGrinder {
     }
 
 
-    @Test
     public void "事务1 占50"() {
         println("事务1")
     }
 
-    @Test
     public void "事务2 占50"() {
         println("事务2")
     }
 
-    @Test
     public void "事务3 默认100"() {
         println("事务3")
+    }
+
+    public static int testNumber = 0;
+
+    public static int nextTestNumber() {
+        return ++testNumber;
     }
 }
 
