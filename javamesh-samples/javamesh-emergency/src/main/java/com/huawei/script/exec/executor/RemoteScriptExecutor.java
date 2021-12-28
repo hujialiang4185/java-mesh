@@ -220,12 +220,14 @@ public class RemoteScriptExecutor implements ScriptExecutor {
      */
     private ExecResult parseResult(Channel channel, LogCallBack logCallback, int id) throws IOException {
         ExecResult execResult = new ExecResult();
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(channel.getInputStream()));
-        StringBuilder result = new StringBuilder();
+        BufferedReader inputReader = new BufferedReader(new InputStreamReader(channel.getInputStream()));
+        BufferedReader errorReader = new BufferedReader(new InputStreamReader(channel.getExtInputStream()));
+        StringBuilder resultInfo = new StringBuilder();
+        StringBuilder errorInfo = new StringBuilder();
         boolean readFirstLogAsPid = true;
         while (true) {
             String line;
-            while ((line = bufferedReader.readLine()) != null) {
+            while ((line = inputReader.readLine()) != null) {
                 if (logCallback != null && id > 0) {
                     if (readFirstLogAsPid) {
                         logCallback.handlePid(id, line);
@@ -235,19 +237,22 @@ public class RemoteScriptExecutor implements ScriptExecutor {
                         logCallback.handleLog(id, line);
                     }
                 }
-                result.append(line).append(System.lineSeparator());
+                resultInfo.append(line).append(System.lineSeparator());
+            }
+            while ((line = errorReader.readLine()) != null) {
+                errorInfo.append(line).append(System.lineSeparator());
             }
 
             // 命令执行完毕
             if (channel.isClosed()) {
-                if (channel.getInputStream().available() > 0) {
+                if (channel.getInputStream().available() > 0 || channel.getExtInputStream().available() > 0) {
                     continue;
                 }
                 break;
             }
         }
         execResult.setCode(channel.getExitStatus());
-        execResult.setMsg(result.toString());
+        execResult.setMsg(channel.getExitStatus() == 0 ? resultInfo.toString() : errorInfo.toString());
         return execResult;
     }
 
