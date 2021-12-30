@@ -294,7 +294,7 @@ public class EmergencyPlanController {
         try {
             User user = (User) request.getSession().getAttribute("userInfo");
             if (user != null) {
-                userName = user.getUserName();
+                userName = user.getNickName();
             }
         } catch (Exception e) {
             LOGGER.error("get user info error.", e);

@@ -58,7 +58,7 @@ public class EmergencyArgusScriptServiceImpl implements EmergencyArgusScriptServ
 
     @Override
     public CommonResult createArgusOrchestrate(ArgusScript script) {
-        generateTemplate(script.getPath(), UserFilter.users.get().getNickName());
+        generateTemplate(script.getPath(), UserFilter.currentUserName());
         return CommonResult.success(script);
     }
 
@@ -75,7 +75,7 @@ public class EmergencyArgusScriptServiceImpl implements EmergencyArgusScriptServ
             .andIsValidEqualTo(ValidEnum.VALID.getValue());
         List<EmergencyElement> emergencyElements = elementMapper.selectByExampleWithBLOBs(rootElementExample);
         if (emergencyElements.size() == 0) {
-            rootElement = generateTemplate(path, UserFilter.users.get().getNickName());
+            rootElement = generateTemplate(path, UserFilter.currentUserName());
         } else {
             rootElement = emergencyElements.get(0);
         }
@@ -177,7 +177,7 @@ public class EmergencyArgusScriptServiceImpl implements EmergencyArgusScriptServ
             if (parentId > 0) {
                 element.setParentId(parentId);
             }
-            element.setCreateUser(UserFilter.users.get().getNickName());
+            element.setCreateUser(UserFilter.currentUserName());
             elementMapper.insertSelective(element);
         } else {
             element.setElementId(node.getElementId());

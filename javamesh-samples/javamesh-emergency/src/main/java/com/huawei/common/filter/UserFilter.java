@@ -23,7 +23,7 @@ public class UserFilter implements Filter {
     @Resource
     private UserFeignClient userFeignClient;
 
-    public static final ThreadLocal<User> users = new ThreadLocal<>();
+    private static final ThreadLocal<User> users = new ThreadLocal<>();
 
     @Autowired
     private UserMapper mapper;
@@ -67,5 +67,13 @@ public class UserFilter implements Filter {
     @Override
     public void destroy() {
         Filter.super.destroy();
+    }
+
+    public static String currentUserName() {
+        User user = users.get();
+        if (user == null) {
+            return null;
+        }
+        return user.getNickName();
     }
 }

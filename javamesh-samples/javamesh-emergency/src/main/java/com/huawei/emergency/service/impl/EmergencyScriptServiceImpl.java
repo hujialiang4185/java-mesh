@@ -352,7 +352,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         newScript.setSubmitInfo(script.getSubmitInfo());
         newScript.setHavePassword("0");
         newScript.setContent("");
-        newScript.setScriptUser(UserFilter.users.get().getNickName());
+        newScript.setScriptUser(UserFilter.currentUserName());
         newScript.setScriptStatus("0");
         transLateScript(newScript);
         mapper.insertSelective(newScript);
@@ -483,7 +483,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             if (parentId > 0) {
                 element.setParentId(parentId);
             }
-            element.setCreateUser(UserFilter.users.get().getNickName());
+            element.setCreateUser(UserFilter.currentUserName());
             elementMapper.insertSelective(element);
         } else {
             element.setElementId(node.getElementId());

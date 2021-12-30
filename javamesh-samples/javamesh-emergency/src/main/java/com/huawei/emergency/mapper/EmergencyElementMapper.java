@@ -3,8 +3,11 @@ package com.huawei.emergency.mapper;
 import com.huawei.emergency.entity.EmergencyElement;
 import com.huawei.emergency.entity.EmergencyElementExample;
 import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+@Mapper
 public interface EmergencyElementMapper {
     long countByExample(EmergencyElementExample example);
 
