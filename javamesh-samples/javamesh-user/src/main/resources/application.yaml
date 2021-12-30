@@ -55,9 +55,16 @@ jwt:
   secret: mall-admin-secret #JWT加解密使用的密钥
   expiration: 604800 #JWT的超期限时间(60*60*24*7)
   tokenHead: 'Bearer '  #JWT负载中拿到开头
+secure:
+  ignored:
+    urls: #安全路径白名单
+      - /api/user/login
+      - /api/user/me
+      - /api/user/registe
+      - /api/user/logout
 #用户名
 key: 1234123412341234
-decisionEngine.url: http://100.94.174.17:8089/hercules-controller-0.0.1
+decisionEngine.url: http://100.94.174.17:9091/ngrinder-controller-3.4.2
 jsch:
   connectTimeout: 30000
   knownHosts: /root/.ssh/known_hosts
@@ -69,10 +76,5 @@ script:
     maxPoolSize: 8
     keepAliveTime: 60
     blockingQueueSize: 8
-secure:
-  ignored:
-    urls: #安全路径白名单
-      - /api/user/login
-      - /api/user/registe
-      - /api/user/logout
-      - /api/user/me
+pagehelper:
+  reasonable: true
