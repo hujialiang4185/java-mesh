@@ -62,4 +62,6 @@ public interface EmergencyScriptService {
      */
     CommonResult queryOrchestrate(int scriptId);
 
+
+    void exec(HttpServletRequest request);
 }

@@ -42,8 +42,8 @@ public class EmergencyScriptController {
         @RequestParam(value = "owner", required = false) String scriptUser,
         @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
         @RequestParam(value = "current", defaultValue = "1") int current,
-        @RequestParam(value = "sorter", defaultValue = "update_time") String sorter,
-        @RequestParam(value = "order", defaultValue = "DESC") String order,
+        @RequestParam(value = "sorter", required = false) String sorter,
+        @RequestParam(value = "order", required = false) String order,
         @RequestParam(value = "status", required = false) String status) {
         return service.listScript(request, scriptName, scriptUser, pageSize, current, sorter, order, status);
     }
@@ -224,4 +224,17 @@ public class EmergencyScriptController {
     public CommonResult orchestrate(@RequestParam("script_id") int scriptId) {
         return service.queryOrchestrate(scriptId);
     }
+    @GetMapping("/script/exec")
+    public void exec(HttpServletRequest request){
+        service.exec(request);
+    }
+
+    @PostMapping("/script/execComplete")
+    public CommonResult execComplete(@RequestBody Map<String,String> map){
+        if(map.get("recordId").equals("0")){
+            return CommonResult.failed("recordId is valid. ");
+        }
+        return CommonResult.success();
+    }
+
 }

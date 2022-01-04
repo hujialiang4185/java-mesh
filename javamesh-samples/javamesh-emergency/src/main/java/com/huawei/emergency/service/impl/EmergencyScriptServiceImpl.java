@@ -15,6 +15,7 @@ import com.huawei.common.util.PasswordUtil;
 import com.huawei.emergency.dto.ArgusScript;
 import com.huawei.emergency.entity.EmergencyElement;
 import com.huawei.emergency.entity.EmergencyElementExample;
+import com.huawei.common.util.*;
 import com.huawei.emergency.entity.EmergencyScript;
 import com.huawei.emergency.entity.EmergencyScriptExample;
 import com.huawei.emergency.entity.User;
@@ -37,9 +38,13 @@ import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -50,6 +55,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -93,6 +99,9 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     @Autowired
     private EmergencyExecService execService;
 
+    @Autowired
+    private RestTemplate restTemplate;
+
     @Value("${argus.script.update}")
     private String updateScriptUrl;
 
@@ -109,12 +118,14 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             auth = "";
         }
         String sortType;
-        if (order.equals("ascend")) {
-            sortType = "ASC";
+        if (StringUtils.isBlank(order)) {
+            sortType = "update_time" + System.lineSeparator() + "DESC";
+        } else if (order.equals("ascend")) {
+            sortType = sorter + System.lineSeparator() + "ASC";
         } else {
-            sortType = "DESC";
+            sortType = sorter + System.lineSeparator() + "DESC";
         }
-        Page<EmergencyScript> pageInfo = PageHelper.startPage(current, pageSize, sorter + System.lineSeparator() + sortType).doSelectPage(() -> {
+        Page<EmergencyScript> pageInfo = PageHelper.startPage(current, pageSize, sortType).doSelectPage(() -> {
             mapper.listScript(user.getUserName(), auth, EscapeUtil.escapeChar(scriptName), EscapeUtil.escapeChar(scriptUser), status);
         });
         List<EmergencyScript> emergencyScripts = pageInfo.getResult();
@@ -557,6 +568,17 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             throw new ApiException("Failed to encode password. ", e);
         }
         script.setScriptStatus(TYPE_ZERO);
+    }
+
+    @Override
+    public void exec(HttpServletRequest request) {
+        Map<String, String> map = new HashMap<>();
+        map.put("recordId", "1");
+        map.put("content", "println(\"my name is hjl\")");
+        map.put("scriptType", "2");
+        map.put("scriptName", "testGroovy");
+        ResponseEntity responseEntity = RestTemplateUtil.sendPostRequest(request, "http://127.0.0.1:9095/agent/execute", map);
+        System.out.println(responseEntity.getBody());
     }
 
 
