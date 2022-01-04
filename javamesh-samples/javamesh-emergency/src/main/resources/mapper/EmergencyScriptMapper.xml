@@ -530,6 +530,7 @@
         WHEN '0' THEN 'shell'
         WHEN '1' THEN 'python'
         WHEN '2' THEN 'groovy'
+        WHEN '3' THEN 'orchestrate'
         END AS script_type,
         CASE s.have_password
         WHEN '0' THEN '否'
