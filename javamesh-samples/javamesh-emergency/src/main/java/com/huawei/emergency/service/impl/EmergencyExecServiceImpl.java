@@ -4,10 +4,15 @@
 
 package com.huawei.emergency.service.impl;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import com.huawei.common.api.CommonPage;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.PlanStatus;
 import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ValidEnum;
+import com.huawei.emergency.dto.PlanQueryDto;
+import com.huawei.emergency.dto.SceneExecDto;
 import com.huawei.emergency.entity.EmergencyExec;
 import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyExecRecordDetail;
@@ -17,6 +22,7 @@ import com.huawei.emergency.entity.EmergencyExecRecordWithBLOBs;
 import com.huawei.emergency.entity.EmergencyPlan;
 import com.huawei.emergency.entity.EmergencyScript;
 import com.huawei.emergency.entity.EmergencyServer;
+import com.huawei.emergency.entity.EmergencyServerExample;
 import com.huawei.emergency.mapper.EmergencyExecMapper;
 import com.huawei.emergency.mapper.EmergencyExecRecordDetailMapper;
 import com.huawei.emergency.mapper.EmergencyExecRecordMapper;
@@ -43,6 +49,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -209,7 +216,7 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
             plan.setStatus(PlanStatus.FAILED.getValue());
             planMapper.updateByPrimaryKeySelective(plan);
         }
-        handlerFactory.notifySceneRefresh(needEnsureRecord.getExecId(),needEnsureRecord.getSceneId());
+        handlerFactory.notifySceneRefresh(needEnsureRecord.getExecId(), needEnsureRecord.getSceneId());
         return CommonResult.success();
     }
 
@@ -363,14 +370,14 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
 
     @Override
     public LogResponse logOneServer(int detailId, int line) {
-        /*EmergencyExecRecordDetail recordDetail = recordDetailMapper.selectByPrimaryKey(detailId);
+        EmergencyExecRecordDetail recordDetail = recordDetailMapper.selectByPrimaryKey(detailId);
         if (recordDetail == null || ValidEnum.IN_VALID.equals(recordDetail.getIsValid())) {
             return LogResponse.END;
         }
         if (StringUtils.isEmpty(recordDetail.getLog())) {
             LogResponse log = LogMemoryStore.getLog(detailId, line);
             if (log.getLine() == null && log.getData().length == 0) { // 可能开始执行 但还未生成日志
-                return new LogResponse(line, null);
+                return new LogResponse(line, LogMemoryStore.EMPTY_ARRAY);
             }
             return log;
         }
@@ -379,8 +386,8 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
             String[] needLogs = Arrays.copyOfRange(split, line - 1, split.length);
             return new LogResponse(null, needLogs);
         }
-        return new LogResponse(null, new String[]{recordDetail.getLog()});*/
-        EmergencyExecRecordDetail recordDetail = recordDetailMapper.selectByPrimaryKey(detailId);
+        return new LogResponse(null, new String[]{recordDetail.getLog()});
+        /*EmergencyExecRecordDetail recordDetail = recordDetailMapper.selectByPrimaryKey(detailId);
         if (recordDetail == null || ValidEnum.IN_VALID.equals(recordDetail.getIsValid())) {
             return LogResponse.END;
         }
@@ -392,6 +399,35 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
             String[] needLogs = Arrays.copyOfRange(split, line - 1, split.length);
             return new LogResponse(null, needLogs);
         }
-        return new LogResponse(null, new String[]{recordDetail.getLog()});
+        return new LogResponse(null, new String[]{recordDetail.getLog()});*/
+    }
+
+    @Override
+    public CommonResult allPlanExecRecords(CommonPage<EmergencyPlan> params, String[] filterPlanNames, String[] filterCreators) {
+        Map<String, Object> filters = new HashMap<>();
+        filters.put("planNames", filterPlanNames);
+        filters.put("creators", filterCreators);
+        Page<PlanQueryDto> pageInfo = PageHelper
+            .startPage(params.getPageIndex(), params.getPageSize(), StringUtils.isEmpty(params.getSortType()) ? "" : params.getSortField() + System.lineSeparator() + params.getSortType())
+            .doSelectPage(() -> {
+                execMapper.allPlanRecords(params.getObject(), filters);
+            });
+        return CommonResult.success(pageInfo.getResult(), (int) pageInfo.getTotal());
+    }
+
+    @Override
+    public CommonResult allSceneExecRecords(CommonPage<EmergencyExecRecord> params) {
+        List<SceneExecDto> sceneExecDtos = execMapper.allSceneRecords(params.getObject().getExecId());
+        return CommonResult.success(sceneExecDtos, sceneExecDtos.size());
+    }
+
+    @Override
+    public CommonResult allTaskExecRecords(CommonPage<EmergencyExecRecord> params) {
+        EmergencyExecRecord paramsObject = params.getObject();
+        List<SceneExecDto> result = execMapper.allTaskRecords(paramsObject.getExecId(), paramsObject.getSceneId());
+        result.forEach(recordDto -> {
+            recordDto.setScheduleInfo(recordDetailMapper.selectAllServerDetail(recordDto.getKey()));
+        });
+        return CommonResult.success(result, result.size());
     }
 }
