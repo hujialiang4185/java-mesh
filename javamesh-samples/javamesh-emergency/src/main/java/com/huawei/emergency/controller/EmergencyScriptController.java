@@ -8,6 +8,7 @@ import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.FailedInfo;
 import com.huawei.common.constant.ResultCode;
 import com.huawei.emergency.dto.ArgusScript;
+import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyScript;
 import com.huawei.emergency.layout.TreeResponse;
 import com.huawei.emergency.service.EmergencyScriptService;
@@ -89,8 +90,8 @@ public class EmergencyScriptController {
                                      @RequestParam(value = "script_name") String scriptName,
                                      @RequestParam(value = "submit_info") String submitInfo,
                                      @RequestParam(value = "account", required = false) String serverUser,
-                                     @RequestParam(value = "server_ip") String serverIp,
-                                     @RequestParam(value = "has_pwd") String havePassword,
+                                     @RequestParam(value = "server_ip",required = false) String serverIp,
+                                     @RequestParam(value = "has_pwd",required = false) String havePassword,
                                      @RequestParam(value = "language") String scriptType,
                                      @RequestParam(value = "param", required = false) String param,
                                      @RequestParam(value = "public") String isPublic,
@@ -195,9 +196,18 @@ public class EmergencyScriptController {
         }
     }
 
-    @PostMapping("/debug")
     public CommonResult debugScript(@RequestBody Map<String, Integer> param) {
         return service.debugScript(param.get("script_id"));
+    }
+
+    @PostMapping("/debug")
+    public CommonResult debugScriptBeforeSave(@RequestBody Map<String, String> param) {
+        return service.debugScriptBeforeSave(param.get("content"), param.get("server_name"));
+    }
+
+    @PostMapping("/debugStop")
+    public CommonResult debugStop(@RequestBody EmergencyExecRecord param) {
+        return service.debugScriptStop(param.getDebugId());
     }
 
     @GetMapping("/debugLog")

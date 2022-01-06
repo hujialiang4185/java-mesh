@@ -259,6 +259,9 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         if (isParamInvalid(script)) {
             return ResultCode.PARAM_INVALID;
         }
+        if (script.getScriptId() == null) {
+            return ResultCode.PARAM_INVALID;
+        }
 
         // 脚本名是否修改了
         String oldScriptName = mapper.selectScriptNameById(script.getScriptId());
@@ -336,6 +339,16 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             return CommonResult.failed("请选择正确的脚本");
         }
         return execService.exec(emergencyScript);
+    }
+
+    @Override
+    public CommonResult debugScriptBeforeSave(String content, String serverName) {
+        return execService.debugScript(content, serverName);
+    }
+
+    @Override
+    public CommonResult debugScriptStop(Integer debugId) {
+        return CommonResult.success();
     }
 
     @Override
