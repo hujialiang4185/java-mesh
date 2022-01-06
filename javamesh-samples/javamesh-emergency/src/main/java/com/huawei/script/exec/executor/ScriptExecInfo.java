@@ -46,4 +46,9 @@ public class ScriptExecInfo {
      * 运行参数
      */
     private String[] params;
+
+    /**
+     * 超时时间
+     */
+    private long timeOut;
 }
