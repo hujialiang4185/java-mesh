@@ -30,6 +30,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
@@ -73,6 +74,9 @@ public class ExecRecordHandlerFactory {
 
     @Resource(name = "passwordRestTemplate")
     private RestTemplate restTemplate;
+
+    @Value("${script.timeOut}")
+    private long timeOut;
 
     @Autowired
     private PasswordUtil passwordUtil;
@@ -187,10 +191,17 @@ public class ExecRecordHandlerFactory {
         updateRecordDetail.setDetailId(recordDetail.getDetailId());
         updateRecordDetail.setEndTime(endTime);
         updateRecordDetail.setLog(execResult.getMsg());
+        if (execResult.isError()) {
+            StringBuilder finalLog = new StringBuilder();
+            for (String s : LogMemoryStore.removeLog(recordDetail.getDetailId())) {
+                finalLog.append(s).append(System.lineSeparator());
+            }
+            finalLog.append(execResult.getMsg());
+            updateRecordDetail.setLog(finalLog.toString());
+        }
         updateRecordDetail.setStatus(
             execResult.isSuccess() ? RecordStatus.SUCCESS.getValue() : RecordStatus.ENSURE_FAILED.getValue()
         );
-
         if (recordDetailMapper.updateByExampleSelective(updateRecordDetail, whenRunning) == 0) { // 做个状态判断，防止人为取消 也被标记为执行成功
             LOGGER.info("recordId={}, detailId={} was canceled", recordDetail.getRecordId(), recordDetail.getDetailId());
         } else {
@@ -218,6 +229,7 @@ public class ExecRecordHandlerFactory {
         execInfo.setScriptName(record.getScriptName() + "-" + record.getRecordId());
         execInfo.setScriptType(record.getScriptType());
         execInfo.setScriptContext(record.getScriptContent());
+        execInfo.setTimeOut(timeOut);
         if (StringUtils.isNotEmpty(record.getScriptParams())) {
             String[] split = record.getScriptParams().split(",");
             execInfo.setParams(split);
