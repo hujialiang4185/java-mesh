@@ -583,7 +583,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
 
 
     private boolean isParamInvalid(EmergencyScript script) {
-        if (script.getHavePassword().equals("havePassword") &&
+        if ("havePassword".equals(script.getHavePassword()) &&
             (StringUtils.isBlank(script.getPassword()) || StringUtils.isBlank(script.getPasswordMode()))) {
             return true;
         }
@@ -608,12 +608,16 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             case "Groovy":
                 script.setScriptType(TYPE_TWO);
         }
-        switch (script.getHavePassword()) {
-            case NO_PASSWORD:
-                script.setHavePassword(TYPE_ZERO);
-                break;
-            case HAVE_PASSWORD:
-                script.setHavePassword(TYPE_ONE);
+        if (script.getHavePassword() != null) {
+            switch (script.getHavePassword()) {
+                case NO_PASSWORD:
+                    script.setHavePassword(TYPE_ZERO);
+                    break;
+                case HAVE_PASSWORD:
+                    script.setHavePassword(TYPE_ONE);
+            }
+        } else {
+            script.setHavePassword(TYPE_ZERO);
         }
         if (script.getPasswordMode() != null) {
             switch (script.getPasswordMode()) {
