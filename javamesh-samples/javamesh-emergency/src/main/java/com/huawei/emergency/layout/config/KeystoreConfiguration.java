@@ -24,7 +24,7 @@ import lombok.Data;
  * @since 2021-12-15
  **/
 @Data
-public class KeystoreConfiguration implements Config {
+public class KeystoreConfiguration extends Config {
 
     private boolean preload;
     private String variableNameAlias;

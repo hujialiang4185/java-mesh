@@ -31,10 +31,8 @@ import java.util.regex.Pattern;
  * @since 2021-12-17
  **/
 @Data
-public class CustomCodeTestElement implements TestElement {
+public class CustomCodeTestElement extends TestElement {
 
-    private String name;
-    private String comment;
     private String content;
     private static Pattern compile = Pattern.compile("^(\\//start)(.+)(\\//end)");
 

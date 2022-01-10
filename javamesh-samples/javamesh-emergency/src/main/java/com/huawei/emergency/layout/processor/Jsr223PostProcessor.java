@@ -27,10 +27,7 @@ import lombok.Data;
  * @since 2021-12-16
  **/
 @Data
-public class Jsr223PostProcessor implements PostProcessor{
-
-    private String title;
-    private String comment;
+public class Jsr223PostProcessor extends PostProcessor{
     private String language;
     private String parameters;
     private String fileName;

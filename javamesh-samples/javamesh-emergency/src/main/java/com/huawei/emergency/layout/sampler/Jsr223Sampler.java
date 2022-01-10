@@ -28,16 +28,9 @@ import java.util.List;
  * @since 2021-12-16
  **/
 @Data
-public class Jsr223Sampler implements Sampler{
-
-    private List<TestElement> testElements = new ArrayList<>();
+public class Jsr223Sampler extends Sampler {
 
     @Override
     public void handle(ElementProcessContext context) {
-    }
-
-    @Override
-    public List<TestElement> nextElements() {
-        return testElements;
     }
 }

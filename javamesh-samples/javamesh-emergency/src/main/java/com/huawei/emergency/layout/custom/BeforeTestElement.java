@@ -27,9 +27,7 @@ import java.util.List;
  * @author y30010171
  * @since 2021-12-17
  **/
-public class BeforeTestElement implements ParentTestElement {
-
-    private List<TestElement> testElements = new ArrayList<>();
+public class BeforeTestElement extends ParentTestElement {
 
     @Override
     public void handle(ElementProcessContext context) {
@@ -37,10 +35,5 @@ public class BeforeTestElement implements ParentTestElement {
             context.setCurrentMethod(context.getTemplate().getBeforeMethod());
             handler.handle(context);
         });
-    }
-
-    @Override
-    public List<TestElement> nextElements() {
-        return testElements;
     }
 }

@@ -24,5 +24,5 @@ import com.huawei.emergency.layout.TestElement;
  * @author y30010171
  * @since 2021-12-21
  **/
-public interface PostProcessor extends TestElement {
+public abstract class PostProcessor extends TestElement {
 }

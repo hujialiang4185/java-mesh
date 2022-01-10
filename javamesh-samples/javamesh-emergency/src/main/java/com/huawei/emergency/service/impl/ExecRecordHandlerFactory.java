@@ -7,6 +7,7 @@ package com.huawei.emergency.service.impl;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ValidEnum;
+import com.huawei.common.exception.ApiException;
 import com.huawei.common.util.PasswordUtil;
 import com.huawei.common.ws.WebSocketServer;
 import com.huawei.emergency.entity.EmergencyExecRecord;
@@ -159,7 +160,11 @@ public class ExecRecordHandlerFactory {
         recordMapper.tryUpdateStartTime(record.getRecordId(), updateRecordDetail.getStartTime()); //更新record的开始时间
         recordMapper.tryUpdateStatus(record.getRecordId()); //更新record的状态
         ScriptExecInfo execInfo = generateExecInfo(record, recordDetail); // 生成执行信息
-        if (record.getScriptId() == null || execInfo.getRemoteServerInfo() == null) {
+        if (execInfo.getRemoteServerInfo() == null) {
+            complete(record, recordDetail, ExecResult.fail("无可用的agent"));
+            return;
+        }
+        if (record.getScriptContent() == null) {
             complete(record, recordDetail, ExecResult.success(""));
             return;
         }
@@ -234,22 +239,12 @@ public class ExecRecordHandlerFactory {
             String[] split = record.getScriptParams().split(",");
             execInfo.setParams(split);
         }
-
-        if (recordDetail.getServerIp() != null) {
+        if (recordDetail.getServerId() != null) {
             EmergencyServer server = serverMapper.selectByPrimaryKey(recordDetail.getServerId());
             if (server != null) {
-                ServerInfo serverInfo = new ServerInfo(server.getServerIp(), server.getServerUser(), server.getServerPort());
-                if ("1".equals(server.getHavePassword())) {
-                    serverInfo.setServerPassword(parsePassword(server.getPasswordMode(), server.getPassword()));
-                }
+                ServerInfo serverInfo = new ServerInfo(server.getServerIp(), server.getServerUser(), server.getAgentPort());
                 execInfo.setRemoteServerInfo(serverInfo);
             }
-        } else if (StringUtils.isNotEmpty(recordDetail.getServerIp())) {
-            ServerInfo serverInfo = new ServerInfo(recordDetail.getServerIp(), record.getServerUser());
-            if ("1".equals(record.getHavePassword())) {
-                serverInfo.setServerPassword(parsePassword(record.getPasswordMode(), record.getPassword()));
-            }
-            execInfo.setRemoteServerInfo(serverInfo);
         }
         return execInfo;
     }
@@ -266,8 +261,11 @@ public class ExecRecordHandlerFactory {
                 allServerExample.createCriteria()
                     .andServerIdIn(serverIdList)
                     .andIsValidEqualTo(ValidEnum.VALID.getValue());
-                List<EmergencyServer> serverList = serverMapper.selectByExample(allServerExample);
-                for (EmergencyServer server : filterServer(serverList)) {
+                List<EmergencyServer> serverList = filterServer(serverMapper.selectByExample(allServerExample));
+                if (serverList.size() == 0) {
+                    throw new ApiException("选择的agent服务器不可用");
+                }
+                for (EmergencyServer server : serverList) {
                     if (server == null) {
                         continue;
                     }
@@ -304,7 +302,9 @@ public class ExecRecordHandlerFactory {
         if (serverList == null || serverList.size() == 0) {
             return Collections.EMPTY_LIST;
         }
-        return null;
+        return serverList.stream()
+            .filter(server -> server != null && server.getAgentPort() != null && ValidEnum.VALID.getValue().equals(server.getLicensed()))
+            .collect(Collectors.toList());
     }
 
 

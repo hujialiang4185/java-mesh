@@ -28,10 +28,8 @@ import org.apache.commons.lang.StringUtils;
  * @since 2021-12-25
  **/
 @Data
-public class JarImportTestElement implements TestElement {
+public class JarImportTestElement extends TestElement {
 
-    private String title;
-    private String comments;
     private String content;
 
     @Override

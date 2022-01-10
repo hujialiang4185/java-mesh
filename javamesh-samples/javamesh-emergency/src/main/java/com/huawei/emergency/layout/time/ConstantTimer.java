@@ -26,10 +26,7 @@ import java.util.Locale;
  * @since 2021-12-16
  **/
 @Data
-public class ConstantTimer implements Timer {
-
-    private String name;
-    private String comment;
+public class ConstantTimer extends Timer {
     private long delay;
 
     @Override

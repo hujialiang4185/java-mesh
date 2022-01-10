@@ -24,5 +24,5 @@ import com.huawei.emergency.layout.ParentTestElement;
  * @author y30010171
  * @since 2021-12-14
  **/
-public interface Sampler extends ParentTestElement {
+public abstract class Sampler extends ParentTestElement {
 }

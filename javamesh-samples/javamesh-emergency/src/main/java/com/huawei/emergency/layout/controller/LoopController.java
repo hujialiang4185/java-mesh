@@ -29,31 +29,23 @@ import java.util.Locale;
  * @author y30010171
  * @since 2021-12-16
  **/
+@Deprecated
 @Data
-public class LoopController implements Controller{
-
-    private String title;
-    private String comments;
+public class LoopController extends Controller {
     private boolean isForever;
     private int loopCount;
-    private List<TestElement> testElements = new ArrayList<>();
 
     @Override
     public void handle(ElementProcessContext context) {
         GroovyMethodTemplate currentMethod = context.getCurrentMethod();
-        if (loopCount <= 0){
+        if (loopCount <= 0) {
             return;
         }
-        currentMethod.addContent(String.format(Locale.ROOT,"for (i in 0..< %s) {",loopCount),2);
-        testElements.forEach(handler -> {
+        currentMethod.addContent(String.format(Locale.ROOT, "for (i in 0..< %s) {", loopCount), 2);
+        nextElements().forEach(handler -> {
             context.setCurrentMethod(currentMethod);
             handler.handle(context);
         });
-        currentMethod.addContent("}",2);
-    }
-
-    @Override
-    public List<TestElement> nextElements() {
-        return testElements;
+        currentMethod.addContent("}", 2);
     }
 }

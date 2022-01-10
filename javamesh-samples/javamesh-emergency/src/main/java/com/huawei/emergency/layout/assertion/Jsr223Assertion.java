@@ -14,26 +14,17 @@
  * limitations under the License.
  */
 
-package com.huawei.emergency.layout.custom;
+package com.huawei.emergency.layout.assertion;
 
-import com.huawei.emergency.layout.TestElement;
 import com.huawei.emergency.layout.ElementProcessContext;
-import com.huawei.emergency.layout.ParentTestElement;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author y30010171
- * @since 2021-12-17
+ * @since 2022-01-06
  **/
-public class AfterThreadTestElement extends ParentTestElement {
+public class Jsr223Assertion extends Assertion {
 
     @Override
     public void handle(ElementProcessContext context) {
-        nextElements().forEach(handler -> {
-            context.setCurrentMethod(context.getTemplate().getAfterThreadMethod());
-            handler.handle(context);
-        });
     }
 }

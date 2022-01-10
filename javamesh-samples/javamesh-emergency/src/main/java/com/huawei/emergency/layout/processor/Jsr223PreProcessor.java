@@ -28,10 +28,7 @@ import lombok.Data;
  * @since 2021-12-16
  **/
 @Data
-public class Jsr223PreProcessor implements PreProcessor{
-
-    private String title;
-    private String comment;
+public class Jsr223PreProcessor extends PreProcessor{
     private String language;
     private String parameters;
     private String fileName;

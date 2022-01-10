@@ -18,6 +18,7 @@ package com.huawei.emergency.layout.controller;
 
 import com.huawei.emergency.layout.TestElement;
 import com.huawei.emergency.layout.ElementProcessContext;
+import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +30,8 @@ import java.util.regex.Pattern;
  * @since 2021-12-14
  **/
 @Deprecated
-public class IfController implements Controller {
+@Data
+public class IfController extends Controller {
 
     private static final Pattern compile = Pattern.compile("\\#\\{(\\w+)\\}");
 
@@ -59,11 +61,6 @@ public class IfController implements Controller {
             System.out.println(matcher.group(0));
             System.out.println(matcher.group(1));
         }
-    }
-
-    @Override
-    public List<TestElement> nextElements() {
-        return null;
     }
 
     class Param {

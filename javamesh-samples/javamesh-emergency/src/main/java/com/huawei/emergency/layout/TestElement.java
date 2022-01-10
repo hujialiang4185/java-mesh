@@ -16,10 +16,15 @@
 
 package com.huawei.emergency.layout;
 
+import lombok.Data;
+
 /**
  * @author y30010171
  * @since 2021-12-14
  **/
-public interface TestElement {
-    void handle(ElementProcessContext context);
+@Data
+public abstract class TestElement {
+    private String title;
+    private String comments;
+    public abstract void handle(ElementProcessContext context);
 }

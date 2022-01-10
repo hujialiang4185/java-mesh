@@ -27,10 +27,7 @@ import lombok.Data;
  * @since 2021-12-16
  **/
 @Data
-public class BeanShellPostProcessor implements PostProcessor{
-
-    private String title;
-    private String comment;
+public class BeanShellPostProcessor extends PostProcessor{
     private boolean resetInterpreter;
     private String parameters;
     private String fileName;

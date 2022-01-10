@@ -16,12 +16,20 @@
 
 package com.huawei.emergency.layout;
 
+import lombok.Data;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author y30010171
  * @since 2021-12-17
  **/
-public interface ParentTestElement extends TestElement {
-    List<TestElement> nextElements();
+@Data
+public abstract class ParentTestElement extends TestElement {
+    private List<TestElement> testElements = new ArrayList<>();
+
+    public final List<TestElement> nextElements() {
+        return testElements;
+    }
 }

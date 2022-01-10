@@ -24,5 +24,5 @@ import com.huawei.emergency.layout.ParentTestElement;
  * @author y30010171
  * @since 2021-12-14
  **/
-public interface Controller extends ParentTestElement {
+public abstract class Controller extends ParentTestElement {
 }

@@ -24,10 +24,7 @@ import lombok.Data;
  * @since 2021-12-15
  **/
 @Data
-public class HttpCacheManager implements Config{
-
-    private String name;
-    private String comment;
+public class HttpCacheManager extends Config {
     private boolean clearCookiesEachIteration;
     private boolean useHeaderWhenGet;
     private int maxElements;

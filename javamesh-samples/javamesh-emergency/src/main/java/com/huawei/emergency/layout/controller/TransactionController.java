@@ -35,64 +35,55 @@ import java.util.Locale;
  * @since 2021-12-16
  **/
 @Data
-public class TransactionController implements Controller {
-
-    private String title;
-    private String comments;
+public class TransactionController extends Controller {
     private int presure = 100;
-    private boolean generateParentSample;
-    private boolean includeDuration;
 
     private GroovyMethodTemplate method;
     private GroovyFieldTemplate field;
 
-    private List<TestElement> testElements = new ArrayList<>();
 
     @Override
     public void handle(ElementProcessContext context) {
-        if (StringUtils.isEmpty(title)) {
+        if (StringUtils.isEmpty(getTitle())) {
             throw new RuntimeException("请输入事务名称");
         }
         GroovyClassTemplate template = context.getTemplate();
-        GroovyMethodTemplate method = getMethod();
+        GroovyMethodTemplate method = methodTemplate();
         if (template.containsMethod(method.getMethodName())) {
             throw new RuntimeException(String.format(Locale.ROOT, "存在名称相同的事务 {}", method.getMethodName()));
         }
         template.addMethod(method);
-        template.addFiled(getField());
+        template.addFiled(fieldTemplate());
         GroovyMethodTemplate beforeProcessMethod = template.getBeforeProcessMethod();
-        beforeProcessMethod.addContent(String.format(Locale.ROOT, "%s = new GTest(%s, \"%s\")", title, GroovyClassTemplate.TEST_NUMBER_METHOD.invokeStr(), title), 2);
-        beforeProcessMethod.addContent(String.format(Locale.ROOT, "%s.record(this, \"%s\")", title, title), 2);
-        for (TestElement testElement : testElements) {
+        beforeProcessMethod.addContent(String.format(Locale.ROOT, "%s = new GTest(%s, \"%s\")", getTitle(), GroovyClassTemplate.TEST_NUMBER_METHOD.invokeStr(), getTitle()), 2);
+        beforeProcessMethod.addContent(String.format(Locale.ROOT, "%s.record(this, \"%s\")", getTitle(), getTitle()), 2);
+        for (TestElement testElement : nextElements()) {
             context.setCurrentMethod(method);
             testElement.handle(context);
         }
+
+        // 寻找configElement
     }
 
-    public GroovyMethodTemplate getMethod() {
+    public GroovyMethodTemplate methodTemplate() {
         if (method == null) {
             method = new GroovyMethodTemplate()
                 .addAnnotation("    @Test")
-                .start(String.format(Locale.ROOT, "public void \"%s\"() {", title), 1)
+                .start(String.format(Locale.ROOT, "public void \"%s\"() {", getTitle()), 1)
                 .end("}", 1);
-            method.setMethodName(title);
+            method.setMethodName(getTitle());
         }
         return method;
     }
 
-    public GroovyFieldTemplate getField() {
+    public GroovyFieldTemplate fieldTemplate() {
         if (field == null) {
-            field = GroovyFieldTemplate.create(String.format(Locale.ROOT, "    public static GTest %s;", title));
+            field = GroovyFieldTemplate.create(String.format(Locale.ROOT, "    public static GTest %s;", getTitle()));
         }
         return field;
     }
 
     public String invokeStr(){
-        return String.format(Locale.ROOT,"\"%s\"()", title);
-    }
-
-    @Override
-    public List<TestElement> nextElements() {
-        return testElements;
+        return String.format(Locale.ROOT,"\"%s\"()", getTitle());
     }
 }

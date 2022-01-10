@@ -29,27 +29,19 @@ import java.util.Locale;
  * @author y30010171
  * @since 2021-12-16
  **/
+@Deprecated
 @Data
-public class WhileController implements Controller {
-
-    private String title;
-    private String comments;
+public class WhileController extends Controller {
     private String condition;
-    private List<TestElement> testElements = new ArrayList<>();
 
     @Override
     public void handle(ElementProcessContext context) {
         GroovyMethodTemplate currentMethod = context.getCurrentMethod();
         currentMethod.addContent(String.format(Locale.ROOT, "while (%s) {", condition), 2);
-        testElements.forEach(handler -> {
+        nextElements().forEach(handler -> {
             context.setCurrentMethod(currentMethod);
             handler.handle(context);
         });
         currentMethod.addContent("}", 2);
-    }
-
-    @Override
-    public List<TestElement> nextElements() {
-        return testElements;
     }
 }

@@ -27,10 +27,7 @@ import java.util.Map;
  * @since 2021-12-15
  **/
 @Data
-public class HttpHeaderManager implements Config{
-
-    private String name;
-    private String comment;
+public class HttpHeaderManager extends Config {
     private Map<String,String> headers = new HashMap<>();
 
     @Override

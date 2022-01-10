@@ -26,10 +26,8 @@ import java.util.List;
  * @since 2021-12-15
  **/
 @Data
-public class HttpRequestDefault implements Config{
+public class HttpRequestDefault extends Config {
 
-    private String name;
-    private String comment;
     private String protocol = "http";
     private String hostName;
     private int port;

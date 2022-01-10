@@ -24,5 +24,5 @@ import com.huawei.emergency.layout.TestElement;
  * @author y30010171
  * @since 2021-12-14
  **/
-public interface Timer extends TestElement {
+public abstract class Timer extends TestElement {
 }

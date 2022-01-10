@@ -29,7 +29,7 @@ import java.util.Locale;
  * @since 2021-12-16
  **/
 @Data
-public class ResponseAssertion implements Assertion {
+public class ResponseAssertion extends Assertion {
 
     private String type;
     private String testField;

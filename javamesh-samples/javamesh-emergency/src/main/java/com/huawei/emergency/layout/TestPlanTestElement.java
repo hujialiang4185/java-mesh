@@ -33,11 +33,7 @@ import javax.validation.constraints.NotNull;
  * @since 2021-12-17
  **/
 @Data
-public class TestPlanTestElement implements ParentTestElement {
-
-    private String name;
-    private String comment;
-    private List<TestElement> testElements = new ArrayList<>();
+public class TestPlanTestElement extends ParentTestElement {
 
     private String agent; // 代理数
     private String vuser; // 虚拟用户数
@@ -62,7 +58,7 @@ public class TestPlanTestElement implements ParentTestElement {
 
     @Override
     public void handle(ElementProcessContext context) {
-        List<TransactionController> allTransactional = testElements.stream()
+        List<TransactionController> allTransactional = nextElements().stream()
             .filter(handler -> handler instanceof TransactionController)
             .map(handler -> (TransactionController) handler)
             .collect(Collectors.toList());
@@ -80,15 +76,10 @@ public class TestPlanTestElement implements ParentTestElement {
         } else {
             throw new RuntimeException("事务控制器压力分配不能超过100");
         }
-        testElements.forEach(handler -> {
+        nextElements().forEach(handler -> {
             context.setCurrentMethod(template.getTestMethod());
             handler.handle(context);
         });
-    }
-
-    @Override
-    public List<TestElement> nextElements() {
-        return testElements;
     }
 
     private void generateScheduleCode(@NotNull List<TransactionController> allTransactional) {

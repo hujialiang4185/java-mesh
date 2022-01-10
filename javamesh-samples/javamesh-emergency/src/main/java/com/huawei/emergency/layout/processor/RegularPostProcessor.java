@@ -32,10 +32,7 @@ import java.util.Locale;
  * @since 2021-12-21
  **/
 @Data
-public class RegularPostProcessor implements PostProcessor {
-
-    private String title;
-    private String comment;
+public class RegularPostProcessor extends PostProcessor {
     private String fieldToCheck;
     private String nameOfCreateVariable;
     private String regularExpression;

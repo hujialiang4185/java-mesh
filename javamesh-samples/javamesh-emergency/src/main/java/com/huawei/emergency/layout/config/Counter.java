@@ -24,7 +24,7 @@ import lombok.Data;
  * @since 2021-12-15
  **/
 @Data
-public class Counter implements Config{
+public class Counter extends Config {
 
     private int startValue;
     private int increment;

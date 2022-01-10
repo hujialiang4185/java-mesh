@@ -29,9 +29,7 @@ import java.util.Locale;
  * @since 2021-12-15
  **/
 @Data
-public class HttpCookieManager implements Config {
-    private String name;
-    private String comment;
+public class HttpCookieManager extends Config {
     private boolean clearCookiesEachIteration;
     private String policy;
     private List<CookieValue> cookies = new ArrayList<>();

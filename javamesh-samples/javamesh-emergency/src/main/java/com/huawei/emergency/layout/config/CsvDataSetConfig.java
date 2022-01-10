@@ -25,7 +25,7 @@ import lombok.Data;
  * @since 2021-12-15
  **/
 @Data
-public class CsvDataSetConfig implements Config {
+public class CsvDataSetConfig extends Config {
 
     private String fileName;
     private String fileEncoding;

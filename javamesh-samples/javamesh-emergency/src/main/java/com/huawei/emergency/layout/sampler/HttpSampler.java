@@ -37,10 +37,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @since 2021-12-15
  **/
 @Data
-public class HttpSampler implements Sampler {
+public class HttpSampler extends Sampler {
 
-    private String title;
-    private String comment;
     private String protocol = "http";
     private String serviceName;
     private int port;
@@ -55,8 +53,6 @@ public class HttpSampler implements Sampler {
     private boolean compatibleHeaders;
     private List<HttpRequestDefault.Parameters> parameters = new ArrayList<>();
     private String body;
-
-    private List<TestElement> testElements = new ArrayList<>();
 
     @Override
     public void handle(ElementProcessContext context) {
@@ -84,11 +80,6 @@ public class HttpSampler implements Sampler {
         String url = String.format(Locale.ROOT, "%s://%s:%s/%s", protocol, serviceName, port, path);
         currentMethod.addContent(String.format(Locale.ROOT, "def %s = new HTTPRequest();", variableName), 2);
         resovleMethod(variableName, method.toUpperCase(Locale.ROOT), url, currentMethod); // 根据方法类型解析
-    }
-
-    @Override
-    public List<TestElement> nextElements() {
-        return testElements;
     }
 
     public void resovleMethod(String requestName, String methodType, String url, GroovyMethodTemplate currentMethod) {

@@ -31,16 +31,13 @@ import java.util.Locale;
  * @since 2021-12-17
  **/
 @Data
-public class CustomMethodTestElement implements TestElement {
-
-    private String title;
-    private String comment;
+public class CustomMethodTestElement extends TestElement {
     private String content;
     private GroovyMethodTemplate method;
 
     @Override
     public void handle(ElementProcessContext context) {
-        if (StringUtils.isEmpty(title)) {
+        if (StringUtils.isEmpty(getTitle())) {
             throw new RuntimeException("请输入方法名称");
         }
         if (StringUtils.isNotEmpty(content)) {
@@ -56,9 +53,9 @@ public class CustomMethodTestElement implements TestElement {
     public GroovyMethodTemplate getMethod() {
         if (method == null) {
             method = new GroovyMethodTemplate()
-                .start(String.format(Locale.ROOT, "public void \"%s\"() {", title), 1)
+                .start(String.format(Locale.ROOT, "public void \"%s\"() {", getTitle()), 1)
                 .end("}", 1);
-            method.setMethodName(title);
+            method.setMethodName(getTitle());
         }
         return method;
     }

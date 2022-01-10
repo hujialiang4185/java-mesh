@@ -30,20 +30,20 @@ import java.util.regex.Pattern;
  * @since 2021-12-15
  **/
 @Data
-public class DnsCacheManager implements Config{
+public class DnsCacheManager extends Config {
 
     private static final Pattern pattern = Pattern.compile("(https?|ftp|file)://(.+)(/)");
 
     private boolean clearCacheEachIteration;
     private boolean useCustomDnsResolvers;
     private List<String> dnsServers = new ArrayList<>();
-    private Map<String,String> staticHostTable = new HashMap<>();
+    private Map<String, String> staticHostTable = new HashMap<>();
 
     @Override
     public void handle(ElementProcessContext context) {
     }
 
-    public String resolver(String url){
+    public String resolver(String url) {
         if (!useCustomDnsResolvers) {
             return url;
         }
