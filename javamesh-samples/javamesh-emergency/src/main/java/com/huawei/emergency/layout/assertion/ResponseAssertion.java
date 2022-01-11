@@ -25,16 +25,24 @@ import java.util.Locale;
 /**
  * 响应断言
  *
+ * <p>applyTo暂不使用。应支持四种 1. main and sub 2. main only 3. sub only 4. variable name to use</p>
+ * <p>testField目前支持ResponseCode,ResponseMessage。除了ResponseCode情况下，其余皆为ResponseMessage</p>
+ * <p>ignoreStatus暂不使用</p>
+ * <p>matchRulers匹配模式，目前只支持正则匹配matches。应当支持contains,matches,equals,substring,not,or</p>
+ * <p>patternToTest正则表达式</p>
+ * <p>failureMessage错误提示信息</p>
+ *
  * @author y30010171
  * @since 2021-12-16
  **/
 @Data
 public class ResponseAssertion extends Assertion {
 
-    private String type;
+    private static final String CONTENT_FORMAT = "Assert.assertTrue(\"%s\", RegularAssert.assertRegular(%s,\"%s\"));";
+    private String applyTo;
     private String testField;
     private boolean ignoreStatus;
-    private String matchRulers;
+    private String matchRulers = "matches";
     private String patternToTest;
     private String failureMessage;
 
@@ -48,8 +56,6 @@ public class ResponseAssertion extends Assertion {
         if ("ResponseCode".equals(testField)) {
             field = "new String(httpResult.statusCode)";
         }
-        context.getCurrentMethod().addContent(
-            String.format(Locale.ROOT, "Assert.assertTrue(\"%s\", RegularAssert.assertRegular(%s,\"%s\"));",
-                failureMessage, field, patternToTest), 2);
+        context.getCurrentMethod().addContent(String.format(Locale.ROOT, CONTENT_FORMAT, failureMessage, field, patternToTest), 2);
     }
 }

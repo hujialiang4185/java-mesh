@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  **/
 @Data
 public class ElementProcessContext {
-    private AtomicInteger requestCount = new AtomicInteger();
+    private AtomicInteger variableCount = new AtomicInteger();
     private Map<String,Object> params = new HashMap<>();
     private GroovyClassTemplate template = new GroovyClassTemplate();
     private boolean initParams = false;
