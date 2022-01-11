@@ -24,6 +24,9 @@ import com.huawei.emergency.layout.ElementProcessContext;
  **/
 public class Jsr223Assertion extends Assertion {
 
+    private String language;
+    private String script;
+
     @Override
     public void handle(ElementProcessContext context) {
     }
