@@ -31,9 +31,7 @@ public class BeforeThreadTestElement extends ParentTestElement {
 
     @Override
     public void handle(ElementProcessContext context) {
-        nextElements().forEach(handler -> {
-            context.setCurrentMethod(context.getTemplate().getBeforeThreadMethod());
-            handler.handle(context);
-        });
+        context.setCurrentMethod(context.getTemplate().getBeforeThreadMethod());
+        nextElements().forEach(testElement -> testElement.handle(context));
     }
 }

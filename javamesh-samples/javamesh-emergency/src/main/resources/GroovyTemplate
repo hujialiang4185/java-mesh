@@ -42,30 +42,27 @@ import HTTPClient.NVPair;
 @RunWith(GrinderRunner)
 class GroovyTemplate {
 
-    public static HTTPRequest request;
-    public Map variables;
-    public HTTPResponse httpResult;
+    public static HTTPRequest httpRequest;
+    public static HTTPResponse httpResult;
+    public static List<NVPair> headers = new ArrayList<>();
+    public static List<Cookie> cookies = new ArrayList<>();
 
     @BeforeProcess
     public static void beforeProcess() {
         HTTPPluginControl.getConnectionDefaults().timeout = 6000;
-        request = new HTTPRequest();
+        httpRequest = new HTTPRequest();
     }
 
     @BeforeThread
     public void beforeThread() {
         grinder.statistics.delayReports = true;
-        // reset to the all cookies
         def threadContext = HTTPPluginControl.getThreadHTTPClientContext();
-        CookieModule.listAllCookies(threadContext).each {
-            CookieModule.removeCookie(it, threadContext);
-        }
+        CookieModule.listAllCookies(threadContext).each { CookieModule.removeCookie(it, threadContext)}
+        cookies.each {CookieModule.addCookie(it, threadContext)}
     }
 
     @Before
     public void before() {
-        def threadContext = HTTPPluginControl.getThreadHTTPClientContext();
-        CookieModule.addCookie(new Cookie(""),threadContext);
     }
 
     @Test

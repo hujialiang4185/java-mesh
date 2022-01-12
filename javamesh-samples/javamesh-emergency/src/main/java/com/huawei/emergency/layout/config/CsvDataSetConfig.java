@@ -16,9 +16,13 @@
 
 package com.huawei.emergency.layout.config;
 
+import com.huawei.common.exception.ApiException;
 import com.huawei.emergency.layout.ElementProcessContext;
+import com.huawei.emergency.layout.template.GroovyClassTemplate;
 import com.huawei.emergency.layout.template.GroovyFieldTemplate;
 import lombok.Data;
+
+import java.util.Locale;
 
 /**
  * @author y30010171
@@ -27,21 +31,48 @@ import lombok.Data;
 @Data
 public class CsvDataSetConfig extends Config {
 
+    private static final String NEW_CSV_FORMAT = "    static def %s = new CsvParameterized();";
+    private static final String CSV_CONFIG_FORMAT = "new ParameterizedConfig.Builder(parameterizedNames: \"%s\".split(\"%s\") as List,parameterizedFile: \"%s\",parameterizedDelimiter: \"%s\",ignoreFirstLine: %s,sharingMode: %s,allowQuotedData: %s,recycleOnEof: %s).build()";
+    private static final String CSV_INIT_FORMAT = "%s.initConfig(%s);";
+
     private String fileName;
-    private String fileEncoding;
+    private String fileEncoding; // 暂时无用
     private String variableNames; // not empty
-    private boolean ignoreFirstLine = false;
+    private boolean ignoreFirstLine;
     private String delimiter = ",";
-    private boolean allowQuoteData = false;
+    private boolean allowQuoteData;
     private boolean recycleOnEof = true;
-    private boolean stopOnEof = false;
+    private boolean stopOnEof; // 暂时无用
     private String sharingMode;
 
     @Override
     public void handle(ElementProcessContext context) {
-        if (!context.isInitParams()){
-            context.getTemplate().addFiled(GroovyFieldTemplate.create("public Map<String,Object> allVariable = new HashMap<>();"));
+        GroovyClassTemplate classTemplate = context.getTemplate();
+        classTemplate.addImport("import com.huawei.test.configelement.impl.CsvParameterized;");
+        classTemplate.addImport("import com.huawei.test.configelement.config.ParameterizedConfig;");
+        classTemplate.addImport("import com.huawei.test.configelement.enums.SharingMode;");
+        String sharingModeStr = "";
+        if ("agent".equals(sharingMode)) {
+            sharingModeStr = "SharingMode.CURRENT_AGENT";
+        } else if ("process".equals(sharingMode)) {
+            sharingModeStr = "SharingMode.CURRENT_PROCESS";
+        } else if ("thread".equals(sharingMode)) {
+            sharingModeStr = "SharingMode.CURRENT_THREAD";
+        } else {
+            sharingModeStr = "SharingMode.ALL_THREADS";
         }
-        // todo 生成调用代码：调用csv函数 获取参数map，将其填充进实例变量 allVariable
+        String csvVariableName = "csvDatasetConfig" + context.getVariableCount().getAndIncrement();
+        classTemplate.addFiled(GroovyFieldTemplate.create(String.format(Locale.ROOT, NEW_CSV_FORMAT, csvVariableName))); // 声明csv变量
+        String csvConfig = String.format(Locale.ROOT, CSV_CONFIG_FORMAT, variableNames, delimiter, fileName, delimiter, ignoreFirstLine, sharingModeStr, allowQuoteData, recycleOnEof);
+        classTemplate.getBeforeProcessMethod().addContent(String.format(Locale.ROOT, CSV_INIT_FORMAT, csvVariableName, csvConfig), 2); // 初始化csv变量
+
+        // 获取csv解析的参数
+        String csvLineValuesVariableName = "csvLineValue" + context.getVariableCount().getAndIncrement();
+        classTemplate.getBeforeMethod().addContent(String.format(Locale.ROOT, "def %s = %s.nextLineValue();", csvLineValuesVariableName, csvVariableName), 2);
+        // 通过参数名称声明实例变量 并赋值
+        for (String name : variableNames.split(delimiter)) {
+            classTemplate.addFiled(GroovyFieldTemplate.create(String.format(Locale.ROOT, "    def %s = \"\";", name)));
+            classTemplate.getBeforeMethod().addContent(String.format(Locale.ROOT, "%s = %s.get(\"%s\");", name, csvLineValuesVariableName, name), 2);
+        }
     }
 }

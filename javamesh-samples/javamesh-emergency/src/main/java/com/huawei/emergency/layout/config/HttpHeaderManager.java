@@ -17,9 +17,11 @@
 package com.huawei.emergency.layout.config;
 
 import com.huawei.emergency.layout.ElementProcessContext;
+import com.huawei.emergency.layout.template.GroovyMethodTemplate;
 import lombok.Data;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -32,5 +34,9 @@ public class HttpHeaderManager extends Config {
 
     @Override
     public void handle(ElementProcessContext context) {
+        GroovyMethodTemplate beforeProcessMethod = context.getTemplate().getBeforeProcessMethod();
+        headers.forEach( (key,value) -> {
+            beforeProcessMethod.addContent(String.format(Locale.ROOT,"headers.add(new NVPair(\"%s\", \"%s\"))",key,value),2);
+        });
     }
 }

@@ -14,20 +14,17 @@
  * limitations under the License.
  */
 
-package com.huawei.emergency.layout.custom;
+package com.huawei.emergency.layout.config
 
-import com.huawei.emergency.layout.ElementProcessContext;
-import com.huawei.emergency.layout.ParentTestElement;
+import com.huawei.emergency.layout.ElementProcessContext
+import com.huawei.emergency.layout.template.GroovyClassTemplate
 
-/**
- * @author y30010171
- * @since 2021-12-17
- **/
-public class AfterThreadTestElement extends ParentTestElement {
+class HttpCookieManagerTest extends GroovyTestCase {
 
-    @Override
-    public void handle(ElementProcessContext context) {
-        context.setCurrentMethod(context.getTemplate().getAfterThreadMethod());
-        nextElements().forEach(testElement -> testElement.handle(context));
+    void "test when normal"() {
+        ElementProcessContext context = new ElementProcessContext(template: GroovyClassTemplate.template());
+        HttpCookieManager cookieManager = new HttpCookieManager(cookies: [ new HttpCookieManager.CookieValue(name: "sessionId", value: "123456789", domain: "127.0.0.1", path: "/", secure: true)]);
+        cookieManager.handle(context);
+        context.getTemplate().print(System.out)
     }
 }

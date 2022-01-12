@@ -36,18 +36,18 @@ public class HttpCookieManager extends Config {
 
     @Override
     public void handle(ElementProcessContext context) {
-        GroovyMethodTemplate beforeMethod = context.getTemplate().getBeforeMethod();
-        for (CookieValue cookie : cookies) {
-            beforeMethod.addContent(
+        GroovyMethodTemplate beforeProcessMethod = context.getTemplate().getBeforeProcessMethod();
+        cookies.forEach( cookie -> {
+            beforeProcessMethod.addContent(
                 String.format(Locale.ROOT,
-                    "CookieModule.addCookie(new Cookie(\"%s\", \"%s\", \"%s\", \"/%s\", null, %s),threadContext);",
+                    "cookies.add(new Cookie(\"%s\", \"%s\", \"%s\", \"%s\", null, %s));",
                     cookie.getName(), cookie.getValue(), cookie.getDomain(), cookie.getPath(), Boolean.parseBoolean(cookie.getSecure())
                 ), 2);
-        }
+        });
     }
 
     @Data
-    class CookieValue {
+    static class CookieValue {
         private String name;
         private String value;
         private String domain;

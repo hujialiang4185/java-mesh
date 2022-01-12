@@ -19,6 +19,7 @@ package com.huawei.emergency.layout.assertion;
 import com.huawei.common.constant.ScriptLanguageEnum;
 import com.huawei.common.exception.ApiException;
 import com.huawei.emergency.layout.ElementProcessContext;
+import com.huawei.emergency.layout.Jsr223Util;
 import lombok.Data;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -41,32 +42,12 @@ import java.util.Locale;
 public class Jsr223Assertion extends Assertion {
     private static final Logger LOGGER = LoggerFactory.getLogger(Jsr223Assertion.class);
     private static final String JS_CONTENT_FORMAT = "new JavaScriptExecutor().executeScript(\"%s\",null);";
-    private static final String SHELL_CONTENT_FORMAT = "new CommandService().execCommand(\"%s\",300L);";
+    private static final String SHELL_CONTENT_FORMAT = "new CommandService().execCommand(\"%s\",300000L);";
     private String language;
     private String script;
 
     @Override
     public void handle(ElementProcessContext context) {
-        if (StringUtils.isEmpty(script)) {
-            return;
-        }
-        ScriptLanguageEnum languageEnum = ScriptLanguageEnum.match(language);
-        if (languageEnum == null) {
-            throw new ApiException(String.format(Locale.ROOT, "不支持的脚本语言类型%s", language));
-        }
-        if (languageEnum == ScriptLanguageEnum.GROOVY) {
-            try (BufferedReader scriptReader = new BufferedReader(new StringReader(script))) {
-                String line;
-                while ((line = scriptReader.readLine()) != null) {
-                    context.getCurrentMethod().addContent(line, 2);
-                }
-            } catch (IOException e) {
-                LOGGER.error("Can't not read script.", e);
-            }
-        } else if (languageEnum == ScriptLanguageEnum.JAVASCRIPT) {
-            context.getCurrentMethod().addContent(String.format(Locale.ROOT, JS_CONTENT_FORMAT, script), 2);
-        } else if (languageEnum == ScriptLanguageEnum.SHELL) {
-            context.getCurrentMethod().addContent(String.format(Locale.ROOT, SHELL_CONTENT_FORMAT, script), 2);
-        }
+        Jsr223Util.handle(context,language,script);
     }
 }

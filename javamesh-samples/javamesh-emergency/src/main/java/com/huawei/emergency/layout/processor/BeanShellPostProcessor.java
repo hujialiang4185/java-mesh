@@ -27,6 +27,7 @@ import lombok.Data;
  * @since 2021-12-16
  **/
 @Data
+@Deprecated
 public class BeanShellPostProcessor extends PostProcessor{
     private boolean resetInterpreter;
     private String parameters;

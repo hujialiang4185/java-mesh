@@ -26,6 +26,7 @@ import java.util.List;
  * @since 2021-12-15
  **/
 @Data
+@Deprecated
 public class HttpRequestDefault extends Config {
 
     private String protocol = "http";

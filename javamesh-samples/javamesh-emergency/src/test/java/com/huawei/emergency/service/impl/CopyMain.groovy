@@ -1,8 +1,12 @@
 package com.huawei.emergency.service.impl
 
+import HTTPClient.Cookie
 import HTTPClient.CookieModule
 import HTTPClient.HTTPResponse
 import HTTPClient.NVPair
+import com.huawei.test.configelement.config.ParameterizedConfig
+import com.huawei.test.configelement.enums.SharingMode
+import com.huawei.test.configelement.impl.CsvParameterized
 import net.grinder.plugin.http.HTTPPluginControl
 import net.grinder.plugin.http.HTTPRequest
 import net.grinder.script.GTest
@@ -51,6 +55,8 @@ class CopyMain {
     public static GTest test;
     public static HTTPRequest request;
     public Object cookies = [];
+    public static List<Cookie> cookies1 = new ArrayList<>();
+    public static List<NVPair> headers = new ArrayList<>();
 
     @BeforeProcess
     public static void beforeProcess() {
@@ -72,11 +78,18 @@ class CopyMain {
             CookieModule.removeCookie(it, threadContext);
         }
 
+        CookieModule.listAllCookies(threadContext).each { CookieModule.removeCookie(it, threadContext)}
+        cookies.each {CookieModule.addCookie(it, threadContext)}
+
         // do login & save to the login info in cookies
         NVPair[] params = [new NVPair("id", "MY_ID"), new NVPair("pw", "MY_PASSWORD")];
         //HTTPResponse res = request.POST("https://login.site.com/login/do", params);
         cookies = CookieModule.listAllCookies(threadContext);
         println("beforeThread");
+        cookies1.each {
+            CookieModule.addCookie(it, threadContext);
+            grinder.logger.info("{}", it);
+        }
     }
 
     @Before
@@ -92,6 +105,12 @@ class CopyMain {
 
     @Test
     public void test() {
+        def object = new ParameterizedConfig.Builder(parameterizedNames: "".split(",") as List, parameterizedFile: "", parameterizedDelimiter: "", ignoreFirstLine: true, sharingMode: SharingMode.ALL_THREADS, allowQuotedData: true, recycleOnEof: true).build();
+        def parameterized = new CsvParameterized()
+        parameterized.initConfig(object)
+        def csvLineValue = parameterized.nextLineValue()
+        def x = csvLineValue.get("1")
+
         println(System.currentTimeMillis())
         println(Thread.currentThread());
         request.setHeaders([new NVPair("Cookie", "JSESSIONID=F9C0C189E20ABC6D46F82C97527604AA; SESSION=ZTE1Njc0MTMtNjRkMC00MDgwLWFhNzktOGRkODNlMDA1N2Ex; Idea-3f9c308c=fa269f98-674f-4da8-bf3f-de95dc189f5c; XXL_JOB_LOGIN_IDENTITY=7b226964223a312c22757365726e616d65223a2261646d696e222c2270617373776f7264223a226531306164633339343962613539616262653536653035376632306638383365222c22726f6c65223a312c227065726d697373696f6e223a6e756c6c7d; JSESSIONID=201A94A5EE768AFD822EC4EA11C95F79")] as NVPair[]);
@@ -148,6 +167,6 @@ class CopyMain {
         int agentNum = grinder.agentNumber
         int processNum = grinder.processNumber
         int threadNum = grinder.threadNumber
-        return  (agentNum + 1) * (processNum + 1) * (threadNum + 1)
+        return (agentNum + 1) * (processNum + 1) * (threadNum + 1)
     }
 }

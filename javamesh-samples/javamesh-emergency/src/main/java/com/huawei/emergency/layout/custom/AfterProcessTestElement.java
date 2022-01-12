@@ -16,12 +16,8 @@
 
 package com.huawei.emergency.layout.custom;
 
-import com.huawei.emergency.layout.TestElement;
 import com.huawei.emergency.layout.ElementProcessContext;
 import com.huawei.emergency.layout.ParentTestElement;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author y30010171
@@ -31,9 +27,7 @@ public class AfterProcessTestElement extends ParentTestElement {
 
     @Override
     public void handle(ElementProcessContext context) {
-        nextElements().forEach(handler -> {
-            context.setCurrentMethod(context.getTemplate().getAfterProcessMethod());
-            handler.handle(context);
-        });
+        context.setCurrentMethod(context.getTemplate().getAfterProcessMethod());
+        nextElements().forEach(testElement -> testElement.handle(context));
     }
 }

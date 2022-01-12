@@ -38,11 +38,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Data
 public class ElementProcessContext {
     private AtomicInteger variableCount = new AtomicInteger();
-    private Map<String,Object> params = new HashMap<>();
+    private Map<String, Object> params = new HashMap<>();
     private GroovyClassTemplate template = new GroovyClassTemplate();
     private boolean initParams = false;
     private GroovyMethodTemplate currentMethod = new GroovyMethodTemplate();
     private List<HttpHeaderManager> headerManagers = new ArrayList<>();
     private List<DnsCacheManager> dnsCacheManagers = new ArrayList<>();
     private List<HttpRequestDefault> httpRequestDefaults = new ArrayList<>();
+
+    private String httpRequestVariableName = "";
+    private String httpResultVariableName = "";
 }

@@ -16,12 +16,20 @@
 
 package com.huawei.emergency.layout.sampler;
 
+import com.huawei.common.constant.ScriptLanguageEnum;
+import com.huawei.common.exception.ApiException;
+import com.huawei.emergency.layout.Jsr223Util;
 import com.huawei.emergency.layout.TestElement;
 import com.huawei.emergency.layout.ElementProcessContext;
+import com.huawei.emergency.layout.assertion.Jsr223Assertion;
 import lombok.Data;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * @author y30010171
@@ -29,8 +37,11 @@ import java.util.List;
  **/
 @Data
 public class Jsr223Sampler extends Sampler {
+    private String language;
+    private String script;
 
     @Override
     public void handle(ElementProcessContext context) {
+        Jsr223Util.handle(context,language,script);
     }
 }

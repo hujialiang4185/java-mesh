@@ -19,6 +19,8 @@ package com.huawei.emergency.layout.sampler;
 import com.huawei.emergency.layout.TestElement;
 import com.huawei.emergency.layout.ElementProcessContext;
 import com.huawei.emergency.layout.config.DnsCacheManager;
+import com.huawei.emergency.layout.config.HttpCookieManager;
+import com.huawei.emergency.layout.config.HttpHeaderManager;
 import com.huawei.emergency.layout.config.HttpRequestDefault;
 import com.huawei.emergency.layout.template.GroovyFieldTemplate;
 import com.huawei.emergency.layout.template.GroovyMethodTemplate;
@@ -28,7 +30,9 @@ import org.apache.commons.lang.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * http 取样器
@@ -59,44 +63,41 @@ public class HttpSampler extends Sampler {
         if (!"http".equals(protocol) || StringUtils.isEmpty(method)) {
             return;
         }
-        /*context.getTemplate().addFiled(GroovyFieldTemplate.create(String.format(Locale.ROOT, "    public static HTTPRequest %s;", name)));
-        context.getTemplate().getBeforeProcessMethod().addContent(String.format(Locale.ROOT, "%s = new HTTPRequest();", name), 2);
-        // todo 生成请求header
-        GroovyMethodTemplate currentMethod = context.getCurrentMethod();
-        currentMethod.addContent("def headerList = new ArrayList<NVPair>();", 2);
-        context.getHeaderManagers().forEach(httpHeaderManager -> httpHeaderManager.handle(context));
-        currentMethod.addContent("def header = headerList.toArray();", 2);
-
+        /*
         // todo 使用自定义dns解析器
         String url = path;
         for (DnsCacheManager dnsCacheManager : context.getDnsCacheManagers()) {
             url = dnsCacheManager.resolver(url);
         }*/
         GroovyMethodTemplate currentMethod = context.getCurrentMethod();
-        String variableName = "request" + context.getRequestCount().getAndIncrement();
+        String requestVariableName = "request" + context.getVariableCount().getAndIncrement();
         if (StringUtils.isNotEmpty(path) && path.startsWith("/")) {
             path = path.substring(1);
         }
         String url = String.format(Locale.ROOT, "%s://%s:%s/%s", protocol, serviceName, port, path);
-        currentMethod.addContent(String.format(Locale.ROOT, "def %s = new HTTPRequest();", variableName), 2);
-        resovleMethod(variableName, method.toUpperCase(Locale.ROOT), url, currentMethod); // 根据方法类型解析
+        currentMethod.addContent(String.format(Locale.ROOT, "def %s = new HTTPRequest();", requestVariableName), 2);
+        currentMethod.addContent(String.format(Locale.ROOT, "%s.setHeaders( headers as NVPair[]);", requestVariableName), 2);
+        String resultVariableName = "httpResult" + context.getVariableCount().getAndIncrement();
+        resovleMethod(requestVariableName, resultVariableName, method.toUpperCase(Locale.ROOT), url, context); // 根据方法类型生成调用
+        context.setHttpRequestVariableName(requestVariableName);
+        context.setHttpResultVariableName(resultVariableName);
+        nextElements().forEach(testElement -> testElement.handle(context)); // 生成header cookie等组件信息
     }
 
-    public void resovleMethod(String requestName, String methodType, String url, GroovyMethodTemplate currentMethod) {
+    public void resovleMethod(String requestName, String resultVariableName, String methodType, String url, ElementProcessContext context) {
+        GroovyMethodTemplate currentMethod = context.getCurrentMethod();
         if ("GET".equals(methodType)) {
-            currentMethod.addContent(String.format(Locale.ROOT, "httpResult = %s.%s(\"%s\",%s)", requestName, methodType, url, generateNvPairs()), 2);
+            currentMethod.addContent(String.format(Locale.ROOT, "def %s = %s.%s(\"%s\",%s)", resultVariableName, requestName, methodType, url, generateNvPairs()), 2);
         } else if ("POST".equals(methodType)) {
-            currentMethod.addContent(String.format(Locale.ROOT, "httpResult = %s.%s(\"%s\",%s)", requestName, methodType, url, generateBodyData()), 2);
+            currentMethod.addContent(String.format(Locale.ROOT, "def %s = %s.%s(\"%s\",%s)", resultVariableName, requestName, methodType, url, generateBodyData()), 2);
         } else if ("PUT".equals(methodType)) {
-            currentMethod.addContent(String.format(Locale.ROOT, "httpResult = %s.%s(\"%s\",%s)", requestName, methodType, url, generateBodyData()), 2);
-        } else if ("DELETE".equals(methodType)) {
-            currentMethod.addContent(String.format(Locale.ROOT, "httpResult = %s.%s(\"%s\")", requestName, methodType, url), 2);
+            currentMethod.addContent(String.format(Locale.ROOT, "def %s = %s.%s(\"%s\",%s)", resultVariableName, requestName, methodType, url, generateBodyData()), 2);
+        } else if ("DELETE".equals(methodType) || "TRACE".equals(methodType)) {
+            currentMethod.addContent(String.format(Locale.ROOT, "def %s = %s.%s(\"%s\")", resultVariableName, requestName, methodType, url), 2);
         } else if ("HEAD".equals(methodType)) {
-            currentMethod.addContent(String.format(Locale.ROOT, "httpResult = %s.%s(\"%s\",%s)", requestName, methodType, url, generateNvPairs()), 2);
+            currentMethod.addContent(String.format(Locale.ROOT, "def %s = %s.%s(\"%s\",%s)", resultVariableName, requestName, methodType, url, generateNvPairs()), 2);
         } else if ("OPTIONS".equals(methodType)) {
-            currentMethod.addContent(String.format(Locale.ROOT, "httpResult = %s.%s(\"%s\",%s)", requestName, methodType, url, generateBodyData()), 2);
-        } else if ("TRACE".equals(methodType)) {
-            currentMethod.addContent(String.format(Locale.ROOT, "httpResult = %s.%s(\"%s\")", requestName, methodType, url), 2);
+            currentMethod.addContent(String.format(Locale.ROOT, "def %s = %s.%s(\"%s\",%s)", resultVariableName, requestName, methodType, url, generateBodyData()), 2);
         }
     }
 

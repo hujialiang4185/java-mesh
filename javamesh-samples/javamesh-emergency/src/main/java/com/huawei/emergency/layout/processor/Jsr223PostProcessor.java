@@ -17,6 +17,7 @@
 package com.huawei.emergency.layout.processor;
 
 import com.huawei.emergency.layout.ElementProcessContext;
+import com.huawei.emergency.layout.Jsr223Util;
 import com.huawei.emergency.layout.template.GroovyMethodTemplate;
 import lombok.Data;
 
@@ -36,12 +37,6 @@ public class Jsr223PostProcessor extends PostProcessor{
 
     @Override
     public void handle(ElementProcessContext context) {
-        if (!"groovy".equals(this.language)) {
-            return;
-        }
-        GroovyMethodTemplate currentMethod = context.getCurrentMethod();
-        for (String line : this.script.split(System.lineSeparator())) {
-            currentMethod.addContent(line,2);
-        }
+        Jsr223Util.handle(context,language,script);
     }
 }
