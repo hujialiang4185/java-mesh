@@ -65,10 +65,6 @@ class GroovyTemplate {
     public void before() {
     }
 
-    @Test
-    public void test() {
-    }
-
     @After
     public void after() {
     }
