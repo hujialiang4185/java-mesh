@@ -70,11 +70,12 @@ public class HttpSampler extends Sampler {
         }
         String url = String.format(Locale.ROOT, "%s://%s:%s/%s", protocol, domain, port, path);
         currentMethod.addContent(String.format(Locale.ROOT, "def %s = new HTTPRequest();", requestVariableName), 2);
+        currentMethod.addContent(String.format(Locale.ROOT, "%s.setUrl(%s);", requestVariableName, url), 2);
         currentMethod.addContent(String.format(Locale.ROOT, "%s.setHeaders( headers as NVPair[]);", requestVariableName), 2);
         currentMethod.addContent(String.format(Locale.ROOT, "%s.setData(%s);", requestVariableName, generateBodyData()), 2);
         currentMethod.addContent(String.format(Locale.ROOT, "%s.setFormData(%s);", requestVariableName, generateNvPairs()), 2);
         String resultVariableName = "httpResult" + context.getVariableCount().getAndIncrement();
-        currentMethod.addContent(String.format(Locale.ROOT, "def %s = %s.%s(\"%s\")", resultVariableName, requestVariableName, method.toUpperCase(Locale.ROOT), url), 2);
+        currentMethod.addContent(String.format(Locale.ROOT, "def %s = %s.%s()", resultVariableName, requestVariableName, method.toUpperCase(Locale.ROOT)), 2);
         context.setHttpRequestVariableName(requestVariableName);
         context.setHttpResultVariableName(resultVariableName);
         nextElements().forEach(testElement -> testElement.handle(context)); // 生成header cookie等组件信息
