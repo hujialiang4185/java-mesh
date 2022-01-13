@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
  * @since 2021-12-15
  **/
 @Data
+@Deprecated
 public class DnsCacheManager extends Config {
 
     private static final Pattern pattern = Pattern.compile("(https?|ftp|file)://(.+)(/)");

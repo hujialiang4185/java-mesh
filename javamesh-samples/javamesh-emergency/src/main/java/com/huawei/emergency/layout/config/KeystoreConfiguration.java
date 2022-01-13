@@ -24,6 +24,7 @@ import lombok.Data;
  * @since 2021-12-15
  **/
 @Data
+@Deprecated
 public class KeystoreConfiguration extends Config {
 
     private boolean preload;

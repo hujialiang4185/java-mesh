@@ -16,7 +16,6 @@
 
 package com.huawei.emergency.layout.config;
 
-import com.huawei.common.exception.ApiException;
 import com.huawei.emergency.layout.ElementProcessContext;
 import com.huawei.emergency.layout.template.GroovyClassTemplate;
 import com.huawei.emergency.layout.template.GroovyFieldTemplate;
@@ -35,12 +34,12 @@ public class Counter extends Config {
     private static final String NAME_FORMAT = "counter%s";
     private static final String CONFIG_FORMAT = "new CounterConfig.Builder(startValue: %s, increment: %s, maxValue: %s, numberFormat: \"%s\", sharingMode: %s, resetEachIteration: %s).build()";
 
-    private int startValue;
-    private int increment;
-    private int maxValue;
-    private String numberFormat = "";
+    private int start;
+    private int incr;
+    private int end;
+    private String format = "";
     private String exportVariableName;
-    private boolean forEachUser;
+    private boolean perUser;
     private boolean resetOnEachThreadGroup;
 
     @Override
@@ -49,12 +48,12 @@ public class Counter extends Config {
         GroovyClassTemplate currentClass = context.getTemplate(); // 当前类
         String counterName = String.format(Locale.ROOT, NAME_FORMAT, context.getVariableCount().getAndIncrement());
         String configCreateStr;
-        if (forEachUser) {
+        if (perUser) {
             currentClass.addFiled(GroovyFieldTemplate.create(String.format(Locale.ROOT, "def static %s = new CommonCounter();", counterName)));
-            configCreateStr = String.format(Locale.ROOT, CONFIG_FORMAT, startValue, increment, maxValue, numberFormat, "SharingMode.ALL_THREADS", resetOnEachThreadGroup);
+            configCreateStr = String.format(Locale.ROOT, CONFIG_FORMAT, start, incr, end, format, "SharingMode.ALL_THREADS", resetOnEachThreadGroup);
         } else {
             currentClass.addFiled(GroovyFieldTemplate.create(String.format(Locale.ROOT, "def %s = new CommonCounter();", counterName)));
-            configCreateStr = String.format(Locale.ROOT, CONFIG_FORMAT, startValue, increment, maxValue, numberFormat, "SharingMode.CURRENT_THREAD", resetOnEachThreadGroup);
+            configCreateStr = String.format(Locale.ROOT, CONFIG_FORMAT, start, incr, end, format, "SharingMode.CURRENT_THREAD", resetOnEachThreadGroup);
         }
         currentClass.getBeforeProcessMethod().addContent(String.format(Locale.ROOT, "counter%s.initConfig(%s);", counterName, configCreateStr), 2);
         if (StringUtils.isNotEmpty(exportVariableName)) { // 需要生成参数

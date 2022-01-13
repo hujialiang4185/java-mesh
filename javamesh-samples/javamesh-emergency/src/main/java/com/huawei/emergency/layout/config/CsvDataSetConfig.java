@@ -52,11 +52,11 @@ public class CsvDataSetConfig extends Config {
         classTemplate.addImport("import com.huawei.test.configelement.config.ParameterizedConfig;");
         classTemplate.addImport("import com.huawei.test.configelement.enums.SharingMode;");
         String sharingModeStr = "";
-        if ("agent".equals(sharingMode)) {
+        if ("CURRENT_AGENT".equals(sharingMode)) {
             sharingModeStr = "SharingMode.CURRENT_AGENT";
-        } else if ("process".equals(sharingMode)) {
+        } else if ("CURRENT_PROCESS".equals(sharingMode)) {
             sharingModeStr = "SharingMode.CURRENT_PROCESS";
-        } else if ("thread".equals(sharingMode)) {
+        } else if ("CURRENT_THREAD".equals(sharingMode)) {
             sharingModeStr = "SharingMode.CURRENT_THREAD";
         } else {
             sharingModeStr = "SharingMode.ALL_THREADS";
