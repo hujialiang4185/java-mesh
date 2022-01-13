@@ -38,13 +38,18 @@ import java.util.Locale;
 @Data
 public class ResponseAssertion extends Assertion {
 
-    private static final String CONTENT_FORMAT = "Assert.assertTrue(\"%s\", RegularAssert.assertRegular(%s,\"%s\"));";
+    private static final String MATCHES_FORMAT = "Assert.assertTrue(\"%s\", RegularAssert.assertRegular(%s,\"%s\"));";
+    private static final String CONTAINS__FORMAT = "Assert.assertTrue(\"%s\", %s.contains(\"%s\"));";
+
     private String applyTo;
     private String testField;
+    private String testType;
+    private String testStrings;
+
     private boolean ignoreStatus;
     private String matchRulers = "matches";
     private String patternToTest;
-    private String failureMessage;
+    private String failureMessage = "响应断言失败";
 
 
     @Override
@@ -52,10 +57,34 @@ public class ResponseAssertion extends Assertion {
         if (StringUtils.isEmpty(patternToTest)) {
             return;
         }
-        String field = "new String(httpResult.data)";
-        if ("ResponseCode".equals(testField)) {
-            field = "new String(httpResult.statusCode)";
+        String request = context.getHttpResultVariableName();
+        String response = context.getHttpRequestVariableName();
+        String variableName = "";
+        String fieldStr = "";
+        if ("响应代码".equals(testField)) {
+            variableName = response;
+            fieldStr = "statusCode";
+        } else if ("响应头".equals(testField) || "响应文本".equals(testField) || "响应消息".equals(testField)) {
+            variableName = response;
+            fieldStr = "data";
+        } else if ("请求头".equals(testField)) {
+            variableName = request;
+            fieldStr = "headers";
+        } else if ("URL样本".equals(testField)) {
+            variableName = request;
+            fieldStr = "url";
+        } else if ("文档(文本)".equals(testField)) {
+            variableName = request;
+            fieldStr = "data";
+        } else if ("请求数据".equals(testField)) {
+            variableName = request;
+            fieldStr = "formData";
         }
-        context.getCurrentMethod().addContent(String.format(Locale.ROOT, CONTENT_FORMAT, failureMessage, field, patternToTest), 2);
+        String field = String.format(Locale.ROOT, "String.valueOf(%s.%s)", variableName, fieldStr);
+        if ("包括".equals(testType)) {
+            context.getCurrentMethod().addContent(String.format(Locale.ROOT, CONTAINS__FORMAT, failureMessage, field, testStrings), 2);
+        } else {
+            context.getCurrentMethod().addContent(String.format(Locale.ROOT, MATCHES_FORMAT, failureMessage, field, testStrings), 2);
+        }
     }
 }
