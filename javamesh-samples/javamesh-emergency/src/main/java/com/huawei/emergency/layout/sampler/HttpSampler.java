@@ -16,13 +16,8 @@
 
 package com.huawei.emergency.layout.sampler;
 
-import com.huawei.emergency.layout.TestElement;
 import com.huawei.emergency.layout.ElementProcessContext;
-import com.huawei.emergency.layout.config.DnsCacheManager;
-import com.huawei.emergency.layout.config.HttpCookieManager;
-import com.huawei.emergency.layout.config.HttpHeaderManager;
 import com.huawei.emergency.layout.config.HttpRequestDefault;
-import com.huawei.emergency.layout.template.GroovyFieldTemplate;
 import com.huawei.emergency.layout.template.GroovyMethodTemplate;
 import lombok.Data;
 import org.apache.commons.lang.StringUtils;
@@ -30,9 +25,6 @@ import org.apache.commons.lang.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 /**
  * http 取样器
@@ -44,7 +36,7 @@ import java.util.stream.Collectors;
 public class HttpSampler extends Sampler {
 
     private String protocol = "http";
-    private String serviceName;
+    private String domain;
     private int port;
     private String method;
     private String path;
@@ -74,7 +66,7 @@ public class HttpSampler extends Sampler {
         if (StringUtils.isNotEmpty(path) && path.startsWith("/")) {
             path = path.substring(1);
         }
-        String url = String.format(Locale.ROOT, "%s://%s:%s/%s", protocol, serviceName, port, path);
+        String url = String.format(Locale.ROOT, "%s://%s:%s/%s", protocol, domain, port, path);
         currentMethod.addContent(String.format(Locale.ROOT, "def %s = new HTTPRequest();", requestVariableName), 2);
         currentMethod.addContent(String.format(Locale.ROOT, "%s.setHeaders( headers as NVPair[]);", requestVariableName), 2);
         String resultVariableName = "httpResult" + context.getVariableCount().getAndIncrement();
