@@ -49,7 +49,7 @@ class GroovyTemplate {
 
     @BeforeProcess
     public static void beforeProcess() {
-        HTTPPluginControl.getConnectionDefaults().timeout = 6000;
+        HTTPPluginControl.getConnectionDefaults().timeout = 60000;
         httpRequest = new HTTPRequest();
         def expireDate = new Date();expireDate.seconds += 3600*24;
     }

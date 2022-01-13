@@ -41,11 +41,11 @@ public class ResponseAssertion extends Assertion {
     private static final String MATCHES_FORMAT = "Assert.assertTrue(\"%s\", RegularAssert.assertRegular(%s,\"%s\"));";
     private static final String CONTAINS__FORMAT = "Assert.assertTrue(\"%s\", %s.contains(\"%s\"));";
 
-    private String applyTo;
     private String testField;
     private String testType;
     private String testStrings;
 
+    private String applyTo;
     private boolean ignoreStatus;
     private String matchRulers = "matches";
     private String patternToTest;
@@ -63,13 +63,13 @@ public class ResponseAssertion extends Assertion {
         String fieldStr = "";
         if ("响应代码".equals(testField)) {
             variableName = response;
-            fieldStr = "statusCode";
+            fieldStr = "statusCode.toString()";
         } else if ("响应头".equals(testField) || "响应文本".equals(testField) || "响应消息".equals(testField)) {
             variableName = response;
             fieldStr = "data";
         } else if ("请求头".equals(testField)) {
             variableName = request;
-            fieldStr = "headers";
+            fieldStr = "headers.toString()";
         } else if ("URL样本".equals(testField)) {
             variableName = request;
             fieldStr = "url";
@@ -78,9 +78,9 @@ public class ResponseAssertion extends Assertion {
             fieldStr = "data";
         } else if ("请求数据".equals(testField)) {
             variableName = request;
-            fieldStr = "formData";
+            fieldStr = "formData.toString()";
         }
-        String field = String.format(Locale.ROOT, "String.valueOf(%s.%s)", variableName, fieldStr);
+        String field = String.format(Locale.ROOT, "new String(%s.%s)", variableName, fieldStr);
         if ("包括".equals(testType)) {
             context.getCurrentMethod().addContent(String.format(Locale.ROOT, CONTAINS__FORMAT, failureMessage, field, testStrings), 2);
         } else {
