@@ -17,6 +17,8 @@
 package com.huawei.emergency.layout;
 
 import com.huawei.emergency.layout.controller.TransactionController;
+import com.huawei.emergency.layout.custom.CustomMethodTestElement;
+import com.huawei.emergency.layout.custom.DefaultTestElement;
 import com.huawei.emergency.layout.template.GroovyClassTemplate;
 import com.huawei.emergency.layout.template.GroovyMethodTemplate;
 import lombok.Data;
@@ -76,10 +78,9 @@ public class TestPlanTestElement extends ParentTestElement {
         } else {
             throw new RuntimeException("事务控制器压力分配不能超过100");
         }
-        nextElements().forEach(handler -> {
-            context.setCurrentMethod(template.getTestMethod());
-            handler.handle(context);
-        });
+        nextElements().stream()
+            .filter(testElement -> testElement instanceof DefaultTestElement || testElement instanceof CustomMethodTestElement || testElement instanceof TransactionController)
+            .forEach(handler -> handler.handle(context));
     }
 
     private void generateScheduleCode(@NotNull List<TransactionController> allTransactional) {

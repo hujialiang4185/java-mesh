@@ -16,6 +16,7 @@
 
 package com.huawei.emergency.layout;
 
+import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -49,8 +50,8 @@ public class TreeResponse {
             return;
         }
         for (TreeNode treeNode : treeNodes) {
-            TestElement testElement = HandlerFactory.getHandler(treeNode.getType(), variables.get(treeNode.getKey()));
-            if (testElement == null){
+            TestElement testElement = HandlerFactory.getHandler(treeNode.getType(), JSONObject.toJSONString(variables.get(treeNode.getKey())));
+            if (testElement == null) {
                 continue;
             }
             testElements.add(testElement);

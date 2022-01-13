@@ -16,8 +16,10 @@
 
 package com.huawei.emergency.layout;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.CaseFormat;
 import com.google.common.collect.Sets;
+import com.huawei.emergency.layout.assertion.Jsr223Assertion;
 import com.huawei.emergency.layout.assertion.ResponseAssertion;
 import com.huawei.emergency.layout.config.Counter;
 import com.huawei.emergency.layout.config.CsvDataSetConfig;
@@ -70,12 +72,12 @@ public class HandlerFactory {
     private static final List<String> DEFAULT_HANDLER = Arrays.asList("BeforeProcess", "BeforeThread", "Before", "TransactionController", "After", "AfterThread", "AfterProcess");
 
     static {
-        GENERAL_CLASS_TYPE = Sets.newHashSet(boolean.class, Boolean.class, int.class, Integer.class, long.class, Long.class, String.class);
+        GENERAL_CLASS_TYPE = Sets.newHashSet(boolean.class, Boolean.class, int.class, Integer.class, long.class, Long.class, String.class, List.class, Map.class);
         allHandlerClassName.put("Root", TestPlanTestElement.class.getName());
         allHandlerClassName.put("ConstantTimer", ConstantTimer.class.getName());
         allHandlerClassName.put("HTTPRequest", HttpSampler.class.getName());
         allHandlerClassName.put("JARImport", JarImportTestElement.class.getName());
-        allHandlerClassName.put("jsr223_sampler", Jsr223Sampler.class.getName());
+        allHandlerClassName.put("Jsr223Sampler", Jsr223Sampler.class.getName());
         allHandlerClassName.put("JSR223PreProcessor", Jsr223PreProcessor.class.getName());
         allHandlerClassName.put("JSR223PostProcessor", Jsr223PostProcessor.class.getName());
         allHandlerClassName.put("bean_shell_post_processor", BeanShellPostProcessor.class.getName());
@@ -91,21 +93,23 @@ public class HandlerFactory {
         allHandlerClassName.put("LoopController", LoopController.class.getName());
         allHandlerClassName.put("TransactionController", TransactionController.class.getName());
         allHandlerClassName.put("WhileController", WhileController.class.getName());
-        allHandlerClassName.put("Keystore_configuration", KeystoreConfiguration.class.getName());
+        allHandlerClassName.put("KeystoreConfiguration", KeystoreConfiguration.class.getName());
         allHandlerClassName.put("http_request_default", HttpRequestDefault.class.getName());
-        allHandlerClassName.put("http_header_manager", HttpHeaderManager.class.getName());
-        allHandlerClassName.put("http_cookie_manager", HttpCookieManager.class.getName());
-        allHandlerClassName.put("http_cache_manager", HttpCacheManager.class.getName());
+        allHandlerClassName.put("HttpHeaderManager", HttpHeaderManager.class.getName());
+        allHandlerClassName.put("HttpCookieManager", HttpCookieManager.class.getName());
+        allHandlerClassName.put("HttpCacheManager", HttpCacheManager.class.getName());
         allHandlerClassName.put("dns_cache_manager", DnsCacheManager.class.getName());
-        allHandlerClassName.put("csv_data_set_config", CsvDataSetConfig.class.getName());
-        allHandlerClassName.put("counter", Counter.class.getName());
+        allHandlerClassName.put("CsvDataSetConfig", CsvDataSetConfig.class.getName());
+        allHandlerClassName.put("Counter", Counter.class.getName());
         allHandlerClassName.put("ResponseAssertion", ResponseAssertion.class.getName());
+        allHandlerClassName.put("JSR223Assertion", Jsr223Assertion.class.getName());
     }
 
     public static List<String> getDefaultTemplate() {
         return DEFAULT_HANDLER;
     }
 
+    @Deprecated
     public static TestElement getHandler(String type, Map<String, Object> stringStringMap) {
         String className = allHandlerClassName.get(type);
         if (StringUtils.isNotEmpty(className)) {
@@ -113,12 +117,24 @@ public class HandlerFactory {
                 TestElement testElement = (TestElement) Class.forName(className).newInstance();
                 for (Map.Entry<String, Object> entry : stringStringMap.entrySet()) {
                     if (StringUtils.isNotEmpty(entry.getKey())) {
-                        callSetterMethod(testElement, getSetterMethodName(entry.getKey()), entry.getValue() == null ? null : entry.getValue().toString());
+                        callSetterMethod(testElement, getSetterMethodName(entry.getKey()), entry.getValue() == null ? null : entry.getValue());
                     }
                 }
                 return testElement;
             } catch (InstantiationException | IllegalAccessException e) {
                 LOGGER.error("Create  {} handler error. {}", type, e.getMessage());
+            } catch (ClassNotFoundException e) {
+                LOGGER.error("Can't not found {} handler. {}", type);
+            }
+        }
+        return null;
+    }
+
+    public static TestElement getHandler(String type, String jsonStr) {
+        String className = allHandlerClassName.get(type);
+        if (StringUtils.isNotEmpty(className)) {
+            try {
+                return (TestElement) JSONObject.parseObject(jsonStr, Class.forName(className));
             } catch (ClassNotFoundException e) {
                 LOGGER.error("Can't not found {} handler. {}", type);
             }
@@ -133,16 +149,16 @@ public class HandlerFactory {
         return SET_METHOD_PREFIX + String.valueOf(propertyName.charAt(0)).toUpperCase() + propertyName.substring(1);
     }
 
-    private static void callSetterMethod(final TestElement testElement, final String methodName, final String setterValue) {
+    private static void callSetterMethod(final TestElement testElement, final String methodName, final Object setterValue) {
         for (Class<?> each : GENERAL_CLASS_TYPE) {
             try {
                 Method method = testElement.getClass().getMethod(methodName, each);
                 if (boolean.class == each || Boolean.class == each) {
-                    method.invoke(testElement, Boolean.valueOf(setterValue));
+                    method.invoke(testElement, Boolean.valueOf(setterValue.toString()));
                 } else if (int.class == each || Integer.class == each) {
-                    method.invoke(testElement, Integer.parseInt(setterValue));
+                    method.invoke(testElement, Integer.parseInt(setterValue.toString()));
                 } else if (long.class == each || Long.class == each) {
-                    method.invoke(testElement, Long.parseLong(setterValue));
+                    method.invoke(testElement, Long.parseLong(setterValue.toString()));
                 } else {
                     method.invoke(testElement, setterValue);
                 }
