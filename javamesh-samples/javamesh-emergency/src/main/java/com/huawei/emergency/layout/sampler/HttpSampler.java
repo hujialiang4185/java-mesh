@@ -23,6 +23,7 @@ import lombok.Data;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -35,6 +36,7 @@ import java.util.Locale;
 @Data
 public class HttpSampler extends Sampler {
 
+    public static final List<String> ALL_METHODS = Arrays.asList("GET", "POST", "PUT", "DELETE", "TRACE", "HEAD", "OPTIONS");
     private String protocol = "http";
     private String domain;
     private int port;
@@ -52,7 +54,7 @@ public class HttpSampler extends Sampler {
 
     @Override
     public void handle(ElementProcessContext context) {
-        if (!"http".equals(protocol) || StringUtils.isEmpty(method)) {
+        if (!"http".equals(protocol) || StringUtils.isEmpty(method) || !ALL_METHODS.contains(method.toUpperCase(Locale.ROOT))) {
             return;
         }
         /*
@@ -69,28 +71,13 @@ public class HttpSampler extends Sampler {
         String url = String.format(Locale.ROOT, "%s://%s:%s/%s", protocol, domain, port, path);
         currentMethod.addContent(String.format(Locale.ROOT, "def %s = new HTTPRequest();", requestVariableName), 2);
         currentMethod.addContent(String.format(Locale.ROOT, "%s.setHeaders( headers as NVPair[]);", requestVariableName), 2);
+        currentMethod.addContent(String.format(Locale.ROOT, "%s.setData(%s);", requestVariableName, generateBodyData()), 2);
+        currentMethod.addContent(String.format(Locale.ROOT, "%s.setFormData(%s);", requestVariableName, generateNvPairs()), 2);
         String resultVariableName = "httpResult" + context.getVariableCount().getAndIncrement();
-        resovleMethod(requestVariableName, resultVariableName, method.toUpperCase(Locale.ROOT), url, context); // 根据方法类型生成调用
+        currentMethod.addContent(String.format(Locale.ROOT, "def %s = %s.%s(\"%s\")", resultVariableName, requestVariableName, method.toUpperCase(Locale.ROOT), url), 2);
         context.setHttpRequestVariableName(requestVariableName);
         context.setHttpResultVariableName(resultVariableName);
         nextElements().forEach(testElement -> testElement.handle(context)); // 生成header cookie等组件信息
-    }
-
-    public void resovleMethod(String requestName, String resultVariableName, String methodType, String url, ElementProcessContext context) {
-        GroovyMethodTemplate currentMethod = context.getCurrentMethod();
-        if ("GET".equals(methodType)) {
-            currentMethod.addContent(String.format(Locale.ROOT, "def %s = %s.%s(\"%s\",%s)", resultVariableName, requestName, methodType, url, generateNvPairs()), 2);
-        } else if ("POST".equals(methodType)) {
-            currentMethod.addContent(String.format(Locale.ROOT, "def %s = %s.%s(\"%s\",%s)", resultVariableName, requestName, methodType, url, generateBodyData()), 2);
-        } else if ("PUT".equals(methodType)) {
-            currentMethod.addContent(String.format(Locale.ROOT, "def %s = %s.%s(\"%s\",%s)", resultVariableName, requestName, methodType, url, generateBodyData()), 2);
-        } else if ("DELETE".equals(methodType) || "TRACE".equals(methodType)) {
-            currentMethod.addContent(String.format(Locale.ROOT, "def %s = %s.%s(\"%s\")", resultVariableName, requestName, methodType, url), 2);
-        } else if ("HEAD".equals(methodType)) {
-            currentMethod.addContent(String.format(Locale.ROOT, "def %s = %s.%s(\"%s\",%s)", resultVariableName, requestName, methodType, url, generateNvPairs()), 2);
-        } else if ("OPTIONS".equals(methodType)) {
-            currentMethod.addContent(String.format(Locale.ROOT, "def %s = %s.%s(\"%s\",%s)", resultVariableName, requestName, methodType, url, generateBodyData()), 2);
-        }
     }
 
     private String generateNvPairs() {

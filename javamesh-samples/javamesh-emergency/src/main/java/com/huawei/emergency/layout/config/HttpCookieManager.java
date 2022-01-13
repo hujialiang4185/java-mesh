@@ -40,7 +40,7 @@ public class HttpCookieManager extends Config {
         cookies.forEach( cookie -> {
             beforeProcessMethod.addContent(
                 String.format(Locale.ROOT,
-                    "cookies.add(new Cookie(\"%s\", \"%s\", \"%s\", \"%s\", null, %s));",
+                    "cookies.add(new Cookie(\"%s\", \"%s\", \"%s\", \"%s\",expireDate, %s));",
                     cookie.getName(), cookie.getValue(), cookie.getDomain(), cookie.getPath(), Boolean.parseBoolean(cookie.getSecure())
                 ), 2);
         });
