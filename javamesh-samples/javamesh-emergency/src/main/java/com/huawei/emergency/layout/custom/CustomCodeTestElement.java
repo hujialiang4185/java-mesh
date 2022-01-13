@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
  * @since 2021-12-17
  **/
 @Data
+@Deprecated
 public class CustomCodeTestElement extends TestElement {
 
     private String content;

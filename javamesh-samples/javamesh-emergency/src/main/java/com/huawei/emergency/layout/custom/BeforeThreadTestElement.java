@@ -16,18 +16,14 @@
 
 package com.huawei.emergency.layout.custom;
 
-import com.huawei.emergency.layout.TestElement;
 import com.huawei.emergency.layout.ElementProcessContext;
 import com.huawei.emergency.layout.ParentTestElement;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author y30010171
  * @since 2021-12-17
  **/
-public class BeforeThreadTestElement extends ParentTestElement {
+public class BeforeThreadTestElement extends ParentTestElement implements DefaultTestElement {
 
     @Override
     public void handle(ElementProcessContext context) {

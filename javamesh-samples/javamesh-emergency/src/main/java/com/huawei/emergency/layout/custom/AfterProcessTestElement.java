@@ -23,7 +23,7 @@ import com.huawei.emergency.layout.ParentTestElement;
  * @author y30010171
  * @since 2021-12-17
  **/
-public class AfterProcessTestElement extends ParentTestElement {
+public class AfterProcessTestElement extends ParentTestElement implements DefaultTestElement {
 
     @Override
     public void handle(ElementProcessContext context) {
