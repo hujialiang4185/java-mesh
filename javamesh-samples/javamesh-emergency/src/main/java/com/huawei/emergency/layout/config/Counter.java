@@ -39,7 +39,7 @@ public class Counter extends Config {
     private int end;
     private String format = "";
     private String exportVariableName;
-    private boolean perUser;
+    private boolean perUser = true;
     private boolean resetOnEachThreadGroup;
 
     @Override
@@ -49,10 +49,10 @@ public class Counter extends Config {
         String counterName = String.format(Locale.ROOT, NAME_FORMAT, context.getVariableCount().getAndIncrement());
         String configCreateStr;
         if (perUser) {
-            currentClass.addFiled(GroovyFieldTemplate.create(String.format(Locale.ROOT, "def static %s = new CommonCounter();", counterName)));
+            currentClass.addFiled(GroovyFieldTemplate.create(String.format(Locale.ROOT, "    def static %s = new CommonCounter();", counterName)));
             configCreateStr = String.format(Locale.ROOT, CONFIG_FORMAT, start, incr, end, format, "SharingMode.ALL_THREADS", resetOnEachThreadGroup);
         } else {
-            currentClass.addFiled(GroovyFieldTemplate.create(String.format(Locale.ROOT, "def %s = new CommonCounter();", counterName)));
+            currentClass.addFiled(GroovyFieldTemplate.create(String.format(Locale.ROOT, "    def %s = new CommonCounter();", counterName)));
             configCreateStr = String.format(Locale.ROOT, CONFIG_FORMAT, start, incr, end, format, "SharingMode.CURRENT_THREAD", resetOnEachThreadGroup);
         }
         currentClass.getBeforeProcessMethod().addContent(String.format(Locale.ROOT, "counter%s.initConfig(%s);", counterName, configCreateStr), 2);

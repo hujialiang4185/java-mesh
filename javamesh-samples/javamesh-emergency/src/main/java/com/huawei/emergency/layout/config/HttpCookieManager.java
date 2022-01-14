@@ -47,7 +47,7 @@ public class HttpCookieManager extends Config {
     }
 
     @Data
-    static class CookieValue {
+    public static class CookieValue {
         private String name;
         private String value;
         private String domain;

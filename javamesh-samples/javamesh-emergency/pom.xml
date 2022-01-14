@@ -260,7 +260,7 @@
         <dependency>
             <groupId>com.huawei.hercules</groupId>
             <artifactId>hercules-function</artifactId>
-            <version>0.0.1</version>
+            <version>3.4.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

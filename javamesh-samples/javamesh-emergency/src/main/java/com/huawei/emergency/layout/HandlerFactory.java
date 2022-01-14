@@ -95,11 +95,11 @@ public class HandlerFactory {
         allHandlerClassName.put("WhileController", WhileController.class.getName());
         allHandlerClassName.put("KeystoreConfiguration", KeystoreConfiguration.class.getName());
         allHandlerClassName.put("http_request_default", HttpRequestDefault.class.getName());
-        allHandlerClassName.put("HttpHeaderManager", HttpHeaderManager.class.getName());
-        allHandlerClassName.put("HttpCookieManager", HttpCookieManager.class.getName());
+        allHandlerClassName.put("HTTPHeaderManager", HttpHeaderManager.class.getName());
+        allHandlerClassName.put("HTTPCookieManager", HttpCookieManager.class.getName());
         allHandlerClassName.put("HttpCacheManager", HttpCacheManager.class.getName());
         allHandlerClassName.put("dns_cache_manager", DnsCacheManager.class.getName());
-        allHandlerClassName.put("CsvDataSetConfig", CsvDataSetConfig.class.getName());
+        allHandlerClassName.put("CSVDataSetConfig", CsvDataSetConfig.class.getName());
         allHandlerClassName.put("Counter", Counter.class.getName());
         allHandlerClassName.put("ResponseAssertion", ResponseAssertion.class.getName());
         allHandlerClassName.put("JSR223Assertion", Jsr223Assertion.class.getName());

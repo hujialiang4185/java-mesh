@@ -14,29 +14,19 @@
  * limitations under the License.
  */
 
-package com.huawei.emergency.layout.custom;
+package com.huawei.emergency.service;
 
-import com.huawei.emergency.layout.ElementProcessContext;
-import com.huawei.emergency.layout.TestElement;
-import lombok.Data;
-import org.apache.commons.lang.StringUtils;
+import com.huawei.common.api.CommonResult;
+
+import java.io.InputStream;
+import java.util.List;
 
 /**
- * jar导入组件
- *
  * @author y30010171
- * @since 2021-12-25
+ * @since 2022-01-14
  **/
-@Data
-public class JarImportTestElement extends TestElement {
+public interface EmergencyResourceService {
+    CommonResult upload(int scriptId, String originalFilename, InputStream inputStream);
 
-    private String content;
-    private String filenames;
-
-    @Override
-    public void handle(ElementProcessContext context) {
-        if (StringUtils.isNotEmpty(content)) {
-            context.getTemplate().addImport(this.content);
-        }
-    }
+    void refreshResource(int scriptId, List<String> resourceList);
 }

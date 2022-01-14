@@ -41,8 +41,6 @@ import java.util.Locale;
 @Data
 public class Jsr223Assertion extends Assertion {
     private static final Logger LOGGER = LoggerFactory.getLogger(Jsr223Assertion.class);
-    private static final String JS_CONTENT_FORMAT = "new JavaScriptExecutor().executeScript(\"%s\",null);";
-    private static final String SHELL_CONTENT_FORMAT = "new CommandService().execCommand(\"%s\",300000L);";
     private String language;
     private String script;
 

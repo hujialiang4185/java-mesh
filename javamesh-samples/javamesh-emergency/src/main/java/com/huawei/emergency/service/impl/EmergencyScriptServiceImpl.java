@@ -28,6 +28,7 @@ import com.huawei.emergency.layout.template.GroovyClassTemplate;
 import com.huawei.emergency.mapper.EmergencyElementMapper;
 import com.huawei.emergency.mapper.EmergencyScriptMapper;
 import com.huawei.emergency.service.EmergencyExecService;
+import com.huawei.emergency.service.EmergencyResourceService;
 import com.huawei.emergency.service.EmergencyScriptService;
 import com.huawei.script.exec.log.LogResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -104,6 +105,9 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
 
     @Value("${argus.script.update}")
     private String updateScriptUrl;
+
+    @Autowired
+    private EmergencyResourceService resourceService;
 
     @Override
     public CommonResult<List<EmergencyScript>> listScript(HttpServletRequest request, String scriptName, String scriptUser, int pageSize, int current, String sorter, String order, String status) {
@@ -436,7 +440,9 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         if (rootNode == null) {
             return CommonResult.success();
         }
-        updateOrchestrate(treeResponse.getScriptId(), -1, rootNode, treeResponse.getMap(), 1);
+        List<String> resourceList = new ArrayList<>();
+        updateOrchestrate(treeResponse.getScriptId(), -1, rootNode, treeResponse.getMap(), 1, resourceList);
+        resourceService.refreshResource(treeResponse.getScriptId(),resourceList);  // 清除资源文件
 
         // 生成代码
         TestPlanTestElement parse = TreeResponse.parse(treeResponse);
@@ -462,10 +468,10 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             //updateArgusScript(request,treeResponse.getPath(),scriptContent); // 更新压测脚本
             return CommonResult.success(argusScript);
         } catch (IOException e) {
-            log.error("Failed to print script.{}",e);
+            log.error("Failed to print script.{}", e);
             return CommonResult.failed("输出编排脚本失败");
         } catch (RestClientException e) {
-            log.error("Failed to update argus script.{}",e);
+            log.error("Failed to update argus script.{}", e);
             return CommonResult.failed("更新压测脚本失败");
         }
     }
@@ -483,7 +489,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         argusScript.setPath(path);
         argusScript.setScript(script);
         argusScript.setCommit(System.currentTimeMillis() + " 脚本编排提交");
-        template.put(updateScriptUrl,argusScript);
+        template.put(updateScriptUrl, argusScript);
     }
 
     /**
@@ -495,9 +501,21 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
      * @param map      参数集合
      * @param seq      顺序号
      */
-    private void updateOrchestrate(int scriptId, int parentId, TreeNode node, Map<String, Map> map, int seq) {
+    private void updateOrchestrate(int scriptId, int parentId, TreeNode node, Map<String, Map> map, int seq, List<String> resourceList) {
         EmergencyElement element = new EmergencyElement();
-        element.setElementParams(JSONObject.toJSONString(map.get(node.getKey())));
+        Map elementParams = map.get(node.getKey());
+        if (elementParams != null &&
+            ("JARImport".equals(node.getType()) || "CSVDataSetConfig".equals(node.getType()))
+        ) {
+            String filenames = elementParams.getOrDefault("filenames", "").toString();
+            if (StringUtils.isEmpty(filenames)) {
+                elementParams.remove("filenames"); // 前端会多显示一个空行
+            } else {
+                resourceList.addAll(Arrays.asList(filenames.split(" ")));
+            }
+            //resourceService.clearResource(scriptId,filenames);
+        }
+        element.setElementParams(JSONObject.toJSONString(elementParams));
         element.setSeq(seq);
         if (node.getElementId() == null) {
             element.setElementTitle(node.getTitle());
@@ -518,7 +536,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             return;
         }
         for (int i = 0; i < node.getChildren().size(); i++) {
-            updateOrchestrate(scriptId, element.getElementId(), node.getChildren().get(i), map, i + 1);
+            updateOrchestrate(scriptId, element.getElementId(), node.getChildren().get(i), map, i + 1, resourceList);
         }
     }
 

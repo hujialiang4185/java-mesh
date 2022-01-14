@@ -16,11 +16,13 @@
 
 package com.huawei.emergency.layout.config;
 
-import com.huawei.common.exception.ApiException;
 import com.huawei.emergency.layout.ElementProcessContext;
 import com.huawei.emergency.layout.template.GroovyClassTemplate;
 import com.huawei.emergency.layout.template.GroovyFieldTemplate;
 import lombok.Data;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Locale;
 
@@ -30,40 +32,49 @@ import java.util.Locale;
  **/
 @Data
 public class CsvDataSetConfig extends Config {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(CsvDataSetConfig.class);
     private static final String NEW_CSV_FORMAT = "    static def %s = new CsvParameterized();";
     private static final String CSV_CONFIG_FORMAT = "new ParameterizedConfig.Builder(parameterizedNames: \"%s\".split(\"%s\") as List,parameterizedFile: \"%s\",parameterizedDelimiter: \"%s\",ignoreFirstLine: %s,sharingMode: %s,allowQuotedData: %s,recycleOnEof: %s).build()";
     private static final String CSV_INIT_FORMAT = "%s.initConfig(%s);";
 
-    private String fileName;
+    //private String fileName;
     private String fileEncoding; // 暂时无用
     private String variableNames; // not empty
     private boolean ignoreFirstLine;
     private String delimiter = ",";
-    private boolean allowQuoteData;
-    private boolean recycleOnEof = true;
+    private boolean quotedData;
+    private boolean recycle;
     private boolean stopOnEof; // 暂时无用
-    private String sharingMode;
+    private String shareMode;
+    private String filenames;
 
     @Override
     public void handle(ElementProcessContext context) {
+        if (StringUtils.isEmpty(filenames)) {
+            LOGGER.error("filenames is empty.");
+            return;
+        }
         GroovyClassTemplate classTemplate = context.getTemplate();
         classTemplate.addImport("import com.huawei.test.configelement.impl.CsvParameterized;");
         classTemplate.addImport("import com.huawei.test.configelement.config.ParameterizedConfig;");
         classTemplate.addImport("import com.huawei.test.configelement.enums.SharingMode;");
         String sharingModeStr = "";
-        if ("CURRENT_AGENT".equals(sharingMode)) {
+        if ("CURRENT_AGENT".equals(shareMode)) {
             sharingModeStr = "SharingMode.CURRENT_AGENT";
-        } else if ("CURRENT_PROCESS".equals(sharingMode)) {
+        } else if ("CURRENT_PROCESS".equals(shareMode)) {
             sharingModeStr = "SharingMode.CURRENT_PROCESS";
-        } else if ("CURRENT_THREAD".equals(sharingMode)) {
+        } else if ("CURRENT_THREAD".equals(shareMode)) {
             sharingModeStr = "SharingMode.CURRENT_THREAD";
         } else {
             sharingModeStr = "SharingMode.ALL_THREADS";
         }
+        String dataFileName = filenames;
+        if (filenames.indexOf("/") > -1) {
+            dataFileName = filenames.substring(filenames.indexOf("/"));
+        }
         String csvVariableName = "csvDatasetConfig" + context.getVariableCount().getAndIncrement();
         classTemplate.addFiled(GroovyFieldTemplate.create(String.format(Locale.ROOT, NEW_CSV_FORMAT, csvVariableName))); // 声明csv变量
-        String csvConfig = String.format(Locale.ROOT, CSV_CONFIG_FORMAT, variableNames, delimiter, fileName, delimiter, ignoreFirstLine, sharingModeStr, allowQuoteData, recycleOnEof);
+        String csvConfig = String.format(Locale.ROOT, CSV_CONFIG_FORMAT, variableNames, delimiter, dataFileName, delimiter, StringUtils.isNotEmpty(variableNames) ? ignoreFirstLine : false, sharingModeStr, quotedData, recycle);
         classTemplate.getBeforeProcessMethod().addContent(String.format(Locale.ROOT, CSV_INIT_FORMAT, csvVariableName, csvConfig), 2); // 初始化csv变量
 
         // 获取csv解析的参数

@@ -14,29 +14,15 @@
  * limitations under the License.
  */
 
-package com.huawei.emergency.layout.custom;
+package com.huawei.emergency.dto;
 
-import com.huawei.emergency.layout.ElementProcessContext;
-import com.huawei.emergency.layout.TestElement;
 import lombok.Data;
-import org.apache.commons.lang.StringUtils;
 
 /**
- * jar导入组件
- *
  * @author y30010171
- * @since 2021-12-25
+ * @since 2022-01-14
  **/
 @Data
-public class JarImportTestElement extends TestElement {
-
-    private String content;
-    private String filenames;
-
-    @Override
-    public void handle(ElementProcessContext context) {
-        if (StringUtils.isNotEmpty(content)) {
-            context.getTemplate().addImport(this.content);
-        }
-    }
+public class ResourceDto {
+    private Integer uid;
 }

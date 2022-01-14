@@ -20,7 +20,9 @@ import com.huawei.emergency.layout.ElementProcessContext;
 import com.huawei.emergency.layout.template.GroovyMethodTemplate;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -30,13 +32,19 @@ import java.util.Map;
  **/
 @Data
 public class HttpHeaderManager extends Config {
-    private Map<String,String> headers = new HashMap<>();
+    private List<Header> headers = new ArrayList<>();
 
     @Override
     public void handle(ElementProcessContext context) {
         GroovyMethodTemplate beforeProcessMethod = context.getTemplate().getBeforeProcessMethod();
-        headers.forEach( (key,value) -> {
-            beforeProcessMethod.addContent(String.format(Locale.ROOT,"headers.add(new NVPair(\"%s\", \"%s\"))",key,value),2);
+        headers.forEach( header -> {
+            beforeProcessMethod.addContent(String.format(Locale.ROOT,"headers.add(new NVPair(\"%s\", \"%s\"))",header.name,header.value),2);
         });
+    }
+
+    @Data
+    public static class Header {
+        private String name;
+        private String value;
     }
 }

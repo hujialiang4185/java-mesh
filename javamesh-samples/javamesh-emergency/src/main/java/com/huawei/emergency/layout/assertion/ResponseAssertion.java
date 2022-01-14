@@ -26,9 +26,9 @@ import java.util.Locale;
  * 响应断言
  *
  * <p>applyTo暂不使用。应支持四种 1. main and sub 2. main only 3. sub only 4. variable name to use</p>
- * <p>testField目前支持ResponseCode,ResponseMessage。除了ResponseCode情况下，其余皆为ResponseMessage</p>
+ * <p>testField目前支持响应代码,响应头,响应文本,响应消息,请求头,URL样本,文档(文本),请求数据</p>
  * <p>ignoreStatus暂不使用</p>
- * <p>matchRulers匹配模式，目前只支持正则匹配matches。应当支持contains,matches,equals,substring,not,or</p>
+ * <p>matchRulers匹配模式，支持contains,matches,equals</p>
  * <p>patternToTest正则表达式</p>
  * <p>failureMessage错误提示信息</p>
  *
@@ -37,9 +37,9 @@ import java.util.Locale;
  **/
 @Data
 public class ResponseAssertion extends Assertion {
-
+    private static final String CONTAINS_FORMAT = "Assert.assertTrue(\"%s\", %s.contains(\"%s\"));";
     private static final String MATCHES_FORMAT = "Assert.assertTrue(\"%s\", RegularAssert.assertRegular(%s,\"%s\"));";
-    private static final String CONTAINS__FORMAT = "Assert.assertTrue(\"%s\", %s.contains(\"%s\"));";
+    private static final String EQUALS_FORMAT = "Assert.assertEquals(\"%s\", \"%s\", %s);";
 
     private String testField;
     private String testType;
@@ -54,11 +54,11 @@ public class ResponseAssertion extends Assertion {
 
     @Override
     public void handle(ElementProcessContext context) {
-        if (StringUtils.isEmpty(patternToTest)) {
+        if (StringUtils.isEmpty(testStrings)) {
             return;
         }
-        String request = context.getHttpResultVariableName();
-        String response = context.getHttpRequestVariableName();
+        String request = context.getHttpRequestVariableName();
+        String response = context.getHttpResultVariableName();
         String variableName = "";
         String fieldStr = "";
         if ("响应代码".equals(testField)) {
@@ -82,7 +82,9 @@ public class ResponseAssertion extends Assertion {
         }
         String field = String.format(Locale.ROOT, "new String(%s.%s)", variableName, fieldStr);
         if ("包括".equals(testType)) {
-            context.getCurrentMethod().addContent(String.format(Locale.ROOT, CONTAINS__FORMAT, failureMessage, field, testStrings), 2);
+            context.getCurrentMethod().addContent(String.format(Locale.ROOT, CONTAINS_FORMAT, failureMessage, field, testStrings), 2);
+        } else if ("相等".equals(testType)) {
+            context.getCurrentMethod().addContent(String.format(Locale.ROOT, EQUALS_FORMAT, failureMessage, testStrings, field), 2);
         } else {
             context.getCurrentMethod().addContent(String.format(Locale.ROOT, MATCHES_FORMAT, failureMessage, field, testStrings), 2);
         }

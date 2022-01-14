@@ -70,7 +70,7 @@ public class HttpSampler extends Sampler {
         }
         String url = String.format(Locale.ROOT, "%s://%s:%s/%s", protocol, domain, port, path);
         currentMethod.addContent(String.format(Locale.ROOT, "def %s = new HTTPRequest();", requestVariableName), 2);
-        currentMethod.addContent(String.format(Locale.ROOT, "%s.setUrl(%s);", requestVariableName, url), 2);
+        currentMethod.addContent(String.format(Locale.ROOT, "%s.setUrl(\"%s\");", requestVariableName, url), 2);
         currentMethod.addContent(String.format(Locale.ROOT, "%s.setHeaders( headers as NVPair[]);", requestVariableName), 2);
         currentMethod.addContent(String.format(Locale.ROOT, "%s.setData(%s);", requestVariableName, generateBodyData()), 2);
         currentMethod.addContent(String.format(Locale.ROOT, "%s.setFormData(%s);", requestVariableName, generateNvPairs()), 2);

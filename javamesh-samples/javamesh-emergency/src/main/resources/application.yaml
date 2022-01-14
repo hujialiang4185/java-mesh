@@ -12,7 +12,7 @@ spring:
     zookeeper:
       connect-string: 127.0.0.1:2181
   datasource:
-    url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3306}/hercules_new?createDatabaseIfNotExist=true&serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3306}/hercules?createDatabaseIfNotExist=true&serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
     username: ${MYSQL_USERNAME:root}
     password: ${MYSQL_PASSWORD:root}
     schema:
@@ -52,6 +52,10 @@ spring:
   jackson:
     property-naming-strategy: CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES
     default-property-inclusion: non_null
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
 mybatis:
   configuration:
     map-underscore-to-camel-case: true
@@ -68,6 +72,8 @@ jsch:
 script:
   location: /tmp/
   timeOut: 300000
+  resource:
+    uploadPath: D:\tmp
   executor:
     maxTaskSize: 16
     maxSubtaskSize: 8

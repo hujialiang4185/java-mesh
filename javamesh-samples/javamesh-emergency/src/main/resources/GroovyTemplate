@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
+import com.huawei.test.asserts.RegularAssert
+
 import HTTPClient.Cookie
 import net.grinder.scriptengine.groovy.junit.annotation.AfterProcess;
 import net.grinder.scriptengine.groovy.junit.annotation.AfterThread;
 import org.hamcrest.Matchers;
 import org.junit.After;
+import org.junit.Assert;
 
 import static net.grinder.script.Grinder.grinder;
 import static org.junit.Assert.*;
