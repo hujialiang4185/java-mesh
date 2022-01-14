@@ -34,12 +34,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import javax.servlet.ServletOutputStream;
 
 /**
  * @author y30010171
@@ -114,6 +116,27 @@ public class EmergencyResourceServiceImpl implements EmergencyResourceService {
         }
         List<EmergencyResource> emergencyResources = resourceMapper.selectByExample(needDeleteResource);
         emergencyResources.forEach(this::deleteResource);
+    }
+
+    @Override
+    public CommonResult download(int resourceId, String resourceName, ServletOutputStream outputStream) {
+        if (StringUtils.isEmpty(resourceName)) {
+            return CommonResult.failed("文件名称为空");
+        }
+        EmergencyResource resource = resourceMapper.selectByPrimaryKey(resourceId);
+        if (resource == null || resource.getScriptId() == null || !resourceName.equals(resource.getResourceName())) {
+            return CommonResult.failed("请选择正确的资源");
+        }
+        try (InputStream resourceIn = new FileInputStream(uploadPath + File.separatorChar + resource.getScriptId() + File.separatorChar + resource.getResourceName())) {
+            IOUtils.copy(resourceIn, outputStream);
+        } catch (FileNotFoundException e) {
+            LOGGER.error("can't found resource. resourceId={}, scriptId={}, resourceName={}", resourceId, resource.getScriptId(), resourceName);
+            return CommonResult.failed("资源不存在");
+        } catch (IOException e) {
+            LOGGER.error("can't download resource. resourceId={}, scriptId={}, resourceName={}. {}", resourceId, resource.getScriptId(), resourceName, e.getMessage());
+            return CommonResult.failed("资源下载错误");
+        }
+        return CommonResult.success();
     }
 
     /**

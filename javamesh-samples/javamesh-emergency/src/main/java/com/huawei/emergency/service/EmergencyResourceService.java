@@ -20,6 +20,7 @@ import com.huawei.common.api.CommonResult;
 
 import java.io.InputStream;
 import java.util.List;
+import javax.servlet.ServletOutputStream;
 
 /**
  * @author y30010171
@@ -29,4 +30,6 @@ public interface EmergencyResourceService {
     CommonResult upload(int scriptId, String originalFilename, InputStream inputStream);
 
     void refreshResource(int scriptId, List<String> resourceList);
+
+    CommonResult download(int resourceId, String resourceName, ServletOutputStream outputStream);
 }

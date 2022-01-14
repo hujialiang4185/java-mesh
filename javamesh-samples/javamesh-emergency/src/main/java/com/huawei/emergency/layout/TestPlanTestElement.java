@@ -28,7 +28,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
-import javax.validation.constraints.NotNull;
 
 /**
  * @author y30010171
@@ -83,7 +82,7 @@ public class TestPlanTestElement extends ParentTestElement {
             .forEach(handler -> handler.handle(context));
     }
 
-    private void generateScheduleCode(@NotNull List<TransactionController> allTransactional) {
+    private void generateScheduleCode(List<TransactionController> allTransactional) {
         /*testMethod.addContent("int vusers = getVusers();", 2);
         testMethod.addContent("int runThreadNum = getRunThreadNum();", 2);
         testMethod.addContent("int preRate = 0;", 2);

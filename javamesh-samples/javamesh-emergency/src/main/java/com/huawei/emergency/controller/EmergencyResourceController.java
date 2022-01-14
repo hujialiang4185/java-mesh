@@ -41,6 +41,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -83,12 +86,19 @@ public class EmergencyResourceController {
 
     @GetMapping("/{pathOrId}/{filename}")
     public void download(HttpServletResponse response,
-                                 @PathVariable(value = "pathOrId") String pathOrId,
-                                 @PathVariable(value = "filename") String fileName) {
-        try {
+                         @PathVariable(value = "pathOrId") String pathOrId,
+                         @PathVariable(value = "filename") String fileName) {
+        try (ServletOutputStream outputStream = response.getOutputStream()) {
             int resourceId = Integer.valueOf(pathOrId);
-        } catch (NumberFormatException e) {
-            LOGGER.error("can't download path resource");
+            response.setCharacterEncoding("UTF-8");
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
+            response.setHeader("Content-Disposition",
+                "attachment;fileName=" + new String(URLEncoder.encode(fileName, "UTF-8").getBytes("UTF-8")));
+            resourceService.download(resourceId, fileName, outputStream);
+            outputStream.flush();
+        } catch (NumberFormatException | IOException e) {
+            LOGGER.error("can't download path resource", e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
 
