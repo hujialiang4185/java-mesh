@@ -19,6 +19,7 @@ package com.huawei.emergency.layout;
 import com.huawei.common.constant.ScriptLanguageEnum;
 import com.huawei.common.exception.ApiException;
 import com.huawei.emergency.layout.assertion.Jsr223Assertion;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,9 +56,9 @@ public class Jsr223Util {
                 LOGGER.error("Can't not read script.", e);
             }
         } else if (languageEnum == ScriptLanguageEnum.JAVASCRIPT) {
-            context.getCurrentMethod().addContent(String.format(Locale.ROOT, JS_CONTENT_FORMAT, script), 2);
+            context.getCurrentMethod().addContent(String.format(Locale.ROOT, JS_CONTENT_FORMAT, StringEscapeUtils.escapeJava(script)), 2);
         } else if (languageEnum == ScriptLanguageEnum.SHELL) {
-            context.getCurrentMethod().addContent(String.format(Locale.ROOT, SHELL_CONTENT_FORMAT, script), 2);
+            context.getCurrentMethod().addContent(String.format(Locale.ROOT, SHELL_CONTENT_FORMAT, StringEscapeUtils.escapeJava(script)), 2);
         }
     }
 }

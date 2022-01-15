@@ -38,7 +38,7 @@ public class Counter extends Config {
     private int incr;
     private int end;
     private String format = "";
-    private String exportVariableName;
+    private String name;
     private boolean perUser = true;
     private boolean resetOnEachThreadGroup;
 
@@ -52,13 +52,13 @@ public class Counter extends Config {
             currentClass.addFiled(GroovyFieldTemplate.create(String.format(Locale.ROOT, "    def static %s = new CommonCounter();", counterName)));
             configCreateStr = String.format(Locale.ROOT, CONFIG_FORMAT, start, incr, end, format, "SharingMode.ALL_THREADS", resetOnEachThreadGroup);
         } else {
-            currentClass.addFiled(GroovyFieldTemplate.create(String.format(Locale.ROOT, "    def %s = new CommonCounter();", counterName)));
+            currentClass.addFiled(GroovyFieldTemplate.create(String.format(Locale.ROOT, "    def static %s = new CommonCounter();", counterName)));
             configCreateStr = String.format(Locale.ROOT, CONFIG_FORMAT, start, incr, end, format, "SharingMode.CURRENT_THREAD", resetOnEachThreadGroup);
         }
-        currentClass.getBeforeProcessMethod().addContent(String.format(Locale.ROOT, "counter%s.initConfig(%s);", counterName, configCreateStr), 2);
-        if (StringUtils.isNotEmpty(exportVariableName)) { // 需要生成参数
-            currentClass.addFiled(GroovyFieldTemplate.create(String.format(Locale.ROOT, "def %s;", exportVariableName, counterName)));
-            currentMethod.addContent(String.format(Locale.ROOT, "%s = %s.nextNumber();", exportVariableName, counterName), 2);
+        currentClass.getBeforeProcessMethod().addContent(String.format(Locale.ROOT, "%s.initConfig(%s);", counterName, configCreateStr), 2);
+        if (StringUtils.isNotEmpty(name)) { // 需要生成参数
+            currentClass.addFiled(GroovyFieldTemplate.create(String.format(Locale.ROOT, "def static %s;", name, counterName)));
+            currentMethod.addContent(String.format(Locale.ROOT, "%s = %s.nextNumber();", name, counterName), 2);
         } else {
             currentMethod.addContent(String.format(Locale.ROOT, "%s.nextNumber();", counterName), 2);
         }

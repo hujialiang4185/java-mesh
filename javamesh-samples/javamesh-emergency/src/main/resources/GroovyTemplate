@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-import com.huawei.test.asserts.RegularAssert
-
+import com.huawei.test.asserts.RegularAssert;
+import com.huawei.test.configelement.impl.CommonCounter;
+import com.huawei.test.configelement.config.CounterConfig;
+import com.huawei.test.scriptexecutor.impl.JavaScriptExecutor;
 import HTTPClient.Cookie
 import net.grinder.scriptengine.groovy.junit.annotation.AfterProcess;
 import net.grinder.scriptengine.groovy.junit.annotation.AfterThread;

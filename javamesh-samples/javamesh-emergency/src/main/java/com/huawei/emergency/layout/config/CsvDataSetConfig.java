@@ -54,6 +54,10 @@ public class CsvDataSetConfig extends Config {
             LOGGER.error("filenames is empty.");
             return;
         }
+        if (StringUtils.isEmpty(variableNames)) {
+            LOGGER.error("variableNames is empty.");
+            return;
+        }
         GroovyClassTemplate classTemplate = context.getTemplate();
         classTemplate.addImport("import com.huawei.test.configelement.impl.CsvParameterized;");
         classTemplate.addImport("import com.huawei.test.configelement.config.ParameterizedConfig;");
@@ -81,9 +85,11 @@ public class CsvDataSetConfig extends Config {
         String csvLineValuesVariableName = "csvLineValue" + context.getVariableCount().getAndIncrement();
         classTemplate.getBeforeMethod().addContent(String.format(Locale.ROOT, "def %s = %s.nextLineValue();", csvLineValuesVariableName, csvVariableName), 2);
         // 通过参数名称声明实例变量 并赋值
-        for (String name : variableNames.split(delimiter)) {
-            classTemplate.addFiled(GroovyFieldTemplate.create(String.format(Locale.ROOT, "    def %s = \"\";", name)));
-            classTemplate.getBeforeMethod().addContent(String.format(Locale.ROOT, "%s = %s.get(\"%s\");", name, csvLineValuesVariableName, name), 2);
+        if (StringUtils.isNotEmpty(variableNames)) {
+            for (String name : variableNames.split(delimiter)) {
+                classTemplate.addFiled(GroovyFieldTemplate.create(String.format(Locale.ROOT, "    def %s = \"\";", name)));
+                classTemplate.getBeforeMethod().addContent(String.format(Locale.ROOT, "%s = %s.get(\"%s\");", name, csvLineValuesVariableName, name), 2);
+            }
         }
     }
 }

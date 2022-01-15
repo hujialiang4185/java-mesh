@@ -41,7 +41,7 @@ import HTTPClient.HTTPResponse;
 import HTTPClient.NVPair;
 
 @RunWith(GrinderRunner)
-class GroovyTemplate {
+class GroovyTemplate1 {
     public static int testNumber = 0;
     public static HTTPRequest request;
     public Map variables;
