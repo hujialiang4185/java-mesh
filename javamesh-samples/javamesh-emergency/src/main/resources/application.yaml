@@ -12,6 +12,7 @@ spring:
     zookeeper:
       connect-string: 127.0.0.1:2181
       auth:
+        enabled: true
         username: hujialiang
         password: hujialiang
   datasource:

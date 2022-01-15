@@ -11,8 +11,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.cloud.zookeeper.ZookeeperProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 
 @SpringBootConfiguration
+@Conditional(ZookeeperCondition.class)
 @Slf4j
 public class ZookeeperAutoConfig {
     @Value("${spring.cloud.zookeeper.auth.username}")
