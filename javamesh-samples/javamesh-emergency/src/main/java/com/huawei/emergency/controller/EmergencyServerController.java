@@ -78,9 +78,8 @@ public class EmergencyServerController {
     }
 
     @PostMapping("/install")
-    public CommonResult installServer(HttpServletRequest request, @RequestBody EmergencyServer server) {
-        server.setUpdateUser(parseUserName(request));
-        return serverService.install(server);
+    public CommonResult installServer(@RequestParam(value = "server_id[]", required = false) String[] serverIds) {
+        return serverService.install(serverIds);
     }
 
     @PostMapping("/license")

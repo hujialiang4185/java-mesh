@@ -10,6 +10,7 @@ import com.huawei.common.api.CommonPage;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.common.util.PasswordUtil;
+import com.huawei.common.ws.WebSocketServer;
 import com.huawei.emergency.entity.EmergencyServer;
 import com.huawei.emergency.entity.EmergencyServerExample;
 import com.huawei.emergency.mapper.EmergencyServerMapper;
@@ -33,11 +34,14 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
+import javax.annotation.Resource;
 
 /**
  * 服务器信息管理
@@ -67,6 +71,9 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
 
     @Autowired
     private ServerSessionFactory sessionFactory;
+
+    @Resource(name = "sendAgentThreadPool")
+    ThreadPoolExecutor executor;
 
     @Override
     public CommonResult<EmergencyServer> add(EmergencyServer server) {
@@ -195,7 +202,29 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
     }
 
     @Override
-    public CommonResult install(EmergencyServer server) {
+    public CommonResult install(String[] serverIds) {
+        if (serverIds == null || serverIds.length == 0) {
+            return CommonResult.success();
+        }
+        List<EmergencyServer> allServers = new ArrayList<>();
+        for (String serverId : serverIds) {
+            try {
+                EmergencyServer server = serverMapper.selectByPrimaryKey(Integer.valueOf(serverId));
+                if (server == null) {
+                    return CommonResult.failed("选择正确的服务器。");
+                }
+                allServers.add(server);
+            } catch (NumberFormatException e) {
+                LOGGER.error("cast serverId error.", e);
+                return CommonResult.failed("选择正确的服务器。");
+            }
+        }
+        allServers.forEach(server -> executor.submit(() -> sendAgentToServer(server)));
+        return CommonResult.success();
+    }
+
+
+    public CommonResult sendAgentToServer(EmergencyServer server) {
         if (server.getServerId() == null) {
             return CommonResult.failed("请选择主机");
         }
@@ -222,7 +251,7 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
             }
             String remoteAgentFile = uploadPath + agentFile.getName();
             execResult = remoteExecutor.exec(session,
-                String.format(Locale.ROOT, "nohup java -jar %s >%s.log 2>&1 &", remoteAgentFile, remoteAgentFile),
+                String.format(Locale.ROOT, "nohup java -jar %s >%s.log &", remoteAgentFile, remoteAgentFile),
                 null, -1);
             if (!execResult.isSuccess()) {
                 return CommonResult.failed("启动agent失败");
@@ -238,6 +267,7 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
                 session.disconnect();
             }
         }
+        WebSocketServer.sendMessage("/host/"+server.getServerId());
         return CommonResult.success();
     }
 

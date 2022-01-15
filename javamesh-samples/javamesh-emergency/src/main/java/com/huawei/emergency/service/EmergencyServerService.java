@@ -41,8 +41,8 @@ public interface EmergencyServerService extends EmergencyCommonService<Emergency
     /**
      * 安装agent代理
      *
-     * @param server
+     * @param serverIds 服务器id
      * @return
      */
-    CommonResult install(EmergencyServer server);
+    CommonResult install(String[] serverIds);
 }
