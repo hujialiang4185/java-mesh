@@ -32,4 +32,6 @@ public interface EmergencyResourceService {
     void refreshResource(int scriptId, List<String> resourceList);
 
     CommonResult download(int resourceId, String resourceName, ServletOutputStream outputStream);
+
+    CommonResult deleteResourceByIdAndName(int resourceId, String fileName);
 }

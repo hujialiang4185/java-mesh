@@ -107,10 +107,10 @@ public class EmergencyResourceController {
                                @PathVariable(value = "filename") String fileName) {
         try {
             int resourceId = Integer.valueOf(pathOrId);
+            return resourceService.deleteResourceByIdAndName(resourceId,fileName);
         } catch (NumberFormatException e) {
             LOGGER.error("can't delete path resource");
             return CommonResult.failed("压测脚本不能在此操作资源");
         }
-        return CommonResult.success();
     }
 }

@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -48,6 +49,7 @@ import javax.servlet.ServletOutputStream;
  * @since 2022-01-14
  **/
 @Service
+@Transactional
 public class EmergencyResourceServiceImpl implements EmergencyResourceService {
     private static final Logger LOGGER = LoggerFactory.getLogger(EmergencyResourceServiceImpl.class);
 
@@ -136,6 +138,19 @@ public class EmergencyResourceServiceImpl implements EmergencyResourceService {
             LOGGER.error("can't download resource. resourceId={}, scriptId={}, resourceName={}. {}", resourceId, resource.getScriptId(), resourceName, e.getMessage());
             return CommonResult.failed("资源下载错误");
         }
+        return CommonResult.success();
+    }
+
+    @Override
+    public CommonResult deleteResourceByIdAndName(int resourceId, String fileName) {
+        EmergencyResource resource = resourceMapper.selectByPrimaryKey(resourceId);
+        if (resource == null || ValidEnum.IN_VALID.equals(resource.getIsValid())) {
+            return CommonResult.failed("请选择正确的资源");
+        }
+        if (StringUtils.isEmpty(fileName) || !fileName.equals(resource.getResourceName())) {
+            return CommonResult.failed("资源名不一致");
+        }
+        deleteResource(resource);
         return CommonResult.success();
     }
 
