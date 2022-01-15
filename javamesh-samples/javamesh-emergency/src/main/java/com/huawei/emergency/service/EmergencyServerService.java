@@ -9,6 +9,8 @@ import com.huawei.common.api.CommonResult;
 import com.huawei.emergency.entity.EmergencyPlan;
 import com.huawei.emergency.entity.EmergencyServer;
 
+import java.util.List;
+
 /**
  * 服务器信息管理
  *
@@ -44,5 +46,5 @@ public interface EmergencyServerService extends EmergencyCommonService<Emergency
      * @param serverIds 服务器id
      * @return
      */
-    CommonResult install(String[] serverIds);
+    CommonResult install(List<Integer> serverIds);
 }

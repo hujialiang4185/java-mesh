@@ -202,24 +202,27 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
     }
 
     @Override
-    public CommonResult install(String[] serverIds) {
-        if (serverIds == null || serverIds.length == 0) {
+    public CommonResult install(List<Integer> serverIds) {
+        if (serverIds == null || serverIds.size() == 0) {
             return CommonResult.success();
         }
         List<EmergencyServer> allServers = new ArrayList<>();
-        for (String serverId : serverIds) {
-            try {
-                EmergencyServer server = serverMapper.selectByPrimaryKey(Integer.valueOf(serverId));
-                if (server == null) {
-                    return CommonResult.failed("选择正确的服务器。");
-                }
-                allServers.add(server);
-            } catch (NumberFormatException e) {
-                LOGGER.error("cast serverId error.", e);
+        for (Integer serverId : serverIds) {
+            EmergencyServer server = serverMapper.selectByPrimaryKey(serverId);
+            if (server == null) {
                 return CommonResult.failed("选择正确的服务器。");
             }
+            allServers.add(server);
         }
-        allServers.forEach(server -> executor.submit(() -> sendAgentToServer(server)));
+        allServers.forEach(server -> executor.submit(() -> {
+            LOGGER.info("begin sending agent to serverId={},ip={}", server.getServerId(), server.getServerIp());
+            CommonResult result = sendAgentToServer(server);
+            if (result.isSuccess()) {
+                LOGGER.info("success send agent to serverId={},ip={}", server.getServerId(), server.getServerIp());
+            } else {
+                LOGGER.error("error to send agent to serverId={},ip={}.{}", server.getServerId(), server.getServerIp(), result.getMsg());
+            }
+        }));
         return CommonResult.success();
     }
 
@@ -251,9 +254,10 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
             }
             String remoteAgentFile = uploadPath + agentFile.getName();
             execResult = remoteExecutor.exec(session,
-                String.format(Locale.ROOT, "nohup java -jar %s >%s.log &", remoteAgentFile, remoteAgentFile),
+                String.format(Locale.ROOT, "source /etc/profile && nohup java -jar %s >%s.log 2>&1 &", remoteAgentFile, remoteAgentFile),
                 null, -1);
             if (!execResult.isSuccess()) {
+                LOGGER.error("启动agent失败。 {}", execResult.getMsg());
                 return CommonResult.failed("启动agent失败");
             }
         } catch (JSchException e) {
@@ -267,7 +271,7 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
                 session.disconnect();
             }
         }
-        WebSocketServer.sendMessage("/host/"+server.getServerId());
+        WebSocketServer.sendMessage("/host/" + server.getServerId());
         return CommonResult.success();
     }
 
@@ -303,7 +307,7 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
     }
 
     public String parsePassword(EmergencyServer server) throws UnsupportedEncodingException {
-        return passwordUtil.encodePassword(
+        return passwordUtil.decodePassword(
             "0".equals(server.getPasswordMode())
                 ? server.getPassword()
                 : getPassword(server.getServerIp(), server.getServerUser()));

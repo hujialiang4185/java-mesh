@@ -18,6 +18,7 @@ package com.huawei.emergency.controller;
 
 import com.huawei.common.api.CommonPage;
 import com.huawei.common.api.CommonResult;
+import com.huawei.emergency.dto.ServerDto;
 import com.huawei.emergency.entity.EmergencyServer;
 import com.huawei.emergency.entity.User;
 import com.huawei.emergency.service.EmergencyServerService;
@@ -32,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -78,8 +80,11 @@ public class EmergencyServerController {
     }
 
     @PostMapping("/install")
-    public CommonResult installServer(@RequestParam(value = "server_id[]", required = false) String[] serverIds) {
-        return serverService.install(serverIds);
+    public CommonResult installServer(@RequestBody ServerDto serverDto) {
+        if (serverDto == null) {
+            return CommonResult.success();
+        }
+        return serverService.install(serverDto.getServerId());
     }
 
     @PostMapping("/license")

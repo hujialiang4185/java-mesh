@@ -89,7 +89,7 @@ logging:
 pagehelper:
   reasonable: true
 agent:
-  name: ./agent.jar
+  name: D:\\tmp\\grinder-http-4.0.0.jar
   uploadPath: /home/emergency/agent/
 argus:
   script:
