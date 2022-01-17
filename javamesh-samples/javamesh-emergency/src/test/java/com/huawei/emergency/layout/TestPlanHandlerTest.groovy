@@ -19,8 +19,6 @@ package com.huawei.emergency.layout
 
 import com.huawei.emergency.layout.controller.TransactionController
 import com.huawei.emergency.layout.template.GroovyClassTemplate
-import com.huawei.test.postprocessor.config.RegularExtractorConfig
-import com.huawei.test.postprocessor.impl.RegularExpressionExtractor
 
 class TestPlanHandlerTest extends GroovyTestCase {
 
@@ -50,10 +48,5 @@ class TestPlanHandlerTest extends GroovyTestCase {
         def context = new ElementProcessContext(template: GroovyClassTemplate.template())
         TreeResponse.parse(test.planTree).handle(context)
         context.template.print(System.out)
-    }
-
-    void "test"() {
-        def extract = new RegularExpressionExtractor().extract("Zzoo",new RegularExtractorConfig(new RegularExtractorConfig.Builder(regularExpression: "zoo", groupIndex: 0, matchIndex: 0, defaultValue: "Hello")))
-        println (extract)
     }
 }
