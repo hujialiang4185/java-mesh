@@ -122,11 +122,20 @@ public class ExecRecordHandlerFactory {
             if (record == null || !RecordStatus.PENDING.getValue().equals(record.getStatus())) {
                 return;
             }
-            List<EmergencyExecRecordDetail> emergencyExecRecordDetails = generateRecordDetail(record);
-            EmergencyExecRecordWithBLOBs finalRecord = record;
-            emergencyExecRecordDetails.forEach(recordDetail -> {
-                handle(finalRecord, recordDetail);
-            });
+            try {
+                List<EmergencyExecRecordDetail> emergencyExecRecordDetails = generateRecordDetail(record);
+                EmergencyExecRecordWithBLOBs finalRecord = record;
+                emergencyExecRecordDetails.forEach(recordDetail -> {
+                    handle(finalRecord, recordDetail);
+                });
+            } catch (ApiException e) {
+                EmergencyExecRecordWithBLOBs errorRecord = new EmergencyExecRecordWithBLOBs();
+                errorRecord.setRecordId(record.getRecordId());
+                errorRecord.setLog(e.getMessage());
+                errorRecord.setStatus(RecordStatus.FAILED.getValue());
+                recordMapper.updateByPrimaryKeySelective(errorRecord);
+                notifySceneRefresh(record.getExecId(), record.getSceneId());
+            }
         }
     }
 
