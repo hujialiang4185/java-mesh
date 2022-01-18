@@ -74,6 +74,7 @@ CREATE TABLE IF NOT EXISTS `emergency_task`  (
                                    `channel_type` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '通道类型',
                                    `script_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '脚本名称',
                                    `submit_info` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '提交信息',
+    `perf_test_id` int(11) NULL DEFAULT NULL COMMENT '压测场景ID',
                                    PRIMARY KEY (`task_id`) USING BTREE,
                                    INDEX `task_no`(`task_no`) USING BTREE,
                                    INDEX `task_name`(`task_name`) USING BTREE,

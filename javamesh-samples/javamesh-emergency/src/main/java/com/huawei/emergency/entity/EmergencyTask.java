@@ -1,17 +1,7 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2021. All rights reserved.
- */
-
 package com.huawei.emergency.entity;
 
 import java.util.Date;
 
-/**
- * 任务
- *
- * @author y30010171
- * @since 2021-11-15
- **/
 public class EmergencyTask {
     private Integer taskId;
 
@@ -38,6 +28,8 @@ public class EmergencyTask {
     private String submitInfo;
 
     private String serverId;
+
+    private Integer perfTestId;
 
     public Integer getTaskId() {
         return taskId;
@@ -141,5 +133,13 @@ public class EmergencyTask {
 
     public void setServerId(String serverId) {
         this.serverId = serverId == null ? null : serverId.trim();
+    }
+
+    public Integer getPerfTestId() {
+        return perfTestId;
+    }
+
+    public void setPerfTestId(Integer perfTestId) {
+        this.perfTestId = perfTestId;
     }
 }

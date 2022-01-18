@@ -14,6 +14,8 @@ import com.huawei.common.ngrinder.service.NgrinderSceneService;
 import com.huawei.common.ngrinder.service.NgrinderTestService;
 import com.huawei.common.util.PasswordUtil;
 import com.huawei.common.ws.WebSocketServer;
+import com.huawei.emergency.entity.EmergencyElement;
+import com.huawei.emergency.entity.EmergencyElementExample;
 import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyExecRecordDetail;
 import com.huawei.emergency.entity.EmergencyExecRecordDetailExample;
@@ -21,10 +23,12 @@ import com.huawei.emergency.entity.EmergencyExecRecordExample;
 import com.huawei.emergency.entity.EmergencyExecRecordWithBLOBs;
 import com.huawei.emergency.entity.EmergencyServer;
 import com.huawei.emergency.entity.EmergencyServerExample;
+import com.huawei.emergency.entity.EmergencyTask;
 import com.huawei.emergency.mapper.EmergencyElementMapper;
 import com.huawei.emergency.mapper.EmergencyExecRecordDetailMapper;
 import com.huawei.emergency.mapper.EmergencyExecRecordMapper;
 import com.huawei.emergency.mapper.EmergencyServerMapper;
+import com.huawei.emergency.mapper.EmergencyTaskMapper;
 import com.huawei.emergency.service.EmergencySceneService;
 import com.huawei.emergency.service.EmergencyTaskService;
 import com.huawei.script.exec.ExecResult;
@@ -101,6 +105,9 @@ public class ExecRecordHandlerFactory {
     @Autowired
     EmergencyElementMapper elementMapper;
 
+    @Autowired
+    EmergencyTaskMapper taskMapper;
+
     /**
      * 获取一个执行器实例
      *
@@ -148,6 +155,7 @@ public class ExecRecordHandlerFactory {
                     handle(finalRecord, recordDetail);
                 });
             } catch (ApiException e) {
+                LOGGER.error("failed to generateRecordDetail. {}.{}", record.getRecordId(), e.getMessage());
                 EmergencyExecRecordWithBLOBs errorRecord = new EmergencyExecRecordWithBLOBs();
                 errorRecord.setRecordId(record.getRecordId());
                 errorRecord.setLog(e.getMessage());
@@ -187,7 +195,18 @@ public class ExecRecordHandlerFactory {
         recordDetailMapper.updateByPrimaryKeySelective(updateRecordDetail); // 更新recordDetail的开始时间和状态
         recordMapper.tryUpdateStartTime(record.getRecordId(), updateRecordDetail.getStartTime()); //更新record的开始时间
         recordMapper.tryUpdateStatus(record.getRecordId()); //更新record的状态
-        ScriptExecInfo execInfo = generateExecInfo(record, recordDetail); // 生成执行信息
+        ScriptExecInfo execInfo;
+        try {
+            execInfo = generateExecInfo(record, recordDetail); // 生成执行信息
+            if (execInfo.getPerfTestId() != null) {
+                startArgusTest(execInfo.getPerfTestId()); // 执行压测任务
+            }
+            // todo 执行压测任务
+        } catch (Exception e) {
+            LOGGER.error("failed to exec detailId={}.{}", recordDetail.getDetailId(), e.getMessage());
+            complete(record, recordDetail, ExecResult.fail(e.getMessage()));
+            return;
+        }
         if (execInfo.getRemoteServerInfo() == null) {
             complete(record, recordDetail, ExecResult.fail("无可用的agent"));
             return;
@@ -288,28 +307,46 @@ public class ExecRecordHandlerFactory {
                 execInfo.setRemoteServerInfo(serverInfo);
             }
         }
-        /*if ("3".equals(execInfo.getScriptType())) {
-            EmergencyElementExample elementExample = new EmergencyElementExample();
-            elementExample.createCriteria()
-                .andScriptIdEqualTo(record.getScriptId())
-                .andIsValidEqualTo(ValidEnum.VALID.getValue())
-                .andElementTypeEqualTo("Root");
-            List<EmergencyElement> rootElements = elementMapper.selectByExample(elementExample); // 查找编排脚本root节点
-            if (rootElements.size() == 0) {
-                return execInfo;
-            }
-            Integer id = record.getSceneId() == null ? record.getTaskId() : record.getSceneId();
-            String perfSceneName = "测试场景-" + id;
-            createArgusScene(record.getScriptName(), perfSceneName); // 不存在则创建压测场景。
-            String elementParams = rootElements.get(0).getElementParams();
-            JSONObject jsonObject = JSONObject.parseObject(elementParams);
-            jsonObject.put("scenario_name", perfSceneName);
-            int argusTest = createArgusTest(record.getRecordId(), jsonObject);//创建压测任务
-
-            // todo 保存压测任务
-        }*/
+        if ("3".equals(execInfo.getScriptType())) {
+            return createPerfTest(record, execInfo);
+        }
         return execInfo;
     }
+
+    public ScriptExecInfo createPerfTest(EmergencyExecRecord record, ScriptExecInfo execInfo) {
+        EmergencyElementExample elementExample = new EmergencyElementExample();
+        elementExample.createCriteria()
+            .andScriptIdEqualTo(record.getScriptId())
+            .andIsValidEqualTo(ValidEnum.VALID.getValue())
+            .andElementTypeEqualTo("Root");
+        List<EmergencyElement> rootElements = elementMapper.selectByExample(elementExample); // 查找编排脚本root节点
+        if (rootElements.size() == 0) {
+            LOGGER.warn("can't found root element. {}", record.getScriptId());
+            return execInfo;
+        }
+        Integer id = record.getSceneId() == null ? record.getTaskId() : record.getSceneId();
+        String perfSceneName = "测试场景-" + id;
+        createArgusScene(record.getScriptName(), perfSceneName); // 不存在则创建压测场景。
+        execInfo.setPerfSceneName(perfSceneName);
+
+        EmergencyTask task = taskMapper.selectByPrimaryKey(id);
+        if (task.getPreTaskId() == null) { //创建压测任务
+            String elementParams = rootElements.get(0).getElementParams();
+            JSONObject jsonObject = JSONObject.parseObject(elementParams);
+            jsonObject.put("test_name", task.getTaskName());
+            jsonObject.put("scenario_name", perfSceneName);
+            int perfTestId = createArgusTest(record.getRecordId(), jsonObject);
+            LOGGER.info("create perf test,recordId={}", record.getRecordId());
+            if (perfTestId > 0) {
+                execInfo.setPerfTestName(task.getTaskName());
+                execInfo.setPerfTestId(id);
+                task.setPerfTestId(perfTestId);
+                taskMapper.updateByPrimaryKeySelective(task);
+            }
+        }
+        return execInfo;
+    }
+
 
     /**
      * 生成任务分发明细
@@ -449,6 +486,29 @@ public class ExecRecordHandlerFactory {
         } catch (RestClientException e) {
             LOGGER.error("failed to create grinder script {}. {}", recordId, e.getMessage());
             return -1;
+        }
+    }
+
+    public boolean startArgusTest(int testId) {
+        String url = argusUrl + "/api/task/start";
+        JSONObject params = new JSONObject();
+        params.put("test_id", testId);
+        try {
+            ResponseEntity<JSONObject> response = restTemplate.postForEntity(url, params.toJSONString(), JSONObject.class);
+            if (response.getStatusCodeValue() != HttpServletResponse.SC_OK) {
+                LOGGER.error("failed to start grinder task {}. {}", testId, response);
+                return false;
+            }
+            JSONObject jsonObject = response.getBody();
+            if (Boolean.parseBoolean(jsonObject.getOrDefault("success", "").toString())) {
+                return true;
+            } else {
+                LOGGER.error("failed to start grinder script {}. {}", testId, jsonObject);
+                return false;
+            }
+        } catch (RestClientException e) {
+            LOGGER.error("failed to start grinder script {}. {}", testId, e.getMessage());
+            return false;
         }
     }
 

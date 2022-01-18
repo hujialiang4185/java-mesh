@@ -1,19 +1,9 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2021. All rights reserved.
- */
-
 package com.huawei.emergency.entity;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-/**
- * 任务
- *
- * @author y30010171
- * @since 2021-11-15
- **/
 public class EmergencyTaskExample {
     protected String orderByClause;
 
@@ -972,6 +962,66 @@ public class EmergencyTaskExample {
 
         public Criteria andServerIdNotBetween(String value1, String value2) {
             addCriterion("server_id not between", value1, value2, "serverId");
+            return (Criteria) this;
+        }
+
+        public Criteria andPerfTestIdIsNull() {
+            addCriterion("perf_test_id is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andPerfTestIdIsNotNull() {
+            addCriterion("perf_test_id is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andPerfTestIdEqualTo(Integer value) {
+            addCriterion("perf_test_id =", value, "perfTestId");
+            return (Criteria) this;
+        }
+
+        public Criteria andPerfTestIdNotEqualTo(Integer value) {
+            addCriterion("perf_test_id <>", value, "perfTestId");
+            return (Criteria) this;
+        }
+
+        public Criteria andPerfTestIdGreaterThan(Integer value) {
+            addCriterion("perf_test_id >", value, "perfTestId");
+            return (Criteria) this;
+        }
+
+        public Criteria andPerfTestIdGreaterThanOrEqualTo(Integer value) {
+            addCriterion("perf_test_id >=", value, "perfTestId");
+            return (Criteria) this;
+        }
+
+        public Criteria andPerfTestIdLessThan(Integer value) {
+            addCriterion("perf_test_id <", value, "perfTestId");
+            return (Criteria) this;
+        }
+
+        public Criteria andPerfTestIdLessThanOrEqualTo(Integer value) {
+            addCriterion("perf_test_id <=", value, "perfTestId");
+            return (Criteria) this;
+        }
+
+        public Criteria andPerfTestIdIn(List<Integer> values) {
+            addCriterion("perf_test_id in", values, "perfTestId");
+            return (Criteria) this;
+        }
+
+        public Criteria andPerfTestIdNotIn(List<Integer> values) {
+            addCriterion("perf_test_id not in", values, "perfTestId");
+            return (Criteria) this;
+        }
+
+        public Criteria andPerfTestIdBetween(Integer value1, Integer value2) {
+            addCriterion("perf_test_id between", value1, value2, "perfTestId");
+            return (Criteria) this;
+        }
+
+        public Criteria andPerfTestIdNotBetween(Integer value1, Integer value2) {
+            addCriterion("perf_test_id not between", value1, value2, "perfTestId");
             return (Criteria) this;
         }
     }

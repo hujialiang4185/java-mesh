@@ -52,8 +52,8 @@ public class ScriptExecInfo {
      */
     private long timeOut;
 
-    private int perfSceneId;
-    private int perfSceneName;
-    private int perfTestId;
-    private int perfTestName;
+    private Integer perfSceneId;
+    private String perfSceneName;
+    private Integer perfTestId;
+    private String perfTestName;
 }
