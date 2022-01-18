@@ -2,6 +2,7 @@ package com.huawei.common.filter;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.huawei.common.config.Config;
 import com.huawei.common.util.UserFeignClient;
 import com.huawei.emergency.entity.User;
 import com.huawei.emergency.mapper.UserMapper;
@@ -65,6 +66,7 @@ public class UserFilter implements Filter {
                 user = new User(userId,(String)userInfo.get("userName"),role,auth);
                 session.setAttribute("userInfo", user);
                 USERS.set(user);
+                Config.setRequest(request);
             } catch (FeignException e) {
                 log.error("No login. ");
                 response.setStatus(401);

@@ -4,11 +4,13 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.huawei.common.api.CommonResult;
+import com.huawei.common.config.Config;
 import com.huawei.common.constant.FailedInfo;
 import com.huawei.common.constant.ResultCode;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.common.exception.ApiException;
 import com.huawei.common.filter.UserFilter;
+import com.huawei.common.ngrinder.service.NgrinderScriptService;
 import com.huawei.common.util.EscapeUtil;
 import com.huawei.common.util.FileUtil;
 import com.huawei.common.util.PasswordUtil;
@@ -49,6 +51,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -100,11 +103,17 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     @Autowired
     private EmergencyExecService execService;
 
-    @Autowired
+    @Resource(name = "passwordRestTemplate")
     private RestTemplate restTemplate;
 
-    @Value("${argus.script.update}")
-    private String updateScriptUrl;
+    @Value("${argus.url}")
+    private String argusUrl;
+
+    @Value("${decisionEngine.url}")
+    private String engineUrl;
+
+    @Autowired
+    private NgrinderScriptService ngrinderScriptService;
 
     @Autowired
     private EmergencyResourceService resourceService;
@@ -328,12 +337,88 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         script.setScriptId(scriptId);
         if (approve.equals("通过")) {
             script.setScriptStatus(TYPE_TWO);
+            freshGrinderScript(scriptId);
         } else {
             script.setScriptStatus(TYPE_THREE);
             String comment = (String) map.get("comment");
             script.setComment(comment);
         }
         return mapper.updateByPrimaryKeySelective(script);
+    }
+
+    public void freshGrinderScript(int scriptId) {
+        // todo 更新压测脚本内容。不存在则新建
+        EmergencyScript script = mapper.selectByPrimaryKey(scriptId);
+        if (script == null || !"3".equals(script.getScriptType())) {
+            return;
+        }
+        String grinderPath = grinderPath(script.getScriptName());
+        if (ngrinderScriptService.hasScript(grinderPath)) { // 更新脚本内容
+            updateGrinderScript(grinderPath, script.getContent());
+        } else { // 创建脚本，同时更新内容
+            if (createGrinderScript(script.getScriptName())) {
+                updateGrinderScript(grinderPath, script.getContent());
+            }
+        }
+    }
+
+    /**
+     * 创建压测脚本
+     *
+     * @param scriptName 脚本名称
+     * @return 是否创建成功
+     */
+    public boolean createGrinderScript(String scriptName) {
+        log.info("create grinder folder . {}", ngrinderScriptService.addFolder("", Config.GRINDER_FOLDER));
+        String createScript = argusUrl + "/api/script";
+        JSONObject params = new JSONObject();
+        params.put("folder", Config.GRINDER_FOLDER);
+        params.put("script_name", scriptName);
+        params.put("language", "Groovy");
+        params.put("method", "GET");
+        params.put("for_url", "www.baidu.com");
+        params.put("has_resource", true);
+        /*String scriptResult = restTemplate.postForObject(engineUrl + "/rest/script/new/script?path={1}&fileName={2}&scriptType={3}&createLibAndResource={4}",
+            null, String.class, Config.GRINDER_FOLDER, scriptName, "Groovy", true);*/
+        //JSONObject options = new JSONObject();
+        //options.put("method", "get");
+        //JSONObject scriptResult = ngrinderScriptService.createScript(Config.GRINDER_FOLDER, "www.baidu.com", scriptName, "Groovy", true, options.toJSONString());
+        //if (scriptResult == null || !Boolean.parseBoolean(scriptResult.getOrDefault("success", "").toString()))
+        //}
+        //return true;
+        try {
+            ResponseEntity<String> scriptResult = restTemplate.postForEntity(createScript, params, String.class);
+            if (scriptResult.getStatusCodeValue() != HttpServletResponse.SC_OK) {
+                log.error("failed to create grinder script {}. {}", scriptName, scriptResult);
+                return false;
+            }
+            JSONObject jsonObject = JSONObject.parseObject(scriptResult.getBody());
+            if (Boolean.parseBoolean(jsonObject.getOrDefault("success", "").toString())) {
+                return true;
+            } else {
+                log.error("failed to create grinder script {}. {}", scriptName, jsonObject.get("msg"));
+                return false;
+            }
+        } catch (RestClientException e) {
+            log.error("failed to create grinder script {}. {}", scriptName, e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * 更新压测脚本
+     *
+     * @param grinderPath   脚本全路径
+     * @param scriptContent 脚本内容
+     */
+    public void updateGrinderScript(String grinderPath, String scriptContent) {
+        Map<String, String> scriptMap = new HashMap<>();
+        JSONObject params = new JSONObject();
+        params.put("path", grinderPath);
+        params.put("description", "emergency commit at" + System.currentTimeMillis());
+        params.put("content", scriptContent);
+        scriptMap.put("script", params.toJSONString());
+        log.info("update script {}. {}", grinderPath, ngrinderScriptService.saveScript(scriptMap, "", "0", "false"));
     }
 
     @Override
@@ -442,7 +527,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         }
         List<String> resourceList = new ArrayList<>();
         updateOrchestrate(treeResponse.getScriptId(), -1, rootNode, treeResponse.getMap(), 1, resourceList);
-        resourceService.refreshResource(treeResponse.getScriptId(),resourceList);  // 清除资源文件
+        resourceService.refreshResource(treeResponse.getScriptId(), resourceList);  // 清除资源文件
 
         // 生成代码
         TestPlanTestElement parse = TreeResponse.parse(treeResponse);
@@ -489,7 +574,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         argusScript.setPath(path);
         argusScript.setScript(script);
         argusScript.setCommit(System.currentTimeMillis() + " 脚本编排提交");
-        template.put(updateScriptUrl, argusScript);
+        template.put(argusUrl + "/api/script", argusScript);
     }
 
     /**
@@ -659,5 +744,9 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
                     script.setPasswordMode(TYPE_ONE);
             }
         }
+    }
+
+    private String grinderPath(String scriptName) {
+        return Config.GRINDER_FOLDER + "/" + scriptName + ".groovy";
     }
 }
