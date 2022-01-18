@@ -51,4 +51,9 @@ public class ScriptExecInfo {
      * 超时时间
      */
     private long timeOut;
+
+    private int perfSceneId;
+    private int perfSceneName;
+    private int perfTestId;
+    private int perfTestName;
 }

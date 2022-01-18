@@ -4,10 +4,14 @@
 
 package com.huawei.emergency.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.huawei.common.api.CommonResult;
+import com.huawei.common.config.Config;
 import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.common.exception.ApiException;
+import com.huawei.common.ngrinder.service.NgrinderSceneService;
+import com.huawei.common.ngrinder.service.NgrinderTestService;
 import com.huawei.common.util.PasswordUtil;
 import com.huawei.common.ws.WebSocketServer;
 import com.huawei.emergency.entity.EmergencyExecRecord;
@@ -17,6 +21,7 @@ import com.huawei.emergency.entity.EmergencyExecRecordExample;
 import com.huawei.emergency.entity.EmergencyExecRecordWithBLOBs;
 import com.huawei.emergency.entity.EmergencyServer;
 import com.huawei.emergency.entity.EmergencyServerExample;
+import com.huawei.emergency.mapper.EmergencyElementMapper;
 import com.huawei.emergency.mapper.EmergencyExecRecordDetailMapper;
 import com.huawei.emergency.mapper.EmergencyExecRecordMapper;
 import com.huawei.emergency.mapper.EmergencyServerMapper;
@@ -32,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
@@ -47,6 +53,7 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * 工厂类,用于提供脚本运行记录处理器
@@ -73,6 +80,9 @@ public class ExecRecordHandlerFactory {
     @Autowired
     EmergencyServerMapper serverMapper;
 
+    @Value("${argus.url}")
+    private String argusUrl;
+
     @Resource(name = "passwordRestTemplate")
     private RestTemplate restTemplate;
 
@@ -81,6 +91,15 @@ public class ExecRecordHandlerFactory {
 
     @Autowired
     private PasswordUtil passwordUtil;
+
+    @Autowired
+    private NgrinderSceneService ngrinderSceneService;
+
+    @Autowired
+    private NgrinderTestService ngrinderTestService;
+
+    @Autowired
+    EmergencyElementMapper elementMapper;
 
     /**
      * 获取一个执行器实例
@@ -193,6 +212,13 @@ public class ExecRecordHandlerFactory {
         }
     }
 
+    /**
+     * 执行完成之后
+     *
+     * @param record
+     * @param recordDetail
+     * @param execResult
+     */
     public void complete(EmergencyExecRecord record, EmergencyExecRecordDetail recordDetail, ExecResult execResult) {
         // 更新record,detail为执行完成，结束时间
         Date endTime = new Date();
@@ -237,6 +263,13 @@ public class ExecRecordHandlerFactory {
     }
 
 
+    /**
+     * 生成可执行的信息
+     *
+     * @param record
+     * @param recordDetail
+     * @return
+     */
     public ScriptExecInfo generateExecInfo(EmergencyExecRecordWithBLOBs record, EmergencyExecRecordDetail recordDetail) {
         ScriptExecInfo execInfo = new ScriptExecInfo();
         execInfo.setId(recordDetail.getDetailId());
@@ -255,9 +288,35 @@ public class ExecRecordHandlerFactory {
                 execInfo.setRemoteServerInfo(serverInfo);
             }
         }
+        /*if ("3".equals(execInfo.getScriptType())) {
+            EmergencyElementExample elementExample = new EmergencyElementExample();
+            elementExample.createCriteria()
+                .andScriptIdEqualTo(record.getScriptId())
+                .andIsValidEqualTo(ValidEnum.VALID.getValue())
+                .andElementTypeEqualTo("Root");
+            List<EmergencyElement> rootElements = elementMapper.selectByExample(elementExample); // 查找编排脚本root节点
+            if (rootElements.size() == 0) {
+                return execInfo;
+            }
+            Integer id = record.getSceneId() == null ? record.getTaskId() : record.getSceneId();
+            String perfSceneName = "测试场景-" + id;
+            createArgusScene(record.getScriptName(), perfSceneName); // 不存在则创建压测场景。
+            String elementParams = rootElements.get(0).getElementParams();
+            JSONObject jsonObject = JSONObject.parseObject(elementParams);
+            jsonObject.put("scenario_name", perfSceneName);
+            int argusTest = createArgusTest(record.getRecordId(), jsonObject);//创建压测任务
+
+            // todo 保存压测任务
+        }*/
         return execInfo;
     }
 
+    /**
+     * 生成任务分发明细
+     *
+     * @param record
+     * @return
+     */
     @Transactional(rollbackFor = Exception.class)
     public List<EmergencyExecRecordDetail> generateRecordDetail(EmergencyExecRecord record) {
         List<EmergencyExecRecordDetail> result = new ArrayList<>();
@@ -316,7 +375,13 @@ public class ExecRecordHandlerFactory {
             .collect(Collectors.toList());
     }
 
-
+    /**
+     * 解析密码
+     *
+     * @param mode   模式
+     * @param source 密文
+     * @return
+     */
     public String parsePassword(String mode, String source) {
         if ("0".equals(mode)) {
             try {
@@ -362,4 +427,40 @@ public class ExecRecordHandlerFactory {
             WebSocketServer.sendMessage("/scena/" + emergencyExecRecords.get(0).getRecordId());
         }
     }
+
+    public void freshArgus(int planId) {
+    }
+
+    public int createArgusTest(int recordId, JSONObject testParams) {
+        String url = argusUrl + "/api/task";
+        try {
+            ResponseEntity<JSONObject> response = restTemplate.postForEntity(url, testParams.toJSONString(), JSONObject.class);
+            if (response.getStatusCodeValue() != HttpServletResponse.SC_OK) {
+                LOGGER.error("failed to create grinder task {}. {}", recordId, response);
+                return -1;
+            }
+            JSONObject jsonObject = response.getBody();
+            if (Boolean.parseBoolean(jsonObject.getOrDefault("success", "true").toString())) {
+                return Integer.valueOf(jsonObject.getOrDefault("id", "-1").toString());
+            } else {
+                LOGGER.error("failed to create grinder script {}. {}", recordId, jsonObject);
+                return -1;
+            }
+        } catch (RestClientException e) {
+            LOGGER.error("failed to create grinder script {}. {}", recordId, e.getMessage());
+            return -1;
+        }
+    }
+
+    public void createArgusScene(String scriptName, String sceneName) {
+        JSONObject params = new JSONObject();
+        params.put("app_name", "测试应用");
+        params.put("scenario_name", sceneName);
+        params.put("desc", "create at " + System.currentTimeMillis());
+        params.put("script_path", Config.GRINDER_FOLDER + "/" + scriptName + ".groovy");
+        params.put("label", "");
+        params.put("scenario_type", "自定义脚本");
+        LOGGER.info("create grinder scene. {}", ngrinderSceneService.create(params.toString()));
+    }
+
 }
