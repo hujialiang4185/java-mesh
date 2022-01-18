@@ -6,7 +6,7 @@ package com.huawei.emergency.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.huawei.common.api.CommonResult;
-import com.huawei.common.config.Config;
+import com.huawei.common.config.CommonConfig;
 import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.common.exception.ApiException;
@@ -520,10 +520,9 @@ public class ExecRecordHandlerFactory {
         params.put("app_name", "测试应用");
         params.put("scenario_name", sceneName);
         params.put("desc", "create at " + System.currentTimeMillis());
-        params.put("script_path", Config.GRINDER_FOLDER + "/" + scriptName + ".groovy");
+        params.put("script_path", CommonConfig.GRINDER_FOLDER + "/" + scriptName + ".groovy");
         params.put("label", "");
         params.put("scenario_type", "自定义脚本");
         LOGGER.info("create grinder scene. {}", restTemplate.postForObject(argusUrl + "/api/scenario", params, JSONObject.class));
     }
-
 }

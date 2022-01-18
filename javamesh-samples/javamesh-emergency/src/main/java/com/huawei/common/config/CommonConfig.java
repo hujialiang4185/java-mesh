@@ -32,9 +32,9 @@ import javax.servlet.http.HttpServletRequest;
  * @since 2021-10-30
  */
 @Configuration
-public class Config {
+public class CommonConfig {
     public static final String GRINDER_FOLDER = "emergency";
-    private static final Logger LOGGER = LoggerFactory.getLogger(Config.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CommonConfig.class);
     private static final ThreadLocal<HttpServletRequest> REQUESTS = new ThreadLocal<>();
 
     @Autowired

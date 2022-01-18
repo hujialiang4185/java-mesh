@@ -1,10 +1,7 @@
 package com.huawei.emergency.service.impl;
 
-import com.alibaba.fastjson.JSONObject;
-import com.github.pagehelper.Page;
-import com.github.pagehelper.PageHelper;
 import com.huawei.common.api.CommonResult;
-import com.huawei.common.config.Config;
+import com.huawei.common.config.CommonConfig;
 import com.huawei.common.constant.FailedInfo;
 import com.huawei.common.constant.ResultCode;
 import com.huawei.common.constant.ValidEnum;
@@ -32,6 +29,11 @@ import com.huawei.emergency.service.EmergencyExecService;
 import com.huawei.emergency.service.EmergencyResourceService;
 import com.huawei.emergency.service.EmergencyScriptService;
 import com.huawei.script.exec.log.LogResponse;
+
+import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -350,10 +352,10 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     public boolean createGrinderScript(String scriptName) {
         JSONObject params = new JSONObject();
         params.put("folder", "");
-        params.put("folder_name", Config.GRINDER_FOLDER);
+        params.put("folder_name", CommonConfig.GRINDER_FOLDER);
         log.info("create grinder folder . {}", restTemplate.postForObject(argusUrl + "/api/script/folder", params, JSONObject.class));
         params = new JSONObject();
-        params.put("folder", Config.GRINDER_FOLDER);
+        params.put("folder", CommonConfig.GRINDER_FOLDER);
         params.put("script_name", scriptName);
         params.put("language", "Groovy");
         params.put("method", "GET");
@@ -719,6 +721,6 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     }
 
     private String grinderPath(String scriptName) {
-        return Config.GRINDER_FOLDER + "/" + scriptName + ".groovy";
+        return CommonConfig.GRINDER_FOLDER + "/" + scriptName + ".groovy";
     }
 }
