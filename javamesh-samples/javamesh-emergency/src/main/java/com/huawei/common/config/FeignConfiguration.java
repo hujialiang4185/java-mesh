@@ -14,7 +14,10 @@ public class FeignConfiguration implements RequestInterceptor {
     @Override
     public void apply(RequestTemplate template) {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder
-                .getRequestAttributes();
+            .getRequestAttributes();
+        if (attributes == null) {
+            return;
+        }
         HttpServletRequest request = attributes.getRequest();
         // 对消息头进行配置
         Enumeration<String> headerNames = request.getHeaderNames();

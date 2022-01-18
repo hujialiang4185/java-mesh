@@ -10,8 +10,6 @@ import com.huawei.common.config.Config;
 import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.common.exception.ApiException;
-import com.huawei.common.ngrinder.service.NgrinderSceneService;
-import com.huawei.common.ngrinder.service.NgrinderTestService;
 import com.huawei.common.util.PasswordUtil;
 import com.huawei.common.ws.WebSocketServer;
 import com.huawei.emergency.entity.EmergencyElement;
@@ -95,12 +93,6 @@ public class ExecRecordHandlerFactory {
 
     @Autowired
     private PasswordUtil passwordUtil;
-
-    @Autowired
-    private NgrinderSceneService ngrinderSceneService;
-
-    @Autowired
-    private NgrinderTestService ngrinderTestService;
 
     @Autowired
     EmergencyElementMapper elementMapper;
@@ -199,10 +191,14 @@ public class ExecRecordHandlerFactory {
         try {
             execInfo = generateExecInfo(record, recordDetail); // 生成执行信息
             if (execInfo.getPerfTestId() != null) {
-                startArgusTest(execInfo.getPerfTestId()); // 执行压测任务
+                if (!startArgusTest(execInfo.getPerfTestId())) { // 执行压测任务
+                    complete(record, recordDetail, ExecResult.fail("无法启动压测任务."));
+                    return;
+                }
             }
             // todo 执行压测任务
         } catch (Exception e) {
+            e.printStackTrace();
             LOGGER.error("failed to exec detailId={}.{}", recordDetail.getDetailId(), e.getMessage());
             complete(record, recordDetail, ExecResult.fail(e.getMessage()));
             return;
@@ -319,7 +315,7 @@ public class ExecRecordHandlerFactory {
             .andScriptIdEqualTo(record.getScriptId())
             .andIsValidEqualTo(ValidEnum.VALID.getValue())
             .andElementTypeEqualTo("Root");
-        List<EmergencyElement> rootElements = elementMapper.selectByExample(elementExample); // 查找编排脚本root节点
+        List<EmergencyElement> rootElements = elementMapper.selectByExampleWithBLOBs(elementExample); // 查找编排脚本root节点
         if (rootElements.size() == 0) {
             LOGGER.warn("can't found root element. {}", record.getScriptId());
             return execInfo;
@@ -330,9 +326,12 @@ public class ExecRecordHandlerFactory {
         execInfo.setPerfSceneName(perfSceneName);
 
         EmergencyTask task = taskMapper.selectByPrimaryKey(id);
-        if (task.getPreTaskId() == null) { //创建压测任务
+        if (task.getPerfTestId() == null) { //创建压测任务
             String elementParams = rootElements.get(0).getElementParams();
             JSONObject jsonObject = JSONObject.parseObject(elementParams);
+            if (jsonObject == null) {
+                return execInfo;
+            }
             jsonObject.put("test_name", task.getTaskName());
             jsonObject.put("scenario_name", perfSceneName);
             int perfTestId = createArgusTest(record.getRecordId(), jsonObject);
@@ -343,6 +342,9 @@ public class ExecRecordHandlerFactory {
                 task.setPerfTestId(perfTestId);
                 taskMapper.updateByPrimaryKeySelective(task);
             }
+        } else {
+            execInfo.setPerfTestName(task.getTaskName());
+            execInfo.setPerfTestId(task.getPerfTestId());
         }
         return execInfo;
     }
@@ -469,22 +471,22 @@ public class ExecRecordHandlerFactory {
     }
 
     public int createArgusTest(int recordId, JSONObject testParams) {
-        String url = argusUrl + "/api/task";
         try {
-            ResponseEntity<JSONObject> response = restTemplate.postForEntity(url, testParams.toJSONString(), JSONObject.class);
+            ResponseEntity<JSONObject> response = restTemplate.postForEntity(argusUrl + "/api/task", testParams, JSONObject.class);
             if (response.getStatusCodeValue() != HttpServletResponse.SC_OK) {
-                LOGGER.error("failed to create grinder task {}. {}", recordId, response);
+                LOGGER.error("failed to create grinder test {}. {}", recordId, response);
                 return -1;
             }
             JSONObject jsonObject = response.getBody();
             if (Boolean.parseBoolean(jsonObject.getOrDefault("success", "true").toString())) {
+                LOGGER.info("create grinder test. {}", jsonObject);
                 return Integer.valueOf(jsonObject.getOrDefault("id", "-1").toString());
             } else {
-                LOGGER.error("failed to create grinder script {}. {}", recordId, jsonObject);
+                LOGGER.error("failed to create grinder test {}. {}", recordId, jsonObject);
                 return -1;
             }
         } catch (RestClientException e) {
-            LOGGER.error("failed to create grinder script {}. {}", recordId, e.getMessage());
+            LOGGER.error("failed to create grinder test {}. {}", recordId, e.getMessage());
             return -1;
         }
     }
@@ -494,20 +496,21 @@ public class ExecRecordHandlerFactory {
         JSONObject params = new JSONObject();
         params.put("test_id", testId);
         try {
-            ResponseEntity<JSONObject> response = restTemplate.postForEntity(url, params.toJSONString(), JSONObject.class);
+            ResponseEntity<JSONObject> response = restTemplate.postForEntity(url, params, JSONObject.class);
             if (response.getStatusCodeValue() != HttpServletResponse.SC_OK) {
                 LOGGER.error("failed to start grinder task {}. {}", testId, response);
                 return false;
             }
             JSONObject jsonObject = response.getBody();
             if (Boolean.parseBoolean(jsonObject.getOrDefault("success", "").toString())) {
+                LOGGER.info("start nrinder test={}. {}", testId, jsonObject);
                 return true;
             } else {
-                LOGGER.error("failed to start grinder script {}. {}", testId, jsonObject);
+                LOGGER.error("failed to start grinder task {}. {}", testId, jsonObject);
                 return false;
             }
         } catch (RestClientException e) {
-            LOGGER.error("failed to start grinder script {}. {}", testId, e.getMessage());
+            LOGGER.error("failed to start grinder task {}. {}", testId, e.getMessage());
             return false;
         }
     }
@@ -520,7 +523,7 @@ public class ExecRecordHandlerFactory {
         params.put("script_path", Config.GRINDER_FOLDER + "/" + scriptName + ".groovy");
         params.put("label", "");
         params.put("scenario_type", "自定义脚本");
-        LOGGER.info("create grinder scene. {}", ngrinderSceneService.create(params.toString()));
+        LOGGER.info("create grinder scene. {}", restTemplate.postForObject(argusUrl + "/api/scenario", params, JSONObject.class));
     }
 
 }
