@@ -17,6 +17,7 @@ import com.huawei.common.util.*;
 import com.huawei.emergency.entity.EmergencyScript;
 import com.huawei.emergency.entity.EmergencyScriptExample;
 import com.huawei.emergency.entity.User;
+import com.huawei.emergency.layout.DefaultElementProcessContext;
 import com.huawei.emergency.layout.ElementProcessContext;
 import com.huawei.emergency.layout.HandlerFactory;
 import com.huawei.emergency.layout.TestPlanTestElement;
@@ -507,7 +508,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
 
         // 生成代码
         TestPlanTestElement parse = TreeResponse.parse(treeResponse);
-        ElementProcessContext context = new ElementProcessContext();
+        ElementProcessContext context = new DefaultElementProcessContext();
         try {
             context.setTemplate(GroovyClassTemplate.template());
         } catch (IOException e) {

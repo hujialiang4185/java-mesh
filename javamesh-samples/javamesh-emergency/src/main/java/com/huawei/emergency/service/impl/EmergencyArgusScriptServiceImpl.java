@@ -23,6 +23,7 @@ import com.huawei.common.filter.UserFilter;
 import com.huawei.emergency.dto.ArgusScript;
 import com.huawei.emergency.entity.EmergencyElement;
 import com.huawei.emergency.entity.EmergencyElementExample;
+import com.huawei.emergency.layout.DefaultElementProcessContext;
 import com.huawei.emergency.layout.ElementProcessContext;
 import com.huawei.emergency.layout.HandlerFactory;
 import com.huawei.emergency.layout.TestPlanTestElement;
@@ -141,7 +142,7 @@ public class EmergencyArgusScriptServiceImpl implements EmergencyArgusScriptServ
 
         // 生成代码
         TestPlanTestElement parse = TreeResponse.parse(treeResponse);
-        ElementProcessContext context = new ElementProcessContext();
+        ElementProcessContext context = new DefaultElementProcessContext();
         try {
             context.setTemplate(GroovyClassTemplate.template());
         } catch (IOException e) {

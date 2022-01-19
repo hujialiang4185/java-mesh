@@ -35,17 +35,23 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author y30010171
  * @since 2021-12-15
  **/
-@Data
-public class ElementProcessContext {
-    private AtomicInteger variableCount = new AtomicInteger();
-    private Map<String, Object> params = new HashMap<>();
-    private GroovyClassTemplate template = new GroovyClassTemplate();
-    private boolean initParams = false;
-    private GroovyMethodTemplate currentMethod = new GroovyMethodTemplate();
-    private List<HttpHeaderManager> headerManagers = new ArrayList<>();
-    private List<DnsCacheManager> dnsCacheManagers = new ArrayList<>();
-    private List<HttpRequestDefault> httpRequestDefaults = new ArrayList<>();
+public interface ElementProcessContext {
 
-    private String httpRequestVariableName = "";
-    private String httpResultVariableName = "";
+    int getVariableCount();
+
+    GroovyClassTemplate getTemplate();
+
+    void setTemplate(GroovyClassTemplate template);
+
+    GroovyMethodTemplate getCurrentMethod();
+
+    void setCurrentMethod(GroovyMethodTemplate currentMethod);
+
+    String getHttpRequestVariableName();
+
+    void setHttpRequestVariableName(String httpRequestVariableName);
+
+    String getHttpResultVariableName();
+
+    void setHttpResultVariableName(String httpResultVariableName);
 }

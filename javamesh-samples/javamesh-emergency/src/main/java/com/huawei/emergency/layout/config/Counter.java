@@ -46,7 +46,7 @@ public class Counter extends Config {
     public void handle(ElementProcessContext context) {
         GroovyMethodTemplate currentMethod = context.getCurrentMethod(); // 当前方法块
         GroovyClassTemplate currentClass = context.getTemplate(); // 当前类
-        String counterName = String.format(Locale.ROOT, NAME_FORMAT, context.getVariableCount().getAndIncrement());
+        String counterName = String.format(Locale.ROOT, NAME_FORMAT, context.getVariableCount());
         String configCreateStr;
         if (perUser) {
             currentClass.addFiled(GroovyFieldTemplate.create(String.format(Locale.ROOT, "    def static %s = new CommonCounter();", counterName)));

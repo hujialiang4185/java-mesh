@@ -63,7 +63,6 @@ public class TestPlanTestElement extends ParentTestElement {
             .filter(handler -> handler instanceof TransactionController)
             .map(handler -> (TransactionController) handler)
             .collect(Collectors.toList());
-        GroovyClassTemplate template = context.getTemplate();
         int rateTotal = allTransactional.stream()
             .mapToInt(TransactionController::getPresure)
             .sum();

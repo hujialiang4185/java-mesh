@@ -16,13 +16,14 @@
 
 package com.huawei.emergency.layout.config
 
+import com.huawei.emergency.layout.DefaultElementProcessContext
 import com.huawei.emergency.layout.ElementProcessContext
 import com.huawei.emergency.layout.template.GroovyClassTemplate
 
 class CsvDataSetConfigTest extends GroovyTestCase {
 
     void "test when normal"() {
-        ElementProcessContext context = new ElementProcessContext(template: GroovyClassTemplate.template());
+        ElementProcessContext context = new DefaultElementProcessContext(template: GroovyClassTemplate.template());
         CsvDataSetConfig config = new CsvDataSetConfig(fileName: "csv.txt",variableNames: "var1,var2",sharingMode: "agent");
         config.handle(context);
         context.getTemplate().print(System.out);

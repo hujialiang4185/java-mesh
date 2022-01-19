@@ -27,7 +27,7 @@ class TestPlanHandlerTest extends GroovyTestCase {
                 new TransactionController(title: "事务控制器1", presure: 20),
                 new TransactionController(title: "事务控制器2", presure: 30),
                 new TransactionController(title: "事务控制器3", presure: 50)]);
-        def context = new ElementProcessContext(template: GroovyClassTemplate.template())
+        def context = new DefaultElementProcessContext(template: GroovyClassTemplate.template())
         planHandler.handle(context)
         context.getTemplate().print(System.out)
     }
@@ -37,7 +37,7 @@ class TestPlanHandlerTest extends GroovyTestCase {
         def controller2 = new TransactionController(title: "事务控制器2")
         def controller3 = new TransactionController(title: "事务控制器3")
         def planHandler = new TestPlanTestElement(testElements: [controller1, controller2, controller3]);
-        def context = new ElementProcessContext(template: GroovyClassTemplate.template())
+        def context = new DefaultElementProcessContext(template: GroovyClassTemplate.template())
         planHandler.handle(context)
         context.getTemplate().print(System.out)
     }
@@ -45,7 +45,7 @@ class TestPlanHandlerTest extends GroovyTestCase {
     void "test planHandler which was provided by Web"() {
         TreeResponseTest test = new TreeResponseTest();
         test.before();
-        def context = new ElementProcessContext(template: GroovyClassTemplate.template())
+        def context = new DefaultElementProcessContext(template: GroovyClassTemplate.template())
         TreeResponse.parse(test.planTree).handle(context)
         context.template.print(System.out)
     }

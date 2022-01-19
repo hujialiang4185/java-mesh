@@ -16,6 +16,7 @@
 
 package com.huawei.emergency.layout.sampler
 
+import com.huawei.emergency.layout.DefaultElementProcessContext
 import com.huawei.emergency.layout.ElementProcessContext
 import com.huawei.emergency.layout.TestPlanTestElement
 import com.huawei.emergency.layout.controller.TransactionController
@@ -32,7 +33,7 @@ class HttpSamplerTest extends GroovyTestCase {
                         [new HttpSampler(title: "测试", setDomain: "127.0.0.1",port: 9093,method: "Get",path: "/argus-emergency/api/plan")]
                 )
         ]);
-        def context = new ElementProcessContext(template: GroovyClassTemplate.template())
+        def context = new DefaultElementProcessContext(template: GroovyClassTemplate.template())
         planHandler.handle(context)
         context.getTemplate().print(System.out)
     }

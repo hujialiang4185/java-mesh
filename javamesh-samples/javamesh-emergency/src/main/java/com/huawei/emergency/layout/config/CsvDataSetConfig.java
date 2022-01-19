@@ -76,13 +76,13 @@ public class CsvDataSetConfig extends Config {
         if (filenames.indexOf("/") > -1) {
             dataFileName = filenames.substring(filenames.indexOf("/"));
         }
-        String csvVariableName = "csvDatasetConfig" + context.getVariableCount().getAndIncrement();
+        String csvVariableName = "csvDatasetConfig" + context.getVariableCount();
         classTemplate.addFiled(GroovyFieldTemplate.create(String.format(Locale.ROOT, NEW_CSV_FORMAT, csvVariableName))); // 声明csv变量
         String csvConfig = String.format(Locale.ROOT, CSV_CONFIG_FORMAT, variableNames, delimiter, dataFileName, delimiter, StringUtils.isNotEmpty(variableNames) ? ignoreFirstLine : false, sharingModeStr, quotedData, recycle);
         classTemplate.getBeforeProcessMethod().addContent(String.format(Locale.ROOT, CSV_INIT_FORMAT, csvVariableName, csvConfig), 2); // 初始化csv变量
 
         // 获取csv解析的参数
-        String csvLineValuesVariableName = "csvLineValue" + context.getVariableCount().getAndIncrement();
+        String csvLineValuesVariableName = "csvLineValue" + context.getVariableCount();
         classTemplate.getBeforeMethod().addContent(String.format(Locale.ROOT, "def %s = %s.nextLineValue();", csvLineValuesVariableName, csvVariableName), 2);
         // 通过参数名称声明实例变量 并赋值
         if (StringUtils.isNotEmpty(variableNames)) {

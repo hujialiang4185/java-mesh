@@ -16,13 +16,14 @@
 
 package com.huawei.emergency.layout.config
 
+import com.huawei.emergency.layout.DefaultElementProcessContext
 import com.huawei.emergency.layout.ElementProcessContext
 import com.huawei.emergency.layout.template.GroovyClassTemplate
 
 class HttpCookieManagerTest extends GroovyTestCase {
 
     void "test when normal"() {
-        ElementProcessContext context = new ElementProcessContext(template: GroovyClassTemplate.template());
+        ElementProcessContext context = new DefaultElementProcessContext(template: GroovyClassTemplate.template());
         HttpCookieManager cookieManager = new HttpCookieManager(cookies: [ new HttpCookieManager.CookieValue(name: "sessionId", value: "123456789", domain: "127.0.0.1", path: "/", secure: true)]);
         cookieManager.handle(context);
         context.getTemplate().print(System.out)

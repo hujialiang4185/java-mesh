@@ -64,7 +64,7 @@ public class HttpSampler extends Sampler {
             url = dnsCacheManager.resolver(url);
         }*/
         GroovyMethodTemplate currentMethod = context.getCurrentMethod();
-        String requestVariableName = "request" + context.getVariableCount().getAndIncrement();
+        String requestVariableName = "request" + context.getVariableCount();
         if (StringUtils.isNotEmpty(path) && path.startsWith("/")) {
             path = path.substring(1);
         }
@@ -74,7 +74,7 @@ public class HttpSampler extends Sampler {
         currentMethod.addContent(String.format(Locale.ROOT, "%s.setHeaders( headers as NVPair[]);", requestVariableName), 2);
         currentMethod.addContent(String.format(Locale.ROOT, "%s.setData(%s);", requestVariableName, generateBodyData()), 2);
         currentMethod.addContent(String.format(Locale.ROOT, "%s.setFormData(%s);", requestVariableName, generateNvPairs()), 2);
-        String resultVariableName = "httpResult" + context.getVariableCount().getAndIncrement();
+        String resultVariableName = "httpResult" + context.getVariableCount();
         currentMethod.addContent(String.format(Locale.ROOT, "def %s = %s.%s()", resultVariableName, requestVariableName, method.toUpperCase(Locale.ROOT)), 2);
         context.setHttpRequestVariableName(requestVariableName);
         context.setHttpResultVariableName(resultVariableName);
