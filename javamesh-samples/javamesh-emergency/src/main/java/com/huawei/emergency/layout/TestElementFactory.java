@@ -63,9 +63,9 @@ import java.util.Map;
  * @author y30010171
  * @since 2021-12-17
  **/
-public class HandlerFactory {
+public class TestElementFactory {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HandlerFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TestElementFactory.class);
     private static final Collection<Class<?>> GENERAL_CLASS_TYPE;
     private static final String SET_METHOD_PREFIX = "set";
     private static final Map<String, String> allHandlerClassName = new HashMap<>();

@@ -25,7 +25,7 @@ import com.huawei.emergency.entity.EmergencyElement;
 import com.huawei.emergency.entity.EmergencyElementExample;
 import com.huawei.emergency.layout.DefaultElementProcessContext;
 import com.huawei.emergency.layout.ElementProcessContext;
-import com.huawei.emergency.layout.HandlerFactory;
+import com.huawei.emergency.layout.TestElementFactory;
 import com.huawei.emergency.layout.TestPlanTestElement;
 import com.huawei.emergency.layout.TreeNode;
 import com.huawei.emergency.layout.TreeResponse;
@@ -211,7 +211,7 @@ public class EmergencyArgusScriptServiceImpl implements EmergencyArgusScriptServ
         rootElement.setElementParams(JSONObject.toJSONString(elementParams));
         elementMapper.insertSelective(rootElement);
         int seq = 1;
-        for (String handlerType : HandlerFactory.getDefaultTemplate()) {
+        for (String handlerType : TestElementFactory.getDefaultTemplate()) {
             EmergencyElement element = new EmergencyElement();
             element.setElementTitle(handlerType);
             element.setElementType(handlerType);

@@ -50,7 +50,7 @@ public class TreeResponse {
             return;
         }
         for (TreeNode treeNode : treeNodes) {
-            TestElement testElement = HandlerFactory.getHandler(treeNode.getType(), JSONObject.toJSONString(variables.get(treeNode.getKey())));
+            TestElement testElement = TestElementFactory.getHandler(treeNode.getType(), JSONObject.toJSONString(variables.get(treeNode.getKey())));
             if (testElement == null) {
                 continue;
             }

@@ -18,18 +18,18 @@ package com.huawei.emergency.layout
 
 import com.huawei.emergency.layout.controller.TransactionController
 
-class HandlerFactoryTest extends GroovyTestCase{
+class TestElementFactoryTest extends GroovyTestCase{
 
     void "test HandlerFactory"() {
         Map<String,Object> variables = new HashMap<>()
         variables.put("title","事务1")
         variables.put("comment","第一个事务")
-        def handler = HandlerFactory.getHandler("TransactionController", variables)
+        def handler = TestElementFactory.getHandler("TransactionController", variables)
         assertTrue(handler instanceof TransactionController)
         def transactional = (TransactionController) handler
         assertEquals("事务1", transactional.title)
         assertEquals("第一个事务", transactional.comment)
-        println(this.class.getMethod("test HandlerFactory"))
+        println(this.class.getMethod("test TestElementFactory"))
     }
 }
 
