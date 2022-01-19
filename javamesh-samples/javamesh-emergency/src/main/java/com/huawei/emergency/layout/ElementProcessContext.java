@@ -16,18 +16,8 @@
 
 package com.huawei.emergency.layout;
 
-import com.huawei.emergency.layout.config.DnsCacheManager;
-import com.huawei.emergency.layout.config.HttpHeaderManager;
-import com.huawei.emergency.layout.config.HttpRequestDefault;
 import com.huawei.emergency.layout.template.GroovyClassTemplate;
 import com.huawei.emergency.layout.template.GroovyMethodTemplate;
-import lombok.Data;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 处理上下文
@@ -37,21 +27,69 @@ import java.util.concurrent.atomic.AtomicInteger;
  **/
 public interface ElementProcessContext {
 
+    /**
+     * 获取下一个参数序号，避免变量名称重复
+     *
+     * @return 参数序号
+     */
     int getVariableCount();
 
+    /**
+     * 获取当前上下文中所使用的groovy文件模板
+     *
+     * @return {@link GroovyClassTemplate}
+     */
     GroovyClassTemplate getTemplate();
 
+    /**
+     * 设置当前上下文中所使用的groovy文件模板
+     *
+     * @param template {@link GroovyClassTemplate}
+     */
     void setTemplate(GroovyClassTemplate template);
 
+    /**
+     * 获取当前上下文中正在使用的groovy文件模板中的方法块
+     *
+     * @return {@link GroovyMethodTemplate}
+     */
     GroovyMethodTemplate getCurrentMethod();
 
+    /**
+     * 设置当前上下文中，正在使用的groovy文件模板中的方法块。
+     * 以便当前节点的子节点知道应该在哪个方法块添加内容
+     *
+     * @param currentMethod
+     */
     void setCurrentMethod(GroovyMethodTemplate currentMethod);
 
+    /**
+     * 获取当前http请求产生的request变量名称。
+     * 以便子节点中的响应断言使用
+     *
+     * @return 变量名称
+     */
     String getHttpRequestVariableName();
 
+    /**
+     * 设置当前http请求产生的request变量名称。
+     *
+     * @param httpRequestVariableName 变量名称
+     */
     void setHttpRequestVariableName(String httpRequestVariableName);
 
+    /**
+     * 获取当前http请求产生的response变量名称。
+     * 以便子节点中的响应断言使用
+     *
+     * @return 变量名称
+     */
     String getHttpResultVariableName();
 
+    /**
+     * 设置当前http请求产生的response变量名称。
+     *
+     * @param httpResultVariableName 变量名称
+     */
     void setHttpResultVariableName(String httpResultVariableName);
 }
