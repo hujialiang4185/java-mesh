@@ -275,6 +275,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             }
         }
         extracted(script);
+        script.setScriptStatus(TYPE_ZERO); // 变为待提审
         return mapper.updateByPrimaryKeySelective(script);
     }
 
@@ -302,6 +303,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     @Override
     public String submitReview(HttpServletRequest request, EmergencyScript script) {
         script.setScriptStatus(TYPE_ONE);
+        script.setComment("");
         User user = (User) request.getSession().getAttribute("userInfo");
         int count;
         if (user.getAuth().contains("admin") || user.getUserName().equals(mapper.selectUserById(script.getScriptId()))) {
@@ -519,6 +521,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             EmergencyScript script = new EmergencyScript();
             script.setScriptId(treeResponse.getScriptId());
             script.setContent(scriptContent);
+            script.setScriptStatus(TYPE_ZERO);
             mapper.updateByPrimaryKeySelective(script);
 
             ArgusScript argusScript = new ArgusScript();
