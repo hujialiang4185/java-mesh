@@ -1,32 +1,26 @@
 import { Line, LineOptions, Liquid, LiquidOptions } from "@antv/g2plot";
-import { Button, Descriptions, Form, Input, message, Select, Table, Tabs, Tag } from "antd";
-import { useForm } from "antd/lib/form/Form";
+import { Button, Descriptions, Table, Tabs, Tag } from "antd";
 import { PresetColorTypes } from "antd/lib/_util/colors";
 import axios from "axios";
+import moment from "moment";
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import Breadcrumb from "../../Breadcrumb";
 import Card from "../../Card";
+import ServiceSelect from "../../ServiceSelect";
 import "./index.scss"
 
 export default function App() {
-    let submit = false
     const [data, setData] = useState<any>({})
     const urlSearchParams = new URLSearchParams(useLocation().search)
     const test_id = urlSearchParams.get("test_id")
-    const inputRef = useRef(null)
 
     useEffect(function () {
-        (async function () {
-            const res = await axios.get("/argus/api/task/view", { params: { test_id } })
-            setData(res.data.data)
-            const input: any = inputRef.current
-            input.resizableTextArea.textArea.value = res.data.data.test_comment
-        })()
         async function load() {
             const res = await axios.get("/argus/api/task/view", { params: { test_id } })
             setData(res.data.data)
         }
+        load()
         const interval = setInterval(load, 5000)
         return function(){
             clearInterval(interval)
@@ -93,33 +87,17 @@ export default function App() {
             </div>
             <div className="Label">TPS图表</div>
             <Tabs type="card" size="small">
-                <Tabs.TabPane tab="业务性能指标" key="BusinessCharts">
-                    <BusinessCharts />
-                </Tabs.TabPane>
                 <Tabs.TabPane tab="硬件资源指标" key="ResourceCharts">
                     <ResourceCharts />
+                </Tabs.TabPane>
+                <Tabs.TabPane tab="业务性能指标" key="BusinessCharts">
+                    <BusinessCharts />
                 </Tabs.TabPane>
                 <Tabs.TabPane tab="JVM性能指标" key="JvmCharts">
                     <JvmCharts />
                 </Tabs.TabPane>
             </Tabs>
             <div className="Label">测试注释</div>
-            <div className="Comment">
-                <Input.TextArea ref={inputRef} className="Input" showCount maxLength={256} autoSize={{ minRows: 2, maxRows: 2 }} placeholder="请输入描述" />
-                <div className="Button" onClick={async function () {
-                    if (submit) return
-                    submit = true
-                    try {
-                        const input: any = inputRef.current
-                        const test_comment = input.resizableTextArea.textArea.value
-                        await axios.put('/argus/api/task/update', { test_id, test_comment })
-                        message.success("更新成功")
-                    } catch (e: any) {
-                        message.error(e.message)
-                    }
-                    submit = false
-                }}>添加注释</div>
-            </div>
             <div className="Label">日志文件</div>
             {data.log_name?.map(function (item: string, index: number) {
                 return <div key={index} >
@@ -157,20 +135,29 @@ function BusinessCharts() {
 }
 
 function ResourceCharts() {
-    const [ips, setIps] = useState<[{ value: string }]>()
+    const urlSearchParams = new URLSearchParams(useLocation().search)
+    const test_id = urlSearchParams.get("test_id") || ""
     const cpuUsageRef = useRef(null)
     const memoryUsageRef = useRef(null)
     const ioBusyRef = useRef(null)
-    const cpuRef = useRef<HTMLDivElement>(null)
+    const cpuRef = useRef(null)
     const memoryRef = useRef(null)
     const diskRef = useRef(null)
     const networkRef = useRef(null)
-    const [form] = useForm()
+    const [data, setData] = useState<any>({})
+    const chartsRef = useRef<{
+        cpuUsageChart: Liquid,
+        memoryUsageChart: Liquid,
+        ioBusyChart: Liquid,
+        cpuChart: Line,
+        memoryChart: Line,
+        diskChart: Line,
+        networkChart: Line,
+        second: number
+    }>()
     useEffect(function () {
-        form.setFieldsValue({ ip: "192.168.0.1" })
-        setIps([{ value: "192.168.0.1" }])
         const liquidOption: LiquidOptions = {
-            percent: 0.7,
+            percent: 0,
             outline: {
                 border: 2,
                 distance: 4,
@@ -206,24 +193,20 @@ function ResourceCharts() {
                     stroke: color,
                 };
             },
-            autoFit: false
         }
         const cpuUsageChart = new Liquid(cpuUsageRef.current!!, liquidOption)
         const memoryUsageChart = new Liquid(memoryUsageRef.current!!, liquidOption)
         const ioBusyChart = new Liquid(ioBusyRef.current!!, liquidOption)
-        cpuUsageChart.render()
-        memoryUsageChart.render()
-        ioBusyChart.render()
-        const data = [
-            { name: "user", time: "00:00", value: 70 }, { name: "user", time: "00:01", value: 80 }, { name: "user", time: "00:02", value: 60 },
-            { name: "system", time: "00:00", value: 60 }, { name: "system", time: "00:01", value: 50 }, { name: "system", time: "00:02", value: 90 },
-        ]
         const lineOption: LineOptions = {
-            data,
+            data: Array.from({length: 91}, function(_, index){
+                return {
+                    time: moment(new Date(index * 1000)).format("mm:ss"),
+                }
+            }),
             xField: "time",
             yField: "value",
             seriesField: "name",
-            xAxis: { tickInterval: 1, range: [0, 1] },
+            xAxis: { tickInterval: 10, range: [0, 1] },
             smooth: true,
             area: {
                 style: {
@@ -240,33 +223,91 @@ function ResourceCharts() {
             }
         }})
         const memoryChart = new Line(memoryRef.current!!, lineOption)
+        const diskChart = new Line(diskRef.current!!, lineOption)
+        const networkChart = new Line(networkRef.current!!, lineOption)
+
+        cpuUsageChart.render()
+        memoryUsageChart.render()
+        ioBusyChart.render()
         cpuChart.render()
         memoryChart.render()
+        diskChart.render()
+        networkChart.render()
+        chartsRef.current = {
+            cpuUsageChart,
+            memoryUsageChart,
+            ioBusyChart,
+            cpuChart,
+            memoryChart,
+            diskChart,
+            networkChart,
+            second: 0
+        }
         return function () {
             cpuUsageChart.destroy()
             memoryUsageChart.destroy()
             ioBusyChart.destroy()
             cpuChart.destroy()
             memoryChart.destroy()
+            diskChart.destroy()
+            networkChart.destroy()
         }
-    }, [form])
+    }, [])
+    useEffect(function(){
+        load(test_id)
+        const interval = setInterval(function(){
+            load(test_id)
+        },1000)
+        return function(){
+            clearInterval(interval)
+        }
+    },[test_id])
+    async function load(test_id: string, ip?: string) {
+        const res = await axios.get("/argus/api/task/resource", { params: { test_id, ip } })
+        const data = res.data.data
+        setData({
+            ip: data.ip,
+            cpu: data.cpu,
+            memory: data.memory,
+            start_up: data.start_up
+        })
+        if (!chartsRef.current) return
+        const current = chartsRef.current
+        current.cpuUsageChart.changeData(data.cpu_usage)
+        current.memoryUsageChart.changeData(data.memory_usage)
+        current.ioBusyChart.changeData(data.io_busy)
+        
+        const cpuData = current.cpuChart.chart.getData()
+        const second = current.second
+        const item = {
+            time: moment(new Date(second * 1000)).format("mm:ss"),
+            value: data.cpu_user,
+            name: "user"
+        }
+        if (second > 90) {
+            cpuData.shift()
+            cpuData.push(item)
+        } else {
+            cpuData[second] = item
+        }
+        current.cpuChart.changeData(cpuData)
+        current.second++
+    }
     return <div className="ResourceCharts">
-        <Form form={form} layout="inline" className="Form">
-            <Form.Item name="ip">
-                <Select className="Input" showSearch options={ips} />
-            </Form.Item>
-        </Form>
+        <ServiceSelect value={data.ip} placeholder="IP地址" url="/argus/api/task/search/ip" onChange={function(value){
+            load(test_id, value)
+        }}/>
         <div className="Grid">
             <div className="Item Middle">
-                <div className="Value">4</div>
+                <div className="Value">{data.cpu}</div>
                 <div className="Title">CPU核心数</div>
             </div>
             <div className="Item Middle">
-                <div className="Value">8GiB</div>
+                <div className="Value">{data.memory}GiB</div>
                 <div className="Title">内存大小</div>
             </div>
             <div className="Item Middle">
-                <div className="Value">1小时</div>
+                <div className="Value">{data.start_up}小时</div>
                 <div className="Title">启动时间</div>
             </div>
         </div>

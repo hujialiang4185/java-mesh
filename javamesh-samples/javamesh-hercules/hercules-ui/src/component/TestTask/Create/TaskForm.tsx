@@ -66,7 +66,6 @@ export default function App(props: { scenarioName?: string }) {
                 }
             }
             plotRef.current?.changeData(res.data.data)
-            plotRef.current?.render()
         } catch (error: any) {
             message.error(error.message)
         }
@@ -74,9 +73,11 @@ export default function App(props: { scenarioName?: string }) {
     const debounceRef = useRef(debounce(load, 1000))
     useEffect(function () {
         load()
-        plotRef.current = new Line(chartRef.current!!, options)
+        const line = new Line(chartRef.current!!, options)
+        line.render()
+        plotRef.current = line
         return function () {
-            plotRef.current?.destroy()
+            line.destroy()
         }
     }, [])
     return <Form className="TaskForm" form={form} requiredMark={false} labelCol={{ span: 4 }}

@@ -242,9 +242,24 @@ aaa`,
   })
   mock.onGet('/argus/api/task/service').reply(200, {
     data: [
-      {transaction: '测试1',tps: 123, response_ms: 12, success_count: 9, fail_count: 1, fail_rate: "10%"}
+      { transaction: '测试1', tps: 123, response_ms: 12, success_count: 9, fail_count: 1, fail_rate: "10%" }
     ]
   })
+  mock.onGet('/argus/api/task/resource').reply(function (config) {
+    return [200, {
+      data: {
+        ip: config.params.ip || "192.168.0.1",
+        cpu: 4,
+        memory: 8,
+        start_up: 1.5,
+        cpu_usage: Math.random() / 5 + 0.3,
+        memory_usage: Math.random() / 5 + 0.3,
+        io_busy: Math.random() / 5 + 0.3,
+        cpu_user: Math.random() * 100,
+      }
+    }]
+  })
+  mock.onGet('/argus/api/task/search/ip').reply(200, { data: ["192.168.0.1", "192.168.0.2", "192.168.0.3", "192.168.0.4", "192.168.0.5"] })
   mock.onPost('/argus/api/task/pressurePrediction').reply(200, {
     data: [{
       "time": "1",

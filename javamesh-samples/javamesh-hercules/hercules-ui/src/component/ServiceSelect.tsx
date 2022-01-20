@@ -20,7 +20,7 @@ export default function App(props: { url: string, value?: string, onChange?: (va
         setLoading(false)
     }
     const debounceRef = useRef(debounce(loadBelongTo, 1000))
-    return <Select placeholder={props.placeholder} defaultValue={props.value} onChange={props.onChange} options={options}
+    return <Select placeholder={props.placeholder} value={props.value} onChange={props.onChange} options={options}
         allowClear={props.allowClear} showSearch
         onSearch={debounceRef.current}
         onFocus={function () {
