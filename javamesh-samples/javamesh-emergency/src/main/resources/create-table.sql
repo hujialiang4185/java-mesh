@@ -164,6 +164,7 @@ CREATE TABLE IF NOT EXISTS `emergency_server`  (
                                      `update_time` timestamp NULL DEFAULT NULL COMMENT '修改时间',
                                      `update_user` varchar(40) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '修改人',
                                      `is_valid` varchar(1) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '1' COMMENT '是否生效',
+    `status` varchar(40) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT 'pending' COMMENT '状态 pending,running,success,fail',
                                      PRIMARY KEY (`server_id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;$$$
 
