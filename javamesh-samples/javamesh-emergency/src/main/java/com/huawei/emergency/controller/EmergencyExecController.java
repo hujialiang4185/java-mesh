@@ -6,6 +6,7 @@ package com.huawei.emergency.controller;
 
 import com.huawei.common.api.CommonPage;
 import com.huawei.common.api.CommonResult;
+import com.huawei.common.filter.UserFilter;
 import com.huawei.emergency.dto.PlanQueryDto;
 import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyExecRecordDetail;
@@ -19,6 +20,7 @@ import com.huawei.script.exec.log.LogResponse;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
 
+import io.swagger.annotations.Api;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,13 +40,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * 执行记录管理
+ * 执行记录管理，包括脚本调试记录，脚本调试日志，预案执行记录。
  *
  * @author y30010171
  * @since 2021-11-09
  **/
+@Api(tags = "执行记录管理")
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/history")
 public class EmergencyExecController {
     private static final Logger LOGGER = LoggerFactory.getLogger(EmergencyExecController.class);
 
@@ -57,35 +60,33 @@ public class EmergencyExecController {
     /**
      * 重新执行某条失败的执行记录
      *
-     * @param request http请求
-     * @param params  {@link PlanQueryDto#getKey()} 执行记录ID
+     * @param params {@link PlanQueryDto#getKey()} 执行记录ID
      * @return {@link CommonResult}
      */
-    @PostMapping("/history/scenario/task/runAgain")
-    public CommonResult reExec(HttpServletRequest request, @RequestBody PlanQueryDto params) {
+    @PostMapping("/scenario/task/runAgain")
+    public CommonResult reExec(@RequestBody PlanQueryDto params) {
         if (params.getKey() == null) {
             return CommonResult.failed("请选择正确的执行记录");
         }
-        return execService.reExec(params.getKey(), parseUserName(request));
+        return execService.reExec(params.getKey(), UserFilter.currentUserName());
     }
 
     /**
      * 人工确认某条执行记录是否成功
      *
-     * @param request http请求
-     * @param params  {@link PlanQueryDto#getKey()} 执行记录ID {@link PlanQueryDto#getConfirm()}} 确认结果
+     * @param params {@link PlanQueryDto#getKey()} 执行记录ID {@link PlanQueryDto#getConfirm()}} 确认结果
      * @return {@link CommonResult}
      */
-    @PostMapping("/history/scenario/task/ensure")
-    public CommonResult success(HttpServletRequest request, @RequestBody PlanQueryDto params) {
+    @PostMapping("/scenario/task/ensure")
+    public CommonResult success(@RequestBody PlanQueryDto params) {
         if (params.getKey() == null) {
             return CommonResult.failed("请选择正确的执行记录");
         }
         if ("成功".equals(params.getConfirm())) {
-            return execService.ensure(params.getKey(), "5", parseUserName(request));
+            return execService.ensure(params.getKey(), "5", UserFilter.currentUserName());
         }
         if ("失败".equals(params.getConfirm())) {
-            return execService.ensure(params.getKey(), "6", parseUserName(request));
+            return execService.ensure(params.getKey(), "6", UserFilter.currentUserName());
         }
         return CommonResult.failed("请选择确认成功或者失败");
     }
@@ -103,7 +104,7 @@ public class EmergencyExecController {
      * @param planNames 用于过滤的预案编号
      * @return {@link CommonResult}
      */
-    @GetMapping("/history")
+    @GetMapping()
     public CommonResult allPlanExecRecords(@RequestParam(value = "keywords", required = false) String planName,
                                            @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
                                            @RequestParam(value = "current", defaultValue = "1") int current,
@@ -133,7 +134,7 @@ public class EmergencyExecController {
      * @param execId 执行ID
      * @return {@link CommonResult}
      */
-    @GetMapping("/history/scenario")
+    @GetMapping("/scenario")
     public CommonResult allSceneExecRecords(@RequestParam("history_id") int execId) {
         CommonPage<EmergencyExecRecord> params = new CommonPage<>();
         EmergencyExecRecord record = new EmergencyExecRecord();
@@ -149,7 +150,7 @@ public class EmergencyExecController {
      * @param sceneId 场景ID
      * @return {@link CommonResult}
      */
-    @GetMapping("/history/scenario/task")
+    @GetMapping("/scenario/task")
     public CommonResult allTaskExecRecords(@RequestParam("history_id") int execId,
                                            @RequestParam("scena_id") int sceneId) {
         CommonPage<EmergencyExecRecord> params = new CommonPage<>();
@@ -167,7 +168,7 @@ public class EmergencyExecController {
      * @param lineNum  日志行号
      * @return {@link LogResponse}
      */
-    @GetMapping("/history/scenario/task/log")
+    @GetMapping("/scenario/task/log")
     public LogResponse getLog(@RequestParam("key") int recordId,
                               @RequestParam(value = "line", defaultValue = "1") int lineNum) {
         int lineIndex = lineNum;
@@ -204,44 +205,38 @@ public class EmergencyExecController {
         }
     }
 
-    private String parseUserName(HttpServletRequest request) {
-        String userName = "";
-        try {
-            User user = (User) request.getSession().getAttribute("userInfo");
-            if (user != null) {
-                userName = user.getNickName();
-            }
-        } catch (Exception e) {
-            LOGGER.error("get user info error.", e);
-        }
-        return userName;
+    @PostMapping("/stop")
+    public CommonResult stopOneServer(@RequestBody EmergencyExecRecordDetail detail) {
+        return execService.stopOneServer(detail.getDetailId(), UserFilter.currentUserName());
     }
 
-    @PostMapping("/history/stop")
-    public CommonResult stopOneServer(HttpServletRequest request, @RequestBody EmergencyExecRecordDetail detail) {
-        return execService.stopOneServer(detail.getDetailId(), parseUserName(request));
+    @PostMapping("/start")
+    public CommonResult startOneServer(@RequestBody EmergencyExecRecordDetail detail) {
+        return execService.startOneServer(detail.getDetailId(), UserFilter.currentUserName());
     }
 
-    @PostMapping("/history/start")
-    public CommonResult startOneServer(HttpServletRequest request, @RequestBody EmergencyExecRecordDetail detail) {
-        return execService.startOneServer(detail.getDetailId(), parseUserName(request));
-    }
-
-    @PostMapping("/history/ensure")
-    public CommonResult ensureOneServer(HttpServletRequest request, @RequestBody EmergencyExecRecordDetail detail) {
+    @PostMapping("/ensure")
+    public CommonResult ensureOneServer(@RequestBody EmergencyExecRecordDetail detail) {
         if (detail.getDetailId() == null) {
             return CommonResult.failed("请选择正确的执行记录");
         }
         if ("成功".equals(detail.getStatus())) {
-            return execService.ensure(detail.getDetailId(), "5", parseUserName(request));
+            return execService.ensure(detail.getDetailId(), "5", UserFilter.currentUserName());
         }
         if ("失败".equals(detail.getStatus())) {
-            return execService.ensure(detail.getDetailId(), "6", parseUserName(request));
+            return execService.ensure(detail.getDetailId(), "6", UserFilter.currentUserName());
         }
         return CommonResult.failed("请选择确认成功或者失败");
     }
 
-    @GetMapping("/history/log")
+    /**
+     * 查询执行日志
+     *
+     * @param detailId 脚本调试产生的debugId或者任务分发后的执行明细ID
+     * @param lineNum 日志开始行数，从第几行开始读写
+     * @return
+     */
+    @GetMapping("/log")
     public LogResponse logOneServer(@RequestParam("key") int detailId,
                                     @RequestParam(value = "line", defaultValue = "1") int lineNum) {
         int lineIndex = lineNum;

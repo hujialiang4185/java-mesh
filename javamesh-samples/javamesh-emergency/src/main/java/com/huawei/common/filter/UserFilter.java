@@ -37,7 +37,7 @@ public class UserFilter implements Filter {
     private User user;
 
     private static final Set<String> ALLOWED_PATHS = Collections.unmodifiableSet(new HashSet<>(
-            Arrays.asList("/ws")));
+            Arrays.asList("/ws","/swagger-ui.html")));
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {

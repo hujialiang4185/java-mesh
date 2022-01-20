@@ -8,6 +8,7 @@ import com.huawei.common.api.CommonPage;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.PlanStatus;
 import com.huawei.common.constant.ScheduleType;
+import com.huawei.common.filter.UserFilter;
 import com.huawei.emergency.dto.PlanQueryDto;
 import com.huawei.emergency.dto.PlanQueryParams;
 import com.huawei.emergency.dto.PlanSaveParams;
@@ -16,6 +17,7 @@ import com.huawei.emergency.entity.EmergencyPlan;
 import com.huawei.emergency.entity.User;
 import com.huawei.emergency.service.EmergencyPlanService;
 
+import io.swagger.annotations.Api;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +44,7 @@ import javax.servlet.http.HttpServletRequest;
  * @author y30010171
  * @since 2021-11-02
  **/
+@Api(tags = "预案管理")
 @RestController
 @RequestMapping("/api")
 public class EmergencyPlanController {
@@ -54,39 +57,36 @@ public class EmergencyPlanController {
     /**
      * 修改预案下的拓扑任务信息
      *
-     * @param request http请求
-     * @param params  {@link PlanSaveParams}
+     * @param params {@link PlanSaveParams}
      * @return {@link CommonResult}
      */
     @PutMapping("/plan")
-    public CommonResult save(HttpServletRequest request, @RequestBody PlanSaveParams params) {
-        return planService.save(params.getPlanId(), params.getExpand(), parseUserName(request));
+    public CommonResult save(@RequestBody PlanSaveParams params) {
+        return planService.save(params.getPlanId(), params.getExpand(), UserFilter.currentUserName());
     }
 
     /**
      * 预案执行
      *
-     * @param request http请求
-     * @param plan    {@link EmergencyPlan#getPlanId()} 预案ID
+     * @param plan {@link EmergencyPlan#getPlanId()} 预案ID
      * @return {@link CommonResult}
      */
     @PostMapping("/plan/run")
-    public CommonResult run(HttpServletRequest request, @RequestBody EmergencyPlan plan) {
+    public CommonResult run(@RequestBody EmergencyPlan plan) {
         if (plan.getPlanId() == null) {
             return CommonResult.failed("请选择需要运行的预案");
         }
-        return planService.exec(plan.getPlanId(), parseUserName(request));
+        return planService.exec(plan.getPlanId(), UserFilter.currentUserName());
     }
 
     /**
      * 预案启动,开始调度
      *
-     * @param request http请求
-     * @param param   {@link PlanQueryDto#getPlanId()} 预案ID {@link PlanQueryDto#getStartTime()} ()} 执行时间
+     * @param param {@link PlanQueryDto#getPlanId()} 预案ID {@link PlanQueryDto#getStartTime()} ()} 执行时间
      * @return {@link CommonResult}
      */
     @PostMapping("/plan/schedule")
-    public CommonResult start(HttpServletRequest request, @RequestBody PlanQueryDto param) {
+    public CommonResult start(@RequestBody PlanQueryDto param) {
         if (param.getPlanId() == null) {
             return CommonResult.failed("请选择需要启动的预案");
         }
@@ -103,22 +103,21 @@ public class EmergencyPlanController {
         } else {
             plan.setScheduleType(ScheduleType.NONE.getValue());
         }
-        return planService.start(plan, parseUserName(request));
+        return planService.start(plan, UserFilter.currentUserName());
     }
 
     /**
      * 预案停止,停止调度
      *
-     * @param request http请求
-     * @param plan    {@link EmergencyPlan#getPlanId()} 预案ID
+     * @param plan {@link EmergencyPlan#getPlanId()} 预案ID
      * @return {@link CommonResult}
      */
     @PostMapping("/plan/cancel")
-    public CommonResult stop(HttpServletRequest request, @RequestBody EmergencyPlan plan) {
+    public CommonResult stop(@RequestBody EmergencyPlan plan) {
         if (plan.getPlanId() == null) {
             return CommonResult.failed("请选择需要停止的预案");
         }
-        return planService.stop(plan.getPlanId(), parseUserName(request));
+        return planService.stop(plan.getPlanId(), UserFilter.currentUserName());
     }
 
     /**
@@ -199,26 +198,24 @@ public class EmergencyPlanController {
     /**
      * 新增一个任务
      *
-     * @param request  http请求
      * @param taskNode 任务信息
      * @return {@link CommonResult}
      */
     @PostMapping("/plan/task")
-    public CommonResult addTask(HttpServletRequest request, @RequestBody TaskNode taskNode) {
-        taskNode.setCreateUser(parseUserName(request));
+    public CommonResult addTask(@RequestBody TaskNode taskNode) {
+        taskNode.setCreateUser(UserFilter.currentUserName());
         return planService.addTask(taskNode);
     }
 
     /**
      * 新增一个预案
      *
-     * @param request       http请求
      * @param emergencyPlan {@link EmergencyPlan#getPlanName()} 预案名称
      * @return {@link CommonResult}
      */
     @PostMapping("/plan")
-    public CommonResult addPlan(HttpServletRequest request, @RequestBody EmergencyPlan emergencyPlan) {
-        emergencyPlan.setCreateUser(parseUserName(request));
+    public CommonResult addPlan(@RequestBody EmergencyPlan emergencyPlan) {
+        emergencyPlan.setCreateUser(UserFilter.currentUserName());
         return planService.add(emergencyPlan);
     }
 
@@ -249,19 +246,18 @@ public class EmergencyPlanController {
     /**
      * 预案审核
      *
-     * @param request      http请求
      * @param planQueryDto {@link PlanQueryDto#getPlanId()} 预案ID，
      *                     {@link PlanQueryDto#getCheckResult()} 审核结果，
      *                     {@link PlanQueryDto#getCheckResult()} 审核意见
      * @return {@link CommonResult}
      */
     @PostMapping("/plan/approve")
-    public CommonResult approve(HttpServletRequest request, @RequestBody PlanQueryDto planQueryDto) {
+    public CommonResult approve(@RequestBody PlanQueryDto planQueryDto) {
         EmergencyPlan plan = new EmergencyPlan();
         plan.setPlanId(planQueryDto.getPlanId());
         plan.setStatus(parseCheckResult(planQueryDto.getApprove()));
         plan.setCheckRemark(planQueryDto.getComment());
-        return planService.approve(plan, parseUserName(request));
+        return planService.approve(plan, UserFilter.currentUserName());
     }
 
     private String parseCheckResult(String checkResult) {
@@ -284,21 +280,8 @@ public class EmergencyPlanController {
     }
 
     @PostMapping("/plan/copy")
-    public CommonResult copyPlan(HttpServletRequest request, @RequestBody EmergencyPlan emergencyPlan){
-        emergencyPlan.setCreateUser(parseUserName(request));
+    public CommonResult copyPlan(@RequestBody EmergencyPlan emergencyPlan) {
+        emergencyPlan.setCreateUser(UserFilter.currentUserName());
         return planService.copy(emergencyPlan);
-    }
-
-    private String parseUserName(HttpServletRequest request) {
-        String userName = "";
-        try {
-            User user = (User) request.getSession().getAttribute("userInfo");
-            if (user != null) {
-                userName = user.getNickName();
-            }
-        } catch (Exception e) {
-            LOGGER.error("get user info error.", e);
-        }
-        return userName;
     }
 }
