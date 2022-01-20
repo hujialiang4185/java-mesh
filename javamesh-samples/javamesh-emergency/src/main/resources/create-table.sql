@@ -167,6 +167,22 @@ CREATE TABLE IF NOT EXISTS `emergency_server`  (
                                      PRIMARY KEY (`server_id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;$$$
 
+CREATE TABLE IF NOT EXISTS `emergency_element`  (
+                                      `element_id` int(11) NOT NULL AUTO_INCREMENT COMMENT '组件ID',
+                                      `element_no` varchar(40) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '组件编号',
+                                      `element_title` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '组件名称',
+                                      `element_type` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '组件类型',
+                                      `element_params` text CHARACTER SET utf8 COLLATE utf8_general_ci NULL COMMENT '组件参数列表json字符串',
+                                      `parent_id` int(11) NULL DEFAULT NULL COMMENT '父组件ID',
+                                      `script_id` int(11) NULL DEFAULT NULL COMMENT '脚本ID',
+                                      `argus_path` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '压测脚本路径',
+                                      `is_valid` varchar(1) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '1' COMMENT '是否有效 0 无效 1有效',
+                                      `create_user` varchar(40) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '创建人',
+                                      `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+                                      `seq` int(11) NULL DEFAULT NULL COMMENT '显示顺序',
+                                      PRIMARY KEY (`element_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 50 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;$$$
+
 CREATE TABLE IF NOT EXISTS `emergency_resource`  (
                                        `resource_id` int(11) NOT NULL AUTO_INCREMENT COMMENT '资源ID',
                                        `resource_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '资源名称',
