@@ -286,6 +286,7 @@ function ResourceCharts() {
             current.cpuUsageChart.changeData(data.cpu_usage)
             current.memoryUsageChart.changeData(data.memory_usage)
             current.ioBusyChart.changeData(data.io_busy)
+            // CPU
             const cpuData = current.cpuChart.chart.getData()
             const second = current.second
             const time = moment(new Date(second * 1000)).format("mm:ss")
@@ -302,6 +303,8 @@ function ResourceCharts() {
                 cpuData.splice(second * 4, 4, ...items)
             }
             current.cpuChart.changeData(cpuData)
+            // Memory
+            
             current.second++
         } catch (error: any) {
             message.error(error.message)

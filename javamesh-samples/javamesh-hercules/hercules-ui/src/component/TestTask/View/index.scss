@@ -99,11 +99,13 @@
             }
             .Liquid {
                 height: 150px;
+                margin: 0 auto;
+                max-width: 95%;
             }
             .Line {
                 height: 300px;
                 margin: 0 auto;
-                max-width: calc(100% - 40px);
+                max-width: 95%;
             }
             .Title {
                 text-align: center;

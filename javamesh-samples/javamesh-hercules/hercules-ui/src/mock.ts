@@ -2,14 +2,8 @@ import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import moment from 'moment';
 
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === 'test') {
   const mock = new MockAdapter(axios, { delayResponse: 1000 });
-  // mock.onGet('/argus/api/support').replyOnce(401)
-  mock.onGet('/argus/api/support').reply(200, {
-    data: Array.from({ length: 8 }, function () {
-      return { title: "快速压测技术指南", url: "http://w3.huawei.com/next/indexa.html" }
-    })
-  });
   let scenario = {
     scenario_id: 1, scenario_name: "ARGUS快速场景",
     scenario_type: "动态编排", create_by: "xwx638739",
@@ -727,9 +721,9 @@ echo "Hello World !"
     auth: ["admin", "approver", "operator"] // admin, approver, operator
   }
   // mock.onGet('/argus-user/api/user/me').replyOnce(500)
-  mock.onGet('/argus-user/api/user/me').reply(200, {
-    data: user
-  })
+  // mock.onGet('/argus-user/api/user/me').reply(200, {
+  //   data: user
+  // })
   mock.onGet('/argus-user/api/user').reply(200, {
     data: Array.from({ length: 10 }, function (_, index) {
       return {
