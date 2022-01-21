@@ -136,7 +136,7 @@ const Home = forwardRef<HomeRef>(function (props, ref) {
                     }
                     history.replace({search: urlSearchParams.toString()})
                 }}
-                pagination={{ total: data.total, size: "small", pageSize: Number(urlSearchParams.get("pageSize") || 10), showTotal() { return `共 ${data.total} 条` }, showSizeChanger: true }}
+                pagination={{ total: data.total, size: "small", current: Number(urlSearchParams.get("current") || 1), pageSize: Number(urlSearchParams.get("pageSize") || 10), showTotal() { return `共 ${data.total} 条` }, showSizeChanger: true }}
                 columns={[
                     {
                         title: "应用名",
