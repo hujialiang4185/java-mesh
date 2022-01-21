@@ -42,59 +42,14 @@ if (process.env.NODE_ENV === 'test') {
   mock.onDelete('/argus/api/scenario').reply(200, { msg: "场景被应用, 无法删除" })
   // 压测脚本
   mock.onGet('/argus/api/script').reply(200, {
-    data: [
-      {
-        type: "folder", script_name: "100.95.133.126",
+    data: Array.from({length: 10}, function(_, index){
+      return {
+        type: ["folder", "file"][index % 2], script_name: "100.95.133.126",
         commit: "Quick test for http://100.95.133.126:48080/testLongText",
-        update_time: "2019-03-19 10:53", version: "224 ", size: ""
-      },
-      {
-        type: "file", script_name: "mockKafka.groovy",
-        commit: "quark Test",
-        update_time: "2019-03-19 10:53", version: "162", size: "48"
-      },
-      {
-        type: "file", script_name: "mockKafka2.py",
-        commit: "quark Test",
-        update_time: "2019-03-19 10:53", version: "162", size: "48"
-      },
-      {
-        type: "file", script_name: "mockKafka3.py",
-        commit: "quark Test",
-        update_time: "2019-03-19 10:53", version: "162", size: "48"
-      },
-      {
-        type: "file", script_name: "mockKafka4.py",
-        commit: "quark Test",
-        update_time: "2019-03-19 10:53", version: "162", size: "48"
-      },
-      {
-        type: "file", script_name: "mockKafka5.py",
-        commit: "quark Test",
-        update_time: "2019-03-19 10:53", version: "162", size: "48"
-      },
-      {
-        type: "file", script_name: "mockKafka6.py",
-        commit: "quark Test",
-        update_time: "2019-03-19 10:53", version: "162", size: "48"
-      },
-      {
-        type: "file", script_name: "mockKafka7.py",
-        commit: "quark Test",
-        update_time: "2019-03-19 10:53", version: "162", size: "48"
-      },
-      {
-        type: "file", script_name: "mockKafka8.py",
-        commit: "quark Test",
-        update_time: "2019-03-19 10:53", version: "162", size: "48"
-      },
-      {
-        type: "file", script_name: "mockKafka9.py",
-        commit: "quark Test",
-        update_time: "2019-03-19 10:53", version: "162", size: "48"
-      },
-    ],
-    total: 100
+        update_time: "2019-03-19 10:53", version: "224 ", size: "10kb"
+      }
+    }),
+    total: 11
   })
   mock.onGet("/argus/api/script/deleteCheck").reply(200, { data: ["xxx.py", "xxx.py"] })
   mock.onDelete('/argus/api/script').reply(200, { msg: "删除失败, 请重试" })
@@ -106,46 +61,24 @@ if (process.env.NODE_ENV === 'test') {
   mock.onGet('/argus/api/script/get').reply(function () {
     return [200, {
       data: {
-        script: `from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support.expected_conditions import presence_of_element_located
-
-#This example requires Selenium WebDriver 3.13 or newer
-with webdriver.Firefox() as driver:
-    wait = WebDriverWait(driver, 10)
-    driver.get("https://google.com/ncr")
-    driver.find_element(By.NAME, "q").send_keys("cheese" + Keys.RETURN)
-    first_result = wait.until(presence_of_element_located((By.CSS_SELECTOR, "h3")))
-    print(first_result.get_attribute("textContent"))`,
-        script_resource: `resource
-aaa`,
+        script: `from selenium import webdriver`,
+        script_resource: `resource`,
         language: "Groovy"
       }
     }]
   })
   mock.onGet('/argus/api/script/host').reply(200, {
-    data: [
-      { host_id: 1, domain: "zengfan.huawei.com" },
-      { host_id: 2, domain: "zengfan.huawei.com" },
-      { host_id: 3, domain: "zengfan.huawei.com" },
-      { host_id: 4, domain: "zengfan.huawei.com" },
-      { host_id: 5, domain: "zengfan.huawei.com" },
-      { host_id: 6, domain: "zengfan.huawei.com" },
-      { host_id: 7, domain: "zengfan.huawei.com" },
-      { host_id: 8, domain: "zengfan.huawei.com" },
-      { host_id: 9, domain: "zengfan.huawei.com" },
-      { host_id: 10, domain: "zengfan.huawei.com" },
-    ]
+    data: Array.from({length: 10}, function(_, index){
+      return { host_id: index, domain: index+".huawei.com" }
+    })
   })
   mock.onPost('/argus/api/script/host').reply(200, { msg: "创建失败" })
-  mock.onDelete('/argus/api/script/host').reply(200, { msg: "删除" })
-  let time_a = 90000
+  mock.onDelete('/argus/api/script/host').reply(200, { msg: "删除失败" })
+  let hostTime = 90000
   mock.onGet('/argus/api/script/host/chart').reply(function (config) {
     if (!config.params.start) {
-      time_a += 1000
-      return [200, { data: [{ time: moment(new Date(time_a)).format("mm:ss"), usage: Number(Math.random().toFixed(2)) * 100, memory: 100 + Number(Math.random().toFixed(2)) * 100 }] }]
+      hostTime += 1000
+      return [200, { data: [{ time: moment(new Date(hostTime)).format("mm:ss"), usage: Number(Math.random().toFixed(2)) * 100, memory: 100 + Number(Math.random().toFixed(2)) * 100 }] }]
     }
     return [200, {
       data: Array.from({ length: 91 }, function (_, index) {
@@ -721,9 +654,9 @@ echo "Hello World !"
     auth: ["admin", "approver", "operator"] // admin, approver, operator
   }
   // mock.onGet('/argus-user/api/user/me').replyOnce(500)
-  // mock.onGet('/argus-user/api/user/me').reply(200, {
-  //   data: user
-  // })
+  mock.onGet('/argus-user/api/user/me').reply(200, {
+    data: user
+  })
   mock.onGet('/argus-user/api/user').reply(200, {
     data: Array.from({ length: 10 }, function (_, index) {
       return {
