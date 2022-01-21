@@ -89,7 +89,7 @@ const Home = forwardRef<HomeRef>(function (props, ref) {
                     batchDelete(selectedRowKeys)
                 }}>批量删除</Button>
                 <div className="Space"></div>
-                <Form layout="inline" onFinish={function (values) {
+                <Form layout="inline" initialValues={Object.fromEntries(urlSearchParams)} onFinish={function (values) {
                     for (const key in values) {
                         const value = values[key]
                         if (value) {
@@ -142,15 +142,6 @@ const Home = forwardRef<HomeRef>(function (props, ref) {
                         title: "应用名",
                         dataIndex: "app_name",
                         sorter: true,
-                        filters: function () {
-                            const set = new Set<string>()
-                            data.data.forEach(function (item) {
-                                set.add(item.app_name)
-                            })
-                            return Array.from(set).map(function (item) {
-                                return { text: item, value: item }
-                            })
-                        }(),
                         ellipsis: true
                     },
                     {
@@ -162,29 +153,13 @@ const Home = forwardRef<HomeRef>(function (props, ref) {
                         title: "场景类型",
                         dataIndex: "scenario_type",
                         sorter: true,
-                        filters: function () {
-                            const set = new Set<string>()
-                            data.data.forEach(function (item) {
-                                set.add(item.scenario_type)
-                            })
-                            return Array.from(set).map(function (item) {
-                                return { text: item, value: item }
-                            })
-                        }(),
-                        ellipsis: true
+                        ellipsis: true,
+                        filters: ["自定义脚本", "动态编排", "引流压测"].map(function(value){return {text: value, value}}),
+                        filteredValue: urlSearchParams.getAll("scenario_type")
                     },
                     {
                         title: "创建人",
                         dataIndex: "create_by",
-                        filters: function () {
-                            const set = new Set<string>()
-                            data.data.forEach(function (item) {
-                                set.add(item.create_by)
-                            })
-                            return Array.from(set).map(function (item) {
-                                return { text: item, value: item }
-                            })
-                        }(),
                         ellipsis: true
                     },
                     {
