@@ -11,8 +11,7 @@ if (process.env.NODE_ENV === 'development') {
     })
   });
   let scenario = {
-    scenario_id: 1,
-    app_name: "ARGUS", scenario_name: "ARGUS快速场景",
+    scenario_id: 1, scenario_name: "ARGUS快速场景",
     scenario_type: "动态编排", create_by: "xwx638739",
     create_time: "2019-03-19 10:53", update_time: "2019-03-19 10:53",
     label: ["a", "b", "c"], desc: "描述"
@@ -20,7 +19,7 @@ if (process.env.NODE_ENV === 'development') {
   mock.onGet('/argus/api/scenario').reply(function () {
     return [200, {
       data: Array.from({ length: 10 }, function (_, index) {
-        return { ...scenario, scenario_id: index }
+        return { ...scenario, scenario_id: index, app_name: "ARGUS" + index }
       }),
       total: 11
     }]
@@ -38,7 +37,7 @@ if (process.env.NODE_ENV === 'development') {
   mock.onPut('/argus/api/scenario').reply(function () {
     scenario = {
       scenario_id: 1,
-      app_name: "ARGUS", scenario_name: "ARGUS快速场景修改",
+      scenario_name: "ARGUS快速场景修改",
       scenario_type: "动态编排", create_by: "xwx638739",
       create_time: "2019-03-19 10:53", update_time: "2019-03-19 10:53",
       label: ["a", "b", "c"], desc: "描述"
@@ -255,7 +254,10 @@ aaa`,
         cpu_usage: Math.random() / 5 + 0.3,
         memory_usage: Math.random() / 5 + 0.3,
         io_busy: Math.random() / 5 + 0.3,
-        cpu_user: Math.random() * 100,
+        cpu_user: Math.floor(Math.random() * 20),
+        cpu_sys: Math.floor(Math.random() * 20 + 20),
+        cpu_wait: Math.floor(Math.random() * 20 + 50),
+        cpu_idle: Math.floor(Math.random() * 20 + 70),
       }
     }]
   })

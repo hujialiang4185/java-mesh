@@ -1,5 +1,5 @@
 import { Line, LineOptions, Liquid, LiquidOptions } from "@antv/g2plot";
-import { Button, Descriptions, Table, Tabs, Tag } from "antd";
+import { Button, Descriptions, message, Table, Tabs, Tag } from "antd";
 import { PresetColorTypes } from "antd/lib/_util/colors";
 import axios from "axios";
 import moment from "moment";
@@ -16,13 +16,21 @@ export default function App() {
     const test_id = urlSearchParams.get("test_id")
 
     useEffect(function () {
+        const interval = setInterval(load, 5000)
+        let clear = false
         async function load() {
-            const res = await axios.get("/argus/api/task/view", { params: { test_id } })
-            setData(res.data.data)
+            try {
+                const res = await axios.get("/argus/api/task/view", { params: { test_id } })
+                if (clear) return
+                setData(res.data.data)
+            } catch (error: any) {
+                clearInterval(interval)
+                message.error(error.message)
+            }
         }
         load()
-        const interval = setInterval(load, 5000)
-        return function(){
+        return function () {
+            clear = true
             clearInterval(interval)
         }
     }, [test_id])
@@ -116,9 +124,9 @@ function BusinessCharts() {
     const [data, setData] = useState()
     const urlSearchParams = new URLSearchParams(useLocation().search)
     const test_id = urlSearchParams.get("test_id")
-    useEffect(function() {
+    useEffect(function () {
         async function load() {
-            const res = await axios.get('/argus/api/task/service', {params: {test_id}})
+            const res = await axios.get('/argus/api/task/service', { params: { test_id } })
             setData(res.data.data)
         }
         load()
@@ -153,7 +161,8 @@ function ResourceCharts() {
         memoryChart: Line,
         diskChart: Line,
         networkChart: Line,
-        second: number
+        second: number,
+        interval: NodeJS.Timeout
     }>()
     useEffect(function () {
         const liquidOption: LiquidOptions = {
@@ -198,9 +207,9 @@ function ResourceCharts() {
         const memoryUsageChart = new Liquid(memoryUsageRef.current!!, liquidOption)
         const ioBusyChart = new Liquid(ioBusyRef.current!!, liquidOption)
         const lineOption: LineOptions = {
-            data: Array.from({length: 91}, function(_, index){
+            data: Array.from({ length: 91 * 4 }, function (_, index) {
                 return {
-                    time: moment(new Date(index * 1000)).format("mm:ss"),
+                    time: moment(new Date(Math.floor(index / 4) * 1000)).format("mm:ss"),
                 }
             }),
             xField: "time",
@@ -210,18 +219,20 @@ function ResourceCharts() {
             smooth: true,
             area: {
                 style: {
-                    fillOpacity: 0.15,
+                    fillOpacity: 0.05,
                 },
             },
             animation: false,
         }
-        const cpuChart = new Line(cpuRef.current!!, {...lineOption, yAxis: {
-            label: {
-                formatter(text: any) {
-                    return text + "%"
+        const cpuChart = new Line(cpuRef.current!!, {
+            ...lineOption, yAxis: {
+                label: {
+                    formatter(text: any) {
+                        return text + "%"
+                    }
                 }
             }
-        }})
+        })
         const memoryChart = new Line(memoryRef.current!!, lineOption)
         const diskChart = new Line(diskRef.current!!, lineOption)
         const networkChart = new Line(networkRef.current!!, lineOption)
@@ -233,6 +244,9 @@ function ResourceCharts() {
         memoryChart.render()
         diskChart.render()
         networkChart.render()
+        const interval = setInterval(function () {
+            load(test_id)
+        }, 1000)
         chartsRef.current = {
             cpuUsageChart,
             memoryUsageChart,
@@ -241,9 +255,13 @@ function ResourceCharts() {
             memoryChart,
             diskChart,
             networkChart,
-            second: 0
+            second: 0,
+            interval
         }
+        load(test_id)
         return function () {
+            chartsRef.current = undefined
+            clearInterval(interval)
             cpuUsageChart.destroy()
             memoryUsageChart.destroy()
             ioBusyChart.destroy()
@@ -252,51 +270,50 @@ function ResourceCharts() {
             diskChart.destroy()
             networkChart.destroy()
         }
-    }, [])
-    useEffect(function(){
-        load(test_id)
-        const interval = setInterval(function(){
-            load(test_id)
-        },1000)
-        return function(){
-            clearInterval(interval)
-        }
-    },[test_id])
+    }, [test_id])
     async function load(test_id: string, ip?: string) {
-        const res = await axios.get("/argus/api/task/resource", { params: { test_id, ip } })
-        const data = res.data.data
-        setData({
-            ip: data.ip,
-            cpu: data.cpu,
-            memory: data.memory,
-            start_up: data.start_up
-        })
-        if (!chartsRef.current) return
-        const current = chartsRef.current
-        current.cpuUsageChart.changeData(data.cpu_usage)
-        current.memoryUsageChart.changeData(data.memory_usage)
-        current.ioBusyChart.changeData(data.io_busy)
-        
-        const cpuData = current.cpuChart.chart.getData()
-        const second = current.second
-        const item = {
-            time: moment(new Date(second * 1000)).format("mm:ss"),
-            value: data.cpu_user,
-            name: "user"
+        try {
+            const res = await axios.get("/argus/api/task/resource", { params: { test_id, ip } })
+            const data = res.data.data
+            if (!chartsRef.current) return
+            setData({
+                ip: data.ip,
+                cpu: data.cpu,
+                memory: data.memory,
+                start_up: data.start_up
+            })
+            const current = chartsRef.current
+            current.cpuUsageChart.changeData(data.cpu_usage)
+            current.memoryUsageChart.changeData(data.memory_usage)
+            current.ioBusyChart.changeData(data.io_busy)
+            const cpuData = current.cpuChart.chart.getData()
+            const second = current.second
+            const time = moment(new Date(second * 1000)).format("mm:ss")
+            const items = [
+                { time, value: data.cpu_user, name: "user" },
+                { time, value: data.cpu_sys, name: "sys" },
+                { time, value: data.cpu_wait, name: "wait" },
+                { time, value: data.cpu_idle, name: "idle" },
+            ]
+            if (second > 90) {
+                cpuData.splice(0, 4)
+                cpuData.push(...items)
+            } else {
+                cpuData.splice(second * 4, 4, ...items)
+            }
+            current.cpuChart.changeData(cpuData)
+            current.second++
+        } catch (error: any) {
+            message.error(error.message)
+            if (chartsRef.current) {
+                clearInterval(chartsRef.current.interval)
+            }
         }
-        if (second > 90) {
-            cpuData.shift()
-            cpuData.push(item)
-        } else {
-            cpuData[second] = item
-        }
-        current.cpuChart.changeData(cpuData)
-        current.second++
     }
     return <div className="ResourceCharts">
-        <ServiceSelect value={data.ip} placeholder="IP地址" url="/argus/api/task/search/ip" onChange={function(value){
+        <ServiceSelect value={data.ip} placeholder="IP地址" url="/argus/api/task/search/ip" onChange={function (value) {
             load(test_id, value)
-        }}/>
+        }} />
         <div className="Grid">
             <div className="Item Middle">
                 <div className="Value">{data.cpu}</div>
@@ -327,7 +344,7 @@ function ResourceCharts() {
         </div>
         <div className="Grid">
             <div className="Item">
-                <div ref={cpuRef} className="Line" style={{width: "100%"}}></div>
+                <div ref={cpuRef} className="Line" style={{ width: "100%" }}></div>
                 <div className="Title">CPU</div>
             </div>
             <div className="Item">

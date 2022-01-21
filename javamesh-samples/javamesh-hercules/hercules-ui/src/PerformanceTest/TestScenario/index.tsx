@@ -1,35 +1,23 @@
 import { Button, Form, Input, message, Modal, Table } from "antd"
-import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react"
+import React, { forwardRef, useCallback, useEffect, useMemo, useState } from "react"
 import Breadcrumb from "../../component/Breadcrumb"
 import Card from "../../component/Card"
 import "./index.scss"
 import { PlusOutlined, CloseOutlined, SearchOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
-import { Link, Route, Switch, useRouteMatch } from "react-router-dom"
+import { Link, Route, Switch, useHistory, useLocation, useRouteMatch } from "react-router-dom"
 import Create from "./Create"
 import axios from "axios"
 import ScenarioFormItems from "./ScenarioFormItems"
 
 export default function App() {
     let { path } = useRouteMatch()
-    const homeRef = useRef<HomeRef>(null)
-    return <>
-        <Home ref={homeRef}/>
-        <Switch>
-            <Route exact path={path} render={function() {
-                setTimeout(function() {
-                    homeRef.current?.show()
-                }, 0)
-                return null
-            }} />
-            <Route exact path={`${path}/Create`} render={function() {
-                homeRef.current?.hide()
-                return <Create />
-            }}/>
-        </Switch>
-    </>
+    return <Switch>
+        <Route exact path={path}><Home /></Route>
+        <Route exact path={`${path}/Create`}><Create /></Route>
+    </Switch>
 }
 
-type HomeRef = {show: () => void, hide: () => void}
+type HomeRef = { show: () => void, hide: () => void }
 type Data = {
     create_by: string,
     app_name: string,
@@ -38,29 +26,29 @@ type Data = {
 }
 const Home = forwardRef<HomeRef>(function (props, ref) {
     let submit = false
+    const location = useLocation()
+    const history = useHistory()
     let { path } = useRouteMatch();
     const [data, setData] = useState<{ data: Data[], total: number }>({ data: [], total: 0 })
     const [loading, setLoading] = useState(false)
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
-    const stateRef = useRef<any>({})
-    async function load() {
+
+    const params = useMemo(function(){
+        return new URLSearchParams(location.search)
+    },[location.search])
+    const load = useCallback(async function () {
         setLoading(true)
-        try {
-            const params = {
-                pageSize: stateRef.current.pagination?.pageSize || 10,
-                current: stateRef.current.pagination?.current,
-                sorter: stateRef.current.sorter?.field,
-                order: stateRef.current.sorter?.order,
-                ...stateRef.current.search,
-                ...stateRef.current.filters
+            try {
+                const res = await axios.get("/argus/api/scenario", {params})
+                setData(res.data)
+            } catch (error: any) {
+                message.error(error.message)
             }
-            const res = await axios.get("/argus/api/scenario", { params })
-            setData(res.data)
-        } catch (error: any) {
-            message.error(error.message)
-        }
-        setLoading(false)
-    }
+            setLoading(false)
+    }, [params])
+    useEffect(function(){
+        load()
+    }, [load])
     async function batchDelete(selectedRowKeys: React.Key[]) {
         if (submit) return
         submit = true
@@ -89,22 +77,7 @@ const Home = forwardRef<HomeRef>(function (props, ref) {
         }
         submit = false
     }
-    useEffect(function () {
-        load()
-    }, [])
-    const rootRef = useRef<HTMLDivElement>(null)
-    useImperativeHandle(ref, function() {
-        return {
-            hide: function() {
-                rootRef.current?.setAttribute("style", "display:none;")
-            },
-            show: function() {
-                rootRef.current?.removeAttribute("style")
-                load()
-            }
-        }
-    });
-    return <div className="TestScenario" ref={rootRef} style={{display: "none"}}>
+    return <div className="TestScenario">
         <Breadcrumb label="压测场景" />
         <Card>
             <div className="ToolBar">
@@ -117,8 +90,15 @@ const Home = forwardRef<HomeRef>(function (props, ref) {
                 }}>批量删除</Button>
                 <div className="Space"></div>
                 <Form layout="inline" onFinish={function (values) {
-                    stateRef.current.search = values
-                    load()
+                    for (const key in values) {
+                        const value = values[key]
+                        if (value) {
+                            params.set(key, value)
+                        } else {
+                            params.delete(key)
+                        }
+                    }
+                    history.replace({search: params.toString()})
                 }}>
                     <Form.Item name="keywords">
                         <Input className="Input" placeholder="Keywords" />
@@ -133,10 +113,30 @@ const Home = forwardRef<HomeRef>(function (props, ref) {
                     }
                 }}
                 onChange={function (pagination, filters, sorter) {
-                    stateRef.current = { ...stateRef.current, pagination, filters, sorter }
-                    load()
+                    const sort = sorter as any
+                    const map = new Map([
+                        ["pageSize", pagination.pageSize],
+                        ["current", pagination.current],
+                        ["order", sort.order],
+                        ["field", sort.field],
+                    ])
+                    map.forEach(function(value, key){
+                        if (value) {
+                            params.set(key, value)
+                        } else {
+                            params.delete(key)
+                        }
+                    })
+                    for (const key in filters) {
+                        params.delete(key)
+                        const value = filters[key]
+                        value && value.forEach(function(item){
+                            params.append(key, String(item))
+                        })
+                    }
+                    history.replace({search: params.toString()})
                 }}
-                pagination={{ total: data.total, size: "small", showTotal() { return `共 ${data.total} 条` }, showSizeChanger: true }}
+                pagination={{ total: data.total, size: "small", pageSize: Number(params.get("pageSize") || 10), showTotal() { return `共 ${data.total} 条` }, showSizeChanger: true }}
                 columns={[
                     {
                         title: "应用名",
