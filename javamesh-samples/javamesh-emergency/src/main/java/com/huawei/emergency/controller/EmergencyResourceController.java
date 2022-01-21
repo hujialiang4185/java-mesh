@@ -18,7 +18,7 @@ package com.huawei.emergency.controller;
 
 import com.huawei.common.api.CommonResult;
 import com.huawei.emergency.entity.EmergencyResource;
-import com.huawei.emergency.layout.HandlerFactory;
+import com.huawei.emergency.layout.TestElementFactory;
 import com.huawei.emergency.service.EmergencyResourceService;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;

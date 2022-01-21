@@ -134,13 +134,24 @@ public class ExecRecordHandlerFactory {
             // 出现事务还未提交，此时查不到这条数据
             int retryTimes = 10;
             while (record == null && retryTimes > 0) {
-                record = recordMapper.selectByPrimaryKey(currentRecord.getRecordId());
-                retryTimes--;
+                try {
+                    Thread.sleep(1000);
+                    record = recordMapper.selectByPrimaryKey(currentRecord.getRecordId());
+                } catch (InterruptedException e) {
+                    LOGGER.error("interrupted while wait for exec recordId={}", record.getRecordId());
+                } finally {
+                    retryTimes--;
+                }
             }
-            if (record == null || !RecordStatus.PENDING.getValue().equals(record.getStatus())) {
+            if (record == null) {
+                LOGGER.error("record was not commit. {}", record.getRecordId());
                 return;
             }
             try {
+                if (!RecordStatus.PENDING.getValue().equals(record.getStatus())) {
+                    LOGGER.error("record was canceled. {}", record.getRecordId());
+                    throw new ApiException("执行已取消.");
+                }
                 List<EmergencyExecRecordDetail> emergencyExecRecordDetails = generateRecordDetail(record);
                 EmergencyExecRecordWithBLOBs finalRecord = record;
                 emergencyExecRecordDetails.forEach(recordDetail -> {

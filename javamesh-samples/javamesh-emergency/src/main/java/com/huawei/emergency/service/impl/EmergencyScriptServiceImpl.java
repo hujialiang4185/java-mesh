@@ -353,6 +353,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
      * @return 是否创建成功
      */
     public boolean createGrinderScript(String scriptName) {
+        log.info("argusUrl = {}", argusUrl);
         JSONObject params = new JSONObject();
         params.put("folder", "");
         params.put("folder_name", CommonConfig.GRINDER_FOLDER);
