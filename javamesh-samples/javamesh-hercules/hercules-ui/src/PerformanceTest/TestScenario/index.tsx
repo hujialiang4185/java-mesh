@@ -1,5 +1,5 @@
 import { Button, Form, Input, message, Modal, Table } from "antd"
-import React, { forwardRef, useCallback, useEffect, useMemo, useState } from "react"
+import React, { forwardRef, useEffect, useMemo, useState } from "react"
 import Breadcrumb from "../../component/Breadcrumb"
 import Card from "../../component/Card"
 import "./index.scss"
@@ -33,10 +33,10 @@ const Home = forwardRef<HomeRef>(function (props, ref) {
     const [loading, setLoading] = useState(false)
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
 
-    const params = useMemo(function(){
+    const urlSearchParams = useMemo(function(){
         return new URLSearchParams(location.search)
     },[location.search])
-    const load = useCallback(async function () {
+    async function load(params: URLSearchParams) {
         setLoading(true)
             try {
                 const res = await axios.get("/argus/api/scenario", {params})
@@ -45,10 +45,10 @@ const Home = forwardRef<HomeRef>(function (props, ref) {
                 message.error(error.message)
             }
             setLoading(false)
-    }, [params])
+    }
     useEffect(function(){
-        load()
-    }, [load])
+        load(urlSearchParams)
+    }, [urlSearchParams])
     async function batchDelete(selectedRowKeys: React.Key[]) {
         if (submit) return
         submit = true
@@ -65,7 +65,7 @@ const Home = forwardRef<HomeRef>(function (props, ref) {
                     try {
                         await axios.delete("/argus/api/scenario", { params })
                         message.success("删除成功")
-                        load()
+                        load(urlSearchParams)
                     } catch (error: any) {
                         message.error(error.message)
                         throw error
@@ -93,12 +93,12 @@ const Home = forwardRef<HomeRef>(function (props, ref) {
                     for (const key in values) {
                         const value = values[key]
                         if (value) {
-                            params.set(key, value)
+                            urlSearchParams.set(key, value)
                         } else {
-                            params.delete(key)
+                            urlSearchParams.delete(key)
                         }
                     }
-                    history.replace({search: params.toString()})
+                    history.replace({search: urlSearchParams.toString()})
                 }}>
                     <Form.Item name="keywords">
                         <Input className="Input" placeholder="Keywords" />
@@ -122,21 +122,21 @@ const Home = forwardRef<HomeRef>(function (props, ref) {
                     ])
                     map.forEach(function(value, key){
                         if (value) {
-                            params.set(key, value)
+                            urlSearchParams.set(key, value)
                         } else {
-                            params.delete(key)
+                            urlSearchParams.delete(key)
                         }
                     })
                     for (const key in filters) {
-                        params.delete(key)
+                        urlSearchParams.delete(key)
                         const value = filters[key]
                         value && value.forEach(function(item){
-                            params.append(key, String(item))
+                            urlSearchParams.append(key, String(item))
                         })
                     }
-                    history.replace({search: params.toString()})
+                    history.replace({search: urlSearchParams.toString()})
                 }}
-                pagination={{ total: data.total, size: "small", pageSize: Number(params.get("pageSize") || 10), showTotal() { return `共 ${data.total} 条` }, showSizeChanger: true }}
+                pagination={{ total: data.total, size: "small", pageSize: Number(urlSearchParams.get("pageSize") || 10), showTotal() { return `共 ${data.total} 条` }, showSizeChanger: true }}
                 columns={[
                     {
                         title: "应用名",
@@ -217,7 +217,9 @@ const Home = forwardRef<HomeRef>(function (props, ref) {
                         width: 120,
                         render(_, record) {
                             return <>
-                                <ScenarioUpdate data={record} load={load} />
+                                <ScenarioUpdate data={record} load={function(){
+                                    load(urlSearchParams)
+                                }} />
                                 <Button type="link" size="small" onClick={function () {
                                     batchDelete([record.scenario_id])
                                 }}>删除</Button>
@@ -229,7 +231,7 @@ const Home = forwardRef<HomeRef>(function (props, ref) {
     </div>
 })
 
-function ScenarioUpdate(props: { data: Data, load: () => {} }) {
+function ScenarioUpdate(props: { data: Data, load: () => void }) {
     const [isModalVisible, setIsModalVisible] = useState(false)
     const [form] = Form.useForm()
     useEffect(function () {
