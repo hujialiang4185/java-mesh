@@ -97,7 +97,7 @@ function Home() {
                             <Select.Option value="自定义脚本">自定义脚本</Select.Option>
                         </Select>
                     </Form.Item>
-                    <Form.Item label="压测时间" name="test_time">
+                    <Form.Item className="Time" label="压测时间" name="test_time">
                         <DatePicker.RangePicker showTime />
                     </Form.Item>
                     <Form.Item name="keywords">

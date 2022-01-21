@@ -83,11 +83,11 @@ function Home() {
     statusMap.set("pending", "#8090B0")
     statusMap.set("success", "#2BBF2A")
     statusMap.set("fail", "#FF4E4E")
-    return <div className="ScriptManage">
+    return <div className="AgentManage">
         <Breadcrumb label="压测引擎" />
         <Card>
             <div className="ToolBar">
-                <Button className="Add" type="primary" icon={<SyncOutlined />} onClick={load}>更新代理</Button>
+                <Button type="primary" icon={<SyncOutlined />} onClick={load}>更新代理</Button>
                 <Button icon={<CloseOutlined />} onClick={function () {
                     if (selectedRowKeys.length === 0) {
                         return

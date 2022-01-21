@@ -26,7 +26,6 @@ export default function App() {
     <SubMenu menuList={menuList}>性能测试</SubMenu>
     <div className="AppRoute">
       <Switch>
-        {/* <Redirect from={path} to={path + "/ScriptManage"} exact/> */}
         {menuList.map(function (item) {
           return <Route key={item.path} exact={item.exact} path={item.path}>{item.comp}</Route>
         })}

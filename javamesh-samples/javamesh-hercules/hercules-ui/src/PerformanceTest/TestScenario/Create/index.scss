@@ -1,0 +1,17 @@
+.ScenarioEditor {
+    .Card {
+        margin: 20px;
+        padding: 30px;
+    }
+    .Buttons {
+        text-align: center;
+        button + button {
+            margin-left: 10px;
+        }
+    }
+    .Editor{
+        padding: 5px 0;
+        border-radius: 5px;
+        border: #D8DADD 1px solid;
+    }
+}
