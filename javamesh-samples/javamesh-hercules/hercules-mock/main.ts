@@ -94,7 +94,7 @@ app.get('/argus/api/script', function (req, res) {
     res.json({
         data: Array.from({ length: 10 }, function (_, index) {
             return {
-                type: ["folder", "file"][index % 2], script_name: "100.95.133.126",
+                type: ["folder", "file"][index % 2], script_name: "100.95.133.12"+index,
                 commit: "Quick test for http://100.95.133.126:48080/testLongText",
                 update_time: "2019-03-19 10:53", version: "224 ", size: "10kb"
             }

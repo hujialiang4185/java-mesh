@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import { NavLink, Route, Switch, useHistory, useLocation } from 'react-router-dom'
 import './App.scss'
 import axios from 'axios'
-// import PerformanceTest from './PerformanceTest'
+import PerformanceTest from './PerformanceTest'
 import Login from './Login';
 import AppHome from './AppHome'
 import DisasterRecovery from './DisasterRecovery'
@@ -11,7 +11,7 @@ import {
   HomeOutlined, 
   SettingOutlined, 
   ThunderboltOutlined,
-  // AppstoreOutlined,
+  AppstoreOutlined,
   DownOutlined
 } from '@ant-design/icons'
 import { Button, Dropdown, Form, Input, Menu, message, Modal } from 'antd'
@@ -43,9 +43,9 @@ export default function App() {
   }, [history, setAuth])
   const menuList = [
     { path: "/SystemConfig", label: "系统配置", comp: <SystemConfig />, icon: <SettingOutlined />, auth: "admin" },
-    // { path: "/PerformanceTest", label: "性能测试", comp: <PerformanceTest />, icon: <AppstoreOutlined /> },
-    // { path: "/DisasterRecovery", label: "容灾切换", comp: <DisasterRecovery />, icon: <ThunderboltOutlined /> }
-    { path: "/DisasterRecovery", label: "性能测试", comp: <DisasterRecovery />, icon: <ThunderboltOutlined /> }
+    { path: "/PerformanceTest", label: "性能测试", comp: <PerformanceTest />, icon: <AppstoreOutlined /> },
+    { path: "/DisasterRecovery", label: "容灾切换", comp: <DisasterRecovery />, icon: <ThunderboltOutlined /> }
+    // { path: "/DisasterRecovery", label: "性能测试", comp: <DisasterRecovery />, icon: <ThunderboltOutlined /> }
   ]
 
   return <Switch>
