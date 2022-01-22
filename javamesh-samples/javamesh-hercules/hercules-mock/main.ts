@@ -304,6 +304,46 @@ app.get('/argus/api/task/resource', function (req, res) {
             cpu_sys: Math.floor(Math.random() * 20 + 20),
             cpu_wait: Math.floor(Math.random() * 20 + 50),
             cpu_idle: Math.floor(Math.random() * 20 + 70),
+            memory_total: Math.floor(Math.random() * 20),
+            memory_swap: Math.floor(Math.random() * 20 + 20),
+            memory_buffers: Math.floor(Math.random() * 20 + 50),
+            memory_used: Math.floor(Math.random() * 20 + 70),
+            disk_read: Math.floor(Math.random() * 20),
+            disk_write: Math.floor(Math.random() * 20 + 20),
+            disk_busy: Math.floor(Math.random() * 20 + 50),
+            network_rbyte: Math.floor(Math.random() * 20),
+            network_wbyte: Math.floor(Math.random() * 20 + 20),
+            memory_rpackage: Math.floor(Math.random() * 20 + 50),
+            memory_wpackage: Math.floor(Math.random() * 20 + 70),
+        }
+    })
+})
+app.get('/argus/api/task/jvm', function (req, res) {
+    res.json({
+        data: {
+            ip: req.query.ip || "192.168.0.1",
+            cpu_java: Math.floor(Math.random() * 20 + 70),
+            heap_init: Math.floor(Math.random() * 20),
+            heap_max: Math.floor(Math.random() * 20 + 20),
+            heap_used: Math.floor(Math.random() * 20 + 50),
+            heap_committed: Math.floor(Math.random() * 20 + 70),
+            memory_init: Math.floor(Math.random() * 20),
+            memory_max: Math.floor(Math.random() * 20 + 20),
+            memory_used: Math.floor(Math.random() * 20 + 50),
+            memory_committed: Math.floor(Math.random() * 20 + 70),
+            jvm_cache: Math.floor(Math.random() * 10),
+            jvm_newgen: Math.floor(Math.random() * 10 +15),
+            jvm_oldgen: Math.floor(Math.random() * 10 + 30),
+            jvm_survivor: Math.floor(Math.random() * 10 + 45),
+            jvm_penmgen: Math.floor(Math.random() * 10 + 60),
+            jvm_metaspace: Math.floor(Math.random() * 10 + 75),
+            gc_newc: Math.floor(Math.random() * 20),
+            gc_oldc: Math.floor(Math.random() * 20 + 20),
+            gc_news: Math.floor(Math.random() * 20 + 50),
+            gc_olds: Math.floor(Math.random() * 20 + 70),
+            thread_count: Math.floor(Math.random() * 20),
+            thread_daemon: Math.floor(Math.random() * 20 + 20),
+            thread_peak: Math.floor(Math.random() * 20 + 50),
         }
     })
 })

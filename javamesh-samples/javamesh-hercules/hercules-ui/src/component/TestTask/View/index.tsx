@@ -98,14 +98,13 @@ export default function App() {
                 <Tabs.TabPane tab="硬件资源指标" key="ResourceCharts">
                     <ResourceCharts />
                 </Tabs.TabPane>
-                <Tabs.TabPane tab="业务性能指标" key="BusinessCharts">
-                    <BusinessCharts />
-                </Tabs.TabPane>
                 <Tabs.TabPane tab="JVM性能指标" key="JvmCharts">
                     <JvmCharts />
                 </Tabs.TabPane>
+                <Tabs.TabPane tab="业务性能指标" key="BusinessCharts">
+                    <BusinessCharts />
+                </Tabs.TabPane>
             </Tabs>
-            <div className="Label">测试注释</div>
             <div className="Label">日志文件</div>
             {data.log_name?.map(function (item: string, index: number) {
                 return <div key={index} >
@@ -207,11 +206,7 @@ function ResourceCharts() {
         const memoryUsageChart = new Liquid(memoryUsageRef.current!!, liquidOption)
         const ioBusyChart = new Liquid(ioBusyRef.current!!, liquidOption)
         const lineOption: LineOptions = {
-            data: Array.from({ length: 91 * 4 }, function (_, index) {
-                return {
-                    time: moment(new Date(Math.floor(index / 4) * 1000)).format("mm:ss"),
-                }
-            }),
+            data: [],
             xField: "time",
             yField: "value",
             seriesField: "name",
@@ -233,7 +228,16 @@ function ResourceCharts() {
                 }
             }
         })
-        const memoryChart = new Line(memoryRef.current!!, lineOption)
+        const memoryChart = new Line(memoryRef.current!!, {
+            ...lineOption,
+            yAxis: {
+                label: {
+                    formatter(text: any) {
+                        return text + "MB"
+                    }
+                }
+            }
+        })
         const diskChart = new Line(diskRef.current!!, lineOption)
         const networkChart = new Line(networkRef.current!!, lineOption)
 
@@ -258,7 +262,7 @@ function ResourceCharts() {
             second: 0,
             interval
         }
-        load(test_id)
+        load(test_id, true)
         return function () {
             chartsRef.current = undefined
             clearInterval(interval)
@@ -271,11 +275,12 @@ function ResourceCharts() {
             networkChart.destroy()
         }
     }, [test_id])
-    async function load(test_id: string, ip?: string) {
+    async function load(test_id: string, reset = false, ip?: string) {
         try {
             const res = await axios.get("/argus/api/task/resource", { params: { test_id, ip } })
             const data = res.data.data
             if (!chartsRef.current) return
+            if (reset) chartsRef.current.second = 0
             setData({
                 ip: data.ip,
                 cpu: data.cpu,
@@ -286,25 +291,90 @@ function ResourceCharts() {
             current.cpuUsageChart.changeData(data.cpu_usage)
             current.memoryUsageChart.changeData(data.memory_usage)
             current.ioBusyChart.changeData(data.io_busy)
-            // CPU
-            const cpuData = current.cpuChart.chart.getData()
+
             const second = current.second
             const time = moment(new Date(second * 1000)).format("mm:ss")
-            const items = [
+            // CPU
+            let chart = current.cpuChart
+            let items = [
                 { time, value: data.cpu_user, name: "user" },
                 { time, value: data.cpu_sys, name: "sys" },
                 { time, value: data.cpu_wait, name: "wait" },
                 { time, value: data.cpu_idle, name: "idle" },
             ]
+            let chartData = reset ? Array.from({ length: 91 * items.length }, function (_, index) {
+                return {
+                    time: moment(new Date(Math.floor(index / items.length) * 1000)).format("mm:ss"),
+                }
+            }) : chart.chart.getData()
+
             if (second > 90) {
-                cpuData.splice(0, 4)
-                cpuData.push(...items)
+                chartData.splice(0, items.length)
+                chartData.push(...items)
             } else {
-                cpuData.splice(second * 4, 4, ...items)
+                chartData.splice(second * items.length, items.length, ...items)
             }
-            current.cpuChart.changeData(cpuData)
+            chart.changeData(chartData)
             // Memory
-            
+            chart = current.memoryChart
+            items = [
+                { time, value: data.memory_total, name: "memoryTotal" },
+                { time, value: data.memory_swap, name: "swapCache" },
+                { time, value: data.memory_buffers, name: "buffers" },
+                { time, value: data.memory_used, name: "memoryUsed" },
+            ]
+            chartData = reset ? Array.from({ length: 91 * items.length }, function (_, index) {
+                return {
+                    time: moment(new Date(Math.floor(index / items.length) * 1000)).format("mm:ss"),
+                }
+            }) : chart.chart.getData()
+            if (second > 90) {
+                chartData.splice(0, items.length)
+                chartData.push(...items)
+            } else {
+                chartData.splice(second * items.length, items.length, ...items)
+            }
+            chart.changeData(chartData)
+            // Disk
+            chart = current.diskChart
+            items = [
+                { time, value: data.disk_read, name: "readBytesPerSec" },
+                { time, value: data.disk_write, name: "writeBytesPerSec" },
+                { time, value: data.disk_busy, name: "ioSpentPercentage" },
+            ]
+            chartData = reset ? Array.from({ length: 91 * items.length }, function (_, index) {
+                return {
+                    time: moment(new Date(Math.floor(index / items.length) * 1000)).format("mm:ss"),
+                }
+            }) : chart.chart.getData()
+            if (second > 90) {
+                chartData.splice(0, items.length)
+                chartData.push(...items)
+            } else {
+                chartData.splice(second * items.length, items.length, ...items)
+            }
+            chart.changeData(chartData)
+            // Network
+            chart = current.networkChart
+            items = [
+                { time, value: data.network_rbyte, name: "readBytesPerSec" },
+                { time, value: data.network_wbyte, name: "writeBytesPerSec" },
+                { time, value: data.memory_rpackage, name: "readPackagePerSec" },
+                { time, value: data.memory_wpackage, name: "writePackagePerSec" },
+            ]
+            chartData = reset ? Array.from({ length: 91 * items.length }, function (_, index) {
+                return {
+                    time: moment(new Date(Math.floor(index / items.length) * 1000)).format("mm:ss"),
+                }
+            }) : chart.chart.getData()
+            if (second > 90) {
+                chartData.splice(0, items.length)
+                chartData.push(...items)
+            } else {
+                chartData.splice(second * items.length, items.length, ...items)
+            }
+            chart.changeData(chartData)
+            // End
             current.second++
         } catch (error: any) {
             message.error(error.message)
@@ -314,8 +384,8 @@ function ResourceCharts() {
         }
     }
     return <div className="ResourceCharts">
-        <ServiceSelect value={data.ip} placeholder="IP地址" url="/argus/api/task/search/ip" onChange={function (value) {
-            load(test_id, value)
+        <ServiceSelect value={data.ip} placeholder="IP地址" url={"/argus/api/task/search/ip?test_id"+test_id} onChange={function (value) {
+            load(test_id, true, value)
         }} />
         <div className="Grid">
             <div className="Item Middle">
@@ -347,7 +417,7 @@ function ResourceCharts() {
         </div>
         <div className="Grid">
             <div className="Item">
-                <div ref={cpuRef} className="Line" style={{ width: "100%" }}></div>
+                <div ref={cpuRef} className="Line"></div>
                 <div className="Title">CPU</div>
             </div>
             <div className="Item">
@@ -369,5 +439,285 @@ function ResourceCharts() {
 }
 
 function JvmCharts() {
-    return <div>表格</div>
+    const urlSearchParams = new URLSearchParams(useLocation().search)
+    const test_id = urlSearchParams.get("test_id") || ""
+    const cpuRef = useRef(null)
+    const heapRef = useRef(null)
+    const memoryRef = useRef(null)
+    const jvmRef = useRef(null)
+    const gcRef = useRef(null)
+    const threadRef = useRef(null)
+    const [data, setData] = useState<any>({})
+    const chartsRef = useRef<{
+        cpuChart: Line,
+        heapChart: Line,
+        memoryChart: Line,
+        jvmChart: Line,
+        gcChart: Line,
+        threadChart: Line,
+        second: number,
+        interval: NodeJS.Timeout
+    }>()
+    useEffect(function () {
+        const lineOption: LineOptions = {
+            data: [],
+            xField: "time",
+            yField: "value",
+            seriesField: "name",
+            xAxis: { tickInterval: 10, range: [0, 1] },
+            smooth: true,
+            area: {
+                style: {
+                    fillOpacity: 0.05,
+                },
+            },
+            animation: false,
+        }
+        const cpuChart = new Line(cpuRef.current!!, {
+            ...lineOption, yAxis: {
+                label: {
+                    formatter(text: any) {
+                        return text + "%"
+                    }
+                }
+            }
+        })
+        const heapChart = new Line(heapRef.current!!, {
+            ...lineOption, yAxis: {
+                label: {
+                    formatter(text: any) {
+                        return text + "MB"
+                    }
+                }
+            }
+        })
+        const memoryChart = new Line(memoryRef.current!!, {
+            ...lineOption, yAxis: {
+                label: {
+                    formatter(text: any) {
+                        return text + "MB"
+                    }
+                }
+            }
+        })
+        const jvmChart = new Line(jvmRef.current!!, {
+            ...lineOption, yAxis: {
+                label: {
+                    formatter(text: any) {
+                        return text + "MB"
+                    }
+                }
+            }
+        })
+        const gcChart = new Line(gcRef.current!!, lineOption)
+        const threadChart = new Line(threadRef.current!!, lineOption)
+        cpuChart.render()
+        heapChart.render()
+        memoryChart.render()
+        jvmChart.render()
+        gcChart.render()
+        threadChart.render()
+
+        const interval = setInterval(function () {
+            load(test_id)
+        }, 1000)
+        chartsRef.current = {
+            cpuChart,
+            heapChart,
+            memoryChart,
+            jvmChart,
+            gcChart,
+            threadChart,
+            second: 0,
+            interval
+        }
+        load(test_id, true)
+        return function () {
+            cpuChart.destroy()
+            heapChart.destroy()
+            memoryChart.destroy()
+            jvmChart.destroy()
+            gcChart.destroy()
+            threadChart.destroy()
+            clearInterval(interval)
+            chartsRef.current = undefined
+        }
+    }, [test_id])
+    async function load(test_id: string, reset = false, ip?: string) {
+        try {
+            const res = await axios.get("/argus/api/task/jvm", { params: { test_id, ip } })
+            const data = res.data.data
+            if (!chartsRef.current) return
+            if (reset) chartsRef.current.second = 0
+            setData({ ip: data.ip })
+            const current = chartsRef.current
+
+            const second = current.second
+            const time = moment(new Date(second * 1000)).format("mm:ss")
+            // CPU
+            let chart = current.cpuChart
+            let items = [
+                { time, value: data.cpu_java, name: "cpuForJava" },
+            ]
+            let chartData = reset ? Array.from({ length: 91 * items.length }, function (_, index) {
+                return {
+                    time: moment(new Date(Math.floor(index / items.length) * 1000)).format("mm:ss"),
+                }
+            }) : chart.chart.getData()
+
+            if (second > 90) {
+                chartData.splice(0, items.length)
+                chartData.push(...items)
+            } else {
+                chartData.splice(second * items.length, items.length, ...items)
+            }
+            chart.changeData(chartData)
+            // Heap
+            chart = current.heapChart
+            items = [
+                { time, value: data.heap_init, name: "init" },
+                { time, value: data.heap_max, name: "max" },
+                { time, value: data.heap_used, name: "used" },
+                { time, value: data.heap_committed, name: "committed" },
+            ]
+            chartData = reset ? Array.from({ length: 91 * items.length }, function (_, index) {
+                return {
+                    time: moment(new Date(Math.floor(index / items.length) * 1000)).format("mm:ss"),
+                }
+            }) : chart.chart.getData()
+
+            if (second > 90) {
+                chartData.splice(0, items.length)
+                chartData.push(...items)
+            } else {
+                chartData.splice(second * items.length, items.length, ...items)
+            }
+            chart.changeData(chartData)
+            // Memory
+            chart = current.memoryChart
+            items = [
+                { time, value: data.memory_init, name: "init" },
+                { time, value: data.memory_max, name: "max" },
+                { time, value: data.memory_used, name: "used" },
+                { time, value: data.memory_committed, name: "committed" },
+            ]
+            chartData = reset ? Array.from({ length: 91 * items.length }, function (_, index) {
+                return {
+                    time: moment(new Date(Math.floor(index / items.length) * 1000)).format("mm:ss"),
+                }
+            }) : chart.chart.getData()
+
+            if (second > 90) {
+                chartData.splice(0, items.length)
+                chartData.push(...items)
+            } else {
+                chartData.splice(second * items.length, items.length, ...items)
+            }
+            chart.changeData(chartData)
+            // Usage
+            chart = current.jvmChart
+            items = [
+                { time, value: data.jvm_cache, name: "codeCache" },
+                { time, value: data.jvm_newgen, name: "newGen" },
+                { time, value: data.jvm_oldgen, name: "oldGen" },
+                { time, value: data.jvm_survivor, name: "survivor" },
+                { time, value: data.jvm_penmgen, name: "permegen" },
+                { time, value: data.jvm_metaspace, name: "mateSpace" },
+            ]
+            chartData = reset ? Array.from({ length: 91 * items.length }, function (_, index) {
+                return {
+                    time: moment(new Date(Math.floor(index / items.length) * 1000)).format("mm:ss"),
+                }
+            }) : chart.chart.getData()
+
+            if (second > 90) {
+                chartData.splice(0, items.length)
+                chartData.push(...items)
+            } else {
+                chartData.splice(second * items.length, items.length, ...items)
+            }
+            chart.changeData(chartData)
+            // GC
+            chart = current.gcChart
+            items = [
+                { time, value: data.gc_newc, name: "newGenCount" },
+                { time, value: data.gc_oldc, name: "oldGenCount" },
+                { time, value: data.gc_news, name: "newGenSpend" },
+                { time, value: data.gc_olds, name: "oldGenSpend" },
+            ]
+            chartData = reset ? Array.from({ length: 91 * items.length }, function (_, index) {
+                return {
+                    time: moment(new Date(Math.floor(index / items.length) * 1000)).format("mm:ss"),
+                }
+            }) : chart.chart.getData()
+
+            if (second > 90) {
+                chartData.splice(0, items.length)
+                chartData.push(...items)
+            } else {
+                chartData.splice(second * items.length, items.length, ...items)
+            }
+            chart.changeData(chartData)
+            // GC
+            chart = current.threadChart
+            items = [
+                { time, value: data.thread_count, name: "liveCount" },
+                { time, value: data.thread_daemon, name: "deamonCount" },
+                { time, value: data.thread_peak, name: "peakCount" },
+            ]
+            chartData = reset ? Array.from({ length: 91 * items.length }, function (_, index) {
+                return {
+                    time: moment(new Date(Math.floor(index / items.length) * 1000)).format("mm:ss"),
+                }
+            }) : chart.chart.getData()
+
+            if (second > 90) {
+                chartData.splice(0, items.length)
+                chartData.push(...items)
+            } else {
+                chartData.splice(second * items.length, items.length, ...items)
+            }
+            chart.changeData(chartData)
+            // End
+            current.second++
+        } catch (error: any) {
+            message.error(error.message)
+            if (chartsRef.current) {
+                clearInterval(chartsRef.current.interval)
+            }
+        }
+    }
+    return <div className="ResourceCharts">
+        <ServiceSelect value={data.ip} placeholder="IP地址" url={"/argus/api/task/search/ip?test_id"+test_id} />
+        <div className="Grid">
+            <div className="Item">
+                <div ref={cpuRef} className="Line"></div>
+                <div className="Title">CPU</div>
+            </div>
+            <div className="Item">
+                <div ref={heapRef} className="Line"></div>
+                <div className="Title">Heap</div>
+            </div>
+        </div>
+        <div className="Grid">
+            <div className="Item">
+                <div ref={memoryRef} className="Line"></div>
+                <div className="Title">MemoryPool</div>
+            </div>
+            <div className="Item">
+                <div ref={jvmRef} className="Line"></div>
+                <div className="Title">JVM Memory</div>
+            </div>
+        </div>
+        <div className="Grid">
+            <div className="Item">
+                <div ref={gcRef} className="Line"></div>
+                <div className="Title">GC</div>
+            </div>
+            <div className="Item">
+                <div ref={threadRef} className="Line"></div>
+                <div className="Title">Thread</div>
+            </div>
+        </div>
+    </div>
 }
