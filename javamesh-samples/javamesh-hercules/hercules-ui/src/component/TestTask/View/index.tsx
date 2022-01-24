@@ -20,7 +20,7 @@ export default function App() {
         let clear = false
         async function load() {
             try {
-                const res = await axios.get("/argus/api/task/view", { params: { test_id } })
+                const res = await axios.get("/argus-emergency/api/task/view", { params: { test_id } })
                 if (clear) return
                 setData(res.data.data)
             } catch (error: any) {
@@ -108,7 +108,7 @@ export default function App() {
             <div className="Label">日志文件</div>
             {data.log_name?.map(function (item: string, index: number) {
                 return <div key={index} >
-                    <a href={process.env.PUBLIC_URL + `/api/task/download?test_id=${test_id}&log_name=${item}`} target="_blank" rel="noreferrer">{item}</a>
+                    <a href={`/argus/api/task/download?test_id=${test_id}&log_name=${item}`} target="_blank" rel="noreferrer">{item}</a>
                 </div>
             })}
             <div className="Label">执行日志</div>
@@ -125,7 +125,7 @@ function BusinessCharts() {
     const test_id = urlSearchParams.get("test_id")
     useEffect(function () {
         async function load() {
-            const res = await axios.get('/argus/api/task/service', { params: { test_id } })
+            const res = await axios.get('/argus-emergency/api/task/service', { params: { test_id } })
             setData(res.data.data)
         }
         load()
@@ -277,7 +277,7 @@ function ResourceCharts() {
     }, [test_id])
     async function load(test_id: string, reset = false, ip?: string) {
         try {
-            const res = await axios.get("/argus/api/task/resource", { params: { test_id, ip } })
+            const res = await axios.get("/argus-emergency/api/task/resource", { params: { test_id, ip } })
             const data = res.data.data
             if (!chartsRef.current) return
             if (reset) chartsRef.current.second = 0
@@ -384,7 +384,7 @@ function ResourceCharts() {
         }
     }
     return <div className="ResourceCharts">
-        <ServiceSelect value={data.ip} placeholder="IP地址" url={"/argus/api/task/search/ip?test_id"+test_id} onChange={function (value) {
+        <ServiceSelect value={data.ip} placeholder="IP地址" url={"/argus-emergency/api/task/search/ip?test_id="+test_id} onChange={function (value) {
             load(test_id, true, value)
         }} />
         <div className="Grid">
@@ -545,7 +545,7 @@ function JvmCharts() {
     }, [test_id])
     async function load(test_id: string, reset = false, ip?: string) {
         try {
-            const res = await axios.get("/argus/api/task/jvm", { params: { test_id, ip } })
+            const res = await axios.get("/argus-emergency/api/task/jvm", { params: { test_id, ip } })
             const data = res.data.data
             if (!chartsRef.current) return
             if (reset) chartsRef.current.second = 0
@@ -688,7 +688,7 @@ function JvmCharts() {
         }
     }
     return <div className="ResourceCharts">
-        <ServiceSelect value={data.ip} placeholder="IP地址" url={"/argus/api/task/search/ip?test_id"+test_id} />
+        <ServiceSelect value={data.ip} placeholder="IP地址" url={"/argus-emergency/api/task/search/ip?test_id"+test_id} />
         <div className="Grid">
             <div className="Item">
                 <div ref={cpuRef} className="Line"></div>

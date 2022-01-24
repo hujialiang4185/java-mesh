@@ -261,7 +261,7 @@ app.put('/argus/api/task/update', function (req, res) {
         msg: '更新失败'
     })
 })
-app.get('/argus/api/task/view', function (req, res) {
+app.get('/argus-emergency/api/task/view', function (req, res) {
     res.json({
         data: {
             test_name: "测试名称",
@@ -283,14 +283,14 @@ app.get('/argus/api/task/view', function (req, res) {
         }
     })
 })
-app.get('/argus/api/task/service', function (req, res) {
+app.get('/argus-emergency/api/task/service', function (req, res) {
     res.json({
         data: [
             { transaction: '测试1', tps: 123, response_ms: 12, success_count: 9, fail_count: 1, fail_rate: "10%" }
         ]
     })
 })
-app.get('/argus/api/task/resource', function (req, res) {
+app.get('/argus-emergency/api/task/resource', function (req, res) {
     res.json({
         data: {
             ip: req.query.ip || "192.168.0.1",
@@ -318,7 +318,7 @@ app.get('/argus/api/task/resource', function (req, res) {
         }
     })
 })
-app.get('/argus/api/task/jvm', function (req, res) {
+app.get('/argus-emergency/api/task/jvm', function (req, res) {
     res.json({
         data: {
             ip: req.query.ip || "192.168.0.1",
@@ -347,7 +347,7 @@ app.get('/argus/api/task/jvm', function (req, res) {
         }
     })
 })
-app.get('/argus/api/task/search/ip', function (req, res) {
+app.get('/argus-emergency/api/task/search/ip', function (req, res) {
     res.json({
         data: ["192.168.0.1", "192.168.0.2", "192.168.0.3", "192.168.0.4", "192.168.0.5"]
     })

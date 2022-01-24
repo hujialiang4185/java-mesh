@@ -108,7 +108,7 @@ export default function App() {
             <div className="Label">日志文件</div>
             {data?.log_name?.map(function (item: string, index: number) {
                 return <div key={index} >
-                    <a href={process.env.PUBLIC_URL + `/api/task/download?test_id=${test_id}&log_name=${item}`} target="_blank" rel="noreferrer">{item}</a>
+                    <a href={`/argus/api/task/download?test_id=${test_id}&log_name=${item}`} target="_blank" rel="noreferrer">{item}</a>
                 </div>
             })}
             <div className="Label">执行日志</div>
