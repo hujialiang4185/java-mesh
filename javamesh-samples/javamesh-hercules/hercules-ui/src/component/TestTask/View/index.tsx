@@ -152,6 +152,7 @@ function ResourceCharts() {
     const diskRef = useRef(null)
     const networkRef = useRef(null)
     const [data, setData] = useState<any>({})
+    const ipRef = useRef("")
     const chartsRef = useRef<{
         cpuUsageChart: Liquid,
         memoryUsageChart: Liquid,
@@ -275,9 +276,9 @@ function ResourceCharts() {
             networkChart.destroy()
         }
     }, [test_id])
-    async function load(test_id: string, reset = false, ip?: string) {
+    async function load(test_id: string, reset = false) {
         try {
-            const res = await axios.get("/argus-emergency/api/task/resource", { params: { test_id, ip } })
+            const res = await axios.get("/argus-emergency/api/task/resource", { params: { test_id, ip: ipRef.current } })
             const data = res.data.data
             if (!chartsRef.current) return
             if (reset) chartsRef.current.second = 0
@@ -385,7 +386,8 @@ function ResourceCharts() {
     }
     return <div className="ResourceCharts">
         <ServiceSelect value={data.ip} placeholder="IP地址" url={"/argus-emergency/api/task/search/ip?test_id="+test_id} onChange={function (value) {
-            load(test_id, true, value)
+            ipRef.current = value
+            load(test_id, true)
         }} />
         <div className="Grid">
             <div className="Item Middle">
@@ -448,6 +450,7 @@ function JvmCharts() {
     const gcRef = useRef(null)
     const threadRef = useRef(null)
     const [data, setData] = useState<any>({})
+    const ipRef = useRef("")
     const chartsRef = useRef<{
         cpuChart: Line,
         heapChart: Line,
@@ -543,9 +546,9 @@ function JvmCharts() {
             chartsRef.current = undefined
         }
     }, [test_id])
-    async function load(test_id: string, reset = false, ip?: string) {
+    async function load(test_id: string, reset = false) {
         try {
-            const res = await axios.get("/argus-emergency/api/task/jvm", { params: { test_id, ip } })
+            const res = await axios.get("/argus-emergency/api/task/jvm", { params: { test_id, ip: ipRef.current } })
             const data = res.data.data
             if (!chartsRef.current) return
             if (reset) chartsRef.current.second = 0
@@ -688,7 +691,10 @@ function JvmCharts() {
         }
     }
     return <div className="ResourceCharts">
-        <ServiceSelect value={data.ip} placeholder="IP地址" url={"/argus-emergency/api/task/search/ip?test_id"+test_id} />
+        <ServiceSelect value={data.ip} placeholder="IP地址" url={"/argus-emergency/api/task/search/ip?test_id="+test_id} onChange={function(value) {
+            ipRef.current = value
+            load(test_id, true)
+        }}/>
         <div className="Grid">
             <div className="Item">
                 <div ref={cpuRef} className="Line"></div>
