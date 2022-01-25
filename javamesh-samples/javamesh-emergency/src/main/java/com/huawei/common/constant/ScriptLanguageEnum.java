@@ -29,23 +29,33 @@ import java.util.Locale;
 @Getter
 public enum ScriptLanguageEnum {
 
-    SHELL("Shell"),
-    GROOVY("Groovy"),
-    PYTHON("Python"),
-    JAVASCRIPT("JavaScript");
+    SHELL("0", "Shell", "sh", "普通shell脚本"),
+    GROOVY("1", "Groovy", "groovy", "普通groovy脚本"),
+    PYTHON("2", "Python", "py", "普通python脚本"),
+    GUI("3", "GUI", "groovy", "脚本编排产生的压测groovy脚本"),
+    IDE_GROOVY("4", "IDE_Groovy", "groovy", "压测groovy脚本"),
+    IDE_PYTHON("5", "IDE_Python", "py", "压测python脚本"),
+    IDE_GROOVY_MAVEN("6", "IDE_Groovy_Maven", "groovy", "压测groovy的mvn工程脚本"),
+    JAVASCRIPT("7", "JavaScript", "js", "普通js脚本");
 
     private String value;
+    private String suffix;
+    private String desc;
+    private String type;
 
-    ScriptLanguageEnum(String value) {
+    ScriptLanguageEnum(String value, String type, String suffix, String desc) {
         this.value = value;
+        this.suffix = suffix;
+        this.desc = desc;
+        this.type = type;
     }
 
-    public static ScriptLanguageEnum match(String value) {
-        if (value == null) {
+    public static ScriptLanguageEnum match(String type) {
+        if (type == null) {
             return null;
         }
         for (ScriptLanguageEnum item : ScriptLanguageEnum.values()) {
-            if (item.getValue().toLowerCase(Locale.ROOT).equals(value.toLowerCase(Locale.ROOT))) {
+            if (item.getType().toLowerCase(Locale.ROOT).equals(type.toLowerCase(Locale.ROOT))) {
                 return item;
             }
         }
