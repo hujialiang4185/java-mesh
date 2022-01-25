@@ -203,7 +203,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     }
 
     @Override
-    public int uploadScript(HttpServletRequest request, EmergencyScript script, MultipartFile file) {
+    public CommonResult<EmergencyScript> uploadScript(HttpServletRequest request, EmergencyScript script, MultipartFile file) {
         if ("undefined".equals(script.getServerIp())) {
             script.setServerIp(null);
         }
@@ -216,7 +216,8 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             script.setContent(content);
             return insertScript(request, script);
         } catch (IOException e) {
-            throw new ApiException(e);
+            log.error(FailedInfo.SCRIPT_CREATE_FAIL, e);
+            return CommonResult.failed(FailedInfo.SCRIPT_CREATE_FAIL);
         }
     }
 
@@ -234,50 +235,44 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     }
 
     @Override
-    public int insertScript(HttpServletRequest request, EmergencyScript script) {
+    public CommonResult<EmergencyScript> insertScript(HttpServletRequest request, EmergencyScript script) {
         if (isParamInvalid(script)) {
-            return ResultCode.PARAM_INVALID;
+            return CommonResult.failed(FailedInfo.PARAM_INVALID);
         }
-        EmergencyScriptExample example = new EmergencyScriptExample();
-        example.createCriteria().andScriptNameEqualTo(script.getScriptName());
-        long count = mapper.countByExample(example);
-        if (count > 0) {
-            return ResultCode.SCRIPT_NAME_EXISTS;
+        EmergencyScriptExample isNameExist = new EmergencyScriptExample();
+        isNameExist.createCriteria().andScriptNameEqualTo(script.getScriptName());
+        if (mapper.countByExample(isNameExist) > 0) {
+            return CommonResult.failed(FailedInfo.SCRIPT_NAME_EXISTS);
         }
         User user = (User) request.getSession().getAttribute("userInfo");
         script.setScriptUser(user.getUserName());
         script.setContent(FileUtil.streamToString(new ByteArrayInputStream(script.getContent().getBytes(StandardCharsets.UTF_8))));
         extracted(script);
-        count = mapper.insertSelective(script);
-        if (count != 1) {
-            return ResultCode.FAIL;
+        if (mapper.insertSelective(script) != 1) {
+            return CommonResult.failed(FailedInfo.SCRIPT_CREATE_FAIL);
         }
-        return script.getScriptId();
+        return CommonResult.success(script);
     }
 
     @Override
-    public int updateScript(HttpServletRequest request, EmergencyScript script) {
-        if (isParamInvalid(script)) {
-            return ResultCode.PARAM_INVALID;
-        }
-        if (script.getScriptId() == null) {
-            return ResultCode.PARAM_INVALID;
+    public CommonResult<EmergencyScript> updateScript(HttpServletRequest request, EmergencyScript script) {
+        if (script.getScriptId() == null || isParamInvalid(script)) {
+            return CommonResult.failed(FailedInfo.PARAM_INVALID);
         }
 
         // 脚本名是否修改了
-        String oldScriptName = mapper.selectScriptNameById(script.getScriptId());
         String scriptName = script.getScriptName();
-        if (!oldScriptName.equals(scriptName)) {
-            EmergencyScriptExample example = new EmergencyScriptExample();
-            example.createCriteria().andScriptNameEqualTo(scriptName);
-            long count = mapper.countByExample(example);
-            if (count > 0) {
-                return ResultCode.SCRIPT_NAME_EXISTS;
-            }
+        EmergencyScriptExample isNameExist = new EmergencyScriptExample();
+        isNameExist.createCriteria()
+            .andScriptNameEqualTo(scriptName)
+            .andScriptIdNotEqualTo(script.getScriptId());
+        if (mapper.countByExample(isNameExist) > 0) {
+            return CommonResult.failed(FailedInfo.SCRIPT_NAME_EXISTS);
         }
         extracted(script);
         script.setScriptStatus(TYPE_ZERO); // 变为待提审
-        return mapper.updateByPrimaryKeySelective(script);
+        mapper.updateByPrimaryKeySelective(script);
+        return CommonResult.success(script);
     }
 
     @Override
@@ -487,7 +482,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     }
 
     @Override
-    public CommonResult updateOrchestrate(HttpServletRequest request, TreeResponse treeResponse) {
+    public CommonResult updateOrchestrate(TreeResponse treeResponse) {
         if (treeResponse.getScriptId() == null || mapper.selectByPrimaryKey(treeResponse.getScriptId()) == null) {
             return CommonResult.failed("请选择脚本");
         }
@@ -529,7 +524,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             ArgusScript argusScript = new ArgusScript();
             argusScript.setPath(treeResponse.getPath());
             argusScript.setScript(scriptContent);
-            //updateArgusScript(request,treeResponse.getPath(),scriptContent); // 更新压测脚本
+            //updateArgusScript(treeResponse.getPath(),scriptContent); // 更新压测脚本
             return CommonResult.success(argusScript);
         } catch (IOException e) {
             log.error("Failed to print script.{}", e);
@@ -544,16 +539,11 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         if (StringUtils.isEmpty(path)) {
             return;
         }
-        RestTemplate template = new RestTemplate();
-        template.setInterceptors(Arrays.asList((httpRequest, bytes, clientHttpRequestExecution) -> {
-            httpRequest.getHeaders().add("Cookie", request.getHeader("Cookie"));
-            return clientHttpRequestExecution.execute(httpRequest, bytes);
-        }));
         ArgusScript argusScript = new ArgusScript();
         argusScript.setPath(path);
         argusScript.setScript(script);
         argusScript.setCommit(System.currentTimeMillis() + " 脚本编排提交");
-        template.put(argusUrl + "/api/script", argusScript);
+        restTemplate.put(argusUrl + "/api/script", argusScript);
     }
 
     /**
@@ -678,6 +668,9 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
 
 
     private boolean isParamInvalid(EmergencyScript script) {
+        if (StringUtils.isEmpty(script.getScriptName())) {
+            return true;
+        }
         if ("havePassword".equals(script.getHavePassword()) &&
             (StringUtils.isBlank(script.getPassword()) || StringUtils.isBlank(script.getPasswordMode()))) {
             return true;

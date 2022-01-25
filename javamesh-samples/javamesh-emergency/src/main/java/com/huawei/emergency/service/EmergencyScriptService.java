@@ -18,13 +18,13 @@ public interface EmergencyScriptService {
 
     void downloadScript(int scriptId, HttpServletResponse response);
 
-    int uploadScript(HttpServletRequest request,EmergencyScript script,MultipartFile file);
+    CommonResult<EmergencyScript> uploadScript(HttpServletRequest request,EmergencyScript script,MultipartFile file);
 
     EmergencyScript selectScript(int scriptId);
 
-    int insertScript(HttpServletRequest request, EmergencyScript script);
+    CommonResult<EmergencyScript> insertScript(HttpServletRequest request, EmergencyScript script);
 
-    int updateScript(HttpServletRequest request, EmergencyScript script);
+    CommonResult<EmergencyScript> updateScript(HttpServletRequest request, EmergencyScript script);
 
     List<String> searchScript(HttpServletRequest request, String scriptName,String status);
 
@@ -56,7 +56,7 @@ public interface EmergencyScriptService {
      * @param treeResponse
      * @return
      */
-    CommonResult updateOrchestrate(HttpServletRequest request,TreeResponse treeResponse);
+    CommonResult updateOrchestrate(TreeResponse treeResponse);
 
     /**
      * 查询编排脚本

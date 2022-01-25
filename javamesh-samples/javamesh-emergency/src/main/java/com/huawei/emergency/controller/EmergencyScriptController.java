@@ -90,8 +90,8 @@ public class EmergencyScriptController {
                                      @RequestParam(value = "script_name") String scriptName,
                                      @RequestParam(value = "submit_info") String submitInfo,
                                      @RequestParam(value = "account", required = false) String serverUser,
-                                     @RequestParam(value = "server_ip",required = false) String serverIp,
-                                     @RequestParam(value = "has_pwd",required = false) String havePassword,
+                                     @RequestParam(value = "server_ip", required = false) String serverIp,
+                                     @RequestParam(value = "has_pwd", required = false) String havePassword,
                                      @RequestParam(value = "language") String scriptType,
                                      @RequestParam(value = "param", required = false) String param,
                                      @RequestParam(value = "public") String isPublic,
@@ -109,16 +109,11 @@ public class EmergencyScriptController {
         script.setIsPublic(isPublic);
         script.setPassword(password);
         script.setPasswordMode(passwordMode);
-        int result = service.uploadScript(request, script, file);
-        if (result == ResultCode.SCRIPT_NAME_EXISTS) {
-            return CommonResult.failed(FailedInfo.SCRIPT_NAME_EXISTS);
-        } else if (result == ResultCode.PARAM_INVALID) {
-            return CommonResult.failed(FailedInfo.PARAM_INVALID);
-        } else if (result == ResultCode.FAIL || result == 0) {
-            return CommonResult.failed(FailedInfo.SCRIPT_CREATE_FAIL);
-        } else {
-            return CommonResult.success(result);
+        CommonResult<EmergencyScript> uploadResult = service.uploadScript(request, script, file);
+        if (uploadResult.isSuccess()) {
+            return CommonResult.success(uploadResult.getData().getScriptId());
         }
+        return uploadResult;
     }
 
     /**
@@ -136,32 +131,46 @@ public class EmergencyScriptController {
         return CommonResult.success(script);
     }
 
+    /**
+     * 新增脚本
+     *
+     * @param request
+     * @param script  {@link EmergencyScript}
+     * @return {@link CommonResult}
+     */
     @PostMapping
     public CommonResult insertScript(HttpServletRequest request, @RequestBody EmergencyScript script) {
-        int result = service.insertScript(request, script);
-        if (result == ResultCode.SCRIPT_NAME_EXISTS) {
-            return CommonResult.failed(FailedInfo.SCRIPT_NAME_EXISTS);
-        } else if (result == ResultCode.PARAM_INVALID) {
-            return CommonResult.failed(FailedInfo.PARAM_INVALID);
-        } else if (result == ResultCode.FAIL) {
-            return CommonResult.failed(FailedInfo.SCRIPT_CREATE_FAIL);
-        } else {
-            return CommonResult.success(result);
+        CommonResult<EmergencyScript> insertResult = service.insertScript(request, script);
+        if (insertResult.isSuccess()) {
+            return CommonResult.success(insertResult.getData().getScriptId());
         }
+        return insertResult;
     }
 
+    /**
+     * 更新脚本内容
+     *
+     * @param request 请求
+     * @param script  {@link EmergencyScript}
+     * @return {@link CommonResult}
+     */
     @PutMapping
     public CommonResult updateScript(HttpServletRequest request, @RequestBody EmergencyScript script) {
-        int count = service.updateScript(request, script);
-        if (count == 1) {
-            return CommonResult.success(count);
-        } else if (count == ResultCode.SCRIPT_NAME_EXISTS) {
-            return CommonResult.failed(FailedInfo.SCRIPT_NAME_EXISTS);
-        } else {
-            return CommonResult.failed("文件修改失败");
+        CommonResult<EmergencyScript> updateResult = service.updateScript(request, script);
+        if (updateResult.isSuccess()) {
+            return CommonResult.success(updateResult.getData().getScriptId());
         }
+        return updateResult;
     }
 
+    /**
+     * 查询脚本
+     *
+     * @param request
+     * @param scriptName
+     * @param status
+     * @return
+     */
     @GetMapping("/search")
     public CommonResult searchScript(HttpServletRequest request,
                                      @RequestParam(value = "value", required = false) String scriptName,
@@ -170,12 +179,25 @@ public class EmergencyScriptController {
         return CommonResult.success(scriptNames);
     }
 
+    /**
+     * 通过名称查询脚本
+     *
+     * @param scriptName 脚本名称
+     * @return {@link CommonResult}
+     */
     @GetMapping("/getByName")
     public CommonResult getScriptEntityByName(@RequestParam(value = "name") String scriptName) {
         EmergencyScript script = service.getScriptByName(scriptName);
         return CommonResult.success(script);
     }
 
+    /**
+     * 提交审核
+     *
+     * @param request 请求
+     * @param script  {@link EmergencyScript} 待提审的脚本
+     * @return {@link CommonResult}
+     */
     @PostMapping("/submitReview")
     public CommonResult submitReview(HttpServletRequest request, @RequestBody EmergencyScript script) {
         String result = service.submitReview(request, script);
@@ -186,6 +208,12 @@ public class EmergencyScriptController {
         }
     }
 
+    /**
+     * 审核脚本
+     *
+     * @param map 脚本ID及审核结果
+     * @return {@link CommonResult}
+     */
     @PostMapping("/approve")
     public CommonResult approve(@RequestBody Map<String, Object> map) {
         int count = service.approve(map);
@@ -196,20 +224,36 @@ public class EmergencyScriptController {
         }
     }
 
-    public CommonResult debugScript(@RequestBody Map<String, Integer> param) {
-        return service.debugScript(param.get("script_id"));
-    }
-
+    /**
+     * 脚本调试
+     *
+     * @param param 脚本内容及服务器名称
+     * @return {@link CommonResult}
+     */
     @PostMapping("/debug")
     public CommonResult debugScriptBeforeSave(@RequestBody Map<String, String> param) {
         return service.debugScriptBeforeSave(param.get("content"), param.get("server_name"));
     }
 
+    /**
+     * 停止调试
+     *
+     * @param param {@link EmergencyExecRecord} 调试ID
+     * @return
+     */
     @PostMapping("/debugStop")
     public CommonResult debugStop(@RequestBody EmergencyExecRecord param) {
         return service.debugScriptStop(param.getDebugId());
     }
 
+    /**
+     * 获取调试日志
+     * <p> {@link LogResponse#getLine()} == null 代表没有日志 </p>
+     *
+     * @param id      调试ID
+     * @param lineNum 日志行号
+     * @return {@link LogResponse}
+     */
     @GetMapping("/debugLog")
     public LogResponse debugLog(@RequestParam(value = "debug_id") int id,
                                 @RequestParam(value = "line", defaultValue = "1") int lineNum) {
@@ -220,31 +264,50 @@ public class EmergencyScriptController {
         return service.debugLog(id, lineIndex);
     }
 
+    /**
+     * 创建编排脚本
+     *
+     * @param script {@link EmergencyScript} 脚本信息
+     * @return {@link CommonResult}
+     */
     @PostMapping("/orchestrate")
     public CommonResult createOrchestrate(@RequestBody EmergencyScript script) {
         return service.createOrchestrate(script);
     }
 
+    /**
+     * 更新编排脚本
+     *
+     * @param treeResponse {@link TreeResponse} 编排hashTree
+     * @return {@link CommonResult}
+     */
     @PutMapping("/orchestrate")
-    public CommonResult updateOrchestrate(HttpServletRequest request, @RequestBody TreeResponse treeResponse) {
-        return service.updateOrchestrate(request,treeResponse);
+    public CommonResult updateOrchestrate(@RequestBody TreeResponse treeResponse) {
+        return service.updateOrchestrate(treeResponse);
     }
 
+    /**
+     * 查询编排脚本的hashTree
+     *
+     * @param scriptId 脚本ID
+     * @return {@link CommonResult}
+     */
     @GetMapping("/orchestrate/get")
     public CommonResult orchestrate(@RequestParam("script_id") int scriptId) {
         return service.queryOrchestrate(scriptId);
     }
+
+
     @GetMapping("/script/exec")
-    public void exec(HttpServletRequest request){
+    public void exec(HttpServletRequest request) {
         service.exec(request);
     }
 
     @PostMapping("/script/execComplete")
-    public CommonResult execComplete(@RequestBody Map<String,String> map){
-        if(map.get("recordId").equals("0")){
+    public CommonResult execComplete(@RequestBody Map<String, String> map) {
+        if (map.get("recordId").equals("0")) {
             return CommonResult.failed("recordId is valid. ");
         }
         return CommonResult.success();
     }
-
 }
