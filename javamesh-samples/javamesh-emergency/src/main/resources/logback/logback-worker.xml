@@ -1,35 +1,35 @@
 <configuration>
 
-	<property name="PREFIX" value="${LOG_DIRECTORY}/${WORKER_NAME}" />
+    <property name="PREFIX" value="${LOG_DIRECTORY}/${WORKER_NAME}"/>
 
-	<appender name="log-file" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<file>${PREFIX}.log</file>
- 
-		<encoder>
-			<pattern>%d %-5level %message%n</pattern>
-		</encoder>
+    <appender name="log-file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${PREFIX}.log</file>
 
-		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-			<fileNamePattern>${PREFIX}.log%i</fileNamePattern>
-			<minIndex>1</minIndex>
-			<maxIndex>1</maxIndex>
-		</rollingPolicy>
-		
-		<triggeringPolicy class="net.grinder.util.logback.RollOnStartUp" />
-		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-			<maxFileSize>1MB</maxFileSize>
-		</triggeringPolicy>
+        <encoder>
+            <pattern>%d %-5level %message%n</pattern>
+        </encoder>
 
-	</appender>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>${PREFIX}.log%i</fileNamePattern>
+            <minIndex>1</minIndex>
+            <maxIndex>1</maxIndex>
+        </rollingPolicy>
 
-	<appender name="data-file" class="ch.qos.logback.core.helpers.NOPAppender"/>
+        <triggeringPolicy class="net.grinder.util.logback.RollOnStartUp"/>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>1MB</maxFileSize>
+        </triggeringPolicy>
 
-	<logger name="worker" additivity="false">
-		<appender-ref ref="log-file" />
-	</logger>
+    </appender>
 
-	<logger name="data" additivity="false" level="ERROR">
-		<appender-ref ref="data-file" />
-	</logger>
+    <appender name="data-file" class="ch.qos.logback.core.helpers.NOPAppender"/>
+
+    <logger name="worker" additivity="false">
+        <appender-ref ref="log-file"/>
+    </logger>
+
+    <logger name="data" additivity="false" level="ERROR">
+        <appender-ref ref="data-file"/>
+    </logger>
 
 </configuration>

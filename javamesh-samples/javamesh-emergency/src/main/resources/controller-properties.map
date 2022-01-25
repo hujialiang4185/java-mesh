@@ -7,6 +7,7 @@ controller.user_password_sha256,false,ngrinder.security.sha256
 controller.usage_report,true,usage.report
 controller.plugin_support,true,pluginsupport
 controller.user_security,false,user.security
+controller.timezone,Asia/Shanghai,timezone
 controller.allow_sign_up,true,
 controller.max_agent_per_test,10,agent.max.size
 controller.max_vuser_per_agent,3000,agent.max.vuser
