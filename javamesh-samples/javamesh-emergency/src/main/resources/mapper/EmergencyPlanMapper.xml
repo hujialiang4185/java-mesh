@@ -453,7 +453,7 @@
         ORDER BY plan.create_time desc
     </select>
     <select id="queryPlanDetailDto" resultType="com.huawei.emergency.dto.PlanDetailQueryDto">
-        SELECT t1.detail_id AS                                                                     `key`,
+        select * from (SELECT t1.detail_id AS                                                                     `key`,
                t2.task_no                                                                          scene_no,
                t2.task_name                                                                        scene_name,
                t2.task_no                                                                          scena_no,
@@ -470,6 +470,6 @@
                  LEFT JOIN emergency_task t3 ON t1.parent_task_id = t3.task_id
                  LEFT JOIN emergency_task t4 ON t1.task_id = t4.task_id
         WHERE t1.plan_id = #{id}
-          and t1.is_valid = '1'
+          and t1.is_valid = '1') t order by t.scene_no,t.task_no,t.subtask_no
     </select>
 </mapper>

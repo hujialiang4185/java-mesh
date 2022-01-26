@@ -17,6 +17,7 @@ import java.util.List;
 @Data
 public class TaskNode {
     private Integer key;
+    private Integer detailId;
     private String title;
     private String taskNo;
     private String taskName;

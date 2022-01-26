@@ -99,9 +99,6 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     private EmergencyExecRecordMapper recordMapper;
 
     @Autowired
-    private EmergencyExecRecordDetailMapper recordDetailMapper;
-
-    @Autowired
     private ExecRecordHandlerFactory handlerFactory;
 
     @Autowired
@@ -358,24 +355,23 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
 
     @Override
     public CommonResult query(int planId) {
-
-        List<TaskNode> taskNodes = detailMapper.selectSceneNodeByPlanId(planId);
-        taskNodes.forEach(scene -> {
-            List<TaskNode> children = detailMapper.selectTaskNodeBySceneId(scene.getPlanId(), scene.getSceneId());
-            if (children.size() > 0) {
-                scene.setChildren(children);
+        List<TaskNode> sceneNodes = detailMapper.selectSceneNodeByPlanId(planId);
+        sceneNodes.forEach(scene -> {
+            List<TaskNode> taskNodes = detailMapper.selectTaskNodeBySceneId(scene.getPlanId(), scene.getSceneId());
+            if (taskNodes.size() > 0) {
+                scene.setChildren(taskNodes);
             }
 
             //查找场景下的子任务
-            children.forEach(task -> {
+            taskNodes.forEach(task -> {
                 // 查找子任务下的子任务
-                List<TaskNode> taskChildren = getChildren(task.getPlanId(), task.getSceneId(), task.getTaskId());
-                if (taskChildren.size() > 0) {
-                    task.setChildren(taskChildren);
+                List<TaskNode> subtaskNodes = getChildren(task.getPlanId(), task.getSceneId(), task.getTaskId());
+                if (subtaskNodes.size() > 0) {
+                    task.setChildren(subtaskNodes);
                 }
             });
         });
-        return CommonResult.success(taskNodes);
+        return CommonResult.success(sceneNodes);
     }
 
     @Override
@@ -438,12 +434,12 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         updatePlan.setStatus(PlanStatus.NEW.getValue());
         updatePlan.setUpdateTime(new Date());
         planMapper.updateByPrimaryKeySelective(updatePlan);
-        taskMapper.tryClearTaskNo(planId);
+        taskMapper.tryClearTaskNo(planId); // 清除场景和任务编号
         EmergencyPlanDetail oldDetails = new EmergencyPlanDetail();
         oldDetails.setIsValid(ValidEnum.IN_VALID.getValue());
         EmergencyPlanDetailExample updateCondition = new EmergencyPlanDetailExample();
         updateCondition.createCriteria().andPlanIdEqualTo(planId);
-        detailMapper.updateByExampleSelective(oldDetails, updateCondition);
+        detailMapper.updateByExampleSelective(oldDetails, updateCondition); // 失效之前的关系
 
         String planNO = generatePlanNo(planId);
         Integer preSceneId = null;
@@ -458,13 +454,20 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             insertDetail.setPlanId(planId);
             insertDetail.setSceneId(scene.getKey());
             insertDetail.setCreateUser(userName);
+            insertDetail.setCreateTime(new Date());
+            insertDetail.setIsValid(ValidEnum.VALID.getValue());
             if ("同步".equals(scene.getSync())) {
                 insertDetail.setPreSceneId(preSceneId);
                 preSceneId = scene.getKey();
             } else {
                 insertDetail.setSync("异步");
             }
-            detailMapper.insertSelective(insertDetail);
+            if (scene.getDetailId() != null) {
+                insertDetail.setDetailId(scene.getDetailId());
+                detailMapper.updateByPrimaryKey(insertDetail);
+            } else {
+                detailMapper.insertSelective(insertDetail);
+            }
             EmergencyTask updateScene = new EmergencyTask();
             updateScene.setTaskId(scene.getKey());
             updateScene.setTaskNo(generateSceneNo(planNO, i + 1));
@@ -555,21 +558,27 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             if (!taskService.isTaskExist(task.getKey())) {
                 continue;
             }
-
             EmergencyPlanDetail insertTaskDetail = new EmergencyPlanDetail();
             insertTaskDetail.setPlanId(planDetail.getPlanId());
             insertTaskDetail.setSceneId(planDetail.getSceneId());
             insertTaskDetail.setTaskId(task.getKey());
             insertTaskDetail.setPreSceneId(planDetail.getPreSceneId());
             insertTaskDetail.setParentTaskId(planDetail.getTaskId() == null ? planDetail.getSceneId() : planDetail.getTaskId());
+            insertTaskDetail.setCreateUser(planDetail.getCreateUser());
+            insertTaskDetail.setCreateTime(new Date());
+            insertTaskDetail.setIsValid(ValidEnum.VALID.getValue());
             if ("异步".equals(task.getSync())) {
                 insertTaskDetail.setSync("异步");
             } else {
                 insertTaskDetail.setPreTaskId(preTaskId);
                 preTaskId = task.getKey();
             }
-            insertTaskDetail.setCreateUser(planDetail.getCreateUser());
-            detailMapper.insertSelective(insertTaskDetail);
+            if (task.getDetailId() != null) {
+                insertTaskDetail.setDetailId(task.getDetailId());
+                detailMapper.updateByPrimaryKey(insertTaskDetail);
+            } else {
+                detailMapper.insertSelective(insertTaskDetail);
+            }
             EmergencyTask updateTask = new EmergencyTask();
             updateTask.setTaskId(task.getKey());
             if (isSubTask) {
