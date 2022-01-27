@@ -94,7 +94,7 @@ app.get('/argus/api/script', function (req, res) {
     res.json({
         data: Array.from({ length: 10 }, function (_, index) {
             return {
-                type: ["folder", "file"][index % 2], script_name: "100.95.133.12"+index,
+                type: ["folder", "file"][index % 2], script_name: "100.95.133.12" + index,
                 commit: "Quick test for http://100.95.133.126:48080/testLongText",
                 update_time: "2019-03-19 10:53", version: "224 ", size: "10kb"
             }
@@ -332,7 +332,7 @@ app.get('/argus-emergency/api/task/jvm', function (req, res) {
             memory_used: Math.floor(Math.random() * 20 + 50),
             memory_committed: Math.floor(Math.random() * 20 + 70),
             jvm_cache: Math.floor(Math.random() * 10),
-            jvm_newgen: Math.floor(Math.random() * 10 +15),
+            jvm_newgen: Math.floor(Math.random() * 10 + 15),
             jvm_oldgen: Math.floor(Math.random() * 10 + 30),
             jvm_survivor: Math.floor(Math.random() * 10 + 45),
             jvm_penmgen: Math.floor(Math.random() * 10 + 60),
@@ -433,7 +433,8 @@ app.get("/argus/api/report", function (req, res) {
                 report_id: index, test_name: "Test for 100.95.133.126", test_type: "快速压测", test_id: 0,
                 owner: "admin", start_time: "2019-03-19 10:53", end_time: "2019-3-19 10:53", duration: "00:01:11"
             }
-        })
+        }),
+        total: 11
     })
 })
 app.get("/argus/api/report/get", function (req, res) {
@@ -839,27 +840,27 @@ app.get("/argus-emergency/api/history/scenario/task/log", function (req, res) {
 })
 const hosts = Array.from({ length: 11 }, function (_, index) {
     return {
-      status: ["running", "pending", "success", "fail"][index % 4],
-      status_label: ["运行中", "准备中", "成功", "失败"][index % 4],
-      server_id: String(index),
-      server_name: "服务名称" + index,
-      server_ip: "192.168.0.1",
-      server_user: "root",
-      have_password: "有",
-      password_mode: "本地",
-      agent_port: "19001",
-      licensed: false
+        status: ["running", "pending", "success", "fail"][index % 4],
+        status_label: ["运行中", "准备中", "成功", "失败"][index % 4],
+        server_id: String(index),
+        server_name: "服务名称" + index,
+        server_ip: "192.168.0.1",
+        server_user: "root",
+        have_password: "有",
+        password_mode: "本地",
+        agent_port: "19001",
+        licensed: false
     }
-  })
+})
 app.get("/argus-emergency/api/host", function (req, res) {
     const excludes = req.query.excludes as string[]
     const end = Number(req.query.current || 1) * 5
     const data = hosts.filter(function (item) {
-      return !excludes?.includes(item.server_id)
+        return !excludes?.includes(item.server_id)
     })
     res.json({
-      data: data.slice(end - 5, end),
-      total: data.length
+        data: data.slice(end - 5, end),
+        total: data.length
     })
 })
 app.get("/argus-emergency/api/host/search", function (req, res) {
@@ -889,5 +890,14 @@ app.post('/argus/api/script/upload', function (req, res) {
 })
 app.post("/argus-emergency/api/script/upload", function (req, res) {
     res.json()
+})
+app.get("/argus-user/api/group", function (req, res) {
+    res.json({
+        data: Array.from({ length: 10 }, function (_, index) {
+            return {
+                group: "分组" + index
+            }
+        })
+    })
 })
 app.listen(4000)

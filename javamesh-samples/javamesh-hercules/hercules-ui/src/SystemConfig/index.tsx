@@ -1,13 +1,25 @@
 import { Button, Form, Input, message, Modal, Popconfirm, Select, Table } from "antd"
 import React, { useEffect, useRef, useState } from "react"
-import { PlusOutlined, CloseOutlined, SearchOutlined, UpOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
+import { PlusOutlined, CloseOutlined, SearchOutlined, UpOutlined, ExclamationCircleOutlined, SwapOutlined } from '@ant-design/icons'
 import Card from "../component/Card"
 import "./index.scss"
 import axios from "axios"
+import { Link, Route, Switch, useRouteMatch } from "react-router-dom"
+import Group from "./Group"
+import Breadcrumb from "../component/Breadcrumb"
+
+export default function App() {
+    let { path } = useRouteMatch()
+    return <Switch>
+        <Route exact path={path}><Home /></Route>
+        <Route exact path={`${path}/Group`}><Group /></Route>
+    </Switch>
+}
 
 type Data = { role: string, username: string, status: string }
-export default function App() {
+function Home() {
     let submit = false
+    let { path } = useRouteMatch()
     const [data, setData] = useState<{ data: Data[], total: number }>({ data: [], total: 0 })
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
     const [loading, setLoading] = useState(false)
@@ -100,11 +112,15 @@ export default function App() {
         load()
     }, [])
     return <div className="UserManagement">
+        <Breadcrumb label="系统配置" />
         <Card>
             <div className="ToolBar">
                 <AddUser load={load} />
-                <Button className="Button" icon={<CloseOutlined />} onClick={deactiveUser}>禁用账号</Button>
+                <Button icon={<CloseOutlined />} onClick={deactiveUser}>禁用账号</Button>
                 <Button icon={<UpOutlined />} onClick={activeUser}>启用账号</Button>
+                <Link to={path+"/Group"} className="Button">
+                    <Button icon={<SwapOutlined />} onClick={activeUser}>群组管理</Button>
+                </Link>
                 <div className="Space"></div>
                 <Form layout="inline" onFinish={function (values) {
                     stateRef.current.search = values
@@ -202,7 +218,7 @@ function AddUser(props: { load: () => void }) {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [form] = Form.useForm();
     return <>
-        <Button className="Button" type="primary" icon={<PlusOutlined />} onClick={function () { setIsModalVisible(true) }}>添加账号</Button>
+        <Button type="primary" icon={<PlusOutlined />} onClick={function () { setIsModalVisible(true) }}>添加账号</Button>
         <Modal className="AddUser" title="添加账号" width={400} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>

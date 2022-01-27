@@ -1,4 +1,4 @@
-.UserManagement {
+.SystemGroup {
     background-color: #eef3f6;
     flex-grow: 1;
     min-width: 1481px;
@@ -20,22 +20,6 @@
         }
         .Space {
             flex-grow: 1;
-        }
-    }
-}
-.AddUser {
-    .Buttons {
-        text-align: center;
-        button + button {
-            margin-left: 10px;
-        }
-    }
-}
-.UpdateUser {
-    .Buttons {
-        text-align: center;
-        button + button {
-            margin-left: 10px;
         }
     }
 }
