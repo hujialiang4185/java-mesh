@@ -5,7 +5,6 @@ import Background from './Background.svg'
 import "./index.scss"
 import axios from "axios"
 import { useHistory, useLocation } from "react-router-dom"
-import ServiceSelect from "../component/ServiceSelect"
 
 export default function App() {
     let [isLogin, setIsLogin] = useState(true)
@@ -84,9 +83,6 @@ function Registe(props: { setIsLogin: (isLogin: boolean) => void }) {
         </Form.Item>
         <Form.Item name="role">
             <Select options={[{ value: "操作员" }, { value: "审核员" }]} placeholder="角色" />
-        </Form.Item>
-        <Form.Item name="group_name" label="用户群组" rules={[{ required: true }]}>
-            <ServiceSelect url="/argus-user/api/group/search" />
         </Form.Item>
         <Form.Item>
             <Button type="primary" htmlType="submit" >注册</Button>

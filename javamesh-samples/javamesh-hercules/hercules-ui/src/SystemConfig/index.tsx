@@ -254,7 +254,7 @@ function AddUser(props: { load: () => void }) {
                 <Form.Item name="role" label="用户角色" rules={[{ required: true }]}>
                     <Select options={[{ value: "操作员" }, { value: "审核员" }, { value: "管理员" }]} />
                 </Form.Item>
-                <Form.Item name="group_name" label="用户群组" rules={[{ required: true }]}>
+                <Form.Item name="group_name" label="用户群组">
                     <ServiceSelect url="/argus-user/api/group/search" />
                 </Form.Item>
                 <Form.Item className="Buttons">
@@ -295,7 +295,7 @@ function UpdateUser(props: { data: Data, load: () => {} }) {
                 <Form.Item name="role" label="用户角色" rules={[{ required: true }]}>
                     <Select options={[{ value: "操作员" }, { value: "审核员" }, { value: "管理员" }]} />
                 </Form.Item>
-                <Form.Item name="group_name" label="用户群组" rules={[{ required: true }]}>
+                <Form.Item name="group_name" label="用户群组">
                     <ServiceSelect url="/argus-user/api/group/search" />
                 </Form.Item>
                 <Form.Item className="Buttons">

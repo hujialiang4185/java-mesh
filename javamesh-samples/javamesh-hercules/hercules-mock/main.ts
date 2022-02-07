@@ -50,7 +50,7 @@ app.get('/argus-user/api/user', function (req, res) {
         data: Array.from({ length: 10 }, function (_, index) {
             return {
                 ...user,
-                username: "zhangsan" + index,
+                username: index === 0 ? "admin" : "zhangsan" + index,
                 status: ["正常", "失效"][index % 2],
                 role: ["管理员", "操作员", "审核员"][index % 3]
             }
