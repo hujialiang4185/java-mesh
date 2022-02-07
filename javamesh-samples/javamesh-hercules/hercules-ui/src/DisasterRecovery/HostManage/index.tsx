@@ -180,7 +180,7 @@ export default function App() {
                             </span>
                         }
                     },
-                    { ellipsis: true, title: "分组名称", dataIndex: "group_id" },
+                    { ellipsis: true, title: "分组", dataIndex: "group_id" },
                 ]}
             />
         </Card>
@@ -224,6 +224,9 @@ function AddHost(props: { load: () => void }) {
                         <InputNumber min={0} max={65535} />
                     </Form.Item>
                 </div>
+                <Form.Item name="group_name" label="分组">
+                    <ServiceSelect allowClear url="/argus-user/api/group/search" />
+                </Form.Item>
                 <Form.Item name="have_password" label="有无密码">
                     <Radio.Group options={["无", "有"]} onChange={function (e) {
                         setHasPwd(e.target.value === "有")
