@@ -94,7 +94,7 @@ app.get('/argus/api/script', function (req, res) {
     res.json({
         data: Array.from({ length: 10 }, function (_, index) {
             return {
-                type: ["folder", "file"][index % 2], script_name: "100.95.133.12" + index,
+                type: ["folder", "file"][index % 2], script_name: "test" + index + ".groovy",
                 commit: "Quick test for http://100.95.133.126:48080/testLongText",
                 update_time: "2019-03-19 10:53", version: "224 ", size: "10kb"
             }
@@ -623,7 +623,7 @@ app.get('/argus-emergency/api/script/orchestrate/get', function (req, res) {
 app.put('/argus-emergency/api/script/orchestrate', function (req, res) {
     res.json()
 })
-app.get('/argus-emergency/api/script/argus/orchestrate/get', function (req, res) {
+app.get('/argus-emergency/api/script/argus/orchestrate', function (req, res) {
     res.json(orchestrate)
 })
 app.put('/argus-emergency/api/script/argus/orchestrate', function (req, res) {
@@ -904,7 +904,7 @@ app.get("/argus-user/api/group", function (req, res) {
     })
 })
 app.post("/argus-user/api/group", function (req, res) {
-    res.json()   
+    res.json()
 })
 app.delete("/argus-user/api/group", function (req, res) {
     res.json({
