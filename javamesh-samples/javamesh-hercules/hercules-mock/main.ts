@@ -36,6 +36,7 @@ const user = {
     nickname: "张三",
     username: "zhangsan",
     role: "管理员",
+    group_name: "群组1",
     update_time: "2021-01-01 00:00:00",
     auth: ["admin", "approver", "operator"] // admin, approver, operator
 }
@@ -56,6 +57,9 @@ app.get('/argus-user/api/user', function (req, res) {
         }),
         total: 11
     })
+})
+app.put('/argus-user/api/user', function (req, res) {
+    res.json()
 })
 const password = {
     username: "zhangsan",
@@ -909,6 +913,11 @@ app.post("/argus-user/api/group", function (req, res) {
 app.delete("/argus-user/api/group", function (req, res) {
     res.json({
         msg: "被使用, 无法删除"
+    })
+})
+app.get("/argus-user/api/group/search", function (req, res) {
+    res.json({
+        data: ["group1", "group2"]
     })
 })
 app.listen(4000)

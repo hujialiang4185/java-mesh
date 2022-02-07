@@ -7,6 +7,7 @@ import axios from "axios"
 import { Link, Route, Switch, useRouteMatch } from "react-router-dom"
 import Group from "./Group"
 import Breadcrumb from "../component/Breadcrumb"
+import ServiceSelect from "../component/ServiceSelect"
 
 export default function App() {
     let { path } = useRouteMatch()
@@ -168,6 +169,11 @@ function Home() {
                         ellipsis: true
                     },
                     {
+                        title: "用户群组",
+                        dataIndex: "group_name",
+                        ellipsis: true
+                    },
+                    {
                         title: "用户状态",
                         dataIndex: "status",
                         ellipsis: true
@@ -248,6 +254,9 @@ function AddUser(props: { load: () => void }) {
                 <Form.Item name="role" label="用户角色" rules={[{ required: true }]}>
                     <Select options={[{ value: "操作员" }, { value: "审核员" }, { value: "管理员" }]} />
                 </Form.Item>
+                <Form.Item name="group_name" label="用户群组" rules={[{ required: true }]}>
+                    <ServiceSelect url="/argus-user/api/group/search" />
+                </Form.Item>
                 <Form.Item className="Buttons">
                     <Button type="primary" htmlType="submit">创建</Button>
                     <Button onClick={function () {
@@ -285,6 +294,9 @@ function UpdateUser(props: { data: Data, load: () => {} }) {
                 </Form.Item>
                 <Form.Item name="role" label="用户角色" rules={[{ required: true }]}>
                     <Select options={[{ value: "操作员" }, { value: "审核员" }, { value: "管理员" }]} />
+                </Form.Item>
+                <Form.Item name="group_name" label="用户群组" rules={[{ required: true }]}>
+                    <ServiceSelect url="/argus-user/api/group/search" />
                 </Form.Item>
                 <Form.Item className="Buttons">
                     <Button type="primary" htmlType="submit">修改</Button>
