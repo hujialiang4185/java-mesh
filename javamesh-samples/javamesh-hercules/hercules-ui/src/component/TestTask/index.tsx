@@ -70,7 +70,7 @@ function Home() {
         if (submit) return
         submit = true
         Modal.confirm({
-            title: '是否删除？',
+            title: '是否删除?',
             icon: <ExclamationCircleOutlined />,
             content: '删除后无法恢复, 请谨慎操作',
             okType: 'danger',

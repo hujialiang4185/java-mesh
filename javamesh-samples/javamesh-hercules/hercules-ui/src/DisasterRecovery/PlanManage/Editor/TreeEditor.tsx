@@ -141,7 +141,7 @@ export default class App extends React.Component<{ plan_id: string }> {
                   // 保存
                   this.save(data)
                 }}>加任务</AddPlanTask>
-                <Popconfirm title="是否删除？" onConfirm={() => {
+                <Popconfirm title="是否删除?" onConfirm={() => {
                   const data = [...this.state.gData];
                   loop(data, key, (item, index, arr) => {
                     arr.splice(index, 1);

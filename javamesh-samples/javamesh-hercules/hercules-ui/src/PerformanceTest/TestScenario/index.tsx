@@ -57,7 +57,7 @@ const Home = forwardRef<HomeRef>(function (props, ref) {
             const res = await axios.get("/argus/api/scenario/deleteCheck", { params })
             const confirm = res.data.data
             Modal.confirm({
-                title: '是否删除？',
+                title: '是否删除?',
                 icon: <ExclamationCircleOutlined />,
                 content: confirm && confirm.length > 0 && "这些压测场景有压测任务, 仍然删除? 场景名称: " + confirm.join(" "),
                 okType: 'danger',

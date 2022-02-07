@@ -59,9 +59,9 @@ function Home() {
             const res = await axios.get("/argus/api/script/deleteCheck", { params })
             const confirm = res.data.data
             Modal.confirm({
-                title: '是否删除？',
+                title: '是否删除?',
                 icon: <ExclamationCircleOutlined />,
-                content: confirm && confirm.length > 0 && "这些脚本或文件夹被其他压测场景使用, 仍然删除？" + confirm.join(" "),
+                content: confirm && confirm.length > 0 && "这些脚本或文件夹被其他压测场景使用, 仍然删除?" + confirm.join(" "),
                 okType: 'danger',
                 async onOk() {
                     try {

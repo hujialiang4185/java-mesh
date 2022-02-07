@@ -45,7 +45,7 @@ export default function App() {
         if (submit) return
         submit = true
         Modal.confirm({
-            title: '是否删除？',
+            title: '是否删除?',
             icon: <ExclamationCircleOutlined />,
             content: '删除后无法恢复, 请谨慎操作',
             okType: 'danger',
@@ -65,7 +65,7 @@ export default function App() {
         if (submit) return
         submit = true
         Modal.confirm({
-            title: '是否安装？',
+            title: '是否安装?',
             icon: <ExclamationCircleOutlined />,
             content: '将批量安装代理, 请谨慎操作',
             okType: 'danger',

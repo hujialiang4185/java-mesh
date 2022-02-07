@@ -184,7 +184,7 @@ function Home() {
                                     <Button type="link" size="small">修改</Button>
                                 </Link>}
                                 {record.status === "approving" && auth.includes("approver") && <ApprovePlan plan_id={plan_id} load={load} />}
-                                {record.status === "unapproved" && auth.includes("operator") && <Popconfirm title="是否提交审核？" onConfirm={async function () {
+                                {record.status === "unapproved" && auth.includes("operator") && <Popconfirm title="是否提交审核?" onConfirm={async function () {
                                     try {
                                         await axios.post('/argus-emergency/api/plan/submitReview', { plan_id })
                                         message.success("提交成功")
@@ -207,7 +207,7 @@ function Home() {
                                     submit = false
                                 }}>立即执行</Button>}
                                 {(record.status === "approved" || record.status === "ran") && auth.includes("operator") && <RunPlan plan_id={plan_id} load={load} />}
-                                {record.status === "wait" && auth.includes("operator") && <Popconfirm title="是否取消预约？" onConfirm={async function () {
+                                {record.status === "wait" && auth.includes("operator") && <Popconfirm title="是否取消预约?" onConfirm={async function () {
                                     try {
                                         await axios.post("/argus-emergency/api/plan/cancel", { plan_id })
                                         message.success("取消成功")

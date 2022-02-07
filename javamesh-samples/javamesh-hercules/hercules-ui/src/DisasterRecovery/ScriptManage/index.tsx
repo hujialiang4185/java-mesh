@@ -65,7 +65,7 @@ function Home() {
         if (submit) return
         submit = true
         Modal.confirm({
-            title: '是否删除？',
+            title: '是否删除?',
             icon: <ExclamationCircleOutlined />,
             content: '删除后无法恢复, 请谨慎操作',
             okType: 'danger',
@@ -184,7 +184,7 @@ function Home() {
                                     <Button type="link" size="small">修改</Button>
                                 </Link>}
                                 {record.status === "approving" && auth.includes("approver") && <ApproveScript key="approve" data={record} load={load} />}
-                                {record.status === "unapproved" && auth.includes("operator") && <Popconfirm key="submit" title="是否提交审核？" onConfirm={async function () {
+                                {record.status === "unapproved" && auth.includes("operator") && <Popconfirm key="submit" title="是否提交审核?" onConfirm={async function () {
                                     try {
                                         await axios.post('/argus-emergency/api/script/submitReview', { script_id })
                                         message.success("提交成功")

@@ -895,9 +895,20 @@ app.get("/argus-user/api/group", function (req, res) {
     res.json({
         data: Array.from({ length: 10 }, function (_, index) {
             return {
-                group: "分组" + index
+                group_id: index,
+                group_name: "分组" + index,
+                created_by: "zengfan",
+                created_time: "2017-01-01 00:00:00"
             }
         })
+    })
+})
+app.post("/argus-user/api/group", function (req, res) {
+    res.json()   
+})
+app.delete("/argus-user/api/group", function (req, res) {
+    res.json({
+        msg: "被使用, 无法删除"
     })
 })
 app.listen(4000)

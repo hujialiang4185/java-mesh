@@ -23,3 +23,11 @@
         }
     }
 }
+.AddGroup {
+    .Buttons {
+        text-align: center;
+        button + button {
+            margin-left: 10px;
+        }
+    }
+}

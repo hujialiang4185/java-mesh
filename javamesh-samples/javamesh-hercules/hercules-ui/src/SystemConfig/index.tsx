@@ -58,7 +58,7 @@ function Home() {
         if (submit) return
         submit = true
         Modal.confirm({
-            title: '是否启用这些用户？',
+            title: '是否启用这些用户?',
             icon: <ExclamationCircleOutlined />,
             okType: 'danger',
             async onOk() {
@@ -90,7 +90,7 @@ function Home() {
         if (submit) return
         submit = true
         Modal.confirm({
-            title: '是否禁用这些用户？',
+            title: '是否禁用这些用户?',
             icon: <ExclamationCircleOutlined />,
             okType: 'danger',
             async onOk() {
@@ -108,7 +108,6 @@ function Home() {
     }
 
     useEffect(function () {
-        stateRef.current = {}
         load()
     }, [])
     return <div className="UserManagement">
@@ -187,7 +186,7 @@ function Home() {
                         render(username, record) {
                             return <>
                                 <UpdateUser data={record} load={load} />
-                                <Popconfirm disabled={record.role === "管理员"} title="是否重置密码？" onConfirm={async function () {
+                                <Popconfirm disabled={record.role === "管理员"} title="是否重置密码?" onConfirm={async function () {
                                     if (submit) return
                                     submit = true
                                     try {
