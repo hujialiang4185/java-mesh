@@ -6,6 +6,8 @@ server:
     enabled: true
     mime-types: application/javascript,text/css,application/json,application/xml,text/html,text/xml,text/plain
 spring:
+  main:
+    allow-bean-definition-overriding: true
   application:
     name: emergency-drill
   cloud:
@@ -71,7 +73,8 @@ mybatis:
 #用户名
 user_name: admin
 key: 1234123412341234
-decisionEngine.url: http://100.94.174.17:9091/ngrinder-controller-3.4.2
+#decisionEngine.url: http://100.94.174.17:9091/ngrinder-controller-3.4.2
+decisionEngine.url: http://127.0.0.1:9091
 jsch:
   connectTimeout: 30000
   knownHosts: /root/.ssh/known_hosts
@@ -99,3 +102,9 @@ argus:
 heartbeat:
   readWaitTime: 150
   port: 9100
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 120000
