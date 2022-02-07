@@ -34,7 +34,7 @@ export default function App() {
         setLoading(false)
     }
     return <div className="SystemGroup">
-        <Breadcrumb label="系统配置" sub={{ label: "群组管理", parentUrl: "/SystemConfig" }} />
+        <Breadcrumb label="系统配置" sub={{ label: "分组管理", parentUrl: "/SystemConfig" }} />
         <Card>
             <div className="ToolBar">
                 <AddGroup load={load} />
@@ -47,7 +47,7 @@ export default function App() {
                 </Form>
             </div>
             <Table loading={loading} dataSource={data.data} rowKey="group_id" columns={[
-                { title: "群组名称", dataIndex: "group_name" },
+                { title: "分组名称", dataIndex: "group_name" },
                 { title: "创建人", dataIndex: "created_by" },
                 { title: "创建时间", dataIndex: "created_time" },
                 { title: "操作", dataIndex: "group_id",width: 200, render(group_id) {
@@ -75,8 +75,8 @@ function AddGroup(props: { load: () => void }) {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [form] = Form.useForm();
     return <>
-        <Button type="primary" icon={<PlusOutlined />} onClick={function () { setIsModalVisible(true) }}>添加群组</Button>
-        <Modal className="AddGroup" title="添加群组" width={400} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
+        <Button type="primary" icon={<PlusOutlined />} onClick={function () { setIsModalVisible(true) }}>添加分组</Button>
+        <Modal className="AddGroup" title="添加分组" width={400} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
             <Form form={form} requiredMark={false} onFinish={async function (values) {
@@ -89,7 +89,7 @@ function AddGroup(props: { load: () => void }) {
                     message.error(error.message)
                 }
             }}>
-                <Form.Item name="group_name" label="群组名称" rules={[{
+                <Form.Item name="group_name" label="分组名称" rules={[{
                     required: true,
                     pattern: /^\w{6,15}$/,
                     message: "不得少于6个字且不得超过15个字, 只能输入字母、数字、下划线"

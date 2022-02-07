@@ -180,6 +180,7 @@ export default function App() {
                             </span>
                         }
                     },
+                    { ellipsis: true, title: "分组名称", dataIndex: "group_id" },
                 ]}
             />
         </Card>

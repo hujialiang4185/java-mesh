@@ -119,7 +119,7 @@ function Home() {
                 <Button icon={<CloseOutlined />} onClick={deactiveUser}>禁用账号</Button>
                 <Button icon={<UpOutlined />} onClick={activeUser}>启用账号</Button>
                 <Link to={path+"/Group"} className="Button">
-                    <Button icon={<SwapOutlined />} onClick={activeUser}>群组管理</Button>
+                    <Button icon={<SwapOutlined />} onClick={activeUser}>分组管理</Button>
                 </Link>
                 <div className="Space"></div>
                 <Form layout="inline" onFinish={function (values) {
@@ -169,7 +169,7 @@ function Home() {
                         ellipsis: true
                     },
                     {
-                        title: "用户群组",
+                        title: "用户分组",
                         dataIndex: "group_name",
                         ellipsis: true
                     },
@@ -254,8 +254,8 @@ function AddUser(props: { load: () => void }) {
                 <Form.Item name="role" label="用户角色" rules={[{ required: true }]}>
                     <Select options={[{ value: "操作员" }, { value: "审核员" }, { value: "管理员" }]} />
                 </Form.Item>
-                <Form.Item name="group_name" label="用户群组">
-                    <ServiceSelect url="/argus-user/api/group/search" />
+                <Form.Item name="group_name" label="用户分组">
+                    <ServiceSelect allowClear url="/argus-user/api/group/search" />
                 </Form.Item>
                 <Form.Item className="Buttons">
                     <Button type="primary" htmlType="submit">创建</Button>
@@ -295,8 +295,8 @@ function UpdateUser(props: { data: Data, load: () => {} }) {
                 <Form.Item name="role" label="用户角色" rules={[{ required: true }]}>
                     <Select options={[{ value: "操作员" }, { value: "审核员" }, { value: "管理员" }]} />
                 </Form.Item>
-                <Form.Item name="group_name" label="用户群组">
-                    <ServiceSelect url="/argus-user/api/group/search" />
+                <Form.Item name="group_name" label="用户分组">
+                    <ServiceSelect allowClear url="/argus-user/api/group/search" />
                 </Form.Item>
                 <Form.Item className="Buttons">
                     <Button type="primary" htmlType="submit">修改</Button>
