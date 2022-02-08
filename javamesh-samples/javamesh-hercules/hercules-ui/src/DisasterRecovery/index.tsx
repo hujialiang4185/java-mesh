@@ -6,17 +6,15 @@ import "./index.scss"
 import NoMatch from "../component/NoMatch"
 import PlanManage from "./PlanManage"
 import HostManage from "./HostManage"
-import TestReport from "../component/TestReport"
-import TestTask from "../component/TestTask"
+import RunningLog from "./RunningLog"
 
 export default function App() {
   const { path } = useRouteMatch();
   const menuList = [
     { path: path, label: "压测引擎", comp: <HostManage />, exact: true },
     { path: path + "/ScriptManage", label: "脚本管理", comp: <ScriptManage />, exact: false },
-    { path: path + "/TestTask", label: "压测任务", comp: <TestTask />, exact: false },
     { path: path + "/PlanManage", label: "项目管理", comp: <PlanManage />, exact: false },
-    { path: path + "/TestReport", label: "压测报告", comp: <TestReport />, exact: false },
+    { path: path + "/RunningLog", label: "压测报告", comp: <RunningLog />, exact: false },
   ]
   return <div className="AppBody">
     <SubMenu menuList={menuList}>性能测试</SubMenu>

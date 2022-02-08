@@ -1,6 +1,6 @@
 import React from "react"
-import Breadcrumb from "../../Breadcrumb"
-import Card from "../../Card"
+import Breadcrumb from "../../../component/Breadcrumb"
+import Card from "../../../component/Card"
 import './index.scss'
 import TaskForm from "./TaskForm"
 

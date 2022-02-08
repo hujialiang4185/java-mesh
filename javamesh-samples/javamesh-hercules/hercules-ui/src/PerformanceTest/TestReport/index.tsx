@@ -1,7 +1,7 @@
 import { Button, Input, Table, DatePicker, Select, Form, message, Modal } from "antd"
 import React, { useEffect, useRef, useState } from "react"
-import Breadcrumb from "../Breadcrumb"
-import Card from "../Card"
+import Breadcrumb from "../../component/Breadcrumb"
+import Card from "../../component/Card"
 import { CloseOutlined, SearchOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
 import "./index.scss"
 import axios from "axios"
