@@ -102,7 +102,7 @@ export default function App() {
     statusMap.set("success", "#2BBF2A")
     statusMap.set("fail", "#FF4E4E")
     return <div className="HostManage">
-        <Breadcrumb label="主机管理" />
+        <Breadcrumb label="引擎管理" />
         <Card>
             <div className="ToolBar">
                 <AddHost load={load} />
@@ -151,7 +151,7 @@ export default function App() {
                         sorter: true,
                         ellipsis: true
                     },
-                    { ellipsis: true, title: "主机名称", dataIndex: "server_name" },
+                    { ellipsis: true, title: "引擎名称", dataIndex: "server_name" },
                     { ellipsis: true, title: "服务器IP", dataIndex: "server_ip" },
                     { ellipsis: true, title: "SSH用户", dataIndex: "server_user" },
                     { ellipsis: true, title: "有无密码", dataIndex: "have_password" },
@@ -193,8 +193,8 @@ function AddHost(props: { load: () => void }) {
     const [isLocal, setIsLocal] = useState(true)
     const [form] = useForm()
     return <>
-        <Button type="primary" icon={<PlusOutlined />} onClick={function () { setIsModalVisible(true) }}>添加主机</Button>
-        <Modal className="AddHost" title="添加主机" visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () { setIsModalVisible(false) }}>
+        <Button type="primary" icon={<PlusOutlined />} onClick={function () { setIsModalVisible(true) }}>添加引擎</Button>
+        <Modal className="AddHost" title="添加引擎" visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () { setIsModalVisible(false) }}>
             <Form form={form} requiredMark={false} labelCol={{ span: 4 }}
                 initialValues={{ have_password: "无", password_mode: "本地", server_port: 22 }}
                 onFinish={async function (values) {
@@ -209,7 +209,7 @@ function AddHost(props: { load: () => void }) {
                     }
                 }}
             >
-                <Form.Item name="server_name" label="主机名称" rules={[{ required: true, max: 32 }]}>
+                <Form.Item name="server_name" label="引擎名称" rules={[{ required: true, max: 32 }]}>
                     <Input />
                 </Form.Item>
                 <div className="Line">
