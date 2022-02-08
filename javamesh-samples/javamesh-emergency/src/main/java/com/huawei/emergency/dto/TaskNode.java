@@ -5,6 +5,7 @@
 package com.huawei.emergency.dto;
 
 import lombok.Data;
+import org.ngrinder.model.PerfTest;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ import java.util.List;
  * @since 2021-11-09
  **/
 @Data
-public class TaskNode {
+public class TaskNode extends PerfTest {
     private Integer key;
     private String title;
     private String taskNo;
@@ -35,4 +36,6 @@ public class TaskNode {
     private Integer sceneId;
     private Integer taskId;
     private String createUser;
+
+    private String taskType;
 }

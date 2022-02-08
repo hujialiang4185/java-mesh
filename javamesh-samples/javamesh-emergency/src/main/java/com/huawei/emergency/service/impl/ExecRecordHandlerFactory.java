@@ -5,6 +5,7 @@
 package com.huawei.emergency.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.huawei.argus.restcontroller.RestPerfTestController;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.config.CommonConfig;
 import com.huawei.common.constant.RecordStatus;
@@ -99,6 +100,9 @@ public class ExecRecordHandlerFactory {
 
     @Autowired
     EmergencyTaskMapper taskMapper;
+
+    @Autowired
+    private RestPerfTestController perfTestController;
 
     /**
      * 获取一个执行器实例
@@ -476,9 +480,6 @@ public class ExecRecordHandlerFactory {
         if (emergencyExecRecords.size() > 0) {
             WebSocketServer.sendMessage("/scena/" + emergencyExecRecords.get(0).getRecordId());
         }
-    }
-
-    public void freshArgus(int planId) {
     }
 
     public int createArgusTest(int recordId, JSONObject testParams) {

@@ -5,6 +5,7 @@
     <id column="task_id" jdbcType="INTEGER" property="taskId" />
     <result column="task_no" jdbcType="VARCHAR" property="taskNo" />
     <result column="task_name" jdbcType="VARCHAR" property="taskName" />
+    <result column="task_type" jdbcType="VARCHAR" property="taskType" />
     <result column="scene_id" jdbcType="INTEGER" property="sceneId" />
     <result column="script_id" jdbcType="INTEGER" property="scriptId" />
     <result column="pre_task_id" jdbcType="INTEGER" property="preTaskId" />
@@ -114,12 +115,12 @@
     <selectKey keyProperty="taskId" order="AFTER" resultType="java.lang.Integer">
       SELECT LAST_INSERT_ID()
     </selectKey>
-    insert into emergency_task (task_no, task_name, scene_id, 
+    insert into emergency_task (task_no, task_name, task_type, scene_id,
       script_id, pre_task_id, create_user, 
       create_time, is_valid, channel_type, 
       script_name, submit_info, server_id, 
       perf_test_id)
-    values (#{taskNo,jdbcType=VARCHAR}, #{taskName,jdbcType=VARCHAR}, #{sceneId,jdbcType=INTEGER}, 
+    values (#{taskNo,jdbcType=VARCHAR}, #{taskName,jdbcType=VARCHAR}, #{taskType,jdbcType=VARCHAR}, #{sceneId,jdbcType=INTEGER},
       #{scriptId,jdbcType=INTEGER}, #{preTaskId,jdbcType=INTEGER}, #{createUser,jdbcType=VARCHAR}, 
       #{createTime,jdbcType=TIMESTAMP}, #{isValid,jdbcType=VARCHAR}, #{channelType,jdbcType=VARCHAR}, 
       #{scriptName,jdbcType=VARCHAR}, #{submitInfo,jdbcType=VARCHAR}, #{serverId,jdbcType=VARCHAR}, 
@@ -136,6 +137,9 @@
       </if>
       <if test="taskName != null">
         task_name,
+      </if>
+      <if test="taskType != null">
+        task_type,
       </if>
       <if test="sceneId != null">
         scene_id,
@@ -177,6 +181,9 @@
       </if>
       <if test="taskName != null">
         #{taskName,jdbcType=VARCHAR},
+      </if>
+      <if test="taskType != null">
+        #{taskType,jdbcType=VARCHAR},
       </if>
       <if test="sceneId != null">
         #{sceneId,jdbcType=INTEGER},
@@ -231,6 +238,9 @@
       <if test="record.taskName != null">
         task_name = #{record.taskName,jdbcType=VARCHAR},
       </if>
+      <if test="record.taskType != null">
+        task_type = #{record.taskType,jdbcType=VARCHAR},
+      </if>
       <if test="record.sceneId != null">
         scene_id = #{record.sceneId,jdbcType=INTEGER},
       </if>
@@ -274,6 +284,7 @@
     set task_id = #{record.taskId,jdbcType=INTEGER},
       task_no = #{record.taskNo,jdbcType=VARCHAR},
       task_name = #{record.taskName,jdbcType=VARCHAR},
+      task_type = #{record.taskType,jdbcType=VARCHAR},
       scene_id = #{record.sceneId,jdbcType=INTEGER},
       script_id = #{record.scriptId,jdbcType=INTEGER},
       pre_task_id = #{record.preTaskId,jdbcType=INTEGER},
@@ -297,6 +308,9 @@
       </if>
       <if test="taskName != null">
         task_name = #{taskName,jdbcType=VARCHAR},
+      </if>
+      <if test="taskType != null">
+        task_type = #{taskType,jdbcType=VARCHAR},
       </if>
       <if test="sceneId != null">
         scene_id = #{sceneId,jdbcType=INTEGER},
@@ -338,6 +352,7 @@
     update emergency_task
     set task_no = #{taskNo,jdbcType=VARCHAR},
       task_name = #{taskName,jdbcType=VARCHAR},
+      task_type = #{taskType,jdbcType=VARCHAR},
       scene_id = #{sceneId,jdbcType=INTEGER},
       script_id = #{scriptId,jdbcType=INTEGER},
       pre_task_id = #{preTaskId,jdbcType=INTEGER},

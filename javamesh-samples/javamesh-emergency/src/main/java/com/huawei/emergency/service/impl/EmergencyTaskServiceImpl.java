@@ -147,9 +147,7 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
         if (StringUtils.isEmpty(emergencyTask.getTaskName())) {
             return CommonResult.failed("请填写任务名称");
         }
-
         EmergencyTask insertTask = new EmergencyTask();
-
         if (StringUtils.isNotEmpty(emergencyTask.getScriptName())) {
             EmergencyScriptExample scriptExample = new EmergencyScriptExample();
             scriptExample.createCriteria().andScriptNameEqualTo(emergencyTask.getScriptName());
@@ -164,6 +162,7 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
         insertTask.setTaskName(emergencyTask.getTaskName());
         insertTask.setChannelType(emergencyTask.getChannelType());
         insertTask.setCreateUser(emergencyTask.getCreateUser());
+        insertTask.setPerfTestId(emergencyTask.getPerfTestId());
         if (emergencyTask.getScriptId() != null) {
             EmergencyScript script = scriptMapper.selectByPrimaryKey(emergencyTask.getScriptId());
             if (script != null) {
@@ -172,12 +171,6 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
             }
         }
         taskMapper.insertSelective(insertTask);
-
-        /*EmergencyTask updateTaskNo = new EmergencyTask();
-        updateTaskNo.setTaskId(insertTask.getTaskId());
-        updateTaskNo.setTaskNo(String.format("%s%s%04d", "T", LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE), insertTask.getTaskId()));
-        taskMapper.updateByPrimaryKeySelective(updateTaskNo);
-        insertTask.setTaskNo(updateTaskNo.getTaskNo());*/
         return CommonResult.success(insertTask);
     }
 

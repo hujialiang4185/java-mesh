@@ -98,6 +98,10 @@ public class UserFilter implements Filter {
         Filter.super.destroy();
     }
 
+    public static User currentUser() {
+        return USERS.get();
+    }
+
     public static String currentUserName() {
         User user = USERS.get();
         if (user == null) {
