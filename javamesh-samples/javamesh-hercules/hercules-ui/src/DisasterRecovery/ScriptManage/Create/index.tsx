@@ -55,6 +55,9 @@ export default function App() {
                     <Form.Item className="Middle" name="public" label="是否公有">
                         <Radio.Group options={["私有", "公有"]} />
                     </Form.Item>
+                    <Form.Item className="Middle" name="group_name" label="分组">
+                        <ServiceSelect allowClear url="/argus-user/api/group/search" />
+                    </Form.Item>
                 </div>
                 <Form.Item labelCol={{ span: 1 }} label="脚本用途" name="submit_info" rules={[{ required: true }]}>
                     <Input.TextArea maxLength={50} showCount autoSize={{ minRows: 2, maxRows: 2 }} />

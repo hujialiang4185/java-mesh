@@ -72,7 +72,7 @@ export default function App() {
             async onOk() {
                 try {
                     await axios.post("/argus-emergency/api/host/install", { server_id: selectedRowKeys })
-                    message.success("安装已提交，请稍等")
+                    message.success("安装已提交,请稍等")
                 } catch (e: any) {
                     message.error(e.message)
                 }
@@ -180,7 +180,7 @@ export default function App() {
                             </span>
                         }
                     },
-                    { ellipsis: true, title: "分组", dataIndex: "group_id" },
+                    { ellipsis: true, title: "分组", dataIndex: "group_name" },
                 ]}
             />
         </Card>

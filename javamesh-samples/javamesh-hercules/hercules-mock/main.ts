@@ -486,7 +486,11 @@ app.get('/argus-emergency/api/script', function (req, res) {
                 has_pwd: "是",
                 pwd_from: "本地",
                 param: "a,b",
-                content: `#!/bin/bash`
+                content: `#!/bin/bash`,
+                group_id: 1,
+                group_name: "分组1",
+                approver: "张三",
+                auditable: index === 1
             }
         }),
         total: 11
@@ -856,7 +860,9 @@ const hosts = Array.from({ length: 11 }, function (_, index) {
         have_password: "有",
         password_mode: "本地",
         agent_port: "19001",
-        licensed: false
+        licensed: false,
+        group_id: 1,
+        group_name: "分组1"
     }
 })
 app.get("/argus-emergency/api/host", function (req, res) {
@@ -921,6 +927,11 @@ app.delete("/argus-user/api/group", function (req, res) {
 app.get("/argus-user/api/group/search", function (req, res) {
     res.json({
         data: ["group1", "group2"]
+    })
+})
+app.get('/argus-user/api/user/approver/search', function (req, res) {
+    res.json({
+        data: ["user1", "user2"]
     })
 })
 app.listen(4000)

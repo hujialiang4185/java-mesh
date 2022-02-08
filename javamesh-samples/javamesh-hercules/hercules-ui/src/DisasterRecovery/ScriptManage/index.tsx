@@ -1,4 +1,4 @@
-import { Button, Descriptions, Form, Input, message, Modal, Popconfirm, Radio, Table } from "antd"
+import { Button, Descriptions, Form, Input, message, Modal, Radio, Table } from "antd"
 import React, { useContext, useEffect, useRef, useState } from "react"
 import Breadcrumb from "../../component/Breadcrumb"
 import Card from "../../component/Card"
@@ -14,6 +14,7 @@ import Context from "../../ContextProvider"
 import ApproveFormItems from "../ApproveFormItems"
 import Update from "./Update"
 import { useForm } from "antd/lib/form/Form"
+import ServiceSelect from "../../component/ServiceSelect"
 
 export default function App() {
     const { path } = useRouteMatch();
@@ -29,7 +30,7 @@ type Data = {
     script_id: string, script_name: string, param: string,
     owner: string, status: string, submit_info: string,
     has_pwd: string, pwd_from: string, content: string,
-    type: string
+    type: string, group_id: string, auditable: string
 }
 function Home() {
     let submit = false
@@ -158,9 +159,19 @@ function Home() {
                         ellipsis: true
                     },
                     {
+                        title: "审核人",
+                        dataIndex: "approver",
+                        ellipsis: true
+                    },
+                    {
                         title: "创建时间",
                         width: 200,
                         dataIndex: "create_time",
+                        ellipsis: true
+                    },
+                    {
+                        title: "分组",
+                        dataIndex: "group_name",
                         ellipsis: true
                     },
                     {
@@ -183,24 +194,45 @@ function Home() {
                                 }>
                                     <Button type="link" size="small">修改</Button>
                                 </Link>}
-                                {record.status === "approving" && auth.includes("approver") && <ApproveScript key="approve" data={record} load={load} />}
-                                {record.status === "unapproved" && auth.includes("operator") && <Popconfirm key="submit" title="是否提交审核?" onConfirm={async function () {
-                                    try {
-                                        await axios.post('/argus-emergency/api/script/submitReview', { script_id })
-                                        message.success("提交成功")
-                                        load()
-                                    } catch (error: any) {
-                                        message.error(error.message)
-                                    }
-                                }} >
-                                    <Button type="link" size="small">提审</Button>
-                                </Popconfirm>}
+                                {record.auditable && <ApproveScript key="approve" data={record} load={load} />}
+                                {record.status === "unapproved" && auth.includes("operator") && <SubmitReview load={load} script_id={script_id} group_id={record.group_id}/>}
                             </>
                         }
                     },
                 ]} />
         </Card>
     </div>
+}
+
+function SubmitReview(props: { load: () => void, script_id: string, group_id: string }) {
+    const [isModalVisible, setIsModalVisible] = useState(false)
+    const [form] = useForm()
+    return <>
+        <Button type="link" size="small" onClick={function () { setIsModalVisible(true) }}>提审</Button>
+        <Modal className="SubmitReview" title="提交审核" visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () { setIsModalVisible(false) }}>
+            <Form form={form} requiredMark={false} labelCol={{ span: 4 }} onFinish={async function (values) {
+                try {
+                    await axios.post('/argus-emergency/api/script/submitReview?group_id='+props.group_id, { ...values, script_id: props.script_id })
+                    message.success("提交成功")
+                    setIsModalVisible(false)
+                    form.resetFields()
+                    props.load()
+                } catch (error: any) {
+                    message.error(error.message)
+                }
+            }}>
+                <Form.Item name="approver" label="审批人" rules={[{ required: true }]}>
+                    <ServiceSelect url='/argus-user/api/user/approver/search' />
+                </Form.Item>
+                <Form.Item className="Buttons">
+                    <Button type="primary" htmlType="submit">提交</Button>
+                    <Button onClick={function () {
+                        setIsModalVisible(false)
+                    }}>取消</Button>
+                </Form.Item>
+            </Form>
+        </Modal>
+    </>
 }
 
 function ViewScript(props: { data: Data }) {
@@ -290,14 +322,17 @@ function AddScript() {
                 <div className="Line">
                     <Form.Item className="Middle" name="orchestrate_type" label="编排类型">
                         <Radio.Group options={[
-                            {value: "普通脚本", label: "普通脚本"},
-                            {label: "引流压测", value: "引流压测", disabled: true}
+                            { value: "普通脚本", label: "普通脚本" },
+                            { label: "引流压测", value: "引流压测", disabled: true }
                         ]} />
                     </Form.Item>
                     <Form.Item className="Middle" name="public" label="是否公有">
                         <Radio.Group options={["私有", "公有"]} />
                     </Form.Item>
                 </div>
+                <Form.Item labelCol={{ span: 3 }} name="group_name" label="分组">
+                    <ServiceSelect allowClear url="/argus-user/api/group/search" />
+                </Form.Item>
                 <Form.Item labelCol={{ span: 3 }} label="脚本用途" name="submit_info" rules={[{ required: true }]}>
                     <Input.TextArea maxLength={50} showCount autoSize={{ minRows: 2, maxRows: 2 }} />
                 </Form.Item>

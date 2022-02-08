@@ -56,7 +56,7 @@ export default function App() {
         function handleSocket(event: MessageEvent<any>) {
             const message = event.data
             if (scenaKeysRef.current.includes(message)) {
-                // 可能收到多条消息，只响应最新的
+                // 可能收到多条消息, 只响应最新的
                 dbLoadScena(history_id)
             } else if (taskKeysRef.current.includes(message)) {
                 // 停止响应任务更新
