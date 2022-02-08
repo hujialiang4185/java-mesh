@@ -2,8 +2,8 @@ import { Button, Form, Input, message, Table } from "antd";
 import React, { useEffect, useRef, useState } from "react"
 import CacheRoute, { CacheSwitch, useDidRecover } from "react-router-cache-route";
 import { Link, Route, useRouteMatch } from "react-router-dom";
-import Breadcrumb from "../../component/Breadcrumb";
-import Card from "../../component/Card";
+import Breadcrumb from "../Breadcrumb";
+import Card from "../Card";
 import Detail from "./Detail"
 import { SearchOutlined } from '@ant-design/icons'
 import "./index.scss"
