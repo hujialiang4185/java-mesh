@@ -99,6 +99,7 @@ const Home = forwardRef<HomeRef>(function (props, ref) {
                         }
                     }
                     history.replace({search: urlSearchParams.toString()})
+                    load(urlSearchParams)
                 }}>
                     <Form.Item name="keywords">
                         <Input className="Input" placeholder="Keywords" />
