@@ -44,4 +44,6 @@ public interface EmergencyExecService {
     CommonResult allSceneExecRecords(CommonPage<EmergencyExecRecord> params);
 
     CommonResult allTaskExecRecords(CommonPage<EmergencyExecRecord> params);
+
+    CommonResult getTestReport(Long testId);
 }

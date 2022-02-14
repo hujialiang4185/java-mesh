@@ -13,6 +13,7 @@ import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.emergency.dto.PlanQueryDto;
 import com.huawei.emergency.dto.SceneExecDto;
+import com.huawei.emergency.dto.TestReportDto;
 import com.huawei.emergency.entity.EmergencyExec;
 import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyExecRecordDetail;
@@ -38,9 +39,13 @@ import com.huawei.script.exec.log.LogResponse;
 
 import com.huawei.script.exec.session.ServerInfo;
 import lombok.Setter;
+import net.grinder.util.Pair;
 import org.apache.commons.lang.StringUtils;
+import org.ngrinder.model.PerfTest;
+import org.ngrinder.perftest.service.PerfTestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -97,6 +102,9 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
 
     @Autowired
     private Map<String, ScriptExecutor> scriptExecutors;
+
+    @Autowired
+    private PerfTestService perfTestService;
 
     @Override
     public CommonResult exec(EmergencyScript script) {
@@ -472,5 +480,20 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
             recordDto.setScheduleInfo(recordDetailMapper.selectAllServerDetail(recordDto.getKey()));
         });
         return CommonResult.success(result, result.size());
+    }
+
+    @Override
+    public CommonResult getTestReport(Long testId) {
+        if (testId == null) {
+            return CommonResult.failed("请选择压测任务");
+        }
+        final PerfTest perfTest = perfTestService.getOne(testId);
+        if (perfTest == null) {
+            return CommonResult.success();
+        }
+        TestReportDto testReportDto = new TestReportDto();
+        BeanUtils.copyProperties(perfTest,testReportDto);
+        testReportDto.setPlugins(perfTestService.getAvailableReportPlugins(testId));
+        return CommonResult.success(testReportDto);
     }
 }

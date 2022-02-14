@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+    <property value="logs" name="LOG_HOME"/>
+    <property value="UTF-8" name="CHARSET"/>
+    <property value="${LOG_HOME}/operate" name="OPERATE_LOG_PATH"/>
+    <property value="${LOG_HOME}/debug" name="DEBUG_LOG_PATH"/>
+    <property value="${LOG_HOME}/runtime" name="RUNTIME_LOG_PATH"/>
+    <property value="[%d{yyyy-MM-dd HH:mm:ss.SSSZ}][%-5level][%thread][%C] - [%msg]%n" name="LOG_PATTERN"/>
+    <property value="[%d{yyyy-MM-dd HH:mm:ss.SSSZ}][%-5level][%thread][%C:%line] - [%msg]%n"
+              name="LOG_DEBUG_PATTERN"/>
+    <contextName>logback</contextName>
+
+    <!--控制台日志-->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <charset>${CHARSET}</charset>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${RUNTIME_LOG_PATH}/${APP_NAME:-emergency}-info.log</file>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+        </filter>
+
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${RUNTIME_LOG_PATH}/${APP_NAME:-emergency}-%d{yyyy-MM-dd}-info.%i.log.gz</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <maxFileSize>20MB</maxFileSize>
+            <totalSizeCap>20GB</totalSizeCap>
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
+        </triggeringPolicy>
+
+        <encoder>
+            <charset>${CHARSET}</charset>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>　　　　　　
+
+    <!-- 异步日志 -->
+    <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+        <!--The maximum capacity of the blocking queue. By default, queueSize is set to 256.-->
+        <queueSize>256</queueSize>
+        <!--By default, when the blocking queue has 20% capacity remaining, it will drop events of level TRACE, DEBUGand INFO, keeping only events of level WARN and ERROR. To keep all events, set discardingThreshold to 0.-->
+        <discardingThreshold>0</discardingThreshold>
+        <maxFlushTime>10</maxFlushTime>
+        <includeCallerData>true</includeCallerData>
+        <appender-ref ref="FILE"/>
+    </appender>
+
+    <!--DEBUG日志-->
+    <appender name="DEBUG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${DEBUG_LOG_PATH}/${APP_NAME:-emergency}-debug.log</file>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>DEBUG</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${DEBUG_LOG_PATH}/${APP_NAME:-emergency}-%d{yyyy-MM-dd}-debug.%i.log.gz</fileNamePattern>
+            <maxHistory>3</maxHistory>
+            <maxFileSize>20MB</maxFileSize>
+            <totalSizeCap>20GB</totalSizeCap>
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
+        </triggeringPolicy>
+
+        <encoder>
+            <charset>${CHARSET}</charset>
+            <pattern>${LOG_DEBUG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 异步DEBUG日志 -->
+    <appender name="DEBUG_ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+        <!--The maximum capacity of the blocking queue. By default, queueSize is set to 256.-->
+        <queueSize>256</queueSize>
+        <!--By default, when the blocking queue has 20% capacity remaining, it will drop events of level TRACE, DEBUGand INFO, keeping only events of level WARN and ERROR. To keep all events, set discardingThreshold to 0.-->
+        <discardingThreshold>0</discardingThreshold>
+        <maxFlushTime>10</maxFlushTime>
+        <includeCallerData>true</includeCallerData>
+        <appender-ref ref="DEBUG_FILE"/>
+    </appender>
+
+    <root level="info">
+        <appender-ref ref="ASYNC"/>
+        <appender-ref ref="DEBUG_ASYNC"/>
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>

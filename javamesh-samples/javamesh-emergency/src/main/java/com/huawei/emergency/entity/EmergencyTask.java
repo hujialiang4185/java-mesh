@@ -9,6 +9,8 @@ public class EmergencyTask {
 
     private String taskName;
 
+    private String taskType;
+
     private Integer sceneId;
 
     private Integer scriptId;
@@ -53,6 +55,14 @@ public class EmergencyTask {
 
     public void setTaskName(String taskName) {
         this.taskName = taskName == null ? null : taskName.trim();
+    }
+
+    public String getTaskType() {
+        return taskType;
+    }
+
+    public void setTaskType(String taskType) {
+        this.taskType = taskType;
     }
 
     public Integer getSceneId() {
