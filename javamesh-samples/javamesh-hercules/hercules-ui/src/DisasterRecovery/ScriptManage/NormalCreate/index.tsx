@@ -1,4 +1,4 @@
-import { Button, Form, Input, message, Radio, Select } from "antd"
+import { Button, Form, Input, message, Radio } from "antd"
 import React, { useRef, useState } from "react"
 import Breadcrumb from "../../../component/Breadcrumb"
 import Card from "../../../component/Card"
@@ -42,26 +42,6 @@ export default function App() {
                     }
                     submit = false
                 }}>
-                <div className="Line">
-                    <Form.Item className="Middle" name="script_name" label="脚本名" rules={[
-                        { max: 25, required: true, whitespace: true },
-                        { pattern: /^\w+$/, message: "请输入英文、数字、下划线" }
-                    ]}>
-                        <Input />
-                    </Form.Item>
-                    <Form.Item className="Middle" name="language" label="脚本分类">
-                        <Select options={[{ value: "Shell" }, { value: "Jython", disabled: true }, { value: "Groovy", disabled: true }]} />
-                    </Form.Item>
-                    <Form.Item className="Middle" name="public" label="是否公有">
-                        <Radio.Group options={["私有", "公有"]} />
-                    </Form.Item>
-                    <Form.Item className="Middle" name="group_name" label="分组">
-                        <ServiceSelect allowClear url="/argus-user/api/group/search" />
-                    </Form.Item>
-                </div>
-                <Form.Item labelCol={{ span: 1 }} label="脚本用途" name="submit_info" rules={[{ required: true }]}>
-                    <Input.TextArea maxLength={50} showCount autoSize={{ minRows: 2, maxRows: 2 }} />
-                </Form.Item>
                 <Script />
                 <DebugScript form={form}/>
                 <Form.Item className="ScriptParam" labelCol={{ span: 1 }} name="param" label="脚本参数" rules={[{

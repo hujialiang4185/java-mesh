@@ -21,7 +21,8 @@ export default function App() {
     const { path } = useRouteMatch();
     return <CacheSwitch>
         <CacheRoute exact path={path} component={Home} />
-        <Route exact path={path + '/Create'}><IDECreate /></Route>
+        <Route exact path={path + '/IDECreate'}><IDECreate /></Route>
+        <Route exact path={path + '/NormalCreate'}><IDECreate /></Route>
         <Route exact path={path + '/NORMAL'}><Normal /></Route>
         <Route exact path={path + '/GUI'}><GUI /></Route>
         <Route exact path={path + '/IDE'}><IDE /></Route>
