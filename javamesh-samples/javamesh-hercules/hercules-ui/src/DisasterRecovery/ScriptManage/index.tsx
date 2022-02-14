@@ -6,23 +6,25 @@ import { CloseOutlined, SearchOutlined, PlusOutlined, ExclamationCircleOutlined 
 import axios from "axios"
 import CacheRoute, { CacheSwitch, useDidRecover } from 'react-router-cache-route'
 import { Link, Route, useHistory, useRouteMatch } from "react-router-dom"
-import Create from "./Create"
-import Orchestrate from "./Orchestrate"
+import GUI from "./GUI"
 import "./index.scss"
 import Editor from "@monaco-editor/react"
 import Context from "../../ContextProvider"
 import ApproveFormItems from "../ApproveFormItems"
-import Update from "./Update"
+import Normal from "./Normal"
 import { useForm } from "antd/lib/form/Form"
 import ServiceSelect from "../../component/ServiceSelect"
+import IDE from "./IDE"
+import IDECreate from "./IDECreate"
 
 export default function App() {
     const { path } = useRouteMatch();
     return <CacheSwitch>
         <CacheRoute exact path={path} component={Home} />
-        <Route exact path={path + '/Create'}><Create /></Route>
-        <Route exact path={path + '/Update'}><Update /></Route>
-        <Route exact path={path + '/Orchestrate'}><Orchestrate /></Route>
+        <Route exact path={path + '/Create'}><IDECreate /></Route>
+        <Route exact path={path + '/NORMAL'}><Normal /></Route>
+        <Route exact path={path + '/GUI'}><GUI /></Route>
+        <Route exact path={path + '/IDE'}><IDE /></Route>
     </CacheSwitch>
 }
 
@@ -92,9 +94,6 @@ function Home() {
         <Breadcrumb label="脚本管理" />
         <Card>
             <div className="ToolBar">
-                <Link className="Add" to={path + "/Create"}>
-                    <Button disabled={!auth.includes("operator")} type="primary" icon={<PlusOutlined />}>命令行脚本</Button>
-                </Link>
                 <AddScript />
                 <Button icon={<CloseOutlined />} onClick={function () {
                     if (selectedRowKeys.length === 0) {
@@ -145,7 +144,14 @@ function Home() {
                         dataIndex: "type",
                         ellipsis: true,
                         render(value) {
-                            return value === "shell" ? "命令行" : "编排"
+                            switch (value) {
+                                case "GUI":
+                                    return "GUI脚本"
+                                case "IDE":
+                                    return "非GUI脚本"
+                                case "NORMAL":
+                                    return "非压测脚本"
+                            }
                         }
                     },
                     {
@@ -190,12 +196,12 @@ function Home() {
                                     batchDelete([script_id])
                                 }}>删除</Button>}
                                 {auth.includes("operator") && <Link to={
-                                    path + "/" + (record.type === "shell" ? "Update" : "Orchestrate") + "?script_id=" + script_id
+                                    path + "/" + record.type + "?script_id=" + script_id
                                 }>
                                     <Button type="link" size="small">修改</Button>
                                 </Link>}
                                 {record.auditable && <ApproveScript key="approve" data={record} load={load} />}
-                                {record.status === "unapproved" && auth.includes("operator") && <SubmitReview load={load} script_id={script_id} group_id={record.group_id}/>}
+                                {record.status === "unapproved" && auth.includes("operator") && <SubmitReview load={load} script_id={script_id} group_id={record.group_id} />}
                             </>
                         }
                     },
@@ -294,17 +300,18 @@ function AddScript() {
     const history = useHistory();
     const { path } = useRouteMatch()
     const [isModalVisible, setIsModalVisible] = useState(false);
+    const [normal, setNormal] = useState(false)
     const [form] = useForm()
     return <>
-        <Button disabled={!auth.includes("operator")} icon={<PlusOutlined />} onClick={function () { setIsModalVisible(true) }}>编排脚本</Button>
-        <Modal className="AddScript" title="添加编排脚本" width={700} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
+        <Button disabled={!auth.includes("operator")} type="primary" icon={<PlusOutlined />} onClick={function () { setIsModalVisible(true) }}>添加脚本</Button>
+        <Modal className="AddScript" title="添加脚本" width={950} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form form={form} requiredMark={false} labelCol={{ span: 6 }} initialValues={{ public: "私有", orchestrate_type: "普通脚本" }} onFinish={async function (values) {
+            <Form form={form} requiredMark={false} labelCol={{ span: 2 }} initialValues={{ public: "私有", type: "压测脚本", orchestrate_type: "GUI" }} onFinish={async function (values) {
                 if (submit) return
                 submit = true
                 try {
-                    const res = await axios.post("/argus-emergency/api/script/orchestrate", values)
+                    const res = await axios.post("/argus-emergency/api/script", values)
                     setIsModalVisible(false)
                     form.resetFields()
                     history.push(path + "/Orchestrate?script_id=" + res.data.data.script_id)
@@ -313,29 +320,32 @@ function AddScript() {
                 }
                 submit = false
             }}>
-                <Form.Item labelCol={{ span: 3 }} name="script_name" label="脚本名" rules={[
-                    { max: 25, required: true, whitespace: true },
-                    { pattern: /^\w+$/, message: "请输入英文、数字、下划线" }
-                ]}>
-                    <Input />
-                </Form.Item>
                 <div className="Line">
-                    <Form.Item className="Middle" name="orchestrate_type" label="编排类型">
-                        <Radio.Group options={[
-                            { value: "普通脚本", label: "普通脚本" },
-                            { label: "引流压测", value: "引流压测", disabled: true }
-                        ]} />
+                    <Form.Item className="Middle" labelCol={{ span: 4 }} name="script_name" label="脚本名" rules={[
+                        { max: 25, required: true, whitespace: true },
+                        { pattern: /^\w+$/, message: "请输入英文、数字、下划线" }
+                    ]}>
+                        <Input />
                     </Form.Item>
-                    <Form.Item className="Middle" name="public" label="是否公有">
-                        <Radio.Group options={["私有", "公有"]} />
+                    <Form.Item className="Middle" labelCol={{ span: 4 }} name="group_name" label="分组">
+                        <ServiceSelect allowClear url="/argus-user/api/group/search" />
                     </Form.Item>
                 </div>
-                <Form.Item labelCol={{ span: 3 }} name="group_name" label="分组">
-                    <ServiceSelect allowClear url="/argus-user/api/group/search" />
-                </Form.Item>
-                <Form.Item labelCol={{ span: 3 }} label="脚本用途" name="submit_info" rules={[{ required: true }]}>
+                <Form.Item label="脚本用途" name="submit_info" rules={[{ required: true }]}>
                     <Input.TextArea maxLength={50} showCount autoSize={{ minRows: 2, maxRows: 2 }} />
                 </Form.Item>
+                <div className="Line">
+                    <Form.Item className="Middle" labelCol={{ span: 4 }} name="type" label="脚本类型">
+                        <Radio.Group options={["压测脚本", "非压测脚本"]} onChange={function(e) {
+                            setNormal(e.target.value === "非压测脚本")
+                        }}/>
+                    </Form.Item>
+                    {normal ? <Form.Item className="Middle" labelCol={{ span: 4 }} name="language" label="脚本类型">
+                        <Radio.Group options={["Shell", "Python", "Jython"]} />
+                    </Form.Item> : <Form.Item className="Middle" labelCol={{ span: 4 }} name="orchestrate_type" label="编排方式">
+                        <Radio.Group options={["GUI", "非GUI"]} />
+                    </Form.Item>}
+                </div>
                 <Form.Item className="Buttons">
                     <Button type="primary" htmlType="submit">创建</Button>
                     <Button onClick={function () {

@@ -1,4 +1,4 @@
-import { Button, Form, Input, message, Radio, Select } from "antd"
+import { Button, Form, Input, message } from "antd"
 import React, { useEffect } from "react"
 import Breadcrumb from "../../../component/Breadcrumb"
 import Card from "../../../component/Card"
@@ -33,7 +33,7 @@ export default function App() {
                     if (submit) return
                     submit = true
                     try {
-                        await axios.put('/argus-emergency/api/script', {...values, script_id})
+                        await axios.put('/argus-emergency/api/script', { ...values, script_id })
                         message.success("更新成功")
                         history.goBack()
                     } catch (e: any) {
@@ -46,19 +46,13 @@ export default function App() {
                         <Input disabled />
                     </Form.Item>
                     <Form.Item className="Middle" name="language" label="脚本分类">
-                        <Select disabled options={[{ value: "Shell" }, { value: "Jython", disabled: true }, { value: "Groovy", disabled: true }]} />
-                    </Form.Item>
-                    <Form.Item className="Middle" name="public" label="是否公有">
-                        <Radio.Group disabled options={["私有", "公有"]} />
+                        <Input disabled />
                     </Form.Item>
                 </div>
-                <Form.Item labelCol={{ span: 1 }} label="脚本用途" name="submit_info" rules={[{ required: true }]}>
-                    <Input.TextArea maxLength={50} showCount autoSize={{ minRows: 2, maxRows: 2 }} />
-                </Form.Item>
                 <Form.Item label="脚本内容" className="Editor WithoutLabel" name="content" rules={[{ required: true, max: 5000 }]}>
-                    <Editor className="MonacoEditor" language="shell" height={200}/>
+                    <Editor className="MonacoEditor" language="shell" height={200} />
                 </Form.Item>
-                <DebugScript form={form}/>
+                <DebugScript form={form} />
                 <Form.Item className="ScriptParam" labelCol={{ span: 1 }} name="param" label="脚本参数" rules={[{
                     pattern: /^[\w,.|]+$/,
                     message: "格式错误"
@@ -68,7 +62,7 @@ export default function App() {
                 </Form.Item>
                 <Form.Item className="Buttons">
                     <Button className="Save" htmlType="submit" type="primary">提交</Button>
-                    <Button onClick={function(){
+                    <Button onClick={function () {
                         history.goBack()
                     }}>取消</Button>
                 </Form.Item>

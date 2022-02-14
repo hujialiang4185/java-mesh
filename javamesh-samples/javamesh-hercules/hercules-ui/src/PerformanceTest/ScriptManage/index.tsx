@@ -9,7 +9,6 @@ import { Link, Route, useRouteMatch } from "react-router-dom"
 import Detail from "./Detail"
 import "./index.scss"
 import Upload from "../../component/Upload"
-import { debounce } from "lodash"
 import ServiceSelect from "../../component/ServiceSelect"
 
 export default function App() {
@@ -217,20 +216,8 @@ function Home() {
 
 function AddFile(props: { load: () => {}, folder: string[] }) {
     let submit = false
-    let hostname = ""
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [form] = Form.useForm();
-    const debounceRef = useRef(debounce(function (url: URL) {
-        const cookies = form.getFieldValue("cookies") || [{}]
-        cookies.forEach(function (item: { value_a: string }) {
-            item.value_a = url.hostname
-        })
-        form.setFields([{
-            name: "cookies",
-            value: cookies,
-        }])
-        hostname = url.hostname
-    }, 100))
     return <>
         <Button type="primary" icon={<FileTextOutlined />} onClick={function () {
             setIsModalVisible(true)
@@ -282,13 +269,20 @@ function AddFile(props: { load: () => {}, folder: string[] }) {
                         {
                             async validator(_, value) {
                                 if (!value) return
-                                let url
+                                let url: URL
                                 try {
                                     url = new URL(value)
                                 } catch (error) {
                                     throw new Error("URL格式不合法")
                                 }
-                                debounceRef.current(url)
+                                const cookies = form.getFieldValue("cookies") || [{}]
+                                cookies.forEach(function (item: { value_a: string }) {
+                                    item.value_a = url.hostname
+                                })
+                                form.setFields([{
+                                    name: "cookies",
+                                    value: cookies,
+                                }])
                             }
                         }
                     ]}>
@@ -347,7 +341,7 @@ function AddFile(props: { load: () => {}, folder: string[] }) {
                                                 remove(item.name)
                                             }} />}
                                             <PlusCircleOutlined onClick={function () {
-                                                add({ value_a: hostname })
+                                                add({ value_a: new URL(form.getFieldValue("for_url")).hostname })
                                             }} />
                                         </div>
                                     })
