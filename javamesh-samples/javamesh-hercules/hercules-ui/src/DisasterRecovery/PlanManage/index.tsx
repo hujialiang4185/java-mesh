@@ -137,21 +137,9 @@ function Home() {
                         return <Table size="small" className="TreeTable" rowKey="key" pagination={false} dataSource={record.expand}
                             columns={[
                                 {
-                                    title: "场景编号", dataIndex: "scena_no", ellipsis: true,
-                                    render(value, row) {
-                                        return { children: value, props: { rowSpan: scenaRowSpans.get(row.key) }, }
-                                    }
-                                },
-                                {
                                     title: "场景名称", dataIndex: "scena_name", ellipsis: true,
                                     render(value, row) {
                                         return { children: value, props: { rowSpan: scenaRowSpans.get(row.key) }, }
-                                    }
-                                },
-                                {
-                                    title: "任务编号", dataIndex: "task_no", ellipsis: true,
-                                    render(value, row) {
-                                        return { children: value, props: { rowSpan: taskRowSpans.get(row.key) }, }
                                     }
                                 },
                                 {
@@ -160,7 +148,6 @@ function Home() {
                                         return { children: value, props: { rowSpan: taskRowSpans.get(row.key) }, }
                                     }
                                 },
-                                { title: "子任务编号", dataIndex: "subtask_no", ellipsis: true },
                                 { title: "子任务名称", dataIndex: "subtask_name", ellipsis: true },
                                 { title: "通道类型", dataIndex: "channel_type", ellipsis: true },
                                 { title: "脚本名称", dataIndex: "script_name", ellipsis: true },
