@@ -100,7 +100,8 @@ app.get('/argus/api/script', function (req, res) {
             return {
                 type: ["folder", "file"][index % 2], script_name: "test" + index + ".groovy",
                 commit: "Quick test for http://100.95.133.126:48080/testLongText",
-                update_time: "2019-03-19 10:53", version: "224 ", size: "10kb"
+                update_time: "2019-03-19 10:53", version: "224 ", size: "10kb",
+                group_name: "分组1", group_id: 1
             }
         }),
         total: 11
@@ -655,6 +656,9 @@ app.get("/argus-emergency/api/plan", function (req, res) {
                 creator: "z30008585",
                 comment: "备注, 备注",
                 history_id: 1,
+                group_id: 1,
+                group_name: "分组1",
+                auditable: index === 1,
                 expand: [
                     { key: 1, scena_no: "C01", scena_name: "场景一", channel_type: "SSH", script_name: "C01.sh", submit_info: "提交信息" },
                     { key: 2, scena_no: "C01", scena_name: "场景一", task_no: "C01T01", task_name: "任务一", channel_type: "SSH", script_name: "C01T01.sh", submit_info: "提交信息" },

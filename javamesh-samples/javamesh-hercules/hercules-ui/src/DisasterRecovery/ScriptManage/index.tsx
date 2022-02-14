@@ -170,13 +170,13 @@ function Home() {
                         ellipsis: true
                     },
                     {
-                        title: "分组",
-                        dataIndex: "group_name",
+                        title: "备注",
+                        dataIndex: "comment",
                         ellipsis: true
                     },
                     {
-                        title: "备注",
-                        dataIndex: "comment",
+                        title: "分组",
+                        dataIndex: "group_name",
                         ellipsis: true
                     },
                     {
@@ -209,10 +209,10 @@ function SubmitReview(props: { load: () => void, script_id: string, group_id: st
     const [form] = useForm()
     return <>
         <Button type="link" size="small" onClick={function () { setIsModalVisible(true) }}>提审</Button>
-        <Modal className="SubmitReview" title="提交审核" visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () { setIsModalVisible(false) }}>
+        <Modal className="SubmitScriptReview" title="提交审核" visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () { setIsModalVisible(false) }}>
             <Form form={form} requiredMark={false} labelCol={{ span: 4 }} onFinish={async function (values) {
                 try {
-                    await axios.post('/argus-emergency/api/script/submitReview?group_id='+props.group_id, { ...values, script_id: props.script_id })
+                    await axios.post('/argus-emergency/api/script/submitReview', { ...values, script_id: props.script_id })
                     message.success("提交成功")
                     setIsModalVisible(false)
                     form.resetFields()

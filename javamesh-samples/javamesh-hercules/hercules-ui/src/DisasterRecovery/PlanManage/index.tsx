@@ -25,7 +25,7 @@ export default function App() {
     </CacheSwitch>
 }
 
-type Data = { plan_id: string, expand: { key: string, scena_no: string, task_no: string }[], status_label: string, status: string, history_id: string }
+type Data = { plan_id: string, expand: { key: string, scena_no: string, task_no: string }[], status_label: string, status: string, history_id: string, auditable: boolean, group_id: string }
 function Home() {
     const { path } = useRouteMatch()
     const { auth } = useContext(Context)
@@ -50,7 +50,7 @@ function Home() {
             setData(res.data)
             // 需要监听的任务列表
             keysRef.current = res.data.data.map(function (item: Data) {
-               return "/plan/" + item.plan_id
+                return "/plan/" + item.plan_id
             })
         } catch (error: any) {
             message.error(error.message)
@@ -176,6 +176,7 @@ function Home() {
                     { title: "创建时间", dataIndex: "create_time", sorter: true, ellipsis: true },
                     { title: "创建人", dataIndex: "creator", ellipsis: true },
                     { title: "备注", dataIndex: "comment", ellipsis: true },
+                    { title: "分组", dataIndex: "group_name", ellipsis: true },
                     {
                         title: "操作", width: 350, dataIndex: "plan_id", render(plan_id, record) {
                             return <>
@@ -183,18 +184,8 @@ function Home() {
                                 {record.status !== "running" && auth.includes("operator") && <Link to={path + "/Editor?plan_id=" + plan_id}>
                                     <Button type="link" size="small">修改</Button>
                                 </Link>}
-                                {record.status === "approving" && auth.includes("approver") && <ApprovePlan plan_id={plan_id} load={load} />}
-                                {record.status === "unapproved" && auth.includes("operator") && <Popconfirm title="是否提交审核?" onConfirm={async function () {
-                                    try {
-                                        await axios.post('/argus-emergency/api/plan/submitReview', { plan_id })
-                                        message.success("提交成功")
-                                        load()
-                                    } catch (error: any) {
-                                        message.error(error.message)
-                                    }
-                                }} >
-                                    <Button type="link" size="small">提审</Button>
-                                </Popconfirm>}
+                                {record.auditable && <ApprovePlan plan_id={plan_id} load={load} />}
+                                {record.status === "unapproved" && auth.includes("operator") && <SubmitReview load={load} group_id={record.group_id} plan_id={plan_id}/>}
                                 {(record.status === "approved" || record.status === "ran") && auth.includes("operator") && <Button type="link" size="small" onClick={async function () {
                                     if (submit) return
                                     submit = true
@@ -223,11 +214,42 @@ function Home() {
                                 </Link>}
                             </>
                         }
-                    }
+                    },
                 ]}
             />
         </Card>}
     </div>
+}
+
+function SubmitReview(props: { load: () => void, plan_id: string, group_id: string }) {
+    const [isModalVisible, setIsModalVisible] = useState(false)
+    const [form] = useForm()
+    return <>
+        <Button type="link" size="small" onClick={function () { setIsModalVisible(true) }}>提审</Button>
+        <Modal className="SubmitPlanReview" title="提交审核" visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () { setIsModalVisible(false) }}>
+            <Form form={form} requiredMark={false} labelCol={{ span: 4 }} onFinish={async function (values) {
+                try {
+                    await axios.post('/argus-emergency/api/plan/submitReview', { ...values, plan_id: props.plan_id })
+                    message.success("提交成功")
+                    setIsModalVisible(false)
+                    form.resetFields()
+                    props.load()
+                } catch (error: any) {
+                    message.error(error.message)
+                }
+            }}>
+                <Form.Item name="approver" label="审批人" rules={[{ required: true }]}>
+                    <ServiceSelect url='/argus-user/api/user/approver/search' />
+                </Form.Item>
+                <Form.Item className="Buttons">
+                    <Button type="primary" htmlType="submit">提交</Button>
+                    <Button onClick={function () {
+                        setIsModalVisible(false)
+                    }}>取消</Button>
+                </Form.Item>
+            </Form>
+        </Modal>
+    </>
 }
 
 function AddPlan() {
@@ -242,7 +264,7 @@ function AddPlan() {
         <Modal className="AddPlan" title="添加项目" width={700} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form form={form} requiredMark={false} onFinish={async function (values) {
+            <Form form={form} labelCol={{span: 3}} requiredMark={false} onFinish={async function (values) {
                 if (submit) return
                 submit = true
                 try {
@@ -256,6 +278,9 @@ function AddPlan() {
                 submit = false
             }}>
                 <Form.Item label="项目名称" name="plan_name" rules={[{ required: true, max: 64 }]}><Input /></Form.Item>
+                <Form.Item name="group_name" label="分组">
+                    <ServiceSelect allowClear url="/argus-user/api/group/search" />
+                </Form.Item>
                 <Form.Item className="Buttons">
                     <Button type="primary" htmlType="submit">创建</Button>
                     <Button onClick={function () {
