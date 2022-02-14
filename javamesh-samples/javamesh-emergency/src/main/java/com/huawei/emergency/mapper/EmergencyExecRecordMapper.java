@@ -6,8 +6,11 @@ import com.huawei.emergency.entity.EmergencyExecRecordWithBLOBs;
 
 import java.util.Date;
 import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+@Mapper
 public interface EmergencyExecRecordMapper {
     long countByExample(EmergencyExecRecordExample example);
 

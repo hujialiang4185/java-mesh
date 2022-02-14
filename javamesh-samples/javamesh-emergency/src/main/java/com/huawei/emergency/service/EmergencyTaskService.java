@@ -4,6 +4,7 @@
 
 package com.huawei.emergency.service;
 
+import com.huawei.common.api.CommonResult;
 import com.huawei.emergency.entity.EmergencyTask;
 
 /**
@@ -14,4 +15,6 @@ import com.huawei.emergency.entity.EmergencyTask;
  **/
 public interface EmergencyTaskService extends EmergencyCommonService<EmergencyTask>, EmergencyCallBack {
     boolean isTaskExist(int taskId);
+
+    CommonResult getCommonReport(Long perfTestId);
 }

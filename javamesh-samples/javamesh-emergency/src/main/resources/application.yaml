@@ -101,3 +101,7 @@ argus:
 heartbeat:
   readWaitTime: 150
   port: 9100
+ngrinder:
+  auto:
+    execute:
+      test: true

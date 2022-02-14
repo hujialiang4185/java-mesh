@@ -7,7 +7,7 @@ package com.huawei.emergency.service.impl;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ValidEnum;
-import com.huawei.common.ws.WebSocketServer;
+import com.huawei.emergency.dto.TaskCommonReport;
 import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyExecRecordExample;
 import com.huawei.emergency.entity.EmergencyScript;
@@ -21,6 +21,8 @@ import com.huawei.emergency.service.EmergencySceneService;
 import com.huawei.emergency.service.EmergencyTaskService;
 
 import org.apache.commons.lang.StringUtils;
+import org.ngrinder.model.PerfTest;
+import org.ngrinder.perftest.service.PerfTestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +65,9 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
 
     @Autowired
     private ExecRecordHandlerFactory handlerFactory;
+
+    @Autowired
+    private PerfTestService perfTestService;
 
     @Override
     public void onComplete(EmergencyExecRecord record) {
@@ -217,5 +222,19 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
             .andTaskIdEqualTo(taskId)
             .andIsValidEqualTo(ValidEnum.VALID.getValue());
         return taskMapper.countByExample(existCondition) > 0;
+    }
+
+    @Override
+    public CommonResult getCommonReport(Long perfTestId) {
+        if (perfTestId == null) {
+            return CommonResult.failed("请选择压测任务");
+        }
+        final PerfTest perfTest = perfTestService.getOne(perfTestId);
+        if (perfTest == null) {
+            return CommonResult.success();
+        }
+        TaskCommonReport commonReport = TaskCommonReport.parse(perfTest);
+        commonReport.setPlugins(perfTestService.getAvailableReportPlugins(perfTestId));
+        return CommonResult.success(commonReport);
     }
 }

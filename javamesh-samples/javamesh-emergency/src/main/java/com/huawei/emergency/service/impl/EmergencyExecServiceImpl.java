@@ -103,9 +103,6 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
     @Autowired
     private Map<String, ScriptExecutor> scriptExecutors;
 
-    @Autowired
-    private PerfTestService perfTestService;
-
     @Override
     public CommonResult exec(EmergencyScript script) {
         if (script == null || script.getScriptId() == null) {
@@ -480,20 +477,5 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
             recordDto.setScheduleInfo(recordDetailMapper.selectAllServerDetail(recordDto.getKey()));
         });
         return CommonResult.success(result, result.size());
-    }
-
-    @Override
-    public CommonResult getTestReport(Long testId) {
-        if (testId == null) {
-            return CommonResult.failed("请选择压测任务");
-        }
-        final PerfTest perfTest = perfTestService.getOne(testId);
-        if (perfTest == null) {
-            return CommonResult.success();
-        }
-        TestReportDto testReportDto = new TestReportDto();
-        BeanUtils.copyProperties(perfTest,testReportDto);
-        testReportDto.setPlugins(perfTestService.getAvailableReportPlugins(testId));
-        return CommonResult.success(testReportDto);
     }
 }

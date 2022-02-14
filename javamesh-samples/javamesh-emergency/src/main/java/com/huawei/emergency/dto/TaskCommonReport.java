@@ -18,8 +18,13 @@ package com.huawei.emergency.dto;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.ngrinder.model.PerfTest;
+import org.ngrinder.model.Tag;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 任务执行报告
@@ -54,7 +59,7 @@ public class TaskCommonReport {
     /**
      * 运行时间
      */
-    private String duration;
+    private Long duration;
     /**
      * 虚拟用户数
      */
@@ -74,15 +79,15 @@ public class TaskCommonReport {
     /**
      * 测试数量
      */
-    private Integer testCount;
+    private Long testCount;
     /**
      * 测试成功数量
      */
-    private Integer successCount;
+    private Long successCount;
     /**
      * 测试失败数量
      */
-    private Integer failCount;
+    private Long failCount;
     /**
      * 测试备注
      */
@@ -95,4 +100,31 @@ public class TaskCommonReport {
      * 执行日志
      */
     private List<String> progressMessage;
+
+    /**
+     * 插件
+     */
+    private List plugins;
+
+    public static TaskCommonReport parse(PerfTest perfTest) {
+        TaskCommonReport commonReport = new TaskCommonReport();
+        commonReport.setTestName(perfTest.getTestName() == null ? "null" : perfTest.getTestName());
+        commonReport.setStatus(perfTest.getStatus().getIconName());
+        commonReport.setStatusLabel(perfTest.getStatus().getIconName());
+        commonReport.setLabel(perfTest.getTags()
+            == null ? null : perfTest.getTags().stream().map(Tag::getTagValue).collect(Collectors.toList()));
+        commonReport.setDesc(perfTest.getDescription());
+        commonReport.setDuration(perfTest.getDuration());
+        commonReport.setVuser(perfTest.getVuserPerAgent());
+        commonReport.setTps(perfTest.getTps());
+        commonReport.setTpsPeak(perfTest.getPeakTps());
+        commonReport.setAvgTime(perfTest.getMeanTestTime());
+        commonReport.setTestCount(perfTest.getTests() + perfTest.getErrors());
+        commonReport.setSuccessCount(perfTest.getTests());
+        commonReport.setFailCount(perfTest.getErrors());
+        commonReport.setTestComment(perfTest.getTestComment());
+        commonReport.setProgressMessage(perfTest.getProgressMessage()
+            == null ? null : Arrays.stream(perfTest.getProgressMessage().split(System.lineSeparator())).collect(Collectors.toList()));
+        return commonReport;
+    }
 }
