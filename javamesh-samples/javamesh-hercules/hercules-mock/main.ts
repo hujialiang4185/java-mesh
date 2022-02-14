@@ -195,7 +195,8 @@ app.get('/argus/api/scenario', function (req, res) {
                 scenario_type: "动态编排", create_by: "xwx638739",
                 create_time: "2019-03-19 10:53", update_time: "2019-03-19 10:53",
                 label: ["a", "b", "c"], desc: "描述",
-                scenario_id: index, app_name: "ARGUS" + index
+                scenario_id: index, app_name: "ARGUS" + index,
+                group_name: "分组1", group_id: 1
             }
         }),
         total: 11

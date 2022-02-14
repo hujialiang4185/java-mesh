@@ -188,6 +188,7 @@ const Home = forwardRef<HomeRef>(function (props, ref) {
                         dataIndex: "desc",
                         ellipsis: true
                     },
+                    { ellipsis: true, title: "分组", dataIndex: "group_name" },
                     {
                         title: "操作",
                         width: 120,

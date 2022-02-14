@@ -165,7 +165,7 @@ function Home() {
                         ellipsis: true
                     },
                     {
-                        title: "测试名称",
+                        title: "名称",
                         width: 120,
                         ellipsis: true,
                         dataIndex: "test_name",
@@ -181,9 +181,9 @@ function Home() {
                         }()
                     },
                     {
-                        title: "压测类型",
+                        title: "类型",
                         dataIndex: "test_type",
-                        width: 100,
+                        width: 80,
                         filters: function () {
                             const set = new Set<string>()
                             data.data.forEach(function (item) {
@@ -198,7 +198,7 @@ function Home() {
                     {
                         title: "脚本文件名",
                         dataIndex: "script_path",
-                        width: 100,
+                        width: 110,
                         ellipsis: true,
                         render(data) {
                             return <Link to={`/PerformanceTest/ScriptManage/Detail?path=${data}`}>{data}</Link>
@@ -231,7 +231,7 @@ function Home() {
                     {
                         title: "标签",
                         dataIndex: "label",
-                        width: 100,
+                        width: 50,
                         ellipsis: true,
                         render(value) {
                             return value?.join(",")
@@ -246,7 +246,7 @@ function Home() {
                         title: "开始时间",
                         dataIndex: "start_time",
                         sorter: true,
-                        width: 150,
+                        width: 140,
                         ellipsis: true
                     },
                     {
@@ -257,14 +257,14 @@ function Home() {
                     },
                     {
                         title: "TPS",
-                        width: 80,
+                        width: 60,
                         dataIndex: "tps",
                         sorter: true,
                         ellipsis: true
                     },
                     {
                         title: "MTT",
-                        width: 80,
+                        width: 60,
                         dataIndex: "mtt",
                         sorter: true,
                         ellipsis: true
@@ -275,6 +275,12 @@ function Home() {
                         dataIndex: "fail_rate",
                         sorter: true,
                         ellipsis: true
+                    },
+                    { 
+                        ellipsis: true, 
+                        width: 60,
+                        title: "分组", 
+                        dataIndex: "group_name" 
                     },
                     {
                         title: "操作",
