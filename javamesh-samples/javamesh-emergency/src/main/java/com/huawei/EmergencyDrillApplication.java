@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  *
  * @since 2021-10-30
  **/
-@SpringBootApplication(scanBasePackages = {"com.huawei"})
+@SpringBootApplication(scanBasePackages = "com.huawei")
 @EnableFeignClients
 @EnableDiscoveryClient
 @ServletComponentScan
