@@ -134,10 +134,8 @@ public class ExecRecordHandlerFactory {
         @Override
         public void run() {
             EmergencyExecRecordWithBLOBs record = recordMapper.selectByPrimaryKey(currentRecord.getRecordId());
-
-            // 出现事务还未提交，此时查不到这条数据
             int retryTimes = 10;
-            while (record == null && retryTimes > 0) {
+            while (record == null && retryTimes > 0) { // 出现事务还未提交，此时查不到这条数据
                 try {
                     Thread.sleep(1000);
                     record = recordMapper.selectByPrimaryKey(currentRecord.getRecordId());
@@ -158,9 +156,7 @@ public class ExecRecordHandlerFactory {
                 }
                 List<EmergencyExecRecordDetail> emergencyExecRecordDetails = generateRecordDetail(record);
                 EmergencyExecRecordWithBLOBs finalRecord = record;
-                emergencyExecRecordDetails.forEach(recordDetail -> {
-                    handle(finalRecord, recordDetail);
-                });
+                emergencyExecRecordDetails.forEach(recordDetail -> handle(finalRecord, recordDetail));
             } catch (ApiException e) {
                 LOGGER.error("failed to generateRecordDetail. {}.{}", record.getRecordId(), e.getMessage());
                 EmergencyExecRecordWithBLOBs errorRecord = new EmergencyExecRecordWithBLOBs();

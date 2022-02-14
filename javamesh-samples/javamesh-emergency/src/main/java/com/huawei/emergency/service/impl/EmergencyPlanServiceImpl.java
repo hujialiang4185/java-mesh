@@ -16,6 +16,7 @@
 
 package com.huawei.emergency.service.impl;
 
+import com.huawei.argus.config.UserFactory;
 import com.huawei.argus.restcontroller.RestPerfTestController;
 import com.huawei.common.api.CommonPage;
 import com.huawei.common.api.CommonResult;
@@ -26,6 +27,7 @@ import com.huawei.common.constant.TaskTypeEnum;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.common.filter.UserFilter;
 import com.huawei.common.ws.WebSocketServer;
+import com.huawei.emergency.dto.PlanDetailQueryDto;
 import com.huawei.emergency.dto.PlanQueryDto;
 import com.huawei.emergency.dto.PlanQueryParams;
 import com.huawei.emergency.dto.TaskNode;
@@ -53,8 +55,11 @@ import com.github.pagehelper.PageHelper;
 
 import org.apache.commons.lang.StringUtils;
 import org.ngrinder.model.PerfTest;
+import org.ngrinder.model.User;
+import org.ngrinder.perftest.service.PerfTestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.support.CronSequenceGenerator;
 import org.springframework.stereotype.Service;
@@ -112,6 +117,9 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
 
     @Autowired
     private RestPerfTestController perfTestController;
+
+    @Autowired
+    private PerfTestService perfTestService;
 
     @Override
     public CommonResult add(EmergencyPlan emergencyPlan) {
@@ -215,6 +223,17 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         allExecRecords.forEach(record -> {
             record.setCreateUser(userName);
             record.setExecId(emergencyExec.getExecId());
+            if (record.getPerfTestId() != null) { // 如果是自定义脚本压测，根据此压测模板生成压测任务
+                User user = new User();
+                user.setUserId(UserFilter.currentUser().getUserName());
+                PerfTest testTemplate = perfTestService.getOne(record.getPerfTestId().longValue());
+                testTemplate.setId(null);
+                testTemplate.setCreatedDate(new Date());
+                testTemplate.setCreatedUser(user);
+                PerfTest perfTest = perfTestController.saveOne(user, testTemplate);
+                record.setPerfTestId(perfTest.getId().intValue());
+                LOGGER.info("create perfTest {}", perfTest.getId());
+            }
             recordMapper.insertSelective(record);
         });
         EmergencyPlan updatePlan = new EmergencyPlan();
@@ -409,13 +428,14 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         task.setCreateUser(taskNode.getCreateUser());
         task.setTaskType(taskType.getValue());
         if (taskType == TaskTypeEnum.CUSTOM) { // 创建自定义脚本压测任务
-            org.ngrinder.model.User user = new org.ngrinder.model.User();
-            user.setUserId(UserFilter.currentUser().getUserName());
-            PerfTest perfTest = perfTestController.saveOne(user, taskNode);
-            if (perfTest == null || perfTest.getId() == null) {
+            PerfTest perfTest = taskNode.translate();
+            perfTest.setCreatedUser(UserFilter.currentGrinderUser());
+            perfTest.setCreatedDate(new Date());
+            PerfTest insertPerfTest = perfTestController.saveOne(UserFilter.currentGrinderUser(), perfTest);
+            if (insertPerfTest == null || insertPerfTest.getId() == null) {
                 return CommonResult.failed("创建压测任务失败");
             }
-            task.setPerfTestId(perfTest.getId().intValue());
+            task.setPerfTestId(insertPerfTest.getId().intValue());
         }
         final CommonResult<EmergencyTask> addResult = taskService.add(task);
         if (!addResult.isSuccess()) {
@@ -439,7 +459,23 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         List<PlanQueryDto> result = pageInfo.getResult();
         // 查询明细
         result.forEach(planQueryDto -> {
-            planQueryDto.setExpand(planMapper.queryPlanDetailDto(planQueryDto.getPlanId()));
+            List<PlanDetailQueryDto> planDetails = planMapper.queryPlanDetailDto(planQueryDto.getPlanId());
+            planDetails.forEach(planDetail -> {
+                if (planDetail.getPerfTestId() == null) {
+                    return;
+                }
+                PerfTest perfTest = perfTestService.getOne(planDetail.getPerfTestId());
+                if (perfTest != null) {
+                    planDetail.setStartTime(perfTest.getStartTime());
+                    planDetail.setDuration(perfTest.getDuration());
+                    planDetail.setUserId(perfTest.getUserId());
+                    planDetail.setTagString(perfTest.getTagString());
+                    planDetail.setTps(perfTest.getTps());
+                    planDetail.setMeanTestTime(perfTest.getMeanTestTime());
+                    planDetail.setStatus(perfTest.getStatus().getIconName());
+                }
+            });
+            planQueryDto.setExpand(planDetails);
         });
         return CommonResult.success(result, (int) pageInfo.getTotal());
     }
