@@ -1,5 +1,6 @@
 package com.huawei.emergency.service.impl;
 
+import com.huawei.argus.restcontroller.RestFileEntryController;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.config.CommonConfig;
 import com.huawei.common.constant.FailedInfo;
@@ -37,6 +38,10 @@ import com.github.pagehelper.PageHelper;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.ngrinder.common.util.PathUtils;
+import org.ngrinder.common.util.UrlUtils;
+import org.ngrinder.script.handler.ProjectHandler;
+import org.ngrinder.script.handler.ScriptHandler;
 import org.ngrinder.script.model.FileEntry;
 import org.ngrinder.script.service.NfsFileEntryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +49,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
@@ -59,6 +65,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.ngrinder.common.util.CollectionUtils.newHashMap;
 
 @Service
 @Transactional
@@ -99,11 +107,11 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     @Autowired
     private EmergencyExecService execService;
 
-    @Value("${argus.url}")
-    private String argusUrl;
-
     @Autowired
     private EmergencyResourceService resourceService;
+
+    @Autowired
+    private NfsFileEntryService fileEntryService;
 
     @Override
     public CommonResult<List<EmergencyScript>> listScript(HttpServletRequest request, String scriptName, String scriptUser, int pageSize, int current, String sorter, String order, String status) {
@@ -344,17 +352,12 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         updateGrinderScript(script.getScriptName(), script.getContent()); //更新脚本内容
     }
 
-    @Autowired
-    private NfsFileEntryService fileEntryService;
-
     /**
      * 创建压测脚本文件夹
      */
     public void createGrinderScript() {
-        org.ngrinder.model.User user = new org.ngrinder.model.User();
-        user.setUserId(UserFilter.currentUser().getUserName());
         try {
-            fileEntryService.addFolder(user, "", CommonConfig.GRINDER_FOLDER);
+            fileEntryService.addFolder(UserFilter.currentGrinderUser(), "", CommonConfig.GRINDER_FOLDER);
         } catch (IOException e) {
             log.error("create grinder folder error.", e);
         }
@@ -369,15 +372,13 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     public boolean updateGrinderScript(String scriptName, String scriptContent) {
         createGrinderScript();
         String grinderPath = grinderPath(scriptName);
-        org.ngrinder.model.User user = new org.ngrinder.model.User();
-        user.setUserId(UserFilter.currentUser().getUserName());
         FileEntry fileEntry = new FileEntry();
-        fileEntry.setCreatedUser(user);
+        fileEntry.setCreatedUser(UserFilter.currentGrinderUser());
         fileEntry.setContent(scriptContent);
         fileEntry.setContentBytes(scriptContent.getBytes(StandardCharsets.UTF_8));
         fileEntry.setPath(grinderPath);
         try {
-            fileEntryService.saveFile(user, fileEntry);
+            fileEntryService.saveFile(UserFilter.currentGrinderUser(), fileEntry);
         } catch (IOException e) {
             log.error("update script error.", e);
             return false;
@@ -696,5 +697,28 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
 
     private String grinderPath(String scriptName) {
         return CommonConfig.GRINDER_FOLDER + "/" + scriptName + ".groovy";
+    }
+
+    public String generateIdeScript(org.ngrinder.model.User user, String path, String testUrl, String fileName, String scriptType,
+                                    boolean createLibAndResources, String options) {
+        String hostIp = "Test1";
+        if (StringUtils.isEmpty(testUrl)) {
+            testUrl = StringUtils.defaultIfBlank(testUrl, "http://please_modify_this.com");
+        } else {
+            hostIp = UrlUtils.getHost(testUrl);
+        }
+        ScriptHandler scriptHandler = fileEntryService.getScriptHandler(scriptType);
+        Map<String, Object> map = newHashMap();
+        map.put("url", testUrl);
+        map.put("userName", user.getUserName());
+        map.put("name", hostIp);
+        map.put("options", options);
+        if (scriptHandler instanceof ProjectHandler) {
+            String scriptContent = fileEntryService.getScriptHandler("groovy").getScriptTemplate(map);
+            scriptHandler.prepareScriptEnv(user, path, StringUtils.trimToEmpty(fileName), hostIp, testUrl, createLibAndResources, scriptContent);
+            return scriptContent;
+        } else {
+            return scriptHandler.getScriptTemplate(map);
+        }
     }
 }
