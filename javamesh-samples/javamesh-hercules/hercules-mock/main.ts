@@ -584,6 +584,19 @@ app.get('/argus-emergency/api/script/getByName', function (req, res) {
         }
     })
 })
+app.get('/argus-emergency/api/script/ide/get', function (req, res) {
+    res.json({
+        data: {
+            script_name: "abc.sh",
+        }
+    })
+})
+app.post('/argus-emergency/api/script/ide', function (req, res) {
+    res.json()
+})
+app.put('/argus-emergency/api/script/ide', function (req, res) {
+    res.json()
+})
 app.post('/argus-emergency/api/script/orchestrate', function (req, res) {
     res.json({
         data: {
