@@ -20,8 +20,9 @@ export default function App() {
         <Breadcrumb label="脚本管理" sub={{ label: "创建", parentUrl: "/DisasterRecovery/ScriptManage" }} />
         <Card>
             <Form form={form} requiredMark={false} labelCol={{ span: 3 }}
-                initialValues={{ script_from: "手工录入", ...state }}
-                onFinish={async function (values) {
+                initialValues={{ script_from: "手工录入", public: "私有", ...state }}
+                onFinish={async function (forms) {
+                    const values = {...forms, ...state}
                     if (submit) return
                     submit = true
                     try {
@@ -44,11 +45,14 @@ export default function App() {
                     submit = false
                 }}>
                 <div className="Line">
-                    <Form.Item labelCol={{ span: 1 }} name="script_name" label="脚本名">
+                    <Form.Item className="Middle" labelCol={{ span: 1 }} name="script_name" label="脚本名">
                         <Input disabled />
                     </Form.Item>
                     <Form.Item className="Middle" name="language" label="脚本分类">
                         <Input disabled />
+                    </Form.Item>
+                    <Form.Item className="Middle" name="public" label="归属">
+                        <Radio.Group options={["私有", "共有"]}/>
                     </Form.Item>
                 </div>
                 <Script form={form} />

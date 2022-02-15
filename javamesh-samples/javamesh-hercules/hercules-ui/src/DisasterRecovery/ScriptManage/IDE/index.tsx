@@ -26,25 +26,23 @@ export default function App() {
     return <div className="ScriptUpdate">
         <Breadcrumb label="脚本管理" sub={{ label: "详情", parentUrl: "/DisasterRecovery/ScriptManage" }} />
         <Card>
-            <Form form={form} requiredMark={false} labelCol={{ span: 3 }}
-                initialValues={{ language: "Shell", pwd_from: "本地", script_from: "手工录入", public: "私有", has_pwd: "无" }}
-                onFinish={async function (values) {
-                    if (submit) return
-                    submit = true
-                    try {
-                        await axios.put('/argus-emergency/api/script/ide', {...values, script_id})
-                        message.success("更新成功")
-                        history.goBack()
-                    } catch (e: any) {
-                        message.error(e.message)
-                    }
-                    submit = false
-                }}>
+            <Form form={form} requiredMark={false} labelCol={{ span: 3 }} onFinish={async function (values) {
+                if (submit) return
+                submit = true
+                try {
+                    await axios.put('/argus-emergency/api/script/ide', { ...values, script_id })
+                    message.success("更新成功")
+                    history.goBack()
+                } catch (e: any) {
+                    message.error(e.message)
+                }
+                submit = false
+            }}>
                 <Form.Item labelCol={{ span: 1 }} name="script_name" label="脚本名">
                     <Input disabled />
                 </Form.Item>
                 <Form.Item label="脚本内容" className="Editor WithoutLabel" name="content" rules={[{ required: true, max: 5000 }]}>
-                    <Editor className="MonacoEditor" language="shell" height={200}/>
+                    <Editor className="MonacoEditor" language="shell" height={200} />
                 </Form.Item>
                 <Form.Item className="ScriptParam" labelCol={{ span: 1 }} name="param" label="脚本参数" rules={[{
                     pattern: /^[\w,.|]+$/,
@@ -55,7 +53,7 @@ export default function App() {
                 </Form.Item>
                 <Form.Item className="Buttons">
                     <Button className="Save" htmlType="submit" type="primary">提交</Button>
-                    <Button onClick={function(){
+                    <Button onClick={function () {
                         history.goBack()
                     }}>取消</Button>
                 </Form.Item>

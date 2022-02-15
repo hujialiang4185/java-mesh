@@ -50,6 +50,9 @@ export default function App() {
                     <Form.Item className="Middle" name="language" label="脚本分类">
                         <Input disabled />
                     </Form.Item>
+                    <Form.Item className="Middle" name="public" label="归属">
+                        <Input disabled />
+                    </Form.Item>
                 </div>
                 <Form.Item label="脚本内容" className="Editor WithoutLabel" name="content" rules={[{ required: true, max: 5000 }]}>
                     <Editor className="MonacoEditor" language={language} height={200} />
