@@ -1,8 +1,8 @@
-import { Button, Form, Input, message, Radio } from "antd"
+import { Button, Form, FormInstance, Input, message, Radio } from "antd"
 import React, { useRef, useState } from "react"
 import Breadcrumb from "../../../component/Breadcrumb"
 import Card from "../../../component/Card"
-import { useHistory } from "react-router-dom"
+import { useHistory, useLocation } from "react-router-dom"
 import axios from "axios"
 import { debounce } from 'lodash';
 import "./index.scss"
@@ -14,12 +14,13 @@ import Editor from "@monaco-editor/react";
 export default function App() {
     let submit = false
     const history = useHistory()
+    const state = useLocation().state as any
     const [form] = Form.useForm()
     return <div className="ScriptCreate">
         <Breadcrumb label="脚本管理" sub={{ label: "创建", parentUrl: "/DisasterRecovery/ScriptManage" }} />
         <Card>
             <Form form={form} requiredMark={false} labelCol={{ span: 3 }}
-                initialValues={{ language: "Shell", pwd_from: "本地", script_from: "手工录入", public: "私有", has_pwd: "无" }}
+                initialValues={{ script_from: "手工录入", ...state }}
                 onFinish={async function (values) {
                     if (submit) return
                     submit = true
@@ -42,11 +43,15 @@ export default function App() {
                     }
                     submit = false
                 }}>
-                <Form.Item labelCol={{ span: 1 }} name="script_name" label="脚本名">
-                    <Input disabled />
-                </Form.Item>
-                <Script />
-                <DebugScript form={form} />
+                <div className="Line">
+                    <Form.Item labelCol={{ span: 1 }} name="script_name" label="脚本名">
+                        <Input disabled />
+                    </Form.Item>
+                    <Form.Item className="Middle" name="language" label="脚本分类">
+                        <Input disabled />
+                    </Form.Item>
+                </div>
+                <Script form={form} />
                 <Form.Item className="ScriptParam" labelCol={{ span: 1 }} name="param" label="脚本参数" rules={[{
                     pattern: /^[\w,.|]+$/,
                     message: "格式错误"
@@ -63,7 +68,7 @@ export default function App() {
     </div>
 }
 
-function Script() {
+function Script({ form }: { form: FormInstance }) {
     const [scriptFrom, setScriptFrom] = useState("input")
     const [script, setScript] = useState<string>()
     return <>
@@ -87,16 +92,20 @@ function Script() {
                 <Upload max={1} />
             </Form.Item>}
         </div>
-        {scriptFrom !== "本地导入" && <Form.Item label="脚本内容" className="Editor WithoutLabel" name="content" rules={[{ required: true, max: 5000 }]}>
-            <ScriptEditor script={script} setScript={setScript} />
-        </Form.Item>}
+        {scriptFrom !== "本地导入" && <>
+            <Form.Item label="脚本内容" className="Editor WithoutLabel" name="content" rules={[{ required: true, max: 5000 }]}>
+                <ScriptEditor script={script} setScript={setScript} />
+            </Form.Item>
+            <DebugScript form={form} />
+        </>}
     </>
 }
 
 function ScriptEditor(props: { onChange?: (value?: string) => void, script?: string, setScript: (script?: string) => void }) {
+    const state = useLocation().state as any
     const debounceRef = useRef(debounce(function (value?: string) {
         props.setScript(value)
         props.onChange?.(value)
     }, 1000))
-    return <Editor className="MonacoEditor" height={200} language="shell" value={props.script} onChange={debounceRef.current} />
+    return <Editor className="MonacoEditor" height={200} language={state.language.toLowerCase()} value={props.script} onChange={debounceRef.current} />
 }

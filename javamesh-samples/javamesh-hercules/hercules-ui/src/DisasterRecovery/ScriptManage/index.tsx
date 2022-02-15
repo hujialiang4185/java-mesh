@@ -309,7 +309,7 @@ function AddScript() {
         <Modal className="AddScript" title="添加脚本" width={950} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form form={form} requiredMark={false} labelCol={{ span: 2 }} initialValues={{ public: "私有", type: "压测脚本", orchestrate_type: "GUI", language: "Shell" }} onFinish={async function (values) {
+            <Form form={form} requiredMark={false} labelCol={{ span: 2 }} initialValues={{ public: "私有", type: normal ? "非压测脚本" : "压测脚本", orchestrate_type: "GUI", language: "Shell" }} onFinish={async function (values) {
                 if (submit) return
                 submit = true
                 try {
@@ -317,7 +317,7 @@ function AddScript() {
                         const res = await axios.post("/argus-emergency/api/script/orchestrate", values)
                         history.push(`${path}/GUI?script_id=${res.data.data.script_id}`)
                     } else {
-                        history.push(`${path}/${values.type === "压测脚本" ? "IDECreate" : "GUICreate"}`, values)
+                        history.push(`${path}/${values.type === "压测脚本" ? "IDECreate" : "NORMALCreate"}`, values)
                     }
                     setIsModalVisible(false)
                     form.resetFields()

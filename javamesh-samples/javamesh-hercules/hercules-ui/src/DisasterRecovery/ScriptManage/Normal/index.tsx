@@ -1,5 +1,5 @@
 import { Button, Form, Input, message } from "antd"
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import Breadcrumb from "../../../component/Breadcrumb"
 import Card from "../../../component/Card"
 import { useHistory, useLocation } from "react-router-dom"
@@ -13,12 +13,14 @@ export default function App() {
     const history = useHistory()
     const urlSearchParams = new URLSearchParams(useLocation().search)
     const script_id = urlSearchParams.get("script_id")
+    const [language, setLanguage] = useState("shell")
     const [form] = Form.useForm()
     useEffect(function () {
         (async function () {
             try {
                 const res = await axios.get('/argus-emergency/api/script/get', { params: { script_id } })
                 form.setFieldsValue(res.data.data)
+                setLanguage(res.data.data.language)
             } catch (error: any) {
                 message.error(error.message)
             }
@@ -50,7 +52,7 @@ export default function App() {
                     </Form.Item>
                 </div>
                 <Form.Item label="脚本内容" className="Editor WithoutLabel" name="content" rules={[{ required: true, max: 5000 }]}>
-                    <Editor className="MonacoEditor" language="shell" height={200} />
+                    <Editor className="MonacoEditor" language={language} height={200} />
                 </Form.Item>
                 <DebugScript form={form} />
                 <Form.Item className="ScriptParam" labelCol={{ span: 1 }} name="param" label="脚本参数" rules={[{

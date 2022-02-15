@@ -79,10 +79,10 @@ export default function App() {
                     </Form.Item>
                     <span className="Info"><InfoCircleOutlined />您可以上传".class", ".py", ".jar" 类型的文件到lib目录, 或者其他任何资源到resources目录</span>
                 </div>
-                <Collapse expandIconPosition="right" expandIcon={function ({ isActive }) {
+                <Collapse expandIconPosition="right" defaultActiveKey="0" expandIcon={function ({ isActive }) {
                     return <span className={`icon fa fa-angle-double-${isActive ? "down" : "right"}`}></span>
                 }}>
-                    <Collapse.Panel header="显示高级配置" key="0">
+                    <Collapse.Panel header="高级配置" key="0">
                         <div className="Line SubLine">
                             <div className="Label">Headers</div>
                             <div>
