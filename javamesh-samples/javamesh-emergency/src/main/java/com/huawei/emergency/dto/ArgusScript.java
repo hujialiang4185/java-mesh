@@ -16,15 +16,23 @@
 
 package com.huawei.emergency.dto;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
  * @author y30010171
  * @since 2021-12-26
  **/
+@ApiModel(value="压测脚本对象",description="压测脚本对象")
 @Data
 public class ArgusScript {
+    @ApiModelProperty(value = "脚本路径",required = true,example = "emergency/test.groovy")
     private String path;
+
+    @ApiModelProperty(value = "提交信息",required = true,example = "第一次commit")
     private String commit;
+
+    @ApiModelProperty(value = "脚本内容",required = true,example = "这是脚本内容")
     private String script;
 }

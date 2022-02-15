@@ -5,29 +5,26 @@
 package com.huawei.common.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Data;
 
 /**
  * 通用返回对象
  *
- * @author h30009881
  * @param <T>
+ * @author h30009881
  * @since 2021-10-14
  */
+@Data
 public class CommonResult<T> {
+    private static final int SUCCESS = 200;
+    private static final int FAILED = 500;
+
     private int code;
-    // 提示信息
     private String msg;
-
-    // 数据封装
     private T data;
-
-    // 总数
     private int total;
 
-    protected CommonResult() {
-    }
-
-    protected CommonResult(int code, String msg, T data, int total) {
+    private CommonResult(int code, String msg, T data, int total) {
         this.code = code;
         this.msg = msg;
         this.data = data;
@@ -41,7 +38,7 @@ public class CommonResult<T> {
      * @return {@link CommonResult}
      */
     public static <T> CommonResult<T> success() {
-        return new CommonResult<T>(200, null, null, 0);
+        return new CommonResult<T>(SUCCESS, null, null, 0);
     }
 
     /**
@@ -52,7 +49,7 @@ public class CommonResult<T> {
      * @return {@link CommonResult}
      */
     public static <T> CommonResult<T> success(T data) {
-        return new CommonResult<T>(200, null, data, 0);
+        return new CommonResult<T>(SUCCESS, null, data, 0);
     }
 
     /**
@@ -64,7 +61,7 @@ public class CommonResult<T> {
      * @return {@link CommonResult}
      */
     public static <T> CommonResult<T> success(T data, int total) {
-        return new CommonResult<T>(200, null, data, total);
+        return new CommonResult<T>(SUCCESS, null, data, total);
     }
 
     /**
@@ -75,7 +72,7 @@ public class CommonResult<T> {
      * @return {@link CommonResult}
      */
     public static <T> CommonResult<T> failed(String msg) {
-        return new CommonResult<T>(500, msg, null, 0);
+        return new CommonResult<T>(FAILED, msg, null, 0);
     }
 
     /**
@@ -86,35 +83,11 @@ public class CommonResult<T> {
      * @return {@link CommonResult}
      */
     public static <T> CommonResult<T> validateFailed(String message) {
-        return new CommonResult<T>(500, message, null, 0);
-    }
-
-    public String getMsg() {
-        return msg;
-    }
-
-    public void setMsg(String msg) {
-        this.msg = msg;
-    }
-
-    public T getData() {
-        return data;
-    }
-
-    public void setData(T data) {
-        this.data = data;
-    }
-
-    public int getTotal() {
-        return total;
-    }
-
-    public void setTotal(int total) {
-        this.total = total;
+        return new CommonResult<T>(FAILED, message, null, 0);
     }
 
     @JsonIgnore
     public boolean isSuccess() {
-        return code == 200;
+        return code == SUCCESS;
     }
 }

@@ -20,6 +20,9 @@ import com.huawei.common.api.CommonResult;
 import com.huawei.emergency.dto.ArgusScript;
 import com.huawei.emergency.layout.TreeResponse;
 import com.huawei.emergency.service.EmergencyArgusScriptService;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,11 +35,13 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * 用于返回压测脚本信息
+ * 用于原压测脚本管理页面
+ * 脚本编辑框
  *
  * @author y30010171
  * @since 2021-12-27
  **/
+@Api(tags = "压测脚本管理")
 @RestController
 @RequestMapping("/api/script/argus/")
 public class EmergencyArgusScriptController {
@@ -45,11 +50,12 @@ public class EmergencyArgusScriptController {
     EmergencyArgusScriptService argusScriptService;
 
     /**
-     * 获取当前压测脚本的编排模板,如果为空则创建
+     * 生成压测脚本的编排模板
      *
-     * @param script
-     * @return
+     * @param script {@link ArgusScript} 压测脚本信息
+     * @return {@link CommonResult}
      */
+    @ApiOperation(value = "生成压测脚本的编排模板", notes = "用于第一次编排时，生成压测脚本的编排模板", hidden = true)
     @PostMapping("/orchestrate")
     public CommonResult createArgusOrchestrate(@RequestBody ArgusScript script) {
         return argusScriptService.createArgusOrchestrate(script);
@@ -59,8 +65,9 @@ public class EmergencyArgusScriptController {
      * 获取压测脚本的编排模板，如果为空则返回默认模板
      *
      * @param path 压测脚本路径
-     * @return
+     * @return {@link CommonResult}
      */
+    @ApiOperation(value = "获取压测脚本的编排模板", notes = "获取压测脚本的编排模板，如果不存在则返回一个默认模板")
     @GetMapping("/orchestrate")
     public CommonResult getArgusOrchestrate(@RequestParam("path") String path) {
         return argusScriptService.getArgusOrchestrate(path);
@@ -69,10 +76,11 @@ public class EmergencyArgusScriptController {
     /**
      * 保存压测脚本模板，返回生成的脚本信息
      *
-     * @param request
-     * @param treeResponse
-     * @return
+     * @param request      {@link HttpServletRequest} 请求信息
+     * @param treeResponse {@link TreeResponse} 编排模板数据
+     * @return {@link CommonResult}
      */
+    @ApiOperation(value = "更新压测脚本的编排模板", notes = "更新压测脚本的编排模板，同时返回生成的脚本内容")
     @PutMapping("/orchestrate")
     public CommonResult updateArgusOrchestrate(HttpServletRequest request, @RequestBody TreeResponse treeResponse) {
         return argusScriptService.updateArgusOrchestrate(request, treeResponse);
