@@ -17,6 +17,8 @@
 package com.huawei.emergency.controller;
 
 import com.huawei.common.api.CommonResult;
+import com.huawei.emergency.entity.EmergencyResource;
+import com.huawei.emergency.layout.TestElementFactory;
 import com.huawei.emergency.service.EmergencyResourceService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -64,9 +66,9 @@ public class EmergencyResourceController {
      */
     @ApiOperation(value = "上传资源文件", notes = "用于上传脚本运行相关依赖")
     @PostMapping
-    public CommonResult uploadResource(@RequestParam(value = "script_id", required = false) Integer scriptId,
+    public CommonResult upload(@RequestParam(value = "script_id", required = false) Integer scriptId,
                                @RequestParam(value = "path", required = false) String path,
-                               @RequestParam(value = "file") MultipartFile file, HttpServletResponse response) {
+                               @RequestParam(value = "file") MultipartFile file, HttpServletResponse response) throws IOException {
         if (file == null || StringUtils.isEmpty(file.getOriginalFilename())) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return CommonResult.failed("请选择要上传的文件");

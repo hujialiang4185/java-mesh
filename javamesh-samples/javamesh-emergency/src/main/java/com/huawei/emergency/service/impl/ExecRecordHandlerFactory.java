@@ -5,6 +5,7 @@
 package com.huawei.emergency.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.huawei.argus.restcontroller.RestPerfTestController;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.config.CommonConfig;
 import com.huawei.common.constant.RecordStatus;
@@ -100,6 +101,9 @@ public class ExecRecordHandlerFactory {
     @Autowired
     EmergencyTaskMapper taskMapper;
 
+    @Autowired
+    private RestPerfTestController perfTestController;
+
     /**
      * 获取一个执行器实例
      *
@@ -130,22 +134,29 @@ public class ExecRecordHandlerFactory {
         @Override
         public void run() {
             EmergencyExecRecordWithBLOBs record = recordMapper.selectByPrimaryKey(currentRecord.getRecordId());
-
-            // 出现事务还未提交，此时查不到这条数据
             int retryTimes = 10;
-            while (record == null && retryTimes > 0) {
-                record = recordMapper.selectByPrimaryKey(currentRecord.getRecordId());
-                retryTimes--;
+            while (record == null && retryTimes > 0) { // 出现事务还未提交，此时查不到这条数据
+                try {
+                    Thread.sleep(1000);
+                    record = recordMapper.selectByPrimaryKey(currentRecord.getRecordId());
+                } catch (InterruptedException e) {
+                    LOGGER.error("interrupted while wait for exec recordId={}", record.getRecordId());
+                } finally {
+                    retryTimes--;
+                }
             }
-            if (record == null || !RecordStatus.PENDING.getValue().equals(record.getStatus())) {
+            if (record == null) {
+                LOGGER.error("record was not commit. {}", record.getRecordId());
                 return;
             }
             try {
+                if (!RecordStatus.PENDING.getValue().equals(record.getStatus())) {
+                    LOGGER.error("record was canceled. {}", record.getRecordId());
+                    throw new ApiException("执行已取消.");
+                }
                 List<EmergencyExecRecordDetail> emergencyExecRecordDetails = generateRecordDetail(record);
                 EmergencyExecRecordWithBLOBs finalRecord = record;
-                emergencyExecRecordDetails.forEach(recordDetail -> {
-                    handle(finalRecord, recordDetail);
-                });
+                emergencyExecRecordDetails.forEach(recordDetail -> handle(finalRecord, recordDetail));
             } catch (ApiException e) {
                 LOGGER.error("failed to generateRecordDetail. {}.{}", record.getRecordId(), e.getMessage());
                 EmergencyExecRecordWithBLOBs errorRecord = new EmergencyExecRecordWithBLOBs();
@@ -465,9 +476,6 @@ public class ExecRecordHandlerFactory {
         if (emergencyExecRecords.size() > 0) {
             WebSocketServer.sendMessage("/scena/" + emergencyExecRecords.get(0).getRecordId());
         }
-    }
-
-    public void freshArgus(int planId) {
     }
 
     public int createArgusTest(int recordId, JSONObject testParams) {

@@ -5,6 +5,7 @@
     <id column="record_id" jdbcType="INTEGER" property="recordId" />
     <result column="exec_id" jdbcType="INTEGER" property="execId" />
     <result column="plan_id" jdbcType="INTEGER" property="planId" />
+    <result column="plan_detail_id" jdbcType="INTEGER" property="planDetailId" />
     <result column="scene_id" jdbcType="INTEGER" property="sceneId" />
     <result column="task_id" jdbcType="INTEGER" property="taskId" />
     <result column="pre_scene_id" jdbcType="INTEGER" property="preSceneId" />
@@ -28,6 +29,7 @@
     <result column="ensure_user" jdbcType="VARCHAR" property="ensureUser" />
     <result column="is_valid" jdbcType="VARCHAR" property="isValid" />
     <result column="sync" jdbcType="VARCHAR" property="sync" />
+    <result column="perf_test_id" jdbcType="INTEGER" property="perfTestId" />
   </resultMap>
   <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.huawei.emergency.entity.EmergencyExecRecordWithBLOBs">
     <result column="script_content" jdbcType="LONGVARCHAR" property="scriptContent" />
@@ -92,10 +94,10 @@
     </where>
   </sql>
   <sql id="Base_Column_List">
-    record_id, exec_id, plan_id, scene_id, task_id, pre_scene_id, pre_task_id, parent_task_id, 
-    status, script_id, script_name, script_type, script_params, server_id, server_ip, 
-    server_user, have_password, password_mode, password, create_user, create_time, start_time, 
-    end_time, ensure_user, is_valid, sync
+    record_id, exec_id, plan_id, plan_detail_id, scene_id, task_id, pre_scene_id, pre_task_id,
+    parent_task_id, status, script_id, script_name, script_type, script_params, server_id,
+    server_ip, server_user, have_password, password_mode, password, create_user, create_time,
+    start_time, end_time, ensure_user, is_valid, sync, perf_test_id
   </sql>
   <sql id="Blob_Column_List">
     script_content, log
@@ -133,7 +135,7 @@
     </if>
   </select>
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="ResultMapWithBLOBs">
-    select 
+    select
     <include refid="Base_Column_List" />
     ,
     <include refid="Blob_Column_List" />
@@ -154,26 +156,26 @@
     <selectKey keyProperty="recordId" order="AFTER" resultType="java.lang.Integer">
       SELECT LAST_INSERT_ID()
     </selectKey>
-    insert into emergency_exec_record (exec_id, plan_id, scene_id, 
-      task_id, pre_scene_id, pre_task_id, 
-      parent_task_id, status, script_id, 
-      script_name, script_type, script_params, 
-      server_id, server_ip, server_user, 
-      have_password, password_mode, password, 
-      create_user, create_time, start_time, 
-      end_time, ensure_user, is_valid, 
-      sync, script_content, log
-      )
-    values (#{execId,jdbcType=INTEGER}, #{planId,jdbcType=INTEGER}, #{sceneId,jdbcType=INTEGER}, 
-      #{taskId,jdbcType=INTEGER}, #{preSceneId,jdbcType=INTEGER}, #{preTaskId,jdbcType=INTEGER}, 
-      #{parentTaskId,jdbcType=INTEGER}, #{status,jdbcType=VARCHAR}, #{scriptId,jdbcType=INTEGER}, 
-      #{scriptName,jdbcType=VARCHAR}, #{scriptType,jdbcType=VARCHAR}, #{scriptParams,jdbcType=VARCHAR}, 
-      #{serverId,jdbcType=VARCHAR}, #{serverIp,jdbcType=VARCHAR}, #{serverUser,jdbcType=VARCHAR}, 
-      #{havePassword,jdbcType=VARCHAR}, #{passwordMode,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, 
-      #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{startTime,jdbcType=TIMESTAMP}, 
-      #{endTime,jdbcType=TIMESTAMP}, #{ensureUser,jdbcType=VARCHAR}, #{isValid,jdbcType=VARCHAR}, 
-      #{sync,jdbcType=VARCHAR}, #{scriptContent,jdbcType=LONGVARCHAR}, #{log,jdbcType=LONGVARCHAR}
-      )
+    insert into emergency_exec_record (exec_id, plan_id, plan_detail_id,
+      scene_id, task_id, pre_scene_id,
+      pre_task_id, parent_task_id, status,
+      script_id, script_name, script_type,
+      script_params, server_id, server_ip,
+      server_user, have_password, password_mode,
+      password, create_user, create_time,
+      start_time, end_time, ensure_user,
+      is_valid, sync, perf_test_id,
+      script_content, log)
+    values (#{execId,jdbcType=INTEGER}, #{planId,jdbcType=INTEGER}, #{planDetailId,jdbcType=INTEGER},
+      #{sceneId,jdbcType=INTEGER}, #{taskId,jdbcType=INTEGER}, #{preSceneId,jdbcType=INTEGER},
+      #{preTaskId,jdbcType=INTEGER}, #{parentTaskId,jdbcType=INTEGER}, #{status,jdbcType=VARCHAR},
+      #{scriptId,jdbcType=INTEGER}, #{scriptName,jdbcType=VARCHAR}, #{scriptType,jdbcType=VARCHAR},
+      #{scriptParams,jdbcType=VARCHAR}, #{serverId,jdbcType=VARCHAR}, #{serverIp,jdbcType=VARCHAR},
+      #{serverUser,jdbcType=VARCHAR}, #{havePassword,jdbcType=VARCHAR}, #{passwordMode,jdbcType=VARCHAR},
+      #{password,jdbcType=VARCHAR}, #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP},
+      #{startTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP}, #{ensureUser,jdbcType=VARCHAR},
+      #{isValid,jdbcType=VARCHAR}, #{sync,jdbcType=VARCHAR}, #{perfTestId,jdbcType=INTEGER},
+      #{scriptContent,jdbcType=LONGVARCHAR}, #{log,jdbcType=LONGVARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.huawei.emergency.entity.EmergencyExecRecordWithBLOBs">
     <selectKey keyProperty="recordId" order="AFTER" resultType="java.lang.Integer">
@@ -186,6 +188,9 @@
       </if>
       <if test="planId != null">
         plan_id,
+      </if>
+      <if test="planDetailId != null">
+        plan_detail_id,
       </if>
       <if test="sceneId != null">
         scene_id,
@@ -256,6 +261,9 @@
       <if test="sync != null">
         sync,
       </if>
+      <if test="perfTestId != null">
+        perf_test_id,
+      </if>
       <if test="scriptContent != null">
         script_content,
       </if>
@@ -269,6 +277,9 @@
       </if>
       <if test="planId != null">
         #{planId,jdbcType=INTEGER},
+      </if>
+      <if test="planDetailId != null">
+        #{planDetailId,jdbcType=INTEGER},
       </if>
       <if test="sceneId != null">
         #{sceneId,jdbcType=INTEGER},
@@ -339,6 +350,9 @@
       <if test="sync != null">
         #{sync,jdbcType=VARCHAR},
       </if>
+      <if test="perfTestId != null">
+        #{perfTestId,jdbcType=INTEGER},
+      </if>
       <if test="scriptContent != null">
         #{scriptContent,jdbcType=LONGVARCHAR},
       </if>
@@ -364,6 +378,9 @@
       </if>
       <if test="record.planId != null">
         plan_id = #{record.planId,jdbcType=INTEGER},
+      </if>
+      <if test="record.planDetailId != null">
+        plan_detail_id = #{record.planDetailId,jdbcType=INTEGER},
       </if>
       <if test="record.sceneId != null">
         scene_id = #{record.sceneId,jdbcType=INTEGER},
@@ -434,6 +451,9 @@
       <if test="record.sync != null">
         sync = #{record.sync,jdbcType=VARCHAR},
       </if>
+      <if test="record.perfTestId != null">
+        perf_test_id = #{record.perfTestId,jdbcType=INTEGER},
+      </if>
       <if test="record.scriptContent != null">
         script_content = #{record.scriptContent,jdbcType=LONGVARCHAR},
       </if>
@@ -450,6 +470,7 @@
     set record_id = #{record.recordId,jdbcType=INTEGER},
       exec_id = #{record.execId,jdbcType=INTEGER},
       plan_id = #{record.planId,jdbcType=INTEGER},
+      plan_detail_id = #{record.planDetailId,jdbcType=INTEGER},
       scene_id = #{record.sceneId,jdbcType=INTEGER},
       task_id = #{record.taskId,jdbcType=INTEGER},
       pre_scene_id = #{record.preSceneId,jdbcType=INTEGER},
@@ -473,6 +494,7 @@
       ensure_user = #{record.ensureUser,jdbcType=VARCHAR},
       is_valid = #{record.isValid,jdbcType=VARCHAR},
       sync = #{record.sync,jdbcType=VARCHAR},
+      perf_test_id = #{record.perfTestId,jdbcType=INTEGER},
       script_content = #{record.scriptContent,jdbcType=LONGVARCHAR},
       log = #{record.log,jdbcType=LONGVARCHAR}
     <if test="_parameter != null">
@@ -484,6 +506,7 @@
     set record_id = #{record.recordId,jdbcType=INTEGER},
       exec_id = #{record.execId,jdbcType=INTEGER},
       plan_id = #{record.planId,jdbcType=INTEGER},
+      plan_detail_id = #{record.planDetailId,jdbcType=INTEGER},
       scene_id = #{record.sceneId,jdbcType=INTEGER},
       task_id = #{record.taskId,jdbcType=INTEGER},
       pre_scene_id = #{record.preSceneId,jdbcType=INTEGER},
@@ -506,7 +529,8 @@
       end_time = #{record.endTime,jdbcType=TIMESTAMP},
       ensure_user = #{record.ensureUser,jdbcType=VARCHAR},
       is_valid = #{record.isValid,jdbcType=VARCHAR},
-      sync = #{record.sync,jdbcType=VARCHAR}
+      sync = #{record.sync,jdbcType=VARCHAR},
+      perf_test_id = #{record.perfTestId,jdbcType=INTEGER}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -519,6 +543,9 @@
       </if>
       <if test="planId != null">
         plan_id = #{planId,jdbcType=INTEGER},
+      </if>
+      <if test="planDetailId != null">
+        plan_detail_id = #{planDetailId,jdbcType=INTEGER},
       </if>
       <if test="sceneId != null">
         scene_id = #{sceneId,jdbcType=INTEGER},
@@ -589,6 +616,9 @@
       <if test="sync != null">
         sync = #{sync,jdbcType=VARCHAR},
       </if>
+      <if test="perfTestId != null">
+        perf_test_id = #{perfTestId,jdbcType=INTEGER},
+      </if>
       <if test="scriptContent != null">
         script_content = #{scriptContent,jdbcType=LONGVARCHAR},
       </if>
@@ -602,6 +632,7 @@
     update emergency_exec_record
     set exec_id = #{execId,jdbcType=INTEGER},
       plan_id = #{planId,jdbcType=INTEGER},
+      plan_detail_id = #{planDetailId,jdbcType=INTEGER},
       scene_id = #{sceneId,jdbcType=INTEGER},
       task_id = #{taskId,jdbcType=INTEGER},
       pre_scene_id = #{preSceneId,jdbcType=INTEGER},
@@ -625,6 +656,7 @@
       ensure_user = #{ensureUser,jdbcType=VARCHAR},
       is_valid = #{isValid,jdbcType=VARCHAR},
       sync = #{sync,jdbcType=VARCHAR},
+      perf_test_id = #{perfTestId,jdbcType=INTEGER},
       script_content = #{scriptContent,jdbcType=LONGVARCHAR},
       log = #{log,jdbcType=LONGVARCHAR}
     where record_id = #{recordId,jdbcType=INTEGER}
@@ -633,6 +665,7 @@
     update emergency_exec_record
     set exec_id = #{execId,jdbcType=INTEGER},
       plan_id = #{planId,jdbcType=INTEGER},
+      plan_detail_id = #{planDetailId,jdbcType=INTEGER},
       scene_id = #{sceneId,jdbcType=INTEGER},
       task_id = #{taskId,jdbcType=INTEGER},
       pre_scene_id = #{preSceneId,jdbcType=INTEGER},
@@ -655,17 +688,21 @@
       end_time = #{endTime,jdbcType=TIMESTAMP},
       ensure_user = #{ensureUser,jdbcType=VARCHAR},
       is_valid = #{isValid,jdbcType=VARCHAR},
-      sync = #{sync,jdbcType=VARCHAR}
+      sync = #{sync,jdbcType=VARCHAR},
+      perf_test_id = #{perfTestId,jdbcType=INTEGER}
     where record_id = #{recordId,jdbcType=INTEGER}
   </update>
 
+
     <select id="selectAllPlanDetail" parameterType="java.lang.Integer" resultType="com.huawei.emergency.entity.EmergencyExecRecordWithBLOBs">
         SELECT plan.plan_id                     AS plan_id,
+               plan_detail.detail_id as plan_detail_id,
                plan_detail.scene_id             AS scene_id,
                task.task_id                     AS task_id,
                plan_detail.pre_scene_id,
                plan_detail.pre_task_id,
                plan_detail.parent_task_id,
+               IFNULL(task.perf_test_id,scene.perf_test_id) perf_test_id,
                (CASE
                     WHEN plan_detail.task_id IS NULL THEN scene_script.script_id
                     ELSE script.script_id END)     script_id,

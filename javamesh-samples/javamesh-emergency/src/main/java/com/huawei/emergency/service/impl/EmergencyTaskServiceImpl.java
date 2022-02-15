@@ -7,7 +7,7 @@ package com.huawei.emergency.service.impl;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ValidEnum;
-import com.huawei.common.ws.WebSocketServer;
+import com.huawei.emergency.dto.TaskCommonReport;
 import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyExecRecordExample;
 import com.huawei.emergency.entity.EmergencyScript;
@@ -21,6 +21,8 @@ import com.huawei.emergency.service.EmergencySceneService;
 import com.huawei.emergency.service.EmergencyTaskService;
 
 import org.apache.commons.lang.StringUtils;
+import org.ngrinder.model.PerfTest;
+import org.ngrinder.perftest.service.PerfTestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +65,9 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
 
     @Autowired
     private ExecRecordHandlerFactory handlerFactory;
+
+    @Autowired
+    private PerfTestService perfTestService;
 
     @Override
     public void onComplete(EmergencyExecRecord record) {
@@ -147,9 +152,7 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
         if (StringUtils.isEmpty(emergencyTask.getTaskName())) {
             return CommonResult.failed("请填写任务名称");
         }
-
         EmergencyTask insertTask = new EmergencyTask();
-
         if (StringUtils.isNotEmpty(emergencyTask.getScriptName())) {
             EmergencyScriptExample scriptExample = new EmergencyScriptExample();
             scriptExample.createCriteria().andScriptNameEqualTo(emergencyTask.getScriptName());
@@ -164,6 +167,7 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
         insertTask.setTaskName(emergencyTask.getTaskName());
         insertTask.setChannelType(emergencyTask.getChannelType());
         insertTask.setCreateUser(emergencyTask.getCreateUser());
+        insertTask.setPerfTestId(emergencyTask.getPerfTestId());
         if (emergencyTask.getScriptId() != null) {
             EmergencyScript script = scriptMapper.selectByPrimaryKey(emergencyTask.getScriptId());
             if (script != null) {
@@ -172,12 +176,6 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
             }
         }
         taskMapper.insertSelective(insertTask);
-
-        /*EmergencyTask updateTaskNo = new EmergencyTask();
-        updateTaskNo.setTaskId(insertTask.getTaskId());
-        updateTaskNo.setTaskNo(String.format("%s%s%04d", "T", LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE), insertTask.getTaskId()));
-        taskMapper.updateByPrimaryKeySelective(updateTaskNo);
-        insertTask.setTaskNo(updateTaskNo.getTaskNo());*/
         return CommonResult.success(insertTask);
     }
 
@@ -224,5 +222,19 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
             .andTaskIdEqualTo(taskId)
             .andIsValidEqualTo(ValidEnum.VALID.getValue());
         return taskMapper.countByExample(existCondition) > 0;
+    }
+
+    @Override
+    public CommonResult getCommonReport(Long perfTestId) {
+        if (perfTestId == null) {
+            return CommonResult.failed("请选择压测任务");
+        }
+        final PerfTest perfTest = perfTestService.getOne(perfTestId);
+        if (perfTest == null) {
+            return CommonResult.success();
+        }
+        TaskCommonReport commonReport = TaskCommonReport.parse(perfTest);
+        commonReport.setPlugins(perfTestService.getAvailableReportPlugins(perfTestId));
+        return CommonResult.success(commonReport);
     }
 }

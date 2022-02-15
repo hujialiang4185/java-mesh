@@ -16,16 +16,20 @@
 
 package com.huawei.emergency.service.impl;
 
+import com.huawei.argus.config.UserFactory;
+import com.huawei.argus.restcontroller.RestPerfTestController;
 import com.huawei.common.api.CommonPage;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.PlanStatus;
 import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ScheduleType;
+import com.huawei.common.constant.TaskTypeEnum;
 import com.huawei.common.constant.ValidEnum;
+import com.huawei.common.filter.UserFilter;
 import com.huawei.common.ws.WebSocketServer;
+import com.huawei.emergency.dto.PlanDetailQueryDto;
 import com.huawei.emergency.dto.PlanQueryDto;
 import com.huawei.emergency.dto.PlanQueryParams;
-import com.huawei.emergency.dto.SceneExecDto;
 import com.huawei.emergency.dto.TaskNode;
 import com.huawei.emergency.entity.EmergencyExec;
 import com.huawei.emergency.entity.EmergencyExecRecord;
@@ -50,19 +54,20 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 
 import org.apache.commons.lang.StringUtils;
+import org.ngrinder.model.PerfTest;
+import org.ngrinder.model.User;
+import org.ngrinder.perftest.service.PerfTestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.support.CronSequenceGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.annotation.Resource;
@@ -109,6 +114,12 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
 
     @Autowired
     private TaskScheduleCenter scheduleCenter;
+
+    @Autowired
+    private RestPerfTestController perfTestController;
+
+    @Autowired
+    private PerfTestService perfTestService;
 
     @Override
     public CommonResult add(EmergencyPlan emergencyPlan) {
@@ -212,6 +223,17 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         allExecRecords.forEach(record -> {
             record.setCreateUser(userName);
             record.setExecId(emergencyExec.getExecId());
+            if (record.getPerfTestId() != null) { // 如果是自定义脚本压测，根据此压测模板生成压测任务
+                User user = new User();
+                user.setUserId(UserFilter.currentUser().getUserName());
+                PerfTest testTemplate = perfTestService.getOne(record.getPerfTestId().longValue());
+                testTemplate.setId(null);
+                testTemplate.setCreatedDate(new Date());
+                testTemplate.setCreatedUser(user);
+                PerfTest perfTest = perfTestController.saveOne(user, testTemplate);
+                record.setPerfTestId(perfTest.getId().intValue());
+                LOGGER.info("create perfTest {}", perfTest.getId());
+            }
             recordMapper.insertSelective(record);
         });
         EmergencyPlan updatePlan = new EmergencyPlan();
@@ -256,7 +278,8 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             return exec(plan.getPlanId(), userName);
         }
         if (scheduleType == ScheduleType.CORN) {
-            if (StringUtils.isEmpty(plan.getScheduleConf()) || !CronSequenceGenerator.isValidExpression(plan.getScheduleConf())) {
+            if (StringUtils.isEmpty(plan.getScheduleConf())
+                || !CronSequenceGenerator.isValidExpression(plan.getScheduleConf())) {
                 return CommonResult.failed("corn表达式不合法");
             }
         }
@@ -284,7 +307,8 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
                 return CommonResult.failed("请设置正确的执行时间");
             }
         } else {
-            nextTriggerTime = scheduleCenter.calculateNextTriggerTime(plan, new Date(System.currentTimeMillis())).getTime();
+            nextTriggerTime =
+                scheduleCenter.calculateNextTriggerTime(plan, new Date(System.currentTimeMillis())).getTime();
         }
         EmergencyPlan updatePlan = new EmergencyPlan();
         updatePlan.setPlanId(plan.getPlanId());
@@ -342,7 +366,8 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         if (StringUtils.isEmpty(plan.getStatus())) {
             return CommonResult.failed("审核结果不能为空");
         }
-        if (!PlanStatus.APPROVED.getValue().equals(plan.getStatus()) && !PlanStatus.REJECT.getValue().equals(plan.getStatus())) {
+        if (!PlanStatus.APPROVED.getValue().equals(plan.getStatus())
+            && !PlanStatus.REJECT.getValue().equals(plan.getStatus())) {
             return CommonResult.failed("审核结果不正确");
         }
         EmergencyPlan updatePlan = new EmergencyPlan();
@@ -390,6 +415,10 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
 
     @Override
     public CommonResult addTask(TaskNode taskNode) {
+        TaskTypeEnum taskType = TaskTypeEnum.match(taskNode.getTaskType());
+        if (taskType == null || taskType == TaskTypeEnum.FLOW_RECORD) {
+            return CommonResult.failed("不支持的任务类型");
+        }
         EmergencyTask task = new EmergencyTask();
         task.setTaskName(taskNode.getTaskName());
         task.setScriptId(taskNode.getScriptId());
@@ -397,9 +426,19 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         task.setChannelType(taskNode.getChannelType());
         task.setServerId(StringUtils.join(taskNode.getServiceId(), ","));
         task.setCreateUser(taskNode.getCreateUser());
-
+        task.setTaskType(taskType.getValue());
+        if (taskType == TaskTypeEnum.CUSTOM) { // 创建自定义脚本压测任务
+            PerfTest perfTest = taskNode.translate();
+            perfTest.setCreatedUser(UserFilter.currentGrinderUser());
+            perfTest.setCreatedDate(new Date());
+            PerfTest insertPerfTest = perfTestController.saveOne(UserFilter.currentGrinderUser(), perfTest);
+            if (insertPerfTest == null || insertPerfTest.getId() == null) {
+                return CommonResult.failed("创建压测任务失败");
+            }
+            task.setPerfTestId(insertPerfTest.getId().intValue());
+        }
         final CommonResult<EmergencyTask> addResult = taskService.add(task);
-        if (addResult.getData() == null) {
+        if (!addResult.isSuccess()) {
             return addResult;
         } else {
             EmergencyTask data = addResult.getData();
@@ -412,14 +451,31 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     @Override
     public CommonResult plan(CommonPage<PlanQueryParams> params) {
         Page<PlanQueryDto> pageInfo = PageHelper
-            .startPage(params.getPageIndex(), params.getPageSize(), StringUtils.isEmpty(params.getSortType()) ? "" : params.getSortField() + System.lineSeparator() + params.getSortType())
+            .startPage(params.getPageIndex(), params.getPageSize(), StringUtils.isEmpty(params.getSortType()) ? "" :
+                params.getSortField() + System.lineSeparator() + params.getSortType())
             .doSelectPage(() -> {
                 planMapper.queryPlanDto(params.getObject());
             });
         List<PlanQueryDto> result = pageInfo.getResult();
         // 查询明细
         result.forEach(planQueryDto -> {
-            planQueryDto.setExpand(planMapper.queryPlanDetailDto(planQueryDto.getPlanId()));
+            List<PlanDetailQueryDto> planDetails = planMapper.queryPlanDetailDto(planQueryDto.getPlanId());
+            planDetails.forEach(planDetail -> {
+                if (planDetail.getPerfTestId() == null) {
+                    return;
+                }
+                PerfTest perfTest = perfTestService.getOne(planDetail.getPerfTestId());
+                if (perfTest != null) {
+                    planDetail.setStartTime(perfTest.getStartTime());
+                    planDetail.setDuration(perfTest.getDuration());
+                    planDetail.setUserId(perfTest.getUserId());
+                    planDetail.setTagString(perfTest.getTagString());
+                    planDetail.setTps(perfTest.getTps());
+                    planDetail.setMeanTestTime(perfTest.getMeanTestTime());
+                    planDetail.setStatus(perfTest.getStatus().getIconName());
+                }
+            });
+            planQueryDto.setExpand(planDetails);
         });
         return CommonResult.success(result, (int) pageInfo.getTotal());
     }
@@ -480,7 +536,8 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         if (plan == null || ValidEnum.IN_VALID.equals(plan.getIsValid())) {
             return CommonResult.failed("预案不存在");
         }
-        if (!PlanStatus.NEW.getValue().equals(plan.getStatus()) && !PlanStatus.REJECT.getValue().equals(plan.getStatus())) {
+        if (!PlanStatus.NEW.getValue().equals(plan.getStatus())
+            && !PlanStatus.REJECT.getValue().equals(plan.getStatus())) {
             return CommonResult.failed("预案不为待提审或驳回状态");
         }
 
@@ -561,7 +618,8 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             insertTaskDetail.setSceneId(planDetail.getSceneId());
             insertTaskDetail.setTaskId(task.getKey());
             insertTaskDetail.setPreSceneId(planDetail.getPreSceneId());
-            insertTaskDetail.setParentTaskId(planDetail.getTaskId() == null ? planDetail.getSceneId() : planDetail.getTaskId());
+            insertTaskDetail.setParentTaskId(
+                planDetail.getTaskId() == null ? planDetail.getSceneId() : planDetail.getTaskId());
             if ("异步".equals(task.getSync())) {
                 insertTaskDetail.setSync("异步");
             } else {

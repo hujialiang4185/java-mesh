@@ -67,7 +67,9 @@ public class CommonConfig {
                 Enumeration<String> headerNames = request.getHeaderNames();
                 while (headerNames.hasMoreElements()) {
                     String headerName = headerNames.nextElement();
-                    httpRequest.getHeaders().add(headerName, request.getHeader(headerName));
+                    String headerValue = request.getHeader(headerName);
+                    LOGGER.debug("set header: {}={}", headerName, headerValue);
+                    httpRequest.getHeaders().add(headerName, headerValue);
                 }
             } else {
                 try {
@@ -75,6 +77,7 @@ public class CommonConfig {
                     if (loginResult != null && Boolean.parseBoolean(loginResult.get("success").toString())) {
                         String sessionId = loginResult.getOrDefault("JSESSIONID", "").toString();
                         httpRequest.getHeaders().add("Cookie", "JSESSIONID=" + sessionId);
+                        LOGGER.debug("set header: Cookie={}", sessionId);
                     } else {
                         LOGGER.error("failed to get cookie. {}", loginResult);
                     }

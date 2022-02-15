@@ -64,6 +64,7 @@ CREATE TABLE IF NOT EXISTS `emergency_task`  (
                                    `task_id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
                                    `task_no` varchar(30) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '任务编号',
                                    `task_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '任务名称',
+    `task_type` varchar(1) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '3' COMMENT '任务类型 1自定义压测 2 引流压测 3命令行',
                                    `scene_id` int(11) NULL DEFAULT NULL COMMENT '场景ID',
                                    `script_id` int(11) NULL DEFAULT NULL COMMENT '脚本ID',
     `server_id` varchar(255)  NULL DEFAULT NULL COMMENT '服务器ID集合',
@@ -99,6 +100,7 @@ CREATE TABLE IF NOT EXISTS `emergency_exec_record`  (
                                           `record_id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
                                           `exec_id` int(11) NOT NULL COMMENT '执行ID',
                                           `plan_id` int(11) NOT NULL COMMENT '预案ID',
+    `plan_detail_id` int(11) NULL DEFAULT NULL COMMENT '预案明细ID',
                                           `scene_id` int(11) NOT NULL COMMENT '场景ID',
                                           `task_id` int(11) NULL DEFAULT NULL COMMENT '任务ID',
                                           `pre_scene_id` int(11) NULL DEFAULT NULL COMMENT '所依赖的场景ID',
@@ -124,7 +126,8 @@ CREATE TABLE IF NOT EXISTS `emergency_exec_record`  (
                                           `ensure_user` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '确认人',
                                           `is_valid` varchar(1) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '1' COMMENT '有效标志',
                                           `sync` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '执行方式',
-                                          PRIMARY KEY (`record_id`) USING BTREE
+    `perf_test_id` int(11) NULL DEFAULT NULL COMMENT '性能测试ID',
+    PRIMARY KEY (`record_id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;$$$
 
 CREATE TABLE IF NOT EXISTS `emergency_exec_record_detail`  (
