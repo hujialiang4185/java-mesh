@@ -20,10 +20,10 @@ export default function App() {
                 submit = true
                 try {
                     await axios.post("/argus-emergency/api/script/ide", {...values, ...state})
+                    history.goBack()
                 } catch (error: any) {
                     message.error(error.message)
                 }
-                history.goBack()
                 submit = false
             }}>
                 <div className="Line">
