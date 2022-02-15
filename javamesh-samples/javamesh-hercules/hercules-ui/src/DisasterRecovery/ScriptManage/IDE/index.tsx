@@ -16,7 +16,7 @@ export default function App() {
     useEffect(function () {
         (async function () {
             try {
-                const res = await axios.get('/argus-emergency/api/script/get', { params: { script_id } })
+                const res = await axios.get('/argus-emergency/api/script/ide/get', { params: { script_id } })
                 form.setFieldsValue(res.data.data)
             } catch (error: any) {
                 message.error(error.message)
@@ -32,7 +32,7 @@ export default function App() {
                     if (submit) return
                     submit = true
                     try {
-                        await axios.put('/argus-emergency/api/script', {...values, script_id})
+                        await axios.put('/argus-emergency/api/script/ide', {...values, script_id})
                         message.success("更新成功")
                         history.goBack()
                     } catch (e: any) {

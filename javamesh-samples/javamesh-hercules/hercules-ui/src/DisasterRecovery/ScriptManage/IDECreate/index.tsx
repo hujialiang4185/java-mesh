@@ -1,35 +1,28 @@
 import { Button, Checkbox, Collapse, Form, Input, message, Select } from "antd"
-import React, { useEffect } from "react"
+import React from "react"
 import { PlusCircleOutlined, MinusCircleOutlined, InfoCircleOutlined } from '@ant-design/icons'
 import Breadcrumb from "../../../component/Breadcrumb"
 import Card from "../../../component/Card"
 import { useHistory, useLocation } from "react-router-dom"
-import axios from "axios"
 import "./index.scss"
-import ServiceSelect from "../../../component/ServiceSelect"
+import axios from "axios"
 
 export default function App() {
     let submit = false
     const history = useHistory()
-    const urlSearchParams = new URLSearchParams(useLocation().search)
-    const script_id = urlSearchParams.get("script_id")
+    const state = useLocation().state as any
     const [form] = Form.useForm()
-    useEffect(function () {
-        (async function () {
-            try {
-                const res = await axios.get('/argus-emergency/api/script/get', { params: { script_id } })
-                form.setFieldsValue(res.data.data)
-            } catch (error: any) {
-                message.error(error.message)
-            }
-        })()
-    }, [form, script_id])
     return <div className="IDECreate">
         <Breadcrumb label="脚本管理" sub={{ label: "详情", parentUrl: "/DisasterRecovery/ScriptManage" }} />
         <Card>
-        <Form form={form} labelCol={{ span: 2 }} initialValues={{ language: "Jython", method: "GET" }} requiredMark={false} onFinish={async function (values) {
+            <Form form={form} labelCol={{ span: 2 }} initialValues={{ language: "Jython", method: "GET", ...state }} requiredMark={false} onFinish={async function (values) {
                 if (submit) return
                 submit = true
+                try {
+                    await axios.post("/argus-emergency/api/script/ide", {...values, ...state})
+                } catch (error: any) {
+                    message.error(error.message)
+                }
                 history.goBack()
                 submit = false
             }}>
@@ -42,11 +35,8 @@ export default function App() {
                             <Select.Option value="Groovy Maven Project">Groovy Maven Project</Select.Option>
                         </Select>
                     </Form.Item>
-                    <Form.Item className="WithoutLabel" style={{ width: 525 }} name="script_name" label="脚本名" rules={[
-                        { min: 3, max: 20, required: true, whitespace: true },
-                        { pattern: /^[A-Za-z][\w.-]+$/, message: "格式不正确" }
-                    ]}>
-                        <Input placeholder='必须以字母开头, 可以包括字母, 数字和 ._- 最短3位, 最长20位' />
+                    <Form.Item className="WithoutLabel" style={{ width: 525 }} name="script_name" label="脚本名">
+                        <Input disabled />
                     </Form.Item>
                 </div>
                 <div className="Line">
@@ -88,12 +78,6 @@ export default function App() {
                         <Checkbox>创建资源和库目录</Checkbox>
                     </Form.Item>
                     <span className="Info"><InfoCircleOutlined />您可以上传".class", ".py", ".jar" 类型的文件到lib目录, 或者其他任何资源到resources目录</span>
-                </div>
-                <div className="Line">
-                    <div className="Label">分组</div>
-                    <Form.Item name="group_name" style={{ width: 200 }}>
-                        <ServiceSelect allowClear url="/argus-user/api/group/search" />
-                    </Form.Item>
                 </div>
                 <Collapse expandIconPosition="right" expandIcon={function ({ isActive }) {
                     return <span className={`icon fa fa-angle-double-${isActive ? "down" : "right"}`}></span>

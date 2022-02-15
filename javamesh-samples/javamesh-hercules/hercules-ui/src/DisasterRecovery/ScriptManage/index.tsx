@@ -11,7 +11,8 @@ import "./index.scss"
 import Editor from "@monaco-editor/react"
 import Context from "../../ContextProvider"
 import ApproveFormItems from "../ApproveFormItems"
-import Normal from "./Normal"
+import NORMAL from "./NORMAL"
+import NORMALCreate from "./NORMALCreate"
 import { useForm } from "antd/lib/form/Form"
 import ServiceSelect from "../../component/ServiceSelect"
 import IDE from "./IDE"
@@ -22,8 +23,8 @@ export default function App() {
     return <CacheSwitch>
         <CacheRoute exact path={path} component={Home} />
         <Route exact path={path + '/IDECreate'}><IDECreate /></Route>
-        <Route exact path={path + '/NormalCreate'}><IDECreate /></Route>
-        <Route exact path={path + '/NORMAL'}><Normal /></Route>
+        <Route exact path={path + '/NORMALCreate'}><NORMALCreate /></Route>
+        <Route exact path={path + '/NORMAL'}><NORMAL /></Route>
         <Route exact path={path + '/GUI'}><GUI /></Route>
         <Route exact path={path + '/IDE'}><IDE /></Route>
     </CacheSwitch>
@@ -308,14 +309,18 @@ function AddScript() {
         <Modal className="AddScript" title="添加脚本" width={950} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form form={form} requiredMark={false} labelCol={{ span: 2 }} initialValues={{ public: "私有", type: "压测脚本", orchestrate_type: "GUI" }} onFinish={async function (values) {
+            <Form form={form} requiredMark={false} labelCol={{ span: 2 }} initialValues={{ public: "私有", type: "压测脚本", orchestrate_type: "GUI", language: "Shell" }} onFinish={async function (values) {
                 if (submit) return
                 submit = true
                 try {
-                    const res = await axios.post("/argus-emergency/api/script", values)
+                    if (values.orchestrate_type === "GUI") {
+                        const res = await axios.post("/argus-emergency/api/script/orchestrate", values)
+                        history.push(`${path}/GUI?script_id=${res.data.data.script_id}`)
+                    } else {
+                        history.push(`${path}/${values.type === "压测脚本" ? "IDECreate" : "GUICreate"}`, values)
+                    }
                     setIsModalVisible(false)
                     form.resetFields()
-                    history.push(path + "/Orchestrate?script_id=" + res.data.data.script_id)
                 } catch (error: any) {
                     message.error(error.message)
                 }
@@ -323,10 +328,10 @@ function AddScript() {
             }}>
                 <div className="Line">
                     <Form.Item className="Middle" labelCol={{ span: 4 }} name="script_name" label="脚本名" rules={[
-                        { max: 25, required: true, whitespace: true },
-                        { pattern: /^\w+$/, message: "请输入英文、数字、下划线" }
+                        { min: 3, max: 20, required: true, whitespace: true },
+                        { pattern: /^[A-Za-z][\w.-]+$/, message: "格式不正确" }
                     ]}>
-                        <Input />
+                        <Input placeholder='必须以字母开头, 可以包括字母, 数字和 ._- 最短3位, 最长20位'/>
                     </Form.Item>
                     <Form.Item className="Middle" labelCol={{ span: 4 }} name="group_name" label="分组">
                         <ServiceSelect allowClear url="/argus-user/api/group/search" />

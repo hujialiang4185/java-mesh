@@ -42,8 +42,11 @@ export default function App() {
                     }
                     submit = false
                 }}>
+                <Form.Item labelCol={{ span: 1 }} name="script_name" label="脚本名">
+                    <Input disabled />
+                </Form.Item>
                 <Script />
-                <DebugScript form={form}/>
+                <DebugScript form={form} />
                 <Form.Item className="ScriptParam" labelCol={{ span: 1 }} name="param" label="脚本参数" rules={[{
                     pattern: /^[\w,.|]+$/,
                     message: "格式错误"
@@ -95,5 +98,5 @@ function ScriptEditor(props: { onChange?: (value?: string) => void, script?: str
         props.setScript(value)
         props.onChange?.(value)
     }, 1000))
-    return <Editor className="MonacoEditor" height={200} language="shell" value={props.script} onChange={debounceRef.current}/>
+    return <Editor className="MonacoEditor" height={200} language="shell" value={props.script} onChange={debounceRef.current} />
 }
