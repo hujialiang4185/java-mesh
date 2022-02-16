@@ -207,7 +207,7 @@ export default function App(props: { type: String }) {
             </>
         case "HTTPHeaderManager":
             return <>
-                <Divider orientation="left">Cookie</Divider>
+                <Divider orientation="left">Header</Divider>
                 <HTTPRequest name="headers" />
             </>
     }

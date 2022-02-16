@@ -42,7 +42,7 @@ export default function App() {
                     <Input disabled />
                 </Form.Item>
                 <Form.Item label="脚本内容" className="Editor WithoutLabel" name="content" rules={[{ required: true, max: 5000 }]}>
-                    <Editor className="MonacoEditor" language="shell" height={200} />
+                    <Editor className="MonacoEditor" language="python" height={200} />
                 </Form.Item>
                 <Form.Item className="ScriptParam" labelCol={{ span: 1 }} name="param" label="脚本参数" rules={[{
                     pattern: /^[\w,.|]+$/,

@@ -152,7 +152,7 @@ export default class App extends React.Component<{ initialValues: () => Promise<
                     }}
                 />
             </div>
-            <Form className="Form" requiredMark={false} ref={this.formRef} onValuesChange={async () => {
+            <Form className="Form" requiredMark={false} ref={this.formRef} onChange={async () => {
                 try {
                     const data = await this.formRef.current?.validateFields()
                     this.map.set(this.state.selected, data)

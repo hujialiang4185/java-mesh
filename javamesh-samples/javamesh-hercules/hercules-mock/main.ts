@@ -741,7 +741,7 @@ app.get("/argus-emergency/api/plan/task", function (req, res) {
     res.json({
         data: [{
             key: 1,
-            title: "任务1, 长文本长文本长文本长文本长文本长文本长文本",
+            title: "场景1",
             task_no: 1,
             task_name: "任务1",
             channel_type: "SSH",
@@ -791,7 +791,7 @@ app.get("/argus-emergency/api/plan/task", function (req, res) {
         },
         {
             key: 5,
-            title: "任务5",
+            title: "场景5",
             task_no: 5,
             task_name: "任务5",
             channel_type: "SSH",
