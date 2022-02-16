@@ -2,14 +2,14 @@ import { Button, Drawer, Form, Input, message, Radio, Select, Switch } from "ant
 import axios from "axios";
 import React, { useState } from "react";
 import "./AddPlanTask.scss"
-import SearchSelect from "./SearchSelect";
+// import SearchSelect from "./SearchSelect";
 import TabelTransfer from "./TabelTransfer";
-import Editor from "@monaco-editor/react";
+// import Editor from "@monaco-editor/react";
 
 const types = ["自定义脚本压测", "全链路引流压测", "命令行脚本"]
 export default function App(props: { onFinish: (values: any) => void }) {
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [script, setScript] = useState("")
+  // const [script, setScript] = useState("")
   const [isCmd, setIsCmd] = useState(false)
   const [form] = Form.useForm();
   return <>
@@ -26,7 +26,7 @@ export default function App(props: { onFinish: (values: any) => void }) {
             const res = await axios.post("/argus-emergency/api/plan/task", values)
             props.onFinish({ ...values, ...res.data.data, title: values.task_name })
             form.resetFields()
-            setScript("")
+            // setScript("")
             setIsModalVisible(false)
           } catch (error: any) {
             message.error(error.message)
@@ -55,7 +55,8 @@ export default function App(props: { onFinish: (values: any) => void }) {
             }
           })} />
         </Form.Item>
-        <Form.Item className="ScriptName" label="脚本名称" name="script_name">
+        {isCmd ? <CmdFormItems/> : <>自定义脚本</>}
+        {/* <Form.Item className="ScriptName" label="脚本名称" name="script_name">
           <SearchSelect onChange={async function (name) {
             setScript("")
             form.setFieldsValue({ submit_info: "" })
@@ -71,7 +72,7 @@ export default function App(props: { onFinish: (values: any) => void }) {
         <Form.Item name="submit_info" label="脚本用途"><Input.TextArea disabled /></Form.Item>
         <div className="Editor">
           <Editor height={150} language="shell" options={{ readOnly: true }} value={script} />
-        </div>
+        </div> */}
         <Form.Item className="Buttons">
           <Button type="primary" htmlType="submit">创建</Button>
           <Button onClick={function () {
@@ -81,4 +82,9 @@ export default function App(props: { onFinish: (values: any) => void }) {
       </Form>
     </Drawer>
   </>
+}
+
+
+function CmdFormItems() {
+  return <>命令行</>
 }

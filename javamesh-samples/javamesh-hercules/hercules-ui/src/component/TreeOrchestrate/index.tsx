@@ -1,5 +1,6 @@
 import { Input, Tree, Form, FormInstance, message } from "antd"
 import { DataNode } from "antd/lib/tree"
+import { debounce } from "lodash"
 import React, { Key } from "react"
 import DropdownMenu, { menus, rules } from "./DropdownMenu"
 import FormItems, { defaultFieldsValues } from "./FormItems"
@@ -43,6 +44,18 @@ export default class App extends React.Component<{ initialValues: () => Promise<
             message.error(error.message)
         }
     }
+    onChange = debounce(async () => {
+        try {
+            const data = await this.formRef.current?.validateFields()
+            this.map.set(this.state.selected, data)
+            this.setState({
+                tree: this.state.tree,
+            });
+            this.props.onSave({ tree: this.state.tree, map: this.map })
+        } catch (error: any) {
+
+        }
+    }, 100)
     onSelect = (selected: string) => {
         this.formRef.current?.resetFields()
         this.formRef.current?.setFieldsValue(this.map.get(selected))
@@ -152,18 +165,7 @@ export default class App extends React.Component<{ initialValues: () => Promise<
                     }}
                 />
             </div>
-            <Form className="Form" requiredMark={false} ref={this.formRef} onChange={async () => {
-                try {
-                    const data = await this.formRef.current?.validateFields()
-                    this.map.set(this.state.selected, data)
-                    this.setState({
-                        tree: this.state.tree,
-                    });
-                    this.props.onSave({ tree: this.state.tree, map: this.map })
-                } catch (error: any) {
-
-                }
-            }}>
+            <Form className="Form" requiredMark={false} ref={this.formRef} onChange={this.onChange}>
                 <h3>{menus.get(this.state.selected.slice(14))}</h3>
                 <Form.Item name="title" label="名称" rules={[{ required: true }]}>
                     <Input maxLength={128} disabled={this.state.selected.slice(14) === "Root"} />
