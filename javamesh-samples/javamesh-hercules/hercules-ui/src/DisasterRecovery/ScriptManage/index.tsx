@@ -347,7 +347,7 @@ function AddScript() {
                         }}/>
                     </Form.Item>
                     {normal ? <Form.Item className="Middle" labelCol={{ span: 4 }} name="language" label="脚本类型">
-                        <Radio.Group options={["Shell", "Python", "Jython"]} />
+                        <Radio.Group options={["Shell", "Groovy", "Jython"]} />
                     </Form.Item> : <Form.Item className="Middle" labelCol={{ span: 4 }} name="orchestrate_type" label="编排方式">
                         <Radio.Group options={["GUI", "非GUI"]} />
                     </Form.Item>}

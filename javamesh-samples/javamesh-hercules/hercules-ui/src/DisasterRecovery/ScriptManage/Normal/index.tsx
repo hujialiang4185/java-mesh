@@ -20,7 +20,17 @@ export default function App() {
             try {
                 const res = await axios.get('/argus-emergency/api/script/get', { params: { script_id } })
                 form.setFieldsValue(res.data.data)
-                setLanguage(res.data.data.language)
+                switch (res.data.data.language) {
+                    case "Shell":
+                        setLanguage("shell")
+                        break
+                    case "Groovy":
+                        setLanguage("java")
+                        break
+                    case "Jython":
+                        setLanguage("python")
+                }
+                
             } catch (error: any) {
                 message.error(error.message)
             }

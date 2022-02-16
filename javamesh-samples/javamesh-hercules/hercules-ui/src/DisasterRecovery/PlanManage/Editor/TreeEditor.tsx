@@ -1,5 +1,5 @@
-import React, { Key } from 'react'
-import { Button, Table, Tree, Modal, Popconfirm, message } from 'antd';
+import React, { Key, useState } from 'react'
+import { Button, Table, Tree, Modal, Popconfirm, message, Form, Input } from 'antd';
 import "./TreeEditor.scss"
 import axios from 'axios';
 import AddPlanTask from "./AddPlanTask"
@@ -63,7 +63,13 @@ export default class App extends React.Component<{ plan_id: string }> {
           const dragKey = info.dragNode.key;
           const dropPosition = info.dropPosition;
           const data = [...this.state.gData];
-
+          const dropRoot = data.find(function (item) {
+            return dropKey === item.key;
+          })
+          const dragRoot = data.find(function (item) {
+            return dragKey === item.key;
+          })
+          if (dropRoot !== dragRoot) return
           // Find dragObject
           let dragObj: Data = { key: 0, title: "" };
           loop(data, dragKey, (item, index, arr) => {
@@ -118,18 +124,18 @@ export default class App extends React.Component<{ plan_id: string }> {
           }
         }} dataSource={this.state.gData}
         columns={[
-          { title: "任务（场景）名称", dataIndex: "title", width: 250, ellipsis: true },
+          { title: "任务(场景)名称", dataIndex: "title", width: 250, ellipsis: true },
           { title: "通道类型", dataIndex: "channel_type", ellipsis: true },
           { title: "脚本名称", dataIndex: "script_name", ellipsis: true },
           { title: "脚本用途", dataIndex: "submit_info", ellipsis: true },
           { title: "执行方式", dataIndex: "sync", ellipsis: true },
           {
-            title: <AddPlanTask onFinish={(value: Data) => {
+            title: <AddScenaTask onFinish={(value: Data) => {
               const data = [...this.state.gData];
               data.push(value);
               // 保存
               this.save(data)
-            }}>加场景</AddPlanTask>,
+            }} />,
             width: 120, align: "left", dataIndex: "key", render: (key) => {
               return <>
                 <AddPlanTask onFinish={value => {
@@ -140,7 +146,7 @@ export default class App extends React.Component<{ plan_id: string }> {
                   });
                   // 保存
                   this.save(data)
-                }}>加任务</AddPlanTask>
+                }} />
                 <Popconfirm title="是否删除?" onConfirm={() => {
                   const data = [...this.state.gData];
                   loop(data, key, (item, index, arr) => {
@@ -157,4 +163,41 @@ export default class App extends React.Component<{ plan_id: string }> {
         ]} />
     </div>
   }
+}
+
+function AddScenaTask(props: { onFinish: (values: any) => void }) {
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [form] = Form.useForm();
+  return <>
+    <Button type="link" size="small" onClick={function () { setIsModalVisible(true) }}>加场景</Button>
+    <Modal className="AddScenaTask" title="加场景" width={950} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
+      setIsModalVisible(false)
+    }}>
+      <Form form={form} requiredMark={false} labelCol={{ span: 4 }} initialValues={{ channel_type: "SSH" }} onFinish={async (values) => {
+        try {
+          values.sync === false ? values.sync = "异步" : values.sync = "同步"
+          // 获取key
+          const res = await axios.post("/argus-emergency/api/plan/task", values)
+          props.onFinish({ ...values, ...res.data.data, title: values.task_name })
+          form.resetFields()
+          setIsModalVisible(false)
+        } catch (error: any) {
+          message.error(error.message)
+        }
+      }}>
+        <Form.Item labelCol={{ span: 2 }} label="场景名称" name="task_name" rules={[{ required: true, max: 64 }]}>
+          <Input />
+        </Form.Item>
+        <Form.Item labelCol={{ span: 2 }} label="场景描述" name="scena_desc">
+          <Input.TextArea showCount maxLength={50} autoSize={{ minRows: 2, maxRows: 2 }} />
+        </Form.Item>
+        <Form.Item className="Buttons">
+          <Button type="primary" htmlType="submit">创建</Button>
+          <Button onClick={function () {
+            setIsModalVisible(false)
+          }}>取消</Button>
+        </Form.Item>
+      </Form>
+    </Modal>
+  </>
 }

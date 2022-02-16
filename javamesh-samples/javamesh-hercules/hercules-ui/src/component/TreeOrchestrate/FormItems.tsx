@@ -57,7 +57,7 @@ export default function App(props: { type: String }) {
             </>
         case "TransactionController":
             return <>
-                <Form.Item name="presure" label="压力分配（%）">
+                <Form.Item name="presure" label="压力分配(%)">
                     <InputNumber min={0} max={100} />
                 </Form.Item>
             </>

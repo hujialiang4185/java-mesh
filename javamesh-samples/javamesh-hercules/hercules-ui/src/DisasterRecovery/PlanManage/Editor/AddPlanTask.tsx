@@ -6,13 +6,13 @@ import SearchSelect from "./SearchSelect";
 import TabelTransfer from "./TabelTransfer";
 import Editor from "@monaco-editor/react";
 
-export default function App(props: { children: React.ReactNode, onFinish: (values: any) => void }) {
+export default function App(props: { onFinish: (values: any) => void }) {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [script, setScript] = useState("")
   const [form] = Form.useForm();
   return <>
-    <Button type="link" size="small" onClick={function () { setIsModalVisible(true) }}>{props.children}</Button>
-    <Drawer className="AddPlanTask" title={props.children} width={950} visible={isModalVisible} maskClosable={false} footer={null} onClose={function () {
+    <Button type="link" size="small" onClick={function () { setIsModalVisible(true) }}>加任务</Button>
+    <Drawer className="AddPlanTask" title="加任务" width={950} visible={isModalVisible} maskClosable={false} footer={null} onClose={function () {
       setIsModalVisible(false)
     }}>
       <Form form={form} requiredMark={false} labelCol={{ span: 4 }} initialValues={{ channel_type: "SSH" }} onFinish={async (values) => {

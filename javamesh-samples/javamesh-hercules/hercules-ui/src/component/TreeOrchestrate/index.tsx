@@ -97,11 +97,6 @@ export default class App extends React.Component<{ initialValues: () => Promise<
                         const dropKey = info.node.key;
                         const dragKey = info.dragNode.key;
                         const dropPosition = info.dropPosition;
-
-                        // 不能添加到Root
-                        if (dropPosition === -1) {
-                            return
-                        }
                         // 不符合关系要求
                         const dropType = dropKey.toString().slice(14)
                         const dragType = dragKey.toString().slice(14)

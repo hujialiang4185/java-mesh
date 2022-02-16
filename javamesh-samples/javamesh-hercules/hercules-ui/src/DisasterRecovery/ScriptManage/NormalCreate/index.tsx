@@ -107,9 +107,17 @@ function Script({ form }: { form: FormInstance }) {
 
 function ScriptEditor(props: { onChange?: (value?: string) => void, script?: string, setScript: (script?: string) => void }) {
     const state = useLocation().state as any
+    let language = "python"
+    switch (state.language) {
+        case "Shell":
+            language = "shell"
+            break
+        case "Groovy":
+            language = "java"
+    }
     const debounceRef = useRef(debounce(function (value?: string) {
         props.setScript(value)
         props.onChange?.(value)
     }, 1000))
-    return <Editor className="MonacoEditor" height={200} language={state.language.toLowerCase()} value={props.script} onChange={debounceRef.current} />
+    return <Editor className="MonacoEditor" height={200} language={language} value={props.script} onChange={debounceRef.current} />
 }
