@@ -1,5 +1,6 @@
 package com.huawei.emergency.service.impl;
 
+import com.huawei.argus.restcontroller.RestFileEntryController;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.config.CommonConfig;
 import com.huawei.common.constant.FailedInfo;
@@ -38,11 +39,18 @@ import com.github.pagehelper.PageHelper;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.ngrinder.common.util.PathUtils;
+import org.ngrinder.common.util.UrlUtils;
+import org.ngrinder.script.handler.ProjectHandler;
+import org.ngrinder.script.handler.ScriptHandler;
+import org.ngrinder.script.model.FileEntry;
+import org.ngrinder.script.service.NfsFileEntryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
@@ -58,6 +66,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.ngrinder.common.util.CollectionUtils.newHashMap;
 
 @Service
 @Transactional
@@ -99,14 +109,11 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     @Autowired
     private EmergencyExecService execService;
 
-    @Resource(name = "passwordRestTemplate")
-    private RestTemplate restTemplate;
-
-    @Value("${argus.url}")
-    private String argusUrl;
-
     @Autowired
     private EmergencyResourceService resourceService;
+
+    @Autowired
+    private NfsFileEntryService fileEntryService;
 
     @Override
     public CommonResult<List<EmergencyScript>> listScript(HttpServletRequest request, String scriptName, String scriptUser, int pageSize, int current, String sorter, String order, String status) {
@@ -314,7 +321,8 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         script.setComment("");
         User user = (User) request.getSession().getAttribute("userInfo");
         int count;
-        if (user.getAuth().contains("admin") || user.getUserName().equals(mapper.selectUserById(script.getScriptId()))) {
+        if (user.getAuth().contains("admin")
+            || user.getUserName().equals(mapper.selectUserById(script.getScriptId()))) {
             count = mapper.updateByPrimaryKeySelective(script);
         } else {
             return FailedInfo.INSUFFICIENT_PERMISSIONS;
@@ -350,62 +358,42 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         if (script == null || !"3".equals(script.getScriptType())) {
             return;
         }
-        String grinderPath = grinderPath(script.getScriptName());
-        createGrinderScript(script.getScriptName()); // 创建脚本
-        updateGrinderScript(grinderPath, script.getContent()); //更新脚本内容
+        updateGrinderScript(script.getScriptName(), script.getContent()); //更新脚本内容
     }
 
     /**
-     * 创建压测脚本
-     *
-     * @param scriptName 脚本名称
-     * @return 是否创建成功
+     * 创建压测脚本文件夹
      */
-    public boolean createGrinderScript(String scriptName) {
-        log.info("argusUrl = {}", argusUrl);
-        JSONObject params = new JSONObject();
-        params.put("folder", "");
-        params.put("folder_name", CommonConfig.GRINDER_FOLDER);
-        log.info("create grinder folder . {}", restTemplate.postForObject(argusUrl + "/api/script/folder", params, JSONObject.class));
-        params = new JSONObject();
-        params.put("folder", CommonConfig.GRINDER_FOLDER);
-        params.put("script_name", scriptName);
-        params.put("language", "Groovy");
-        params.put("method", "GET");
-        params.put("for_url", "www.baidu.com");
-        params.put("has_resource", true);
+    public void createGrinderScript() {
         try {
-            ResponseEntity<String> scriptResult = restTemplate.postForEntity(argusUrl + "/api/script", params, String.class);
-            if (scriptResult.getStatusCodeValue() != HttpServletResponse.SC_OK) {
-                log.error("failed to create grinder script {}. {}", scriptName, scriptResult);
-                return false;
-            }
-            JSONObject jsonObject = JSONObject.parseObject(scriptResult.getBody());
-            if (Boolean.parseBoolean(jsonObject.getOrDefault("success", "").toString())) {
-                return true;
-            } else {
-                log.error("failed to create grinder script {}. {}", scriptName, jsonObject.get("msg"));
-                return false;
-            }
-        } catch (RestClientException e) {
-            log.error("failed to create grinder script {}. {}", scriptName, e.getMessage());
-            return false;
+            fileEntryService.addFolder(UserFilter.currentGrinderUser(), "", CommonConfig.GRINDER_FOLDER);
+        } catch (IOException e) {
+            log.error("create grinder folder error.", e);
         }
     }
 
     /**
      * 更新压测脚本
      *
-     * @param grinderPath   脚本全路径
+     * @param scriptName    脚本名称
      * @param scriptContent 脚本内容
      */
-    public void updateGrinderScript(String grinderPath, String scriptContent) {
-        JSONObject params = new JSONObject();
-        params.put("path", grinderPath);
-        params.put("commit", "emergency commit at" + System.currentTimeMillis());
-        params.put("script", scriptContent);
-        restTemplate.put(argusUrl + "/api/script", params);
+    public boolean updateGrinderScript(String scriptName, String scriptContent) {
+        createGrinderScript();
+        String grinderPath = grinderPath(scriptName);
+        FileEntry fileEntry = new FileEntry();
+        fileEntry.setCreatedUser(UserFilter.currentGrinderUser());
+        fileEntry.setContent(scriptContent);
+        fileEntry.setContentBytes(scriptContent.getBytes(StandardCharsets.UTF_8));
+        fileEntry.setPath(grinderPath);
+        try {
+            fileEntryService.saveFile(UserFilter.currentGrinderUser(), fileEntry);
+        } catch (IOException e) {
+            log.error("update script error.", e);
+            return false;
+        }
         log.info("update script {}.", grinderPath);
+        return true;
     }
 
     @Override
@@ -522,7 +510,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         try {
             context.setTemplate(GroovyClassTemplate.template());
         } catch (IOException e) {
-            throw new RuntimeException("can't create groovy template.");
+            throw new ApiException("can't create groovy template.");
         }
         parse.handle(context);
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
@@ -538,31 +526,12 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             ArgusScript argusScript = new ArgusScript();
             argusScript.setPath(treeResponse.getPath());
             argusScript.setScript(scriptContent);
-            //updateArgusScript(request,treeResponse.getPath(),scriptContent); // 更新压测脚本
+            //updateGrinderScript(script.getScriptName(),scriptContent); // 更新压测脚本
             return CommonResult.success(argusScript);
         } catch (IOException e) {
             log.error("Failed to print script.{}", e);
             return CommonResult.failed("输出编排脚本失败");
-        } catch (RestClientException e) {
-            log.error("Failed to update argus script.{}", e);
-            return CommonResult.failed("更新压测脚本失败");
         }
-    }
-
-    public void updateArgusScript(HttpServletRequest request, String path, String script) {
-        if (StringUtils.isEmpty(path)) {
-            return;
-        }
-        RestTemplate template = new RestTemplate();
-        template.setInterceptors(Arrays.asList((httpRequest, bytes, clientHttpRequestExecution) -> {
-            httpRequest.getHeaders().add("Cookie", request.getHeader("Cookie"));
-            return clientHttpRequestExecution.execute(httpRequest, bytes);
-        }));
-        ArgusScript argusScript = new ArgusScript();
-        argusScript.setPath(path);
-        argusScript.setScript(script);
-        argusScript.setCommit(System.currentTimeMillis() + " 脚本编排提交");
-        template.put(argusUrl + "/api/script", argusScript);
     }
 
     /**
@@ -681,7 +650,8 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         map.put("content", "println(\"my name is hjl\")");
         map.put("scriptType", "2");
         map.put("scriptName", "testGroovy");
-        ResponseEntity responseEntity = RestTemplateUtil.sendPostRequest(request, "http://127.0.0.1:9095/agent/execute", map);
+        ResponseEntity responseEntity =
+            RestTemplateUtil.sendPostRequest(request, "http://127.0.0.1:9095/agent/execute", map);
         System.out.println(responseEntity.getBody());
     }
 
@@ -736,5 +706,28 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
 
     private String grinderPath(String scriptName) {
         return CommonConfig.GRINDER_FOLDER + "/" + scriptName + ".groovy";
+    }
+
+    public String generateIdeScript(org.ngrinder.model.User user, String path, String testUrl, String fileName, String scriptType,
+                                    boolean createLibAndResources, String options) {
+        String hostIp = "Test1";
+        if (StringUtils.isEmpty(testUrl)) {
+            testUrl = StringUtils.defaultIfBlank(testUrl, "http://please_modify_this.com");
+        } else {
+            hostIp = UrlUtils.getHost(testUrl);
+        }
+        ScriptHandler scriptHandler = fileEntryService.getScriptHandler(scriptType);
+        Map<String, Object> map = newHashMap();
+        map.put("url", testUrl);
+        map.put("userName", user.getUserName());
+        map.put("name", hostIp);
+        map.put("options", options);
+        if (scriptHandler instanceof ProjectHandler) {
+            String scriptContent = fileEntryService.getScriptHandler("groovy").getScriptTemplate(map);
+            scriptHandler.prepareScriptEnv(user, path, StringUtils.trimToEmpty(fileName), hostIp, testUrl, createLibAndResources, scriptContent);
+            return scriptContent;
+        } else {
+            return scriptHandler.getScriptTemplate(map);
+        }
     }
 }

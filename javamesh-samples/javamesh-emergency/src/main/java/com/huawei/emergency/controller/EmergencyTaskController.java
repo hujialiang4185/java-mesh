@@ -21,7 +21,9 @@ import com.huawei.emergency.dto.TaskCommonReport;
 import com.huawei.emergency.dto.TaskJvmReport;
 import com.huawei.emergency.dto.TaskResourceReport;
 import com.huawei.emergency.dto.TaskServiceReport;
+import com.huawei.emergency.service.EmergencyTaskService;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -46,15 +48,19 @@ public class EmergencyTaskController {
     private static TaskJvmReport mockJvmReport = new TaskJvmReport();
     private static TaskServiceReport mockServiceReport = new TaskServiceReport();
 
+    @Autowired
+    private EmergencyTaskService taskService;
+
     /**
      * 获取任务执行的基本信息
      *
-     * @param testId 测试id
+     * @param perfTestId 测试id
      * @return {@link CommonResult}
      */
     @GetMapping("/view")
-    public CommonResult<TaskCommonReport> getCommonReport(@RequestParam("test_id") Integer testId) {
-        return CommonResult.success(mockCommon());
+    public CommonResult<TaskCommonReport> getCommonReport(@RequestParam("test_id") Long perfTestId) {
+        CommonResult<TaskCommonReport> commonReport = taskService.getCommonReport(perfTestId);
+        return commonReport.getData() == null ? CommonResult.success(mockCommon()) : commonReport;
     }
 
     /**
@@ -101,14 +107,14 @@ public class EmergencyTaskController {
         mockCommonReport.setStatusLabel("运行中");
         mockCommonReport.setLabel(Arrays.asList("性能测试", "功能自测", "压力测试"));
         mockCommonReport.setDesc("测试数据为mock数据");
-        mockCommonReport.setDuration("6:06");
+        mockCommonReport.setDuration(6L);
         mockCommonReport.setVuser(66);
         mockCommonReport.setTps(666D);
         mockCommonReport.setTpsPeak(777D);
         mockCommonReport.setAvgTime(16D);
-        mockCommonReport.setTestCount(243756);
-        mockCommonReport.setSuccessCount(243700);
-        mockCommonReport.setFailCount(56);
+        mockCommonReport.setTestCount(243756L);
+        mockCommonReport.setSuccessCount(243700L);
+        mockCommonReport.setFailCount(56L);
         mockCommonReport.setLogName(Arrays.asList("log-1.zip", "log-2.zip"));
         mockCommonReport.setProgressMessage(Arrays.asList("start", "running", "end"));
         return mockCommonReport;

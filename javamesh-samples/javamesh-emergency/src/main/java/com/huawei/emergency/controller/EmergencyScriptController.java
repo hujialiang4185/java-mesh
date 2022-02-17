@@ -13,6 +13,7 @@ import com.huawei.emergency.entity.EmergencyScript;
 import com.huawei.emergency.layout.TreeResponse;
 import com.huawei.emergency.service.EmergencyScriptService;
 import com.huawei.script.exec.log.LogResponse;
+import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,6 +29,7 @@ import java.util.Map;
  * @author h30009881
  * @since 2021-10-14
  */
+@Api(tags = "脚本管理")
 @RestController
 @RequestMapping("/api/script")
 public class EmergencyScriptController {

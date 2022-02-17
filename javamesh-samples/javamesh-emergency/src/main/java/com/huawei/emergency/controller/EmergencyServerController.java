@@ -22,6 +22,7 @@ import com.huawei.emergency.dto.ServerDto;
 import com.huawei.emergency.entity.EmergencyServer;
 import com.huawei.emergency.entity.User;
 import com.huawei.emergency.service.EmergencyServerService;
+import io.swagger.annotations.Api;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,7 @@ import javax.servlet.http.HttpServletRequest;
  * @author y30010171
  * @since 2021-12-07
  **/
+@Api(tags = "主机管理")
 @RestController
 @RequestMapping("/api/host")
 public class EmergencyServerController {

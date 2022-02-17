@@ -10,6 +10,7 @@ import com.huawei.emergency.mapper.UserMapper;
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.ngrinder.model.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Resource;
@@ -38,7 +39,7 @@ public class UserFilter implements Filter {
     private User user;
 
     private static final Set<String> ALLOWED_PATHS = Collections.unmodifiableSet(new HashSet<>(
-            Arrays.asList("/ws")));
+            Arrays.asList("/ws","/swagger-ui.html")));
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -106,11 +107,32 @@ public class UserFilter implements Filter {
         Filter.super.destroy();
     }
 
+    public static User currentUser() {
+        return USERS.get();
+    }
+
     public static String currentUserName() {
         User user = USERS.get();
         if (user == null) {
             return null;
         }
         return user.getNickName();
+    }
+
+    public static org.ngrinder.model.User currentGrinderUser() {
+        User user = USERS.get();
+        if (user == null) {
+            return null;
+        }
+        org.ngrinder.model.User grinderUser = new org.ngrinder.model.User();
+        grinderUser.setUserName(user.getNickName());
+        grinderUser.setRole(Role.ADMIN);
+        grinderUser.setUserLanguage("en");
+        grinderUser.setId(1L);
+        grinderUser.setUserId(user.getUserName());
+        grinderUser.setTimeZone("Asia/Shanghai");
+        grinderUser.setExternal(true);
+        grinderUser.setEnabled(true);
+        return grinderUser;
     }
 }

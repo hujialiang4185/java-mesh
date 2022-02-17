@@ -6,6 +6,8 @@ server:
     enabled: true
     mime-types: application/javascript,text/css,application/json,application/xml,text/html,text/xml,text/plain
 spring:
+  main:
+    allow-bean-definition-overriding: true
   application:
     name: emergency-drill
   cloud:
@@ -60,6 +62,9 @@ spring:
     multipart:
       max-file-size: 100MB
       max-request-size: 100MB
+  jpa:
+    hibernate:
+      ddl-auto: update
 mybatis:
   configuration:
     map-underscore-to-camel-case: true
@@ -96,3 +101,7 @@ argus:
 heartbeat:
   readWaitTime: 150
   port: 9100
+ngrinder:
+  auto:
+    execute:
+      test: true
