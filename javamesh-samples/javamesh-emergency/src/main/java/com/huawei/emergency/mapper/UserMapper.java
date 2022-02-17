@@ -21,4 +21,6 @@ public interface UserMapper {
     String getRoleByUserName(String userName);
 
     String getUserStatus(String userName);
+
+    String getGroupByUser(String userName);
 }

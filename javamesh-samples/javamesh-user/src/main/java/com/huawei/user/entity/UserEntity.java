@@ -28,6 +28,9 @@ public class UserEntity {
     @JsonProperty("status")
     private String enabled;
 
+    @JsonProperty("group_name")
+    private String groupName;
+
     private Timestamp createTime;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
@@ -39,5 +42,12 @@ public class UserEntity {
         this.nickName = nickName;
         this.role = role;
         this.auth = auth;
+    }
+    public UserEntity(String userName, String nickName, String role, List<String> auth,String groupName) {
+        this.userName = userName;
+        this.nickName = nickName;
+        this.role = role;
+        this.auth = auth;
+        this.groupName = groupName;
     }
 }

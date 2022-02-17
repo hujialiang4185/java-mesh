@@ -38,14 +38,14 @@ public class EmergencyScriptController {
 
     @GetMapping
     public CommonResult<List<EmergencyScript>> listScript(
-        HttpServletRequest request,
-        @RequestParam(value = "script_name", required = false) String scriptName,
-        @RequestParam(value = "owner", required = false) String scriptUser,
-        @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
-        @RequestParam(value = "current", defaultValue = "1") int current,
-        @RequestParam(value = "sorter", required = false) String sorter,
-        @RequestParam(value = "order", required = false) String order,
-        @RequestParam(value = "status", required = false) String status) {
+            HttpServletRequest request,
+            @RequestParam(value = "script_name", required = false) String scriptName,
+            @RequestParam(value = "owner", required = false) String scriptUser,
+            @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
+            @RequestParam(value = "current", defaultValue = "1") int current,
+            @RequestParam(value = "sorter", required = false) String sorter,
+            @RequestParam(value = "order", required = false) String order,
+            @RequestParam(value = "status", required = false) String status) {
         return service.listScript(request, scriptName, scriptUser, pageSize, current, sorter, order, status);
     }
 
@@ -90,8 +90,8 @@ public class EmergencyScriptController {
                                      @RequestParam(value = "script_name") String scriptName,
                                      @RequestParam(value = "submit_info") String submitInfo,
                                      @RequestParam(value = "account", required = false) String serverUser,
-                                     @RequestParam(value = "server_ip",required = false) String serverIp,
-                                     @RequestParam(value = "has_pwd",required = false) String havePassword,
+                                     @RequestParam(value = "server_ip", required = false) String serverIp,
+                                     @RequestParam(value = "has_pwd", required = false) String havePassword,
                                      @RequestParam(value = "language") String scriptType,
                                      @RequestParam(value = "param", required = false) String param,
                                      @RequestParam(value = "public") String isPublic,
@@ -187,8 +187,8 @@ public class EmergencyScriptController {
     }
 
     @PostMapping("/approve")
-    public CommonResult approve(@RequestBody Map<String, Object> map) {
-        int count = service.approve(map);
+    public CommonResult approve(HttpServletRequest request, @RequestBody Map<String, Object> map) {
+        int count = service.approve(request,map);
         if (count == 0) {
             return CommonResult.failed(FailedInfo.APPROVE_FAIL);
         } else {
@@ -227,21 +227,22 @@ public class EmergencyScriptController {
 
     @PutMapping("/orchestrate")
     public CommonResult updateOrchestrate(HttpServletRequest request, @RequestBody TreeResponse treeResponse) {
-        return service.updateOrchestrate(request,treeResponse);
+        return service.updateOrchestrate(request, treeResponse);
     }
 
     @GetMapping("/orchestrate/get")
     public CommonResult orchestrate(@RequestParam("script_id") int scriptId) {
         return service.queryOrchestrate(scriptId);
     }
+
     @GetMapping("/script/exec")
-    public void exec(HttpServletRequest request){
+    public void exec(HttpServletRequest request) {
         service.exec(request);
     }
 
     @PostMapping("/script/execComplete")
-    public CommonResult execComplete(@RequestBody Map<String,String> map){
-        if(map.get("recordId").equals("0")){
+    public CommonResult execComplete(@RequestBody Map<String, String> map) {
+        if (map.get("recordId").equals("0")) {
             return CommonResult.failed("recordId is valid. ");
         }
         return CommonResult.success();

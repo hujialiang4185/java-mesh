@@ -134,14 +134,14 @@ public interface EmergencyScriptMapper {
     int updateByPrimaryKey(EmergencyScript record);
 
 
-    List<EmergencyScript> listScript(String userName,String auth, String scriptName, String scriptUser,String status);
+    List<EmergencyScript> listScript(String userName, String auth, String scriptName, String scriptUser, String status, String group);
 
     EmergencyScript getScriptInfo(int scriptId);
 
     @Select("select script_name from emergency_script where script_id = #{scriptId}")
     String selectScriptNameById(int scriptId);
 
-    List<String> searchScript(String scriptName, String userName,String auth,String status);
+    List<String> searchScript(String scriptName, String userName, String auth, String status);
 
     EmergencyScript getScriptByName(String scriptName);
 

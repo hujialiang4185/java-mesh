@@ -29,7 +29,9 @@ public interface UserService {
 
     CommonResult resetPwd(UserEntity user);
 
-    String updateUser(UserEntity user);
+    String updateUser(HttpServletRequest request,UserEntity user);
 
     String getUserStatus(String userName);
+
+    CommonResult approverSearch(String groupId, HttpServletRequest request);
 }

@@ -26,6 +26,7 @@ import com.huawei.emergency.layout.TreeResponse;
 import com.huawei.emergency.layout.template.GroovyClassTemplate;
 import com.huawei.emergency.mapper.EmergencyElementMapper;
 import com.huawei.emergency.mapper.EmergencyScriptMapper;
+import com.huawei.emergency.mapper.UserMapper;
 import com.huawei.emergency.service.EmergencyExecService;
 import com.huawei.emergency.service.EmergencyResourceService;
 import com.huawei.emergency.service.EmergencyScriptService;
@@ -83,6 +84,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     private static final String UNAPPROVED = "驳回";
     private static final String AUTH_ADMIN = "admin";
     private static final String AUTH_APPROVER = "approver";
+    private static final String APPROVING_STATUS = "1";
 
 
     @Autowired
@@ -126,13 +128,17 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         } else {
             sortType = sorter + System.lineSeparator() + "DESC";
         }
+        String userName = user.getUserName();
         Page<EmergencyScript> pageInfo = PageHelper.startPage(current, pageSize, sortType).doSelectPage(() -> {
-            mapper.listScript(user.getUserName(), auth, EscapeUtil.escapeChar(scriptName), EscapeUtil.escapeChar(scriptUser), status);
+            mapper.listScript(userName, auth, EscapeUtil.escapeChar(scriptName), EscapeUtil.escapeChar(scriptUser), status, user.getGroup());
         });
         List<EmergencyScript> emergencyScripts = pageInfo.getResult();
         String scriptStatus;
         for (EmergencyScript script : emergencyScripts) {
             scriptStatus = script.getScriptStatus();
+            if (scriptStatus.equals(APPROVING_STATUS) && (userName.equals("admin") || ((userAuth.contains(AUTH_ADMIN) || (userAuth.contains(AUTH_APPROVER) && script.getApprover().equals(userName))) && user.getGroup().equals(script.getScriptGroup())))) {
+                script.setAuditable(true);
+            }
             switch (scriptStatus) {
                 case "0":
                     script.setScriptStatus("unapproved");
@@ -248,6 +254,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         script.setScriptUser(user.getUserName());
         script.setContent(FileUtil.streamToString(new ByteArrayInputStream(script.getContent().getBytes(StandardCharsets.UTF_8))));
         extracted(script);
+        script.setScriptGroup(user.getGroup());
         count = mapper.insertSelective(script);
         if (count != 1) {
             return ResultCode.FAIL;
@@ -320,11 +327,13 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     }
 
     @Override
-    public int approve(Map<String, Object> map) {
+    public int approve(HttpServletRequest request, Map<String, Object> map) {
         String approve = (String) map.get("approve");
         int scriptId = (int) map.get("script_id");
+        User user = (User) request.getSession().getAttribute("userInfo");
         EmergencyScript script = new EmergencyScript();
         script.setScriptId(scriptId);
+        script.setApprover(user.getUserName());
         if (approve.equals("通过")) {
             script.setScriptStatus(TYPE_TWO);
             freshGrinderScript(scriptId);
@@ -430,7 +439,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         }
         EmergencyScriptExample isNameExist = new EmergencyScriptExample();
         isNameExist.createCriteria()
-            .andScriptNameEqualTo(script.getScriptName());
+                .andScriptNameEqualTo(script.getScriptName());
         if (mapper.countByExample(isNameExist) > 0) {
             return CommonResult.failed("存在名称相同的脚本");
         }
@@ -494,8 +503,8 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         // 清除之前的编排关系
         EmergencyElementExample currentElementsExample = new EmergencyElementExample();
         currentElementsExample.createCriteria()
-            .andIsValidEqualTo(ValidEnum.VALID.getValue())
-            .andScriptIdEqualTo(treeResponse.getScriptId());
+                .andIsValidEqualTo(ValidEnum.VALID.getValue())
+                .andScriptIdEqualTo(treeResponse.getScriptId());
         EmergencyElement updateElement = new EmergencyElement();
         updateElement.setIsValid(ValidEnum.IN_VALID.getValue());
         elementMapper.updateByExampleSelective(updateElement, currentElementsExample);
@@ -569,7 +578,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         EmergencyElement element = new EmergencyElement();
         Map elementParams = map.get(node.getKey());
         if (elementParams != null &&
-            ("JARImport".equals(node.getType()) || "CSVDataSetConfig".equals(node.getType()))
+                ("JARImport".equals(node.getType()) || "CSVDataSetConfig".equals(node.getType()))
         ) {
             String filenames = elementParams.getOrDefault("filenames", "").toString();
             if (StringUtils.isEmpty(filenames)) {
@@ -608,9 +617,9 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     public CommonResult queryOrchestrate(int scriptId) {
         EmergencyElementExample rootElementExample = new EmergencyElementExample();
         rootElementExample.createCriteria()
-            .andScriptIdEqualTo(scriptId)
-            .andParentIdIsNull()
-            .andIsValidEqualTo(ValidEnum.VALID.getValue());
+                .andScriptIdEqualTo(scriptId)
+                .andParentIdIsNull()
+                .andIsValidEqualTo(ValidEnum.VALID.getValue());
         List<EmergencyElement> emergencyElements = elementMapper.selectByExampleWithBLOBs(rootElementExample);
         if (emergencyElements.size() == 0) {
             return CommonResult.success();
@@ -637,8 +646,8 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         }
         EmergencyElementExample elementExample = new EmergencyElementExample();
         elementExample.createCriteria()
-            .andParentIdEqualTo(parent.getElementId())
-            .andIsValidEqualTo(ValidEnum.VALID.getValue());
+                .andParentIdEqualTo(parent.getElementId())
+                .andIsValidEqualTo(ValidEnum.VALID.getValue());
         List<EmergencyElement> emergencyElements = elementMapper.selectByExampleWithBLOBs(elementExample);
         for (EmergencyElement emergencyElement : emergencyElements) {
             TreeNode node = new TreeNode();
@@ -679,7 +688,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
 
     private boolean isParamInvalid(EmergencyScript script) {
         if ("havePassword".equals(script.getHavePassword()) &&
-            (StringUtils.isBlank(script.getPassword()) || StringUtils.isBlank(script.getPasswordMode()))) {
+                (StringUtils.isBlank(script.getPassword()) || StringUtils.isBlank(script.getPasswordMode()))) {
             return true;
         }
         return false;

@@ -31,4 +31,8 @@ public interface UserMapper {
     void updateRole(UserEntity user);
 
     String getUserStatus(String userName);
+
+    String getGroupByUser(String userName);
+
+    List<String> approverSearch(String groupName);
 }

@@ -3,6 +3,7 @@ package com.huawei.common.filter;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.huawei.common.config.CommonConfig;
+import com.huawei.common.constant.FailedInfo;
 import com.huawei.common.util.UserFeignClient;
 import com.huawei.emergency.entity.User;
 import com.huawei.emergency.mapper.UserMapper;
@@ -49,11 +50,11 @@ public class UserFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
         String path = request.getRequestURI().substring(request.getContextPath().length()).replaceAll("[/]+$", "");
-        if(!ALLOWED_PATHS.contains(path)){
+        if (!ALLOWED_PATHS.contains(path)) {
             try {
                 JSONObject userInfo = userFeignClient.getUserInfo();
                 session = request.getSession();
-                String userId = (String)userInfo.get("userId");
+                String userId = (String) userInfo.get("userId");
                 String enabled = mapper.getUserStatus(userId);
                 if (StringUtils.isNotBlank(enabled) && enabled.equals("F")) {
                     JSONObject jsonObject = new JSONObject();
@@ -61,9 +62,16 @@ public class UserFilter implements Filter {
                     responseJson(response, jsonObject);
                     return;
                 }
+                String group = mapper.getGroupByUser(userId);
+                if (!userId.equals("admin") && StringUtils.isBlank(group)) {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("msg", FailedInfo.USER_HAVE_NOT_GROUP);
+                    responseJson(response, jsonObject);
+                    return;
+                }
                 String role = mapper.getRoleByUserName(userId);
                 List<String> auth = mapper.getAuthByRole(role);
-                user = new User(userId,(String)userInfo.get("userName"),role,auth);
+                user = new User(userId, (String) userInfo.get("userName"), role, auth, group);
                 session.setAttribute("userInfo", user);
                 USERS.set(user);
                 CommonConfig.setRequest(request);

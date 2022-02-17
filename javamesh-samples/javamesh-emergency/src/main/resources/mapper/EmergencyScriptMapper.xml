@@ -253,6 +253,9 @@
             <if test="scriptStatus != null">
                 script_status,
             </if>
+            <if test="scriptGroup != null">
+                script_group,
+            </if>
             <if test="content != null">
                 content,
             </if>
@@ -296,6 +299,9 @@
             </if>
             <if test="scriptStatus != null">
                 #{scriptStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="scriptGroup != null">
+                #{scriptGroup,jdbcType=VARCHAR},
             </if>
             <if test="content != null">
                 #{content,jdbcType=LONGVARCHAR},
@@ -469,6 +475,9 @@
             <if test="comment != null">
                 comment = #{comment,jdbcType=LONGVARCHAR},
             </if>
+            <if test="approver != null">
+                approver = #{approver,jdbcType=VARCHAR},
+            </if>
         </set>
         where script_id = #{scriptId,jdbcType=INTEGER}
     </update>
@@ -519,6 +528,8 @@
         s.script_id,
         s.script_name,
         u.user_name as script_user,
+        s.script_group,
+        s.approver,
         s.submit_info,
         s.script_status,
         s.comment,
@@ -556,6 +567,9 @@
             </if>
             <if test="status!='' and status!=null">
                 AND s.script_status = '2'
+            </if>
+            <if test="group!=null and group!=''">
+                AND s.script_group = #{group}
             </if>
         </where>
     </select>

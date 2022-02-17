@@ -15,7 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-@RestController()
+@RestController
 @RequestMapping("/api")
 public class UserController {
     private static final String SUCCESS = "success";
@@ -27,7 +27,7 @@ public class UserController {
     public CommonResult login(HttpServletResponse response, @RequestBody JSONObject params) {
         String username = params.getString("username");
         String enabled = service.getUserStatus(username);
-        if(StringUtils.isNotBlank(enabled)&&enabled.equals("F")){
+        if (StringUtils.isNotBlank(enabled) && enabled.equals("F")) {
             return CommonResult.failed("账号已被禁用");
         }
         String password = params.getString("password");
@@ -124,8 +124,8 @@ public class UserController {
     }
 
     @PutMapping("/user")
-    public CommonResult updateUser(@RequestBody UserEntity user) {
-        String result = service.updateUser(user);
+    public CommonResult updateUser(HttpServletRequest request,@RequestBody UserEntity user) {
+        String result = service.updateUser(request,user);
         if (result.equals(SUCCESS)) {
             return CommonResult.success(result);
         } else {
@@ -133,4 +133,8 @@ public class UserController {
         }
     }
 
+    @GetMapping("/user/approver/search")
+    public CommonResult approverSearch(@RequestParam(value = "group_id", required = false) String groupId, HttpServletRequest request) {
+        return service.approverSearch(groupId,request);
+    }
 }

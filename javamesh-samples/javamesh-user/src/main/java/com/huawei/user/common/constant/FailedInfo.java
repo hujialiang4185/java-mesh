@@ -18,6 +18,13 @@ public class FailedInfo {
     public static final String UPDATE_USER_FAIL = "修改用户失败";
     public static final String ENCODE_PASSWORD_FAIL = "密码加密失败";
     public static final String CANNOT_UPDATE_ADMIN = "不能修改admin用户";
+    public static final String GROUP_NAME_EXISTS = "分组名已存在";
+    public static final String GROUP_ADD_FAIL = "新建分组失败";
+    public static final String DELETE_GROUP_FAIL = "删除分组失败";
+    public static final String GROUP_BE_USED = "分组正被使用，不能删除";
+    public static final String ADMIN_HAS_NOT_GROUP = "当前管理员没有自己所属的分组";
+    public static final String USER_HAVE_NOT_GROUP = "用户没有分组,请先对用户分组后操作";
+    public static final String CANNOT_UPDATE_OTHER_GROUP_USERS = "不能修改其他分组的用户";
 
     private FailedInfo() {
     }

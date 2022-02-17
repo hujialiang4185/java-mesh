@@ -275,8 +275,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String updateUser(UserEntity user) {
+    public String updateUser(HttpServletRequest request, UserEntity user) {
         String userName = user.getUserName();
+        String group = mapper.getGroupByUser(userName);
+        if (StringUtils.isNotBlank(group)) {
+            UserEntity loginUser = (UserEntity) request.getSession().getAttribute("userInfo");
+            if (!loginUser.getUserName().equals("admin") && !group.equals(loginUser.getGroupName())) {
+                return FailedInfo.CANNOT_UPDATE_OTHER_GROUP_USERS;
+            }
+        }
         if (userName.equals("admin")) {
             return FailedInfo.CANNOT_UPDATE_ADMIN;
         }
@@ -304,6 +311,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public String getUserStatus(String userName) {
         return mapper.getUserStatus(userName);
+    }
+
+    @Override
+    public CommonResult approverSearch(String groupId, HttpServletRequest request) {
+        UserEntity user = (UserEntity) request.getSession().getAttribute("userInfo");
+        List<String> userEntities = mapper.approverSearch(user.getGroupName());
+        return CommonResult.success(userEntities);
     }
 
     private String generatePassword() {

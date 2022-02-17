@@ -12,13 +12,13 @@ import java.util.List;
 import java.util.Map;
 
 public interface EmergencyScriptService {
-    CommonResult<List<EmergencyScript>> listScript(HttpServletRequest request, String scriptName, String scriptUser, int pageSize, int current, String sorter, String order,String status);
+    CommonResult<List<EmergencyScript>> listScript(HttpServletRequest request, String scriptName, String scriptUser, int pageSize, int current, String sorter, String order, String status);
 
     int deleteScripts(int[] scriptIds);
 
     void downloadScript(int scriptId, HttpServletResponse response);
 
-    int uploadScript(HttpServletRequest request,EmergencyScript script,MultipartFile file);
+    int uploadScript(HttpServletRequest request, EmergencyScript script, MultipartFile file);
 
     EmergencyScript selectScript(int scriptId);
 
@@ -26,17 +26,17 @@ public interface EmergencyScriptService {
 
     int updateScript(HttpServletRequest request, EmergencyScript script);
 
-    List<String> searchScript(HttpServletRequest request, String scriptName,String status);
+    List<String> searchScript(HttpServletRequest request, String scriptName, String status);
 
     EmergencyScript getScriptByName(String scriptName);
 
-    String submitReview(HttpServletRequest request,EmergencyScript script);
+    String submitReview(HttpServletRequest request, EmergencyScript script);
 
-    int approve(Map<String, Object> map);
+    int approve(HttpServletRequest request, Map<String, Object> map);
 
     CommonResult debugScript(int scriptId);
 
-    CommonResult debugScriptBeforeSave(String content,String serverName);
+    CommonResult debugScriptBeforeSave(String content, String serverName);
 
     CommonResult debugScriptStop(Integer debugId);
 
@@ -56,7 +56,7 @@ public interface EmergencyScriptService {
      * @param treeResponse
      * @return
      */
-    CommonResult updateOrchestrate(HttpServletRequest request,TreeResponse treeResponse);
+    CommonResult updateOrchestrate(HttpServletRequest request, TreeResponse treeResponse);
 
     /**
      * 查询编排脚本

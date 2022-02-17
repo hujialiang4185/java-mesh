@@ -63,6 +63,7 @@ public class FailedInfo {
     public static final String DOWNLOAD_SCRIPT_FAIL = "下载文件失败";
     public static final String INSUFFICIENT_PERMISSIONS = "权限不足";
     public static final String APPROVE_FAIL = "审核失败";
+    public static final String USER_HAVE_NOT_GROUP = "用户没有分组,请先对用户分组后操作";
 
     private FailedInfo() {
     }

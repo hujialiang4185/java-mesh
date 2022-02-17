@@ -3,6 +3,7 @@ package com.huawei.user.common.filter;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.huawei.user.common.api.CommonResult;
+import com.huawei.user.common.constant.FailedInfo;
 import com.huawei.user.common.util.UserFeignClient;
 import com.huawei.user.entity.UserEntity;
 import com.huawei.user.mapper.UserMapper;
@@ -35,7 +36,7 @@ public class UserFilter implements Filter {
     private UserEntity user;
 
     private static final Set<String> ALLOWED_PATHS = Collections.unmodifiableSet(new HashSet<>(
-            Arrays.asList("/api/user/login", "/api/user/registe", "/api/user/me","/api/user/logout")));
+            Arrays.asList("/api/user/login", "/api/user/registe", "/api/user/me", "/api/user/logout")));
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -59,9 +60,16 @@ public class UserFilter implements Filter {
                     responseJson(response, jsonObject);
                     return;
                 }
+                String group = mapper.getGroupByUser(userId);
+                if (!userId.equals("admin") && StringUtils.isBlank(group)) {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("msg", FailedInfo.USER_HAVE_NOT_GROUP);
+                    responseJson(response, jsonObject);
+                    return;
+                }
                 String role = mapper.getRoleByUserName(userId);
                 List<String> auth = mapper.getAuthByRole(role);
-                user = new UserEntity(userId, (String) userInfo.get("userName"), role, auth);
+                user = new UserEntity(userId, (String) userInfo.get("userName"), role, auth, group);
                 session.setAttribute("userInfo", user);
             } catch (FeignException e) {
                 log.error("No login. ");

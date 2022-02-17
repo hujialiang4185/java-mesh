@@ -16,9 +16,9 @@ spring:
         username: hujialiang
         password: hujialiang
   datasource:
-    url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3306}/hercules?createDatabaseIfNotExist=true&serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://${MYSQL_HOST:100.94.174.17}:${MYSQL_PORT:3306}/hercules2?createDatabaseIfNotExist=true&serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true
     username: ${MYSQL_USERNAME:root}
-    password: ${MYSQL_PASSWORD:root}
+    password: ${MYSQL_PASSWORD:123456}
     schema:
       - classpath:create-table.sql
     initialization-mode: always

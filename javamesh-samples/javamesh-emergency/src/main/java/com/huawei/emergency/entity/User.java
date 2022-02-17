@@ -20,10 +20,13 @@ public class User {
 
     private List<String> auth;
 
-    public User(String userName, String nickName, String role, List<String> auth) {
+    private String group;
+
+    public User(String userName, String nickName, String role, List<String> auth,String group) {
         this.userName = userName;
         this.nickName = nickName;
         this.role = role;
         this.auth = auth;
+        this.group=group;
     }
 }
