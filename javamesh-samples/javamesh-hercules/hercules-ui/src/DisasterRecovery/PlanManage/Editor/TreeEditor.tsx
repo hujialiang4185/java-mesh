@@ -65,11 +65,14 @@ export default class App extends React.Component<{ plan_id: string }> {
           const data = [...this.state.gData];
           const dropRoot = data.find(function (item) {
             return dropKey === item.key;
-          })
+          }) !== undefined
           const dragRoot = data.find(function (item) {
             return dragKey === item.key;
-          })
-          if (dropRoot !== dragRoot) return
+          }) !== undefined
+          console.log(dragRoot, dropRoot, info.dropToGap)
+          if (!dragRoot && dropRoot && info.dropToGap) return
+          if (dragRoot && !info.dropToGap) return
+          
           // Find dragObject
           let dragObj: Data = { key: 0, title: "" };
           loop(data, dragKey, (item, index, arr) => {
