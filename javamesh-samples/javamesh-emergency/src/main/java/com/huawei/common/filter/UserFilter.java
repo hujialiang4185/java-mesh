@@ -117,7 +117,7 @@ public class UserFilter implements Filter {
         if (user == null) {
             return null;
         }
-        return user.getNickName();
+        return user.getUserName();
     }
 
     public static org.ngrinder.model.User currentGrinderUser() {

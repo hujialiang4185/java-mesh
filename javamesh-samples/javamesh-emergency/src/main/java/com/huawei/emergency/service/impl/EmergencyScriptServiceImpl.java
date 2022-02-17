@@ -461,6 +461,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         newScript.setContent("");
         newScript.setScriptUser(UserFilter.currentUserName());
         newScript.setScriptStatus("0");
+        script.setScriptGroup(UserFilter.currentUser().getGroup());
         mapper.insertSelective(newScript);
         generateTemplate(newScript); // 生成编排模板
         return CommonResult.success(newScript);
@@ -689,6 +690,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         script.setContent(generateIdeScript(UserFilter.currentGrinderUser(), CommonConfig.GRINDER_FOLDER, scriptManageDto.getForUrl(), script.getScriptName(), scriptLanguage.getLanguage(), scriptManageDto.isHasResource(), null));
         script.setScriptUser(UserFilter.currentUserName());
         script.setScriptStatus(TYPE_ZERO);
+        script.setScriptGroup(UserFilter.currentUser().getGroup());
         mapper.insertSelective(script);
         return CommonResult.success(script);
     }
