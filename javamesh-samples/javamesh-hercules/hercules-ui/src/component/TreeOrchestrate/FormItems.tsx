@@ -51,7 +51,7 @@ export default function App(props: { type: String }) {
                     message: "格式错误"
                 }]}>
                     <Input.TextArea showCount maxLength={50} autoSize={{ minRows: 2, maxRows: 2 }}
-                        placeholder="测试参数可以在脚本中通过System.getProperty('param')取得, 参数只能为数字、字母、下划线、逗号、圆点（.）或竖线(|)组成, 禁止输入空格, 长度在0-50之间。" />
+                        placeholder="测试参数可以在脚本中通过System.getProperty('param')取得, 参数只能为数字、字母、下划线、逗号、圆点(.)或竖线(|)组成, 禁止输入空格, 长度在0-50之间。" />
                 </Form.Item>
                 <RootPresure />
             </>
@@ -233,7 +233,7 @@ function ScriptEditor() {
     </>
 }
 
-function RootBasicScenario(props: FormItemLabelProps) {
+export function RootBasicScenario(props: FormItemLabelProps) {
     const [basic, setBasic] = useState(false)
     return <Form.Item {...props} className="RootBasicScenario" initialValue="by_time" name="basic">
         <Radio.Group onChange={function (e) {
@@ -264,7 +264,7 @@ function RootBasicScenario(props: FormItemLabelProps) {
     </Form.Item>
 }
 
-function RootPresure() {
+export function RootPresure() {
     const [disabled, setDisabled] = useState(true)
     return <>
         <Divider orientation="left">压力配置</Divider>

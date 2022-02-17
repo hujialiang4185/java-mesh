@@ -4,7 +4,7 @@ import { debounce } from "lodash"
 import React, { useEffect, useRef, useState } from "react"
 import { FileSearchOutlined, SearchOutlined } from '@ant-design/icons'
 
-export default function App(props: { value?: string, onChange?: (value: string) => void, placeholder?: string, allowClear?: boolean }) {
+export default function App(props: { value?: string, onChange?: (value: string) => void, type?: string }) {
   const [options, setOptions] = useState()
   const [loading, setLoading] = useState(false)
   const [isModalVisible, setIsModalVisible] = useState(false)
@@ -17,7 +17,7 @@ export default function App(props: { value?: string, onChange?: (value: string) 
   async function loadBelongTo(value?: string) {
     setLoading(true)
     try {
-      const res = await axios.get("/argus-emergency/api/script/search", { params: { value, status: "approved" } })
+      const res = await axios.get("/argus-emergency/api/script/search", { params: { value, status: "approved", type: props.type } })
       setOptions(res.data.data.map(function (item: string) {
         return { value: item }
       }))
@@ -28,8 +28,7 @@ export default function App(props: { value?: string, onChange?: (value: string) 
   }
   const debounceRef = useRef(debounce(loadBelongTo, 1000))
   return <div className="SearchSelect">
-    <Select placeholder={props.placeholder} value={value} onChange={updateValue} options={options}
-      allowClear={props.allowClear} showSearch
+    <Select value={value} onChange={updateValue} options={options} showSearch
       onSearch={debounceRef.current}
       onFocus={function () {
         options || loadBelongTo()
@@ -37,15 +36,15 @@ export default function App(props: { value?: string, onChange?: (value: string) 
       notFoundContent={loading && <Spin size="small" />}
     />
     <Button icon={<FileSearchOutlined />} onClick={function () { setIsModalVisible(true) }}>查找</Button>
-    {isModalVisible && <SearchSelectModal setIsModalVisible={setIsModalVisible} onChange={updateValue} />}
+    {isModalVisible && <SearchSelectModal setIsModalVisible={setIsModalVisible} onChange={updateValue} type={props.type}/>}
   </div>
 }
 
-function SearchSelectModal(props: { setIsModalVisible: (visible: boolean) => void, onChange: (value: string) => void }) {
+function SearchSelectModal(props: { setIsModalVisible: (visible: boolean) => void, onChange: (value: string) => void, type?: string }) {
   const [data, setData] = useState({ data: [], total: 0 })
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
   const [loading, setLoading] = useState(false)
-  const stateRef = useRef<any>({})
+  const stateRef = useRef<any>({type: props.type})
   async function load() {
     setLoading(true)
     try {
@@ -56,7 +55,8 @@ function SearchSelectModal(props: { setIsModalVisible: (visible: boolean) => voi
         order: stateRef.current.sorter?.order,
         ...stateRef.current.search,
         ...stateRef.current.filters,
-        status: "approved"
+        status: "approved",
+        type: stateRef.current.type
       }
       const res = await axios.get("/argus-emergency/api/script", { params })
       setData(res.data)
