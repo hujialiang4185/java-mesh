@@ -40,12 +40,24 @@ public enum TaskTypeEnum {
         this.desc = desc;
     }
 
-    public static TaskTypeEnum match(String value) {
+    public static TaskTypeEnum matchByValue(String value) {
         if (value == null) {
             return null;
         }
         for (TaskTypeEnum item : TaskTypeEnum.values()) {
             if (item.getValue().toLowerCase(Locale.ROOT).equals(value.toLowerCase(Locale.ROOT))) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    public static TaskTypeEnum matchByDesc(String desc) {
+        if (desc == null) {
+            return null;
+        }
+        for (TaskTypeEnum item : TaskTypeEnum.values()) {
+            if (item.getDesc().toLowerCase(Locale.ROOT).equals(desc.toLowerCase(Locale.ROOT))) {
                 return item;
             }
         }

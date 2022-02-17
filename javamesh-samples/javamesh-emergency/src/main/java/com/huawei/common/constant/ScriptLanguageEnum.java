@@ -18,6 +18,8 @@ package com.huawei.common.constant;
 
 import lombok.Getter;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -29,26 +31,48 @@ import java.util.Locale;
 @Getter
 public enum ScriptLanguageEnum {
 
-    SHELL("Shell"),
-    GROOVY("Groovy"),
-    PYTHON("Python"),
-    JAVASCRIPT("JavaScript");
+    SHELL("Shell", "0", ScriptTypeEnum.NORMAL),
+    JYTHON("Jython", "1", ScriptTypeEnum.NORMAL),
+    GROOVY("Groovy", "2", ScriptTypeEnum.NORMAL),
+    GUI("GUI", "3", ScriptTypeEnum.GUI),
+    PERF_JYTHON("jython", "4", ScriptTypeEnum.IDE),
+    PERF_GROOVY("groovy", "5", ScriptTypeEnum.IDE),
+    PERF_GROOVY_MAVEN("groovy_maven", "6", ScriptTypeEnum.IDE),
+    JAVASCRIPT("JavaScript", "7", ScriptTypeEnum.NORMAL);
 
+    private String language;
     private String value;
+    private ScriptTypeEnum scriptType;
 
-    ScriptLanguageEnum(String value) {
+
+    ScriptLanguageEnum(String language, String value, ScriptTypeEnum scriptType) {
+        this.language = language;
         this.value = value;
+        this.scriptType = scriptType;
     }
 
-    public static ScriptLanguageEnum match(String value) {
-        if (value == null) {
+    public static ScriptLanguageEnum match(String language, ScriptTypeEnum scriptType) {
+        if (language == null) {
             return null;
         }
-        for (ScriptLanguageEnum item : ScriptLanguageEnum.values()) {
-            if (item.getValue().toLowerCase(Locale.ROOT).equals(value.toLowerCase(Locale.ROOT))) {
+        if ("Groovy Maven Project".equals(language)) {
+            return PERF_GROOVY_MAVEN;
+        }
+        for (ScriptLanguageEnum item : ScriptLanguageEnum.matchScriptType(scriptType)) {
+            if (item.getLanguage().toLowerCase(Locale.ROOT).equals(language.toLowerCase(Locale.ROOT))) {
                 return item;
             }
         }
         return null;
+    }
+
+    public static List<ScriptLanguageEnum> matchScriptType(ScriptTypeEnum scriptType) {
+        List<ScriptLanguageEnum> result = new ArrayList<>();
+        for (ScriptLanguageEnum item : ScriptLanguageEnum.values()) {
+            if (item.getScriptType() == scriptType) {
+                result.add(item);
+            }
+        }
+        return result;
     }
 }

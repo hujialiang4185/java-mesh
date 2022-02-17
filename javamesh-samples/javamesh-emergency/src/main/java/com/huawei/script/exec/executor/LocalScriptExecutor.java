@@ -26,7 +26,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -62,7 +61,7 @@ public class LocalScriptExecutor implements ScriptExecutor {
     public ExecResult execScript(ScriptExecInfo scriptExecInfo, LogCallBack logCallback) {
         String fileName = "";
         try {
-            fileName = createScriptFile(scriptExecInfo.getScriptName(), scriptExecInfo.getScriptContext());
+            fileName = createScriptFile(scriptExecInfo.getScriptName(), scriptExecInfo.getScriptContent());
             return exec(commands(fileName, scriptExecInfo.getParams()), logCallback, scriptExecInfo.getId(), scriptExecInfo.getTimeOut());
         } catch (FileNotFoundException e) {
             return ExecResult.error("Please check out your scriptLocation.");

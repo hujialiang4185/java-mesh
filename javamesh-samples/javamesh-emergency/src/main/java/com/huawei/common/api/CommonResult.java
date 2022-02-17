@@ -6,6 +6,7 @@ package com.huawei.common.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 通用返回对象
@@ -14,6 +15,7 @@ import lombok.Data;
  * @author h30009881
  * @since 2021-10-14
  */
+@NoArgsConstructor
 @Data
 public class CommonResult<T> {
     private static final int SUCCESS = 200;

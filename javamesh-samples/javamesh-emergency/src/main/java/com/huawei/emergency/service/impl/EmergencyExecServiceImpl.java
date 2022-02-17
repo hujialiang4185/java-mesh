@@ -220,11 +220,16 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
 
     @Override
     public LogResponse getRecordLog(int recordId, int line) {
+        EmergencyExecRecordWithBLOBs record = recordMapper.selectByPrimaryKey(recordId);
+        if (record != null && StringUtils.isNotEmpty(record.getLog())) {
+            return LogResponse.parse(record.getLog(),line);
+        }
         EmergencyExecRecordDetailExample recordDetailExample = new EmergencyExecRecordDetailExample();
         recordDetailExample.createCriteria()
             .andIsValidEqualTo(ValidEnum.VALID.getValue())
             .andRecordIdEqualTo(recordId);
-        List<EmergencyExecRecordDetail> emergencyExecRecordDetails = recordDetailMapper.selectByExample(recordDetailExample);
+        List<EmergencyExecRecordDetail> emergencyExecRecordDetails =
+            recordDetailMapper.selectByExample(recordDetailExample);
         if (emergencyExecRecordDetails.size() == 0) {
             return LogResponse.END;
         }
@@ -323,7 +328,8 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
             if (server == null) {
                 return CommonResult.failed("获取服务器信息失败");
             }
-            ServerInfo serverInfo = new ServerInfo(server.getServerIp(), server.getServerUser(), server.getServerPort());
+            ServerInfo serverInfo =
+                new ServerInfo(server.getServerIp(), server.getServerUser(), server.getServerPort());
             if ("1".equals(server.getHavePassword())) {
                 serverInfo.setServerPassword(handlerFactory.parsePassword(server.getPasswordMode(), server.getPassword()));
             }
@@ -355,7 +361,8 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
             || ValidEnum.IN_VALID.getValue().equals(oldDetail.getIsValid())) {
             return CommonResult.failed("请选择正在执行中的记录");
         }
-        if (!RecordStatus.FAILED.getValue().equals(oldDetail.getStatus()) && !RecordStatus.CANCEL.getValue().equals(oldDetail.getStatus())) {
+        if (!RecordStatus.FAILED.getValue().equals(oldDetail.getStatus())
+            && !RecordStatus.CANCEL.getValue().equals(oldDetail.getStatus())) {
             return CommonResult.failed("请选择执行失败或取消的记录");
         }
         EmergencyExecRecordWithBLOBs record = recordMapper.selectByPrimaryKey(oldDetail.getRecordId());
@@ -429,25 +436,7 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
             }
             return log;
         }
-        String[] split = recordDetail.getLog().split(System.lineSeparator());
-        if (split.length >= line) {
-            String[] needLogs = Arrays.copyOfRange(split, line - 1, split.length);
-            return new LogResponse(null, needLogs);
-        }
-        return new LogResponse(null, new String[]{recordDetail.getLog()});
-        /*EmergencyExecRecordDetail recordDetail = recordDetailMapper.selectByPrimaryKey(detailId);
-        if (recordDetail == null || ValidEnum.IN_VALID.equals(recordDetail.getIsValid())) {
-            return LogResponse.END;
-        }
-        if (StringUtils.isEmpty(recordDetail.getLog())) {
-            return LogMemoryStore.getLog(detailId, line);
-        }
-        String[] split = recordDetail.getLog().split(System.lineSeparator());
-        if (split.length >= line) {
-            String[] needLogs = Arrays.copyOfRange(split, line - 1, split.length);
-            return new LogResponse(null, needLogs);
-        }
-        return new LogResponse(null, new String[]{recordDetail.getLog()});*/
+        return LogResponse.parse(recordDetail.getLog(),line);
     }
 
     @Override
@@ -456,7 +445,8 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
         filters.put("planNames", filterPlanNames);
         filters.put("creators", filterCreators);
         Page<PlanQueryDto> pageInfo = PageHelper
-            .startPage(params.getPageIndex(), params.getPageSize(), StringUtils.isEmpty(params.getSortType()) ? "" : params.getSortField() + System.lineSeparator() + params.getSortType())
+            .startPage(params.getPageIndex(), params.getPageSize(), StringUtils.isEmpty(params.getSortType()) ? "" :
+                params.getSortField() + System.lineSeparator() + params.getSortType())
             .doSelectPage(() -> {
                 execMapper.allPlanRecords(params.getObject(), filters);
             });
@@ -477,5 +467,26 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
             recordDto.setScheduleInfo(recordDetailMapper.selectAllServerDetail(recordDto.getKey()));
         });
         return CommonResult.success(result, result.size());
+    }
+
+    @Override
+    public CommonResult execComplete(ExecResult execResult) {
+        EmergencyExecRecordDetail recordDetail = recordDetailMapper.selectByPrimaryKey(execResult.getRecordId());
+        if (recordDetail == null || ValidEnum.IN_VALID.getValue().equals(recordDetail.getIsValid())) {
+            return CommonResult.failed("detailId is invalid");
+        }
+        EmergencyExecRecordWithBLOBs record = recordMapper.selectByPrimaryKey(recordDetail.getRecordId());
+        if (record == null || ValidEnum.IN_VALID.getValue().equals(record.getIsValid())) {
+            return CommonResult.failed("detailId is invalid");
+        }
+        ExecResult result;
+        if (StringUtils.isNotEmpty(execResult.getErrorInfo())) {
+            result = ExecResult.error(execResult.getErrorInfo());
+        } else {
+            result = ExecResult.success(execResult.getInfo());
+        }
+        ExecResult finalResult = result;
+        threadPoolExecutor.execute(() -> handlerFactory.complete(record, recordDetail, finalResult));
+        return CommonResult.success();
     }
 }

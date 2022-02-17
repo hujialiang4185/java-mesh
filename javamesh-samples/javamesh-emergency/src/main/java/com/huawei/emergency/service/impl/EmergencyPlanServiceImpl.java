@@ -16,7 +16,6 @@
 
 package com.huawei.emergency.service.impl;
 
-import com.huawei.argus.config.UserFactory;
 import com.huawei.argus.restcontroller.RestPerfTestController;
 import com.huawei.common.api.CommonPage;
 import com.huawei.common.api.CommonResult;
@@ -54,8 +53,9 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 
 import org.apache.commons.lang.StringUtils;
+import org.ngrinder.model.MonitoringHost;
 import org.ngrinder.model.PerfTest;
-import org.ngrinder.model.User;
+import org.ngrinder.model.RampUp;
 import org.ngrinder.perftest.service.PerfTestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,10 +65,15 @@ import org.springframework.scheduling.support.CronSequenceGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -224,13 +229,18 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             record.setCreateUser(userName);
             record.setExecId(emergencyExec.getExecId());
             if (record.getPerfTestId() != null) { // 如果是自定义脚本压测，根据此压测模板生成压测任务
-                User user = new User();
-                user.setUserId(UserFilter.currentUser().getUserName());
                 PerfTest testTemplate = perfTestService.getOne(record.getPerfTestId().longValue());
-                testTemplate.setId(null);
-                testTemplate.setCreatedDate(new Date());
-                testTemplate.setCreatedUser(user);
-                PerfTest perfTest = perfTestController.saveOne(user, testTemplate);
+                PerfTest newTest = new PerfTest();
+                BeanUtils.copyProperties(testTemplate,newTest);
+                if (newTest.getMonitoringHosts() != null) {
+                    Set<MonitoringHost> newHosts = new HashSet<>();
+                    newHosts.addAll(newTest.getMonitoringHosts());
+                    newTest.setMonitoringHosts(newHosts);
+                }
+                newTest.setId(null);
+                newTest.setCreatedDate(new Date());
+                newTest.setCreatedUser(UserFilter.currentGrinderUser());
+                PerfTest perfTest = perfTestController.saveOne(UserFilter.currentGrinderUser(), newTest);
                 record.setPerfTestId(perfTest.getId().intValue());
                 LOGGER.info("create perfTest {}", perfTest.getId());
             }
@@ -393,6 +403,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
 
             //查找场景下的子任务
             children.forEach(task -> {
+                queryPerfTest(task);
                 // 查找子任务下的子任务
                 List<TaskNode> taskChildren = getChildren(task.getPlanId(), task.getSceneId(), task.getTaskId());
                 if (taskChildren.size() > 0) {
@@ -402,6 +413,55 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         });
         return CommonResult.success(taskNodes);
     }
+
+    public void queryPerfTest(TaskNode node) {
+        if (node.getPerfTestId() == null) {
+            return;
+        }
+        PerfTest test = perfTestService.getOne(node.getPerfTestId().longValue());
+        if (test == null) {
+            return;
+        }
+        node.setAgent(test.getAgentCount());
+        node.setTestName(test.getTestName());
+        node.setVuser(test.getVuserPerAgent());
+        if (StringUtils.isNotEmpty(test.getTagString())) {
+            node.setLabel(Arrays.stream(StringUtils.split(test.getTagString(), ",")).collect(Collectors.toList()));
+        }
+        node.setDesc(test.getDescription());
+        if (StringUtils.isNotEmpty(test.getTargetHosts())) {
+            node.setHosts(new ArrayList<>());
+            for (String hostStr : test.getTargetHosts().split(",")) {
+                TaskNode.HostsDTO hostsDTO = new TaskNode.HostsDTO();
+                if (hostStr.indexOf(":") > -1) {
+                    hostsDTO.setDomain(hostStr.substring(0,hostStr.indexOf(":")));
+                    hostsDTO.setIp(hostStr.substring(hostStr.indexOf(":")));
+                } else {
+
+                }
+                node.getHosts().add(hostsDTO);
+            }
+        }
+        node.setBasic("D".equals(test.getThreshold()) ? "by_time" : "by_count");
+        node.setByCount(test.getRunCount());
+        if (test.getDuration() != null) {
+            long seconds = test.getDuration() / 1000;
+            node.setByTimeH((int) (seconds / 3600));
+            node.setByTimeM((int) (seconds % 3600) / 60 );
+            node.setByTimeS((int) (seconds % 3600) % 60 );
+        }
+        node.setSamplingIgnore(test.getIgnoreSampleCount());
+        node.setSamplingInterval(test.getSamplingInterval());
+        node.setSafe(test.getSafeDistribution() == null ? false : test.getSafeDistribution());
+        node.setTestParam(test.getParam());
+        node.setIncreased(test.getUseRampUp() == null ? false : test.getUseRampUp());
+        node.setConcurrency(RampUp.THREAD.equals(test.getRampUpType()) ? "线程" : "进程");
+        node.setInitValue(test.getRampUpInitCount());
+        node.setIncrement(test.getRampUpStep());
+        node.setInitWait(test.getRampUpInitSleepTime());
+        node.setGrowthInterval(test.getRampUpIncrementInterval());
+    }
+
 
     @Override
     public CommonResult<EmergencyPlan> get(int planId) {
@@ -415,7 +475,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
 
     @Override
     public CommonResult addTask(TaskNode taskNode) {
-        TaskTypeEnum taskType = TaskTypeEnum.match(taskNode.getTaskType());
+        TaskTypeEnum taskType = TaskTypeEnum.matchByDesc(taskNode.getTaskType());
         if (taskType == null || taskType == TaskTypeEnum.FLOW_RECORD) {
             return CommonResult.failed("不支持的任务类型");
         }
@@ -428,7 +488,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         task.setCreateUser(taskNode.getCreateUser());
         task.setTaskType(taskType.getValue());
         if (taskType == TaskTypeEnum.CUSTOM) { // 创建自定义脚本压测任务
-            PerfTest perfTest = taskNode.translate();
+            PerfTest perfTest = taskNode.parse();
             perfTest.setCreatedUser(UserFilter.currentGrinderUser());
             perfTest.setCreatedDate(new Date());
             PerfTest insertPerfTest = perfTestController.saveOne(UserFilter.currentGrinderUser(), perfTest);
@@ -586,6 +646,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             newTask.setCreateUser(userName);
             newTask.setCreateTime(new Date());
             newTask.setIsValid(ValidEnum.VALID.getValue());
+            newTask.setPerfTestId(taskNode.getPerfTestId());
             taskMapper.insertSelective(newTask);
             taskNode.setKey(newTask.getTaskId());
             copyTaskNodes(taskNode.getChildren(), userName);

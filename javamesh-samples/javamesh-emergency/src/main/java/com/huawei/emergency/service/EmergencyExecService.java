@@ -9,6 +9,7 @@ import com.huawei.common.api.CommonResult;
 import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyPlan;
 import com.huawei.emergency.entity.EmergencyScript;
+import com.huawei.script.exec.ExecResult;
 import com.huawei.script.exec.log.LogResponse;
 
 /**
@@ -43,4 +44,6 @@ public interface EmergencyExecService {
     CommonResult allSceneExecRecords(CommonPage<EmergencyExecRecord> params);
 
     CommonResult allTaskExecRecords(CommonPage<EmergencyExecRecord> params);
+
+    CommonResult execComplete(ExecResult execResult);
 }

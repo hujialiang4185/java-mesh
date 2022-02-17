@@ -4,6 +4,7 @@
 
 package com.huawei.script.exec;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 /**
@@ -20,6 +21,12 @@ public class ExecResult {
 
     private int code;
     private String msg;
+
+    @JsonProperty("recordId")
+    private int recordId;
+    private String info;
+    @JsonProperty("errorInfo")
+    private String errorInfo;
 
     public static ExecResult success(String msg) {
         ExecResult execResult = new ExecResult();

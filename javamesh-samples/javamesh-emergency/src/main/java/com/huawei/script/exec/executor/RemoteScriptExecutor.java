@@ -34,7 +34,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -75,7 +74,7 @@ public class RemoteScriptExecutor implements ScriptExecutor {
         try {
             session = serverSessionFactory.getSession(scriptExecInfo.getRemoteServerInfo());
             ExecResult uploadFileResult =
-                    uploadFile(session, scriptExecInfo.getScriptName(), scriptExecInfo.getScriptContext());
+                    uploadFile(session, scriptExecInfo.getScriptName(), scriptExecInfo.getScriptContent());
             if (!uploadFileResult.isSuccess()) {
                 LOGGER.error("Failed to upload script. {}", uploadFileResult.getMsg());
                 return uploadFileResult;

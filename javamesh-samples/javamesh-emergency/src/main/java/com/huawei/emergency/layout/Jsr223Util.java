@@ -17,6 +17,7 @@
 package com.huawei.emergency.layout;
 
 import com.huawei.common.constant.ScriptLanguageEnum;
+import com.huawei.common.constant.ScriptTypeEnum;
 import com.huawei.common.exception.ApiException;
 import com.huawei.emergency.layout.assertion.Jsr223Assertion;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -42,7 +43,7 @@ public class Jsr223Util {
         if (StringUtils.isEmpty(script)) {
             return;
         }
-        ScriptLanguageEnum languageEnum = ScriptLanguageEnum.match(language);
+        ScriptLanguageEnum languageEnum = ScriptLanguageEnum.match(language, ScriptTypeEnum.NORMAL);
         if (languageEnum == null) {
             throw new ApiException(String.format(Locale.ROOT, "不支持的脚本语言类型%s", language));
         }

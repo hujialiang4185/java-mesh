@@ -2,6 +2,7 @@ package com.huawei.common.filter;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.huawei.argus.config.UserFactory;
 import com.huawei.common.config.CommonConfig;
 import com.huawei.common.constant.FailedInfo;
 import com.huawei.common.util.UserFeignClient;
@@ -39,7 +40,7 @@ public class UserFilter implements Filter {
     private User user;
 
     private static final Set<String> ALLOWED_PATHS = Collections.unmodifiableSet(new HashSet<>(
-            Arrays.asList("/ws","/swagger-ui.html")));
+        Arrays.asList("/ws", "/swagger-ui.html","/api/script/execComplete")));
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -51,11 +52,11 @@ public class UserFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
         String path = request.getRequestURI().substring(request.getContextPath().length()).replaceAll("[/]+$", "");
-        if (!ALLOWED_PATHS.contains(path)) {
+        if(!ALLOWED_PATHS.contains(path)){
             try {
                 JSONObject userInfo = userFeignClient.getUserInfo();
                 session = request.getSession();
-                String userId = (String) userInfo.get("userId");
+                String userId = (String)userInfo.get("userId");
                 String enabled = mapper.getUserStatus(userId);
                 if (StringUtils.isNotBlank(enabled) && enabled.equals("F")) {
                     JSONObject jsonObject = new JSONObject();
@@ -122,7 +123,8 @@ public class UserFilter implements Filter {
     public static org.ngrinder.model.User currentGrinderUser() {
         User user = USERS.get();
         if (user == null) {
-            return null;
+            log.error("schedule task with no login.");
+            return UserFactory.newInstance();
         }
         org.ngrinder.model.User grinderUser = new org.ngrinder.model.User();
         grinderUser.setUserName(user.getNickName());

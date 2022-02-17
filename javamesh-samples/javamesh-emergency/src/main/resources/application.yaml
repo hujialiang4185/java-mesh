@@ -8,6 +8,8 @@ server:
 spring:
   main:
     allow-bean-definition-overriding: true
+  freemarker:
+    template-loader-path: classpath:/script_template
   application:
     name: emergency-drill
   cloud:

@@ -8,12 +8,16 @@ import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.FailedInfo;
 import com.huawei.common.constant.ResultCode;
 import com.huawei.emergency.dto.ArgusScript;
+import com.huawei.emergency.dto.ScriptManageDto;
 import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyScript;
 import com.huawei.emergency.layout.TreeResponse;
+import com.huawei.emergency.service.EmergencyExecService;
 import com.huawei.emergency.service.EmergencyScriptService;
+import com.huawei.script.exec.ExecResult;
 import com.huawei.script.exec.log.LogResponse;
 import io.swagger.annotations.Api;
+import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,21 +37,24 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/script")
 public class EmergencyScriptController {
+    private static final String SUCCESS = "success";
+
     @Autowired
     private EmergencyScriptService service;
 
-    private static final String SUCCESS = "success";
+    @Autowired
+    private EmergencyExecService execService;
 
     @GetMapping
     public CommonResult<List<EmergencyScript>> listScript(
-            HttpServletRequest request,
-            @RequestParam(value = "script_name", required = false) String scriptName,
-            @RequestParam(value = "owner", required = false) String scriptUser,
-            @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
-            @RequestParam(value = "current", defaultValue = "1") int current,
-            @RequestParam(value = "sorter", required = false) String sorter,
-            @RequestParam(value = "order", required = false) String order,
-            @RequestParam(value = "status", required = false) String status) {
+        HttpServletRequest request,
+        @RequestParam(value = "script_name", required = false) String scriptName,
+        @RequestParam(value = "owner", required = false) String scriptUser,
+        @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
+        @RequestParam(value = "current", defaultValue = "1") int current,
+        @RequestParam(value = "sorter", required = false) String sorter,
+        @RequestParam(value = "order", required = false) String order,
+        @RequestParam(value = "status", required = false) String status) {
         return service.listScript(request, scriptName, scriptUser, pageSize, current, sorter, order, status);
     }
 
@@ -153,8 +160,8 @@ public class EmergencyScriptController {
     }
 
     @PutMapping
-    public CommonResult updateScript(HttpServletRequest request, @RequestBody EmergencyScript script) {
-        int count = service.updateScript(request, script);
+    public CommonResult updateScript(@RequestBody EmergencyScript script) {
+        int count = service.updateScript(script);
         if (count == 1) {
             return CommonResult.success(count);
         } else if (count == ResultCode.SCRIPT_NAME_EXISTS) {
@@ -167,8 +174,9 @@ public class EmergencyScriptController {
     @GetMapping("/search")
     public CommonResult searchScript(HttpServletRequest request,
                                      @RequestParam(value = "value", required = false) String scriptName,
-                                     @RequestParam(value = "status", required = false) String status) {
-        List<String> scriptNames = service.searchScript(request, scriptName, status);
+                                     @RequestParam(value = "status", required = false) String status,
+                                     @RequestParam(value = "type", required = false) String scriptType) {
+        List<String> scriptNames = service.searchScript(request, scriptName, status, scriptType);
         return CommonResult.success(scriptNames);
     }
 
@@ -189,8 +197,8 @@ public class EmergencyScriptController {
     }
 
     @PostMapping("/approve")
-    public CommonResult approve(HttpServletRequest request, @RequestBody Map<String, Object> map) {
-        int count = service.approve(request,map);
+    public CommonResult approve(@RequestBody Map<String, Object> map) {
+        int count = service.approve(map);
         if (count == 0) {
             return CommonResult.failed(FailedInfo.APPROVE_FAIL);
         } else {
@@ -222,32 +230,86 @@ public class EmergencyScriptController {
         return service.debugLog(id, lineIndex);
     }
 
+    /**
+     * 创建GUI脚本
+     *
+     * @param script {@link EmergencyScript script}
+     * @return
+     */
     @PostMapping("/orchestrate")
-    public CommonResult createOrchestrate(@RequestBody EmergencyScript script) {
-        return service.createOrchestrate(script);
+    public CommonResult createGuiScript(@RequestBody EmergencyScript script) {
+        return service.createGuiScript(script);
     }
 
+    /**
+     * 修改GUI脚本
+     *
+     * @param treeResponse {@link TreeResponse} 编排树
+     * @return {@link CommonResult}
+     */
     @PutMapping("/orchestrate")
-    public CommonResult updateOrchestrate(HttpServletRequest request, @RequestBody TreeResponse treeResponse) {
-        return service.updateOrchestrate(request, treeResponse);
+    public CommonResult updateGuiScript( @RequestBody TreeResponse treeResponse) {
+        return service.updateGuiScript(treeResponse);
     }
 
+    /**
+     * 查询GUI脚本的编排树
+     *
+     * @param scriptId 脚本ID
+     * @return {@link CommonResult}
+     */
     @GetMapping("/orchestrate/get")
-    public CommonResult orchestrate(@RequestParam("script_id") int scriptId) {
-        return service.queryOrchestrate(scriptId);
+    public CommonResult queryGuiScript(@RequestParam("script_id") int scriptId) {
+        return service.queryGuiScript(scriptId);
     }
 
-    @GetMapping("/script/exec")
-    public void exec(HttpServletRequest request) {
+    /**
+     * 创建IDE脚本
+     *
+     * @param scriptManageDto {@link ScriptManageDto} 脚本信息
+     * @return
+     */
+    @PostMapping ("/ide")
+    public CommonResult createIdeScript(@RequestBody ScriptManageDto scriptManageDto) {
+        return service.createIdeScript(scriptManageDto);
+    }
+
+    /**
+     * 修改IDE脚本
+     *
+     * @param scriptManageDto {@link ScriptManageDto} 脚本信息
+     * @return
+     */
+    @PutMapping ("/ide")
+    public CommonResult updateIdeScript(@RequestBody ScriptManageDto scriptManageDto) {
+        EmergencyScript script = new EmergencyScript();
+        script.setScriptId(scriptManageDto.getScriptId());
+        script.setScriptName(scriptManageDto.getScriptName());
+        script.setContent(scriptManageDto.getContent());
+        return updateScript(script);
+    }
+
+    /**
+     * 获取IDE脚本
+     *
+     * @param scriptId 脚本ID
+     * @return
+     */
+    @GetMapping ("/ide/get")
+    public CommonResult createIdeScript(@RequestParam("script_id") Integer scriptId) {
+        return selectScript(scriptId);
+    }
+
+    @GetMapping("/exec")
+    public void exec(HttpServletRequest request){
         service.exec(request);
     }
 
-    @PostMapping("/script/execComplete")
-    public CommonResult execComplete(@RequestBody Map<String, String> map) {
-        if (map.get("recordId").equals("0")) {
+    @PostMapping("/execComplete")
+    public CommonResult execComplete(@RequestBody ExecResult execResult){
+        if(execResult.getRecordId() == 0){
             return CommonResult.failed("recordId is valid. ");
         }
-        return CommonResult.success();
+        return execService.execComplete(execResult);
     }
-
 }

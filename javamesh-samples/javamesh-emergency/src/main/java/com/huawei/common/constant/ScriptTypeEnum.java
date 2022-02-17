@@ -16,12 +16,18 @@
 
 package com.huawei.common.constant;
 
+import lombok.Getter;
+import org.apache.commons.lang.StringUtils;
+
+import java.util.Locale;
+
 /**
  * 脚本类型枚举
  *
  * @author y30010171
  * @since 2022-02-11
  **/
+@Getter
 public enum ScriptTypeEnum {
     GUI("GUI"),
     IDE("IDE"),
@@ -31,5 +37,17 @@ public enum ScriptTypeEnum {
 
     ScriptTypeEnum(String value) {
         this.value = value;
+    }
+
+    public static ScriptTypeEnum match (String value,ScriptTypeEnum defaultValue) {
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        for (ScriptTypeEnum item : values()) {
+            if (item.getValue().toLowerCase(Locale.ROOT).equals(value.toLowerCase(Locale.ROOT))) {
+                return item;
+            }
+        }
+        return defaultValue;
     }
 }

@@ -5,6 +5,8 @@ import com.huawei.common.api.CommonResult;
 import com.huawei.common.config.CommonConfig;
 import com.huawei.common.constant.FailedInfo;
 import com.huawei.common.constant.ResultCode;
+import com.huawei.common.constant.ScriptLanguageEnum;
+import com.huawei.common.constant.ScriptTypeEnum;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.common.exception.ApiException;
 import com.huawei.common.filter.UserFilter;
@@ -12,6 +14,7 @@ import com.huawei.common.util.EscapeUtil;
 import com.huawei.common.util.FileUtil;
 import com.huawei.common.util.PasswordUtil;
 import com.huawei.emergency.dto.ArgusScript;
+import com.huawei.emergency.dto.ScriptManageDto;
 import com.huawei.emergency.entity.EmergencyElement;
 import com.huawei.emergency.entity.EmergencyElementExample;
 import com.huawei.common.util.*;
@@ -37,6 +40,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 
+import freemarker.template.Configuration;
+import freemarker.template.DefaultObjectWrapper;
+import freemarker.template.Template;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.ngrinder.common.util.PathUtils;
@@ -47,6 +53,7 @@ import org.ngrinder.script.model.FileEntry;
 import org.ngrinder.script.service.NfsFileEntryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,25 +72,23 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.ngrinder.common.util.CollectionUtils.newHashMap;
+import static org.ngrinder.common.util.ExceptionUtils.processException;
 
 @Service
 @Transactional
 @Slf4j
 public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     private static final int BUF_SIZE = 1024;
-
     private static final String TYPE_ZERO = "0";
-
     private static final String TYPE_ONE = "1";
-
     private static final String TYPE_TWO = "2";
-
     private static final String SUCCESS = "success";
     private static final String TYPE_THREE = "3";
-
     private static final String PUBLIC = "公有";
     private static final String PRIVATE = "私有";
     private static final String NO_PASSWORD = "无";
@@ -114,6 +119,10 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
 
     @Autowired
     private NfsFileEntryService fileEntryService;
+
+
+    @Autowired
+    private Configuration freemarkerConfig;
 
     @Override
     public CommonResult<List<EmergencyScript>> listScript(HttpServletRequest request, String scriptName, String scriptUser, int pageSize, int current, String sorter, String order, String status) {
@@ -257,11 +266,20 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         if (count > 0) {
             return ResultCode.SCRIPT_NAME_EXISTS;
         }
-        User user = (User) request.getSession().getAttribute("userInfo");
-        script.setScriptUser(user.getUserName());
+        script.setScriptUser(UserFilter.currentUser().getUserName());
         script.setContent(FileUtil.streamToString(new ByteArrayInputStream(script.getContent().getBytes(StandardCharsets.UTF_8))));
-        extracted(script);
-        script.setScriptGroup(user.getGroup());
+        script.setScriptGroup(UserFilter.currentUser().getGroup());
+        script.setIsPublic(PRIVATE.equals(script.getIsPublic()) ? TYPE_ZERO : TYPE_ONE);
+        script.setHavePassword(HAVE_PASSWORD.equals(script.getHavePassword()) ? TYPE_ONE : TYPE_ZERO);
+        ScriptLanguageEnum scriptType = ScriptLanguageEnum.match(script.getScriptType(), ScriptTypeEnum.NORMAL);
+        if (scriptType == null) {
+            throw new ApiException("请选择正确的脚本语言");
+        }
+        script.setScriptType(scriptType.getValue());
+        script.setScriptStatus(TYPE_ZERO);
+        if (StringUtils.isEmpty(script.getSubmitInfo())) {
+            script.setSubmitInfo("");
+        }
         count = mapper.insertSelective(script);
         if (count != 1) {
             return ResultCode.FAIL;
@@ -270,7 +288,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     }
 
     @Override
-    public int updateScript(HttpServletRequest request, EmergencyScript script) {
+    public int updateScript(EmergencyScript script) {
         if (isParamInvalid(script)) {
             return ResultCode.PARAM_INVALID;
         }
@@ -289,17 +307,22 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
                 return ResultCode.SCRIPT_NAME_EXISTS;
             }
         }
-        extracted(script);
         script.setScriptStatus(TYPE_ZERO); // 变为待提审
         return mapper.updateByPrimaryKeySelective(script);
     }
 
     @Override
-    public List<String> searchScript(HttpServletRequest request, String scriptName, String status) {
+    public List<String> searchScript(HttpServletRequest request, String scriptName, String status, String scriptType) {
         User user = (User) request.getSession().getAttribute("userInfo");
         String userName = user.getUserName();
         String auth = user.getAuth().contains("admin") ? "admin" : "";
-        return mapper.searchScript(EscapeUtil.escapeChar(scriptName), userName, auth, status);
+        List<String> scriptTypes =
+            ScriptLanguageEnum.matchScriptType(ScriptTypeEnum.match(scriptType, ScriptTypeEnum.NORMAL))
+                .stream()
+                .map(ScriptLanguageEnum::getValue)
+                .collect(Collectors.toList());
+
+        return mapper.searchScript(EscapeUtil.escapeChar(scriptName), userName, auth, status, scriptTypes);
     }
 
     @Override
@@ -335,13 +358,12 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     }
 
     @Override
-    public int approve(HttpServletRequest request, Map<String, Object> map) {
+    public int approve(Map<String, Object> map) {
         String approve = (String) map.get("approve");
         int scriptId = (int) map.get("script_id");
-        User user = (User) request.getSession().getAttribute("userInfo");
         EmergencyScript script = new EmergencyScript();
         script.setScriptId(scriptId);
-        script.setApprover(user.getUserName());
+        script.setApprover(UserFilter.currentUserName());
         if (approve.equals("通过")) {
             script.setScriptStatus(TYPE_TWO);
             freshGrinderScript(scriptId);
@@ -421,28 +443,24 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     }
 
     @Override
-    public CommonResult createOrchestrate(EmergencyScript script) {
+    public CommonResult createGuiScript(EmergencyScript script) {
         if (script == null || StringUtils.isEmpty(script.getScriptName())) {
             return CommonResult.failed("请输入脚本名称");
         }
-        EmergencyScriptExample isNameExist = new EmergencyScriptExample();
-        isNameExist.createCriteria()
-                .andScriptNameEqualTo(script.getScriptName());
-        if (mapper.countByExample(isNameExist) > 0) {
+        if (isScriptNameExist(script.getScriptName())) {
             return CommonResult.failed("存在名称相同的脚本");
         }
 
         // 生成脚本信息 以及脚本编排信息
         EmergencyScript newScript = new EmergencyScript();
         newScript.setScriptName(script.getScriptName());
-        newScript.setIsPublic(script.getIsPublic());
-        newScript.setScriptType("3");
-        newScript.setSubmitInfo(script.getSubmitInfo());
+        newScript.setIsPublic(TYPE_ONE);
+        newScript.setScriptType(ScriptLanguageEnum.GUI.getValue());
+        newScript.setSubmitInfo(StringUtils.isEmpty(script.getSubmitInfo()) ? "" : script.getSubmitInfo());
         newScript.setHavePassword("0");
         newScript.setContent("");
         newScript.setScriptUser(UserFilter.currentUserName());
         newScript.setScriptStatus("0");
-        transLateScript(newScript);
         mapper.insertSelective(newScript);
         generateTemplate(newScript); // 生成编排模板
         return CommonResult.success(newScript);
@@ -484,15 +502,15 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     }
 
     @Override
-    public CommonResult updateOrchestrate(HttpServletRequest request, TreeResponse treeResponse) {
+    public CommonResult updateGuiScript(TreeResponse treeResponse) {
         if (treeResponse.getScriptId() == null || mapper.selectByPrimaryKey(treeResponse.getScriptId()) == null) {
             return CommonResult.failed("请选择脚本");
         }
         // 清除之前的编排关系
         EmergencyElementExample currentElementsExample = new EmergencyElementExample();
         currentElementsExample.createCriteria()
-                .andIsValidEqualTo(ValidEnum.VALID.getValue())
-                .andScriptIdEqualTo(treeResponse.getScriptId());
+            .andIsValidEqualTo(ValidEnum.VALID.getValue())
+            .andScriptIdEqualTo(treeResponse.getScriptId());
         EmergencyElement updateElement = new EmergencyElement();
         updateElement.setIsValid(ValidEnum.IN_VALID.getValue());
         elementMapper.updateByExampleSelective(updateElement, currentElementsExample);
@@ -547,7 +565,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         EmergencyElement element = new EmergencyElement();
         Map elementParams = map.get(node.getKey());
         if (elementParams != null &&
-                ("JARImport".equals(node.getType()) || "CSVDataSetConfig".equals(node.getType()))
+            ("JARImport".equals(node.getType()) || "CSVDataSetConfig".equals(node.getType()))
         ) {
             String filenames = elementParams.getOrDefault("filenames", "").toString();
             if (StringUtils.isEmpty(filenames)) {
@@ -583,12 +601,12 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     }
 
     @Override
-    public CommonResult queryOrchestrate(int scriptId) {
+    public CommonResult queryGuiScript(int scriptId) {
         EmergencyElementExample rootElementExample = new EmergencyElementExample();
         rootElementExample.createCriteria()
-                .andScriptIdEqualTo(scriptId)
-                .andParentIdIsNull()
-                .andIsValidEqualTo(ValidEnum.VALID.getValue());
+            .andScriptIdEqualTo(scriptId)
+            .andParentIdIsNull()
+            .andIsValidEqualTo(ValidEnum.VALID.getValue());
         List<EmergencyElement> emergencyElements = elementMapper.selectByExampleWithBLOBs(rootElementExample);
         if (emergencyElements.size() == 0) {
             return CommonResult.success();
@@ -615,8 +633,8 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         }
         EmergencyElementExample elementExample = new EmergencyElementExample();
         elementExample.createCriteria()
-                .andParentIdEqualTo(parent.getElementId())
-                .andIsValidEqualTo(ValidEnum.VALID.getValue());
+            .andParentIdEqualTo(parent.getElementId())
+            .andIsValidEqualTo(ValidEnum.VALID.getValue());
         List<EmergencyElement> emergencyElements = elementMapper.selectByExampleWithBLOBs(elementExample);
         for (EmergencyElement emergencyElement : emergencyElements) {
             TreeNode node = new TreeNode();
@@ -631,18 +649,6 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         }
     }
 
-    private void extracted(EmergencyScript script) {
-        transLateScript(script);
-        try {
-            if (script.getPasswordMode() != null && script.getPasswordMode().equals(TYPE_ZERO)) {
-                script.setPassword(passwordUtil.encodePassword(script.getPassword()));
-            }
-        } catch (UnsupportedEncodingException e) {
-            throw new ApiException("Failed to encode password. ", e);
-        }
-        script.setScriptStatus(TYPE_ZERO);
-    }
-
     @Override
     public void exec(HttpServletRequest request) {
         Map<String, String> map = new HashMap<>();
@@ -655,61 +661,65 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         System.out.println(responseEntity.getBody());
     }
 
+    @Override
+    public CommonResult createIdeScript(ScriptManageDto scriptManageDto) {
+        if (scriptManageDto == null || StringUtils.isEmpty(scriptManageDto.getScriptName())) {
+            return CommonResult.failed("请输入脚本名称");
+        }
+        if (isScriptNameExist(scriptManageDto.getScriptName())) {
+            return CommonResult.failed("存在名称相同的脚本");
+        }
+        // 生成脚本信息 以及脚本编排信息
+        EmergencyScript script = new EmergencyScript();
+        script.setScriptName(scriptManageDto.getScriptName());
+        script.setIsPublic(TYPE_ONE);
+        ScriptLanguageEnum scriptLanguage =
+            ScriptLanguageEnum.match(scriptManageDto.getScriptType(), ScriptTypeEnum.IDE);
+        if (scriptLanguage == null) {
+            return CommonResult.failed("请选择正确的脚本语言类型");
+        }
+        script.setScriptType(scriptLanguage.getValue());
+        script.setSubmitInfo(StringUtils.isEmpty(scriptManageDto.getSubmitInfo()) ? "" : scriptManageDto.getSubmitInfo());
+        script.setHavePassword(TYPE_ZERO);
+        /*JSONObject options = new JSONObject();
+        options.put("method", scriptManageDto.getMethod());
+        options.put("headers", JSONObject.toJSONString(scriptManageDto.getHeaders()));
+        options.put("cookies", JSONObject.toJSONString(scriptManageDto.getCookies()));
+        options.put("params", JSONObject.toJSONString(scriptManageDto.getParams()));*/
+        script.setContent(generateIdeScript(UserFilter.currentGrinderUser(), CommonConfig.GRINDER_FOLDER, scriptManageDto.getForUrl(), script.getScriptName(), scriptLanguage.getLanguage(), scriptManageDto.isHasResource(), null));
+        script.setScriptUser(UserFilter.currentUserName());
+        script.setScriptStatus(TYPE_ZERO);
+        mapper.insertSelective(script);
+        return CommonResult.success(script);
+    }
+
+    @Override
+    public CommonResult updateIdeScript(ScriptManageDto scriptManageDto) {
+
+        return null;
+    }
+
+    public boolean isScriptNameExist(String scriptName) {
+        EmergencyScriptExample isNameExist = new EmergencyScriptExample();
+        isNameExist.createCriteria()
+            .andScriptNameEqualTo(scriptName);
+        return mapper.countByExample(isNameExist) > 0;
+    }
 
     private boolean isParamInvalid(EmergencyScript script) {
         if ("havePassword".equals(script.getHavePassword()) &&
-                (StringUtils.isBlank(script.getPassword()) || StringUtils.isBlank(script.getPasswordMode()))) {
+            (StringUtils.isBlank(script.getPassword()) || StringUtils.isBlank(script.getPasswordMode()))) {
             return true;
         }
         return false;
-    }
-
-    private void transLateScript(EmergencyScript script) {
-        switch (script.getIsPublic()) {
-            case PRIVATE:
-                script.setIsPublic(TYPE_ZERO);
-                break;
-            case PUBLIC:
-                script.setIsPublic(TYPE_ONE);
-        }
-        switch (script.getScriptType()) {
-            case "Shell":
-                script.setScriptType(TYPE_ZERO);
-                break;
-            case "Jython":
-                script.setScriptType(TYPE_ONE);
-                break;
-            case "Groovy":
-                script.setScriptType(TYPE_TWO);
-        }
-        if (script.getHavePassword() != null) {
-            switch (script.getHavePassword()) {
-                case NO_PASSWORD:
-                    script.setHavePassword(TYPE_ZERO);
-                    break;
-                case HAVE_PASSWORD:
-                    script.setHavePassword(TYPE_ONE);
-            }
-        } else {
-            script.setHavePassword(TYPE_ZERO);
-        }
-        if (script.getPasswordMode() != null) {
-            switch (script.getPasswordMode()) {
-                case "本地":
-                    script.setPasswordMode(TYPE_ZERO);
-                    break;
-                case "平台":
-                    script.setPasswordMode(TYPE_ONE);
-            }
-        }
     }
 
     private String grinderPath(String scriptName) {
         return CommonConfig.GRINDER_FOLDER + "/" + scriptName + ".groovy";
     }
 
-    public String generateIdeScript(org.ngrinder.model.User user, String path, String testUrl, String fileName, String scriptType,
-                                    boolean createLibAndResources, String options) {
+    private String generateIdeScript(org.ngrinder.model.User user, String path, String testUrl, String fileName, String scriptType,
+                                     boolean createLibAndResources, String options) {
         String hostIp = "Test1";
         if (StringUtils.isEmpty(testUrl)) {
             testUrl = StringUtils.defaultIfBlank(testUrl, "http://please_modify_this.com");
@@ -723,11 +733,22 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         map.put("name", hostIp);
         map.put("options", options);
         if (scriptHandler instanceof ProjectHandler) {
-            String scriptContent = fileEntryService.getScriptHandler("groovy").getScriptTemplate(map);
+            String scriptContent = getScriptTemplate(map, scriptHandler.getExtension());
             scriptHandler.prepareScriptEnv(user, path, StringUtils.trimToEmpty(fileName), hostIp, testUrl, createLibAndResources, scriptContent);
             return scriptContent;
         } else {
-            return scriptHandler.getScriptTemplate(map);
+            return getScriptTemplate(map, scriptHandler.getExtension());
+        }
+    }
+
+    private String getScriptTemplate(Map<String, Object> values, String extension) {
+        try {
+            Template template = freemarkerConfig.getTemplate("basic_template_" + extension + ".ftl");
+            StringWriter writer = new StringWriter();
+            template.process(values, writer);
+            return writer.toString();
+        } catch (Exception e) {
+            throw processException("Error while fetching the script template.", e);
         }
     }
 }

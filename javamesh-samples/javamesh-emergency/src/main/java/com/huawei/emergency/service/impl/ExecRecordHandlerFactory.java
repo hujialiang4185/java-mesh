@@ -4,13 +4,13 @@
 
 package com.huawei.emergency.service.impl;
 
-import com.alibaba.fastjson.JSONObject;
 import com.huawei.argus.restcontroller.RestPerfTestController;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.config.CommonConfig;
 import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.common.exception.ApiException;
+import com.huawei.common.filter.UserFilter;
 import com.huawei.common.util.PasswordUtil;
 import com.huawei.common.ws.WebSocketServer;
 import com.huawei.emergency.entity.EmergencyElement;
@@ -35,7 +35,9 @@ import com.huawei.script.exec.executor.ScriptExecInfo;
 import com.huawei.script.exec.log.LogMemoryStore;
 import com.huawei.script.exec.session.ServerInfo;
 
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang.StringUtils;
+import org.ngrinder.common.constant.WebConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,10 +51,10 @@ import org.springframework.web.client.RestTemplate;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -202,38 +204,33 @@ public class ExecRecordHandlerFactory {
         try {
             execInfo = generateExecInfo(record, recordDetail); // 生成执行信息
             if (execInfo.getPerfTestId() != null) {
-                if (!startArgusTest(execInfo.getPerfTestId())) { // 执行压测任务
-                    complete(record, recordDetail, ExecResult.fail("无法启动压测任务."));
+                if (!startPerfTest(execInfo.getPerfTestId())) { // 执行压测任务
+                    complete(record, recordDetail, ExecResult.fail("启动压测任务失败."));
                     return;
                 }
-            }
-            // todo 执行压测任务
-        } catch (Exception e) {
-            e.printStackTrace();
-            LOGGER.error("failed to exec detailId={}.{}", recordDetail.getDetailId(), e.getMessage());
-            complete(record, recordDetail, ExecResult.fail(e.getMessage()));
-            return;
-        }
-        if (execInfo.getRemoteServerInfo() == null) {
-            complete(record, recordDetail, ExecResult.fail("无可用的agent"));
-            return;
-        }
-        if (record.getScriptContent() == null) {
-            complete(record, recordDetail, ExecResult.success(""));
-            return;
-        }
-        ServerInfo remoteServerInfo = execInfo.getRemoteServerInfo();
-        String url = String.format(Locale.ROOT, "http://%s:%s/agent/execute", remoteServerInfo.getServerIp(), remoteServerInfo.getServerPort());
-        execInfo.setRemoteServerInfo(null);
-        try {
-            CommonResult result = restTemplate.postForObject(url, execInfo, CommonResult.class);
-            if (!result.isSuccess()) {
-                // todo 调用失败
-                LOGGER.error("Failed to exec script, {}", result.getMsg());
-                complete(record, recordDetail, ExecResult.fail(result.getMsg()));
+            } else {
+                if (record.getScriptContent() == null) {
+                    complete(record, recordDetail, ExecResult.success(""));
+                    return;
+                }
+                if (execInfo.getRemoteServerInfo() == null) {
+                    complete(record, recordDetail, ExecResult.fail("无可用的agent"));
+                    return;
+                }
+                ServerInfo remoteServerInfo = execInfo.getRemoteServerInfo();
+                String url = String.format(Locale.ROOT, "http://%s:%s/agent/execute", remoteServerInfo.getServerIp(), remoteServerInfo.getServerPort());
+                execInfo.setRemoteServerInfo(null);
+                CommonResult result = restTemplate.postForObject(url, execInfo, CommonResult.class);
+                if (StringUtils.isNotEmpty(result.getMsg())) {
+                    LOGGER.error("Failed to exec script, {}", result.getMsg());
+                    complete(record, recordDetail, ExecResult.fail(result.getMsg()));
+                }
             }
         } catch (RestClientException e) {
             LOGGER.error("Failed to process script, {}", e.getMessage());
+            complete(record, recordDetail, ExecResult.fail(e.getMessage()));
+        } catch (Exception e) {
+            LOGGER.error("Failed to exec detailId={}.{}", recordDetail.getDetailId(), e.getMessage());
             complete(record, recordDetail, ExecResult.fail(e.getMessage()));
         }
     }
@@ -268,7 +265,8 @@ public class ExecRecordHandlerFactory {
         updateRecordDetail.setStatus(
             execResult.isSuccess() ? RecordStatus.SUCCESS.getValue() : RecordStatus.ENSURE_FAILED.getValue()
         );
-        if (recordDetailMapper.updateByExampleSelective(updateRecordDetail, whenRunning) == 0) { // 做个状态判断，防止人为取消 也被标记为执行成功
+        if (recordDetailMapper.updateByExampleSelective(updateRecordDetail, whenRunning)
+            == 0) { // 做个状态判断，防止人为取消 也被标记为执行成功
             LOGGER.info("recordId={}, detailId={} was canceled", recordDetail.getRecordId(), recordDetail.getDetailId());
         } else {
             recordMapper.tryUpdateEndTimeAndLog(record.getRecordId(), endTime, updateRecordDetail.getLog());
@@ -301,7 +299,7 @@ public class ExecRecordHandlerFactory {
         execInfo.setId(recordDetail.getDetailId());
         execInfo.setScriptName(record.getScriptName() + "-" + record.getRecordId());
         execInfo.setScriptType(record.getScriptType());
-        execInfo.setScriptContext(record.getScriptContent());
+        execInfo.setScriptContent(record.getScriptContent());
         execInfo.setTimeOut(timeOut);
         if (StringUtils.isNotEmpty(record.getScriptParams())) {
             String[] split = record.getScriptParams().split(",");
@@ -310,16 +308,22 @@ public class ExecRecordHandlerFactory {
         if (recordDetail.getServerId() != null) {
             EmergencyServer server = serverMapper.selectByPrimaryKey(recordDetail.getServerId());
             if (server != null) {
-                ServerInfo serverInfo = new ServerInfo(server.getServerIp(), server.getServerUser(), server.getAgentPort());
+                ServerInfo serverInfo =
+                    new ServerInfo(server.getServerIp(), server.getServerUser());
+                if (server.getAgentPort() != null) {
+                    serverInfo.setServerPort(server.getAgentPort());
+                }
                 execInfo.setRemoteServerInfo(serverInfo);
             }
         }
-        if ("3".equals(execInfo.getScriptType())) {
-            return createPerfTest(record, execInfo);
-        }
+        execInfo.setPerfTestId(record.getPerfTestId());
+        execInfo.setParam(record.getScriptParams());
+        execInfo.setRecordId(execInfo.getId());
+        execInfo.setContent(execInfo.getScriptContent());
         return execInfo;
     }
 
+    @Deprecated
     public ScriptExecInfo createPerfTest(EmergencyExecRecord record, ScriptExecInfo execInfo) {
         EmergencyElementExample elementExample = new EmergencyElementExample();
         elementExample.createCriteria()
@@ -417,12 +421,13 @@ public class ExecRecordHandlerFactory {
      * @return
      */
     public List<EmergencyServer> filterServer(List<EmergencyServer> serverList) {
-        if (serverList == null || serverList.size() == 0) {
+        /*if (serverList == null || serverList.size() == 0) {
             return Collections.EMPTY_LIST;
         }
         return serverList.stream()
             .filter(server -> server != null && server.getAgentPort() != null && ValidEnum.VALID.getValue().equals(server.getLicensed()))
-            .collect(Collectors.toList());
+            .collect(Collectors.toList());*/
+        return serverList;
     }
 
     /**
@@ -480,7 +485,8 @@ public class ExecRecordHandlerFactory {
 
     public int createArgusTest(int recordId, JSONObject testParams) {
         try {
-            ResponseEntity<JSONObject> response = restTemplate.postForEntity(argusUrl + "/api/task", testParams, JSONObject.class);
+            ResponseEntity<JSONObject> response =
+                restTemplate.postForEntity(argusUrl + "/api/task", testParams, JSONObject.class);
             if (response.getStatusCodeValue() != HttpServletResponse.SC_OK) {
                 LOGGER.error("failed to create grinder test {}. {}", recordId, response);
                 return -1;
@@ -499,6 +505,16 @@ public class ExecRecordHandlerFactory {
         }
     }
 
+    public boolean startPerfTest(Integer perfTestId) {
+        if (perfTestId == null) {
+            return false;
+        }
+        Map<String, Object> resultMap =
+            perfTestController.startOne(UserFilter.currentGrinderUser(), perfTestId.longValue());
+        return Boolean.parseBoolean(resultMap.getOrDefault(WebConstants.JSON_SUCCESS, "false").toString());
+    }
+
+    @Deprecated
     public boolean startArgusTest(int testId) {
         String url = argusUrl + "/api/task/start";
         JSONObject params = new JSONObject();
@@ -531,6 +547,7 @@ public class ExecRecordHandlerFactory {
         params.put("script_path", CommonConfig.GRINDER_FOLDER + "/" + scriptName + ".groovy");
         params.put("label", "");
         params.put("scenario_type", "自定义脚本");
-        LOGGER.info("create grinder scene. {}", restTemplate.postForObject(argusUrl + "/api/scenario", params, JSONObject.class));
+        LOGGER.info("create grinder scene. {}", restTemplate.postForObject(
+            argusUrl + "/api/scenario", params, JSONObject.class));
     }
 }

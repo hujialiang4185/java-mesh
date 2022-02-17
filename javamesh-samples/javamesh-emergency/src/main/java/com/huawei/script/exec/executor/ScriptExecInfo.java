@@ -4,6 +4,7 @@
 
 package com.huawei.script.exec.executor;
 
+import com.alibaba.fastjson.JSONObject;
 import com.huawei.script.exec.session.ServerInfo;
 
 import lombok.Data;
@@ -27,7 +28,7 @@ public class ScriptExecInfo {
     /**
      * 脚本内容
      */
-    private String scriptContext;
+    private String scriptContent;
     /**
      * 脚本类型
      */
@@ -56,4 +57,8 @@ public class ScriptExecInfo {
     private String perfSceneName;
     private Integer perfTestId;
     private String perfTestName;
+
+    private int recordId;
+    private String content;
+    private String param;
 }

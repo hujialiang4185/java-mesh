@@ -1,6 +1,7 @@
 package com.huawei.emergency.service;
 
 import com.huawei.common.api.CommonResult;
+import com.huawei.emergency.dto.ScriptManageDto;
 import com.huawei.emergency.entity.EmergencyScript;
 import com.huawei.emergency.layout.TreeResponse;
 import com.huawei.script.exec.log.LogResponse;
@@ -24,15 +25,15 @@ public interface EmergencyScriptService {
 
     int insertScript(HttpServletRequest request, EmergencyScript script);
 
-    int updateScript(HttpServletRequest request, EmergencyScript script);
+    int updateScript(EmergencyScript script);
 
-    List<String> searchScript(HttpServletRequest request, String scriptName, String status);
+    List<String> searchScript(HttpServletRequest request, String scriptName, String status, String scriptType);
 
     EmergencyScript getScriptByName(String scriptName);
 
     String submitReview(HttpServletRequest request, EmergencyScript script);
 
-    int approve(HttpServletRequest request, Map<String, Object> map);
+    int approve(Map<String, Object> map);
 
     CommonResult debugScript(int scriptId);
 
@@ -43,20 +44,20 @@ public interface EmergencyScriptService {
     LogResponse debugLog(int detailId, int lineIndex);
 
     /**
-     * 创建编排脚本
+     * 创建Gui脚本
      *
      * @param script 脚本信息
      * @return
      */
-    CommonResult createOrchestrate(EmergencyScript script);
+    CommonResult createGuiScript(EmergencyScript script);
 
     /**
-     * 更新编排脚本
+     * 更新GUI脚本
      *
      * @param treeResponse
      * @return
      */
-    CommonResult updateOrchestrate(HttpServletRequest request, TreeResponse treeResponse);
+    CommonResult updateGuiScript(TreeResponse treeResponse);
 
     /**
      * 查询编排脚本
@@ -64,8 +65,24 @@ public interface EmergencyScriptService {
      * @param scriptId 脚本Id
      * @return
      */
-    CommonResult queryOrchestrate(int scriptId);
+    CommonResult queryGuiScript(int scriptId);
 
 
     void exec(HttpServletRequest request);
+
+    /**
+     * 创建IDE脚本
+     *
+     * @param scriptManageDto 脚本信息
+     * @return
+     */
+    CommonResult createIdeScript(ScriptManageDto scriptManageDto);
+
+    /**
+     * 修改IDE脚本
+     *
+     * @param scriptManageDto 脚本信息
+     * @return
+     */
+    CommonResult updateIdeScript(ScriptManageDto scriptManageDto);
 }

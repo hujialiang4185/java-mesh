@@ -632,7 +632,7 @@
         WHERE script_id = #{scriptId}
     </select>
 
-    <select id="searchScript" parameterType="String" resultType="String">
+    <select id="searchScript" resultType="String">
         SELECT script_name
         FROM emergency_script
         <where>
@@ -644,6 +644,12 @@
             </if>
             <if test="status!='' and status!=null">
                 AND script_status = '2'
+            </if>
+            <if test="scriptTypes != null and scriptTypes.size > 0">
+            and script_type in
+                <foreach close=")" collection="scriptTypes" index="index" item="scriptType" open="(" separator=",">
+                    #{scriptType}
+                </foreach>
             </if>
         </where>
         ORDER BY update_time DESC LIMIT 5

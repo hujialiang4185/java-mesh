@@ -6,6 +6,9 @@ package com.huawei.script.exec.log;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.apache.commons.lang.StringUtils;
+
+import java.util.Arrays;
 
 /**
  * 数据结构，用于描述脚本执行时的实时日志
@@ -22,4 +25,16 @@ public class LogResponse {
      */
     private Integer line;
     private String[] data;
+
+    public static LogResponse parse(String logs, int line) {
+        if (StringUtils.isEmpty(logs)) {
+            return LogResponse.END;
+        }
+        String[] split = logs.split(System.lineSeparator());
+        if (split.length >= line) {
+            String[] needLogs = Arrays.copyOfRange(split, line - 1, split.length);
+            return new LogResponse(null, needLogs);
+        }
+        return new LogResponse(null, new String[]{logs});
+    }
 }
