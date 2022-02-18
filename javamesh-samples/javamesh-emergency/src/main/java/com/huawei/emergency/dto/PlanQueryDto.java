@@ -24,6 +24,7 @@ public class PlanQueryDto {
     private String status;
     private String statusLabel;
     private String checkResult;
+    private String checkUser;
     private String approve;
     private String comment;
     private String createTime;
@@ -32,5 +33,7 @@ public class PlanQueryDto {
     private String executeTime;
     private String startTime;
     private String confirm;
+    private String groupName;
+    private boolean auditable;
     private List<PlanDetailQueryDto> expand;
 }

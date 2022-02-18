@@ -19,4 +19,5 @@ public class PlanQueryParams {
     private String taskName;
     private String scriptName;
     private String status;
+    private String planGroup;
 }

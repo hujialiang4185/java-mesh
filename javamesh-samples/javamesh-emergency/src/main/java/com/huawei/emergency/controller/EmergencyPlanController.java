@@ -177,6 +177,7 @@ public class EmergencyPlanController {
         planParams.setSceneName(sceneName);
         planParams.setTaskName(taskName);
         planParams.setScriptName(scriptName);
+        planParams.setPlanGroup(UserFilter.currentUser().getGroup());
         if (StringUtils.isNotEmpty(statusLabel)) {
             planParams.setStatus(PlanStatus.matchByLabel(statusLabel, PlanStatus.NEW).getValue());
         }
@@ -215,7 +216,9 @@ public class EmergencyPlanController {
      */
     @PostMapping("/plan")
     public CommonResult addPlan(@RequestBody EmergencyPlan emergencyPlan) {
-        emergencyPlan.setCreateUser(UserFilter.currentUserName());
+        User user = UserFilter.currentUser();
+        emergencyPlan.setPlanGroup(user.getGroup());
+        emergencyPlan.setCreateUser(user.getNickName());
         return planService.add(emergencyPlan);
     }
 
@@ -240,7 +243,7 @@ public class EmergencyPlanController {
      */
     @PostMapping("plan/submitReview")
     public CommonResult submitReview(@RequestBody EmergencyPlan emergencyPlan) {
-        return planService.submit(emergencyPlan.getPlanId());
+        return planService.submit(emergencyPlan.getPlanId(),emergencyPlan.getApprover());
     }
 
     /**

@@ -185,6 +185,9 @@
       <if test="updateUser != null">
         update_user,
       </if>
+      <if test="planGroup != null">
+        plan_group,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="planNo != null">
@@ -234,6 +237,9 @@
       </if>
       <if test="updateUser != null">
         #{updateUser,jdbcType=VARCHAR},
+      </if>
+      <if test="planGroup != null">
+        #{planGroup,jdbcType=VARCHAR},
       </if>
     </trim>
   </insert>
@@ -403,6 +409,8 @@
         SELECT plan.plan_id,
         plan.plan_no,
         plan.plan_name,
+        plan.plan_group as group_name,
+        plan.check_user,
         (CASE
         WHEN plan.status = '0' THEN 'unapproved'
         WHEN plan.status = '1' THEN 'approving'
@@ -448,6 +456,9 @@
         </if>
         <if test="status !=null and status !=''">
             and plan.status = #{status}
+        </if>
+        <if test="planGroup !=null and planGroup!=''">
+            and plan.plan_group = #{planGroup}
         </if>
         group by plan.plan_id
         ORDER BY plan.create_time desc

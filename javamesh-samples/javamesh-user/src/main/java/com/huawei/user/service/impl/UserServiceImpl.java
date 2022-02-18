@@ -316,6 +316,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public CommonResult approverSearch(String groupId, HttpServletRequest request) {
         UserEntity user = (UserEntity) request.getSession().getAttribute("userInfo");
+        String userName = user.getUserName();
+        if(userName.equals("admin")){
+            String[] result = new String[1];
+            result[0]=userName;
+            return CommonResult.success(result);
+        }
         List<String> userEntities = mapper.approverSearch(user.getGroupName());
         return CommonResult.success(userEntities);
     }

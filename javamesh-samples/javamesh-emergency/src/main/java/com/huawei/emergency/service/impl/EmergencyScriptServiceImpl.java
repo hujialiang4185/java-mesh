@@ -145,14 +145,15 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             sortType = sorter + System.lineSeparator() + "DESC";
         }
         String userName = user.getUserName();
+        String group = user.getGroup();
         Page<EmergencyScript> pageInfo = PageHelper.startPage(current, pageSize, sortType).doSelectPage(() -> {
-            mapper.listScript(userName, auth, EscapeUtil.escapeChar(scriptName), EscapeUtil.escapeChar(scriptUser), status, user.getGroup());
+            mapper.listScript(userName, auth, EscapeUtil.escapeChar(scriptName), EscapeUtil.escapeChar(scriptUser), status, group);
         });
         List<EmergencyScript> emergencyScripts = pageInfo.getResult();
         String scriptStatus;
         for (EmergencyScript script : emergencyScripts) {
             scriptStatus = script.getScriptStatus();
-            if (scriptStatus.equals(APPROVING_STATUS) && (userName.equals("admin") || ((userAuth.contains(AUTH_ADMIN) || (userAuth.contains(AUTH_APPROVER) && script.getApprover().equals(userName))) && user.getGroup().equals(script.getScriptGroup())))) {
+            if (scriptStatus.equals(APPROVING_STATUS) && (userName.equals("admin") || ((userAuth.contains(AUTH_ADMIN) || (userAuth.contains(AUTH_APPROVER) && script.getApprover().equals(userName))) && group.equals(script.getScriptGroup())))) {
                 script.setAuditable(true);
             }
             switch (scriptStatus) {
@@ -317,10 +318,10 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         String userName = user.getUserName();
         String auth = user.getAuth().contains("admin") ? "admin" : "";
         List<String> scriptTypes =
-            ScriptLanguageEnum.matchScriptType(ScriptTypeEnum.match(scriptType, ScriptTypeEnum.NORMAL))
-                .stream()
-                .map(ScriptLanguageEnum::getValue)
-                .collect(Collectors.toList());
+                ScriptLanguageEnum.matchScriptType(ScriptTypeEnum.match(scriptType, ScriptTypeEnum.NORMAL))
+                        .stream()
+                        .map(ScriptLanguageEnum::getValue)
+                        .collect(Collectors.toList());
 
         return mapper.searchScript(EscapeUtil.escapeChar(scriptName), userName, auth, status, scriptTypes);
     }
@@ -345,7 +346,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         User user = (User) request.getSession().getAttribute("userInfo");
         int count;
         if (user.getAuth().contains("admin")
-            || user.getUserName().equals(mapper.selectUserById(script.getScriptId()))) {
+                || user.getUserName().equals(mapper.selectUserById(script.getScriptId()))) {
             count = mapper.updateByPrimaryKeySelective(script);
         } else {
             return FailedInfo.INSUFFICIENT_PERMISSIONS;
@@ -510,8 +511,8 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         // 清除之前的编排关系
         EmergencyElementExample currentElementsExample = new EmergencyElementExample();
         currentElementsExample.createCriteria()
-            .andIsValidEqualTo(ValidEnum.VALID.getValue())
-            .andScriptIdEqualTo(treeResponse.getScriptId());
+                .andIsValidEqualTo(ValidEnum.VALID.getValue())
+                .andScriptIdEqualTo(treeResponse.getScriptId());
         EmergencyElement updateElement = new EmergencyElement();
         updateElement.setIsValid(ValidEnum.IN_VALID.getValue());
         elementMapper.updateByExampleSelective(updateElement, currentElementsExample);
@@ -566,7 +567,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         EmergencyElement element = new EmergencyElement();
         Map elementParams = map.get(node.getKey());
         if (elementParams != null &&
-            ("JARImport".equals(node.getType()) || "CSVDataSetConfig".equals(node.getType()))
+                ("JARImport".equals(node.getType()) || "CSVDataSetConfig".equals(node.getType()))
         ) {
             String filenames = elementParams.getOrDefault("filenames", "").toString();
             if (StringUtils.isEmpty(filenames)) {
@@ -605,9 +606,9 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     public CommonResult queryGuiScript(int scriptId) {
         EmergencyElementExample rootElementExample = new EmergencyElementExample();
         rootElementExample.createCriteria()
-            .andScriptIdEqualTo(scriptId)
-            .andParentIdIsNull()
-            .andIsValidEqualTo(ValidEnum.VALID.getValue());
+                .andScriptIdEqualTo(scriptId)
+                .andParentIdIsNull()
+                .andIsValidEqualTo(ValidEnum.VALID.getValue());
         List<EmergencyElement> emergencyElements = elementMapper.selectByExampleWithBLOBs(rootElementExample);
         if (emergencyElements.size() == 0) {
             return CommonResult.success();
@@ -634,8 +635,8 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         }
         EmergencyElementExample elementExample = new EmergencyElementExample();
         elementExample.createCriteria()
-            .andParentIdEqualTo(parent.getElementId())
-            .andIsValidEqualTo(ValidEnum.VALID.getValue());
+                .andParentIdEqualTo(parent.getElementId())
+                .andIsValidEqualTo(ValidEnum.VALID.getValue());
         List<EmergencyElement> emergencyElements = elementMapper.selectByExampleWithBLOBs(elementExample);
         for (EmergencyElement emergencyElement : emergencyElements) {
             TreeNode node = new TreeNode();
@@ -658,7 +659,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         map.put("scriptType", "2");
         map.put("scriptName", "testGroovy");
         ResponseEntity responseEntity =
-            RestTemplateUtil.sendPostRequest(request, "http://127.0.0.1:9095/agent/execute", map);
+                RestTemplateUtil.sendPostRequest(request, "http://127.0.0.1:9095/agent/execute", map);
         System.out.println(responseEntity.getBody());
     }
 
@@ -675,7 +676,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         script.setScriptName(scriptManageDto.getScriptName());
         script.setIsPublic(TYPE_ONE);
         ScriptLanguageEnum scriptLanguage =
-            ScriptLanguageEnum.match(scriptManageDto.getScriptType(), ScriptTypeEnum.IDE);
+                ScriptLanguageEnum.match(scriptManageDto.getScriptType(), ScriptTypeEnum.IDE);
         if (scriptLanguage == null) {
             return CommonResult.failed("请选择正确的脚本语言类型");
         }
@@ -704,13 +705,13 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     public boolean isScriptNameExist(String scriptName) {
         EmergencyScriptExample isNameExist = new EmergencyScriptExample();
         isNameExist.createCriteria()
-            .andScriptNameEqualTo(scriptName);
+                .andScriptNameEqualTo(scriptName);
         return mapper.countByExample(isNameExist) > 0;
     }
 
     private boolean isParamInvalid(EmergencyScript script) {
         if ("havePassword".equals(script.getHavePassword()) &&
-            (StringUtils.isBlank(script.getPassword()) || StringUtils.isBlank(script.getPasswordMode()))) {
+                (StringUtils.isBlank(script.getPassword()) || StringUtils.isBlank(script.getPasswordMode()))) {
             return true;
         }
         return false;

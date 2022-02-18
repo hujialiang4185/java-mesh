@@ -47,6 +47,18 @@ public class EmergencyPlan {
 
     private String updateUser;
 
+    private String planGroup;
+
+    private String approver;
+
+    public String getApprover() {
+        return approver;
+    }
+
+    public void setApprover(String approver) {
+        this.approver = approver;
+    }
+
     public Integer getPlanId() {
         return planId;
     }
@@ -181,5 +193,13 @@ public class EmergencyPlan {
 
     public void setUpdateUser(String updateUser) {
         this.updateUser = updateUser == null ? null : updateUser.trim();
+    }
+
+    public String getPlanGroup() {
+        return planGroup;
+    }
+
+    public void setPlanGroup(String planGroup) {
+        this.planGroup = planGroup;
     }
 }
