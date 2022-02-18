@@ -218,7 +218,8 @@ public class ExecRecordHandlerFactory {
                     return;
                 }
                 ServerInfo remoteServerInfo = execInfo.getRemoteServerInfo();
-                String url = String.format(Locale.ROOT, "http://%s:%s/agent/execute", remoteServerInfo.getServerIp(), remoteServerInfo.getServerPort());
+                String url =
+                    String.format(Locale.ROOT, "http://%s:%s/agent/execute", remoteServerInfo.getServerIp(), remoteServerInfo.getServerPort());
                 execInfo.setRemoteServerInfo(null);
                 CommonResult result = restTemplate.postForObject(url, execInfo, CommonResult.class);
                 if (StringUtils.isNotEmpty(result.getMsg())) {
@@ -243,47 +244,89 @@ public class ExecRecordHandlerFactory {
      * @param execResult
      */
     public void complete(EmergencyExecRecord record, EmergencyExecRecordDetail recordDetail, ExecResult execResult) {
-        // 更新record,detail为执行完成，结束时间
-        Date endTime = new Date();
-        EmergencyExecRecordDetailExample whenRunning = new EmergencyExecRecordDetailExample();
-        whenRunning.createCriteria()
-            .andDetailIdEqualTo(recordDetail.getDetailId())
-            .andIsValidEqualTo(ValidEnum.VALID.getValue())
-            .andStatusEqualTo(RecordStatus.RUNNING.getValue());
-        EmergencyExecRecordDetail updateRecordDetail = new EmergencyExecRecordDetail();
-        updateRecordDetail.setDetailId(recordDetail.getDetailId());
-        updateRecordDetail.setEndTime(endTime);
-        updateRecordDetail.setLog(execResult.getMsg());
-        if (execResult.isError()) {
-            StringBuilder finalLog = new StringBuilder();
-            for (String s : LogMemoryStore.removeLog(recordDetail.getDetailId())) {
-                finalLog.append(s).append(System.lineSeparator());
+        try {
+            // 更新record,detail为执行完成，结束时间
+            Date endTime = new Date();
+            EmergencyExecRecordDetailExample whenRunning = new EmergencyExecRecordDetailExample();
+            whenRunning.createCriteria()
+                .andDetailIdEqualTo(recordDetail.getDetailId())
+                .andIsValidEqualTo(ValidEnum.VALID.getValue())
+                .andStatusEqualTo(RecordStatus.RUNNING.getValue());
+            EmergencyExecRecordDetail updateRecordDetail = new EmergencyExecRecordDetail();
+            updateRecordDetail.setDetailId(recordDetail.getDetailId());
+            updateRecordDetail.setEndTime(endTime);
+            updateRecordDetail.setLog(execResult.getMsg());
+            if (execResult.isError()) {
+                StringBuilder finalLog = new StringBuilder();
+                for (String s : LogMemoryStore.removeLog(recordDetail.getDetailId())) {
+                    finalLog.append(s).append(System.lineSeparator());
+                }
+                finalLog.append(execResult.getMsg());
+                updateRecordDetail.setLog(finalLog.toString());
             }
-            finalLog.append(execResult.getMsg());
-            updateRecordDetail.setLog(finalLog.toString());
+            updateRecordDetail.setStatus(
+                execResult.isSuccess() ? RecordStatus.SUCCESS.getValue() : RecordStatus.ENSURE_FAILED.getValue()
+            );
+            if (recordDetailMapper.updateByExampleSelective(updateRecordDetail, whenRunning)
+                == 0) { // 做个状态判断，防止人为取消 也被标记为执行成功
+                LOGGER.info("recordId={}, detailId={} was canceled", recordDetail.getRecordId(), recordDetail.getDetailId());
+            } else {
+                recordMapper.tryUpdateEndTimeAndLog(record.getRecordId(), endTime, updateRecordDetail.getLog());
+                recordMapper.tryUpdateStatus(record.getRecordId());
+                // 执行成功 并且 当前record下所有的recordDetail都处于 执行成功 或者人工确认状态
+                if (execResult.isSuccess() && isRecordFinished(record.getRecordId())) {
+                    if (record.getTaskId() != null) {
+                        taskService.onComplete(record);
+                    } else {
+                        sceneService.onComplete(record);
+                    }
+                }
+            }
+            // 清除实时日志的在内存中的日志残留
+            LogMemoryStore.removeLog(recordDetail.getDetailId());
+        } finally {
+            notifySceneRefresh(record.getExecId(), record.getSceneId());
         }
-        updateRecordDetail.setStatus(
-            execResult.isSuccess() ? RecordStatus.SUCCESS.getValue() : RecordStatus.ENSURE_FAILED.getValue()
-        );
-        if (recordDetailMapper.updateByExampleSelective(updateRecordDetail, whenRunning)
-            == 0) { // 做个状态判断，防止人为取消 也被标记为执行成功
-            LOGGER.info("recordId={}, detailId={} was canceled", recordDetail.getRecordId(), recordDetail.getDetailId());
-        } else {
-            recordMapper.tryUpdateEndTimeAndLog(record.getRecordId(), endTime, updateRecordDetail.getLog());
-            recordMapper.tryUpdateStatus(record.getRecordId());
-            // 执行成功 并且 当前record下所有的recordDetail都处于 执行成功 或者人工确认状态
-            if (execResult.isSuccess() && isRecordFinished(record.getRecordId())) {
+    }
+
+    /**
+     * 压测任务完成
+     *
+     * @param record
+     * @param result
+     */
+    public void completePerfTest(EmergencyExecRecord record, ExecResult result) {
+        try {
+            // 更新record,detail为执行完成，结束时间
+            Date endTime = new Date();
+            EmergencyExecRecordDetailExample whenRunning = new EmergencyExecRecordDetailExample();
+            whenRunning.createCriteria()
+                .andRecordIdEqualTo(record.getRecordId())
+                .andIsValidEqualTo(ValidEnum.VALID.getValue())
+                .andStatusEqualTo(RecordStatus.RUNNING.getValue());
+            EmergencyExecRecordDetail updateRecordDetail = new EmergencyExecRecordDetail();
+            updateRecordDetail.setEndTime(endTime);
+            updateRecordDetail.setLog(result.getMsg());
+            updateRecordDetail.setStatus(result.isSuccess() ? RecordStatus.SUCCESS.getValue() : RecordStatus.FAILED.getValue());
+            recordDetailMapper.updateByExampleSelective(updateRecordDetail, whenRunning); // 更新所有detail的状态
+            EmergencyExecRecordWithBLOBs updateRecord = new EmergencyExecRecordWithBLOBs();
+            updateRecord.setEndTime(endTime);
+            updateRecord.setLog(result.getMsg());
+            updateRecord.setRecordId(record.getRecordId());
+            recordMapper.updateByPrimaryKeySelective(updateRecord); // 更新record的信息
+            recordMapper.tryUpdateStatus(record.getRecordId()); // 执行成功 并且 当前record下所有的recordDetail都处于 执行成功 或者人工确认状态
+            if (result.isSuccess() && isRecordFinished(record.getRecordId())) {
                 if (record.getTaskId() != null) {
                     taskService.onComplete(record);
                 } else {
                     sceneService.onComplete(record);
                 }
             }
+            // 清除实时日志的在内存中的日志残留
+            LogMemoryStore.removeLog(record.getRecordId());
+        } finally {
+            notifySceneRefresh(record.getExecId(), record.getSceneId());
         }
-
-        // 清除实时日志的在内存中的日志残留
-        LogMemoryStore.removeLog(recordDetail.getDetailId());
-        notifySceneRefresh(record.getExecId(), record.getSceneId());
     }
 
 

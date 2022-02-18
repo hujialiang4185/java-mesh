@@ -377,7 +377,11 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
 
     public void freshGrinderScript(int scriptId) {
         EmergencyScript script = mapper.selectByPrimaryKey(scriptId);
-        if (script == null || !"3".equals(script.getScriptType())) {
+        if (script == null ) {
+            return;
+        }
+        ScriptLanguageEnum scriptType = ScriptLanguageEnum.matchByValue(script.getScriptType());
+        if (scriptType == null || scriptType.getScriptType() == ScriptTypeEnum.NORMAL) {
             return;
         }
         updateGrinderScript(script.getScriptName(), script.getContent()); //更新脚本内容
@@ -401,7 +405,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
      * @param scriptContent 脚本内容
      */
     public boolean updateGrinderScript(String scriptName, String scriptContent) {
-        createGrinderScript();
+        //createGrinderScript();
         String grinderPath = grinderPath(scriptName);
         FileEntry fileEntry = new FileEntry();
         fileEntry.setCreatedUser(UserFilter.currentGrinderUser());
@@ -687,7 +691,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         options.put("headers", JSONObject.toJSONString(scriptManageDto.getHeaders()));
         options.put("cookies", JSONObject.toJSONString(scriptManageDto.getCookies()));
         options.put("params", JSONObject.toJSONString(scriptManageDto.getParams()));*/
-        script.setContent(generateIdeScript(UserFilter.currentGrinderUser(), CommonConfig.GRINDER_FOLDER, scriptManageDto.getForUrl(), script.getScriptName(), scriptLanguage.getLanguage(), scriptManageDto.isHasResource(), null));
+        script.setContent(generateIdeScript(UserFilter.currentGrinderUser(), "", scriptManageDto.getForUrl(), script.getScriptName(), scriptLanguage.getLanguage(), scriptManageDto.isHasResource(), null));
         script.setScriptUser(UserFilter.currentUserName());
         script.setScriptStatus(TYPE_ZERO);
         script.setScriptGroup(UserFilter.currentUser().getGroup());
@@ -717,7 +721,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     }
 
     private String grinderPath(String scriptName) {
-        return CommonConfig.GRINDER_FOLDER + "/" + scriptName + ".groovy";
+        return scriptName + ".groovy";
     }
 
     private String generateIdeScript(org.ngrinder.model.User user, String path, String testUrl, String fileName, String scriptType,

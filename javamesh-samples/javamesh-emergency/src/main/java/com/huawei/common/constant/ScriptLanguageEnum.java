@@ -19,6 +19,7 @@ package com.huawei.common.constant;
 import lombok.Getter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -51,14 +52,26 @@ public enum ScriptLanguageEnum {
         this.scriptType = scriptType;
     }
 
+    public static ScriptLanguageEnum matchByValue(String value) {
+        if (value == null) {
+            return null;
+        }
+        for (ScriptLanguageEnum item : values()) {
+            if (item.getValue().toLowerCase(Locale.ROOT).equals(value.toLowerCase(Locale.ROOT))) {
+                return item;
+            }
+        }
+        return null;
+    }
+
     public static ScriptLanguageEnum match(String language, ScriptTypeEnum scriptType) {
-        if (language == null) {
+        if (language == null || scriptType == null) {
             return null;
         }
         if ("Groovy Maven Project".equals(language)) {
             return PERF_GROOVY_MAVEN;
         }
-        for (ScriptLanguageEnum item : ScriptLanguageEnum.matchScriptType(scriptType)) {
+        for (ScriptLanguageEnum item : ScriptLanguageEnum.matchScriptType(Arrays.asList(scriptType))) {
             if (item.getLanguage().toLowerCase(Locale.ROOT).equals(language.toLowerCase(Locale.ROOT))) {
                 return item;
             }
@@ -66,10 +79,13 @@ public enum ScriptLanguageEnum {
         return null;
     }
 
-    public static List<ScriptLanguageEnum> matchScriptType(ScriptTypeEnum scriptType) {
+    public static List<ScriptLanguageEnum> matchScriptType(List<ScriptTypeEnum> scriptTypes) {
         List<ScriptLanguageEnum> result = new ArrayList<>();
+        if (scriptTypes == null) {
+            return result;
+        }
         for (ScriptLanguageEnum item : ScriptLanguageEnum.values()) {
-            if (item.getScriptType() == scriptType) {
+            if (scriptTypes.contains(item.getScriptType())) {
                 result.add(item);
             }
         }

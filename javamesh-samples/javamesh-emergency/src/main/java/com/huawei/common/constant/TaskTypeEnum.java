@@ -30,7 +30,8 @@ import java.util.Locale;
 public enum TaskTypeEnum {
     CUSTOM("1", "自定义脚本压测"),
     FLOW_RECORD("2", "全链路引流压测"),
-    COMMAND("3", "命令行脚本");
+    COMMAND("3", "命令行脚本"),
+    SCENE("4","场景");
 
     private String value;
     private String desc;
