@@ -455,7 +455,7 @@
 
     <select id="selectAgentIdsByServerIds" resultType="java.lang.Integer">
         select t2.id
-        from emergency_server t1, agent t2
+        from emergency_server t1, AGENT t2
         where t1.is_valid = '1'
           and t1.server_ip = t2.ip
         <if test=" allServerIds != null and allServerIds.size > 0">
