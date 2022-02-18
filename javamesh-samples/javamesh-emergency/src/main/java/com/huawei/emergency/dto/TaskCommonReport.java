@@ -119,7 +119,8 @@ public class TaskCommonReport {
         commonReport.setTps(perfTest.getTps());
         commonReport.setTpsPeak(perfTest.getPeakTps());
         commonReport.setAvgTime(perfTest.getMeanTestTime());
-        commonReport.setTestCount(perfTest.getTests() + perfTest.getErrors());
+        commonReport.setTestCount((perfTest.getTests() == null ? 0 : perfTest.getTests()) + (
+            perfTest.getErrors() == null ? 0 : perfTest.getErrors()));
         commonReport.setSuccessCount(perfTest.getTests());
         commonReport.setFailCount(perfTest.getErrors());
         commonReport.setTestComment(perfTest.getTestComment());

@@ -520,6 +520,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
                 perfTest.setCreatedUser(UserFilter.currentGrinderUser());
                 perfTest.setCreatedDate(new Date());
                 perfTest.setAgentCount(taskNode.getServiceId() == null ? 0 : taskNode.getServiceId().length);
+                perfTest.setScriptName(task.getScriptName());
                 PerfTest insertPerfTest = perfTestController.saveOne(UserFilter.currentGrinderUser(), perfTest);
                 if (insertPerfTest == null || insertPerfTest.getId() == null) {
                     return CommonResult.failed("创建压测任务失败");
