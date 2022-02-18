@@ -19,6 +19,9 @@ package com.huawei.common.constant;
 import lombok.Getter;
 import org.apache.commons.lang.StringUtils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -29,25 +32,28 @@ import java.util.Locale;
  **/
 @Getter
 public enum ScriptTypeEnum {
-    GUI("GUI"),
-    IDE("IDE"),
-    NORMAL("NORMAL");
+    GUI("GUI","gui"),
+    IDE("IDE","gui"),
+    NORMAL("NORMAL", "normal");
 
     private String value;
+    private String key;
 
-    ScriptTypeEnum(String value) {
+    ScriptTypeEnum(String value,String key) {
         this.value = value;
+        this.key = key;
     }
 
-    public static ScriptTypeEnum match (String value,ScriptTypeEnum defaultValue) {
-        if (StringUtils.isEmpty(value)) {
-            return defaultValue;
+    public static List<ScriptTypeEnum> match (String key, ScriptTypeEnum defaultValue) {
+        if (StringUtils.isEmpty(key)) {
+            return Arrays.asList(defaultValue);
         }
+        List<ScriptTypeEnum> result = new ArrayList<>();
         for (ScriptTypeEnum item : values()) {
-            if (item.getValue().toLowerCase(Locale.ROOT).equals(value.toLowerCase(Locale.ROOT))) {
-                return item;
+            if (item.getKey().toLowerCase(Locale.ROOT).equals(key.toLowerCase(Locale.ROOT))) {
+                result.add(item);
             }
         }
-        return defaultValue;
+        return result;
     }
 }

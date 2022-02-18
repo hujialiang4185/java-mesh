@@ -20,10 +20,14 @@ import com.huawei.argus.listener.ITestLifeCycleListener;
 import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.emergency.entity.EmergencyExecRecord;
+import com.huawei.emergency.entity.EmergencyExecRecordDetail;
+import com.huawei.emergency.entity.EmergencyExecRecordDetailExample;
 import com.huawei.emergency.entity.EmergencyExecRecordExample;
+import com.huawei.emergency.entity.EmergencyExecRecordWithBLOBs;
 import com.huawei.emergency.mapper.EmergencyExecRecordDetailMapper;
 import com.huawei.emergency.mapper.EmergencyExecRecordMapper;
 import com.huawei.emergency.service.impl.ExecRecordHandlerFactory;
+import com.huawei.script.exec.ExecResult;
 import org.ngrinder.model.PerfTest;
 import org.ngrinder.model.StatusCategory;
 import org.ngrinder.perftest.service.PerfTestRunnable;
@@ -37,7 +41,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 
 /**
  * 压测任务完成监听器
@@ -58,6 +64,9 @@ public class PerfTestListenerConfig implements ITestLifeCycleListener {
     @Autowired
     private EmergencyExecRecordDetailMapper recordDetailMapper;
 
+    @Resource(name = "scriptExecThreadPool")
+    private ThreadPoolExecutor poolExecutor;
+
     @PostConstruct
     public void registryListener() {
         PerfTestRunnable.allTestLifeCycleListeners.add(this);
@@ -72,22 +81,26 @@ public class PerfTestListenerConfig implements ITestLifeCycleListener {
     @Override
     public void finish(PerfTest perfTest, String stopReason, IPerfTestService iPerfTestService, String version) {
         LOGGER.info("perf_test {} is end. {} . {}", perfTest.getId(), stopReason, version);
-        EmergencyExecRecordExample recordExample = new EmergencyExecRecordExample();
-        recordExample.createCriteria()
-            .andPerfTestIdEqualTo(perfTest.getId().intValue())
-            .andIsValidEqualTo(ValidEnum.VALID.getValue());
-        recordMapper.selectByExampleWithBLOBs(recordExample).forEach(record -> {
-            StatusCategory category = perfTest.getStatus().getCategory();
-            if (category == StatusCategory.ERROR) {
-                record.setStatus(RecordStatus.FAILED.getValue());
-            } else if (category == StatusCategory.STOP) {
-                record.setStatus(RecordStatus.CANCEL.getValue());
-            } else {
-                record.setStatus(RecordStatus.SUCCESS.getValue());
+        try {
+            EmergencyExecRecordExample recordExample = new EmergencyExecRecordExample();
+            recordExample.createCriteria()
+                .andPerfTestIdEqualTo(perfTest.getId().intValue())
+                .andIsValidEqualTo(ValidEnum.VALID.getValue());
+            List<EmergencyExecRecordWithBLOBs> records =
+                recordMapper.selectByExampleWithBLOBs(recordExample);
+            if (records.size() == 0) {
+                return;
             }
-            record.setLog(perfTest.getProgressMessage());
-            record.setEndTime(new Date());
-            recordMapper.updateByPrimaryKeySelective(record);
-        });
+            ExecResult result;
+            StatusCategory category = perfTest.getStatus().getCategory();
+            if (category == StatusCategory.ERROR || category == StatusCategory.STOP) {
+                result = ExecResult.fail(perfTest.getProgressMessage());
+            } else {
+                result = ExecResult.success(perfTest.getProgressMessage());
+            }
+            poolExecutor.execute(() -> handlerFactory.completePerfTest(records.get(0), result));
+        } catch (Exception e) {
+            LOGGER.info("perf_test {} finish callback error.{}.{}", perfTest.getId(), stopReason, e.getMessage());
+        }
     }
 }

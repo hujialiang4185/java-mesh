@@ -56,6 +56,8 @@ public class TaskNode {
     /**
      * 压测任务
      */
+    private Long testId;
+    private String guiScriptName;
     private Integer perfTestId;
     private String testName; // 测试名称
     private List<String> label; // 标签
@@ -138,10 +140,10 @@ public class TaskNode {
 
     @JsonIgnore
     private long getDurationTime() {
-        if (this.getByTimeH() == null || this.getByTimeM() == null || this.getByTimeS() == null) {
-            return 0L;
-        }
-        return ((this.getByTimeH() * 60L + this.getByTimeM()) * 60L + this.getByTimeS()) * 1000L;
+        long timeH = this.getByTimeH() == null ? 0 : this.getByTimeH();
+        long timeM = this.getByTimeM() == null ? 0 : this.getByTimeM();
+        long timeS = this.getByTimeS() == null ? 0 : this.getByTimeS();
+        return ((timeH * 60L + timeM) * 60L + timeS) * 1000L;
     }
 
     @JsonIgnore

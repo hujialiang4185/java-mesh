@@ -57,4 +57,6 @@ public interface EmergencyServerMapper {
     List<EmergencyServer> selectByKeyword(@Param("server") EmergencyServer server,
                                           @Param("keyword") String keyword,
                                           @Param("excludeServerIds") int[] excludeServerIds);
+
+    List<Integer> selectAgentIdsByServerIds(@Param("allServerIds") List<String> allServerIds);
 }
