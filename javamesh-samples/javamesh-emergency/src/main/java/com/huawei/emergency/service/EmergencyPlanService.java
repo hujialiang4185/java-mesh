@@ -68,4 +68,6 @@ public interface EmergencyPlanService extends EmergencyCommonService<EmergencyPl
     CommonResult submit(int planId,String approver);
 
     CommonResult copy(EmergencyPlan emergencyPlan);
+
+    CommonResult updateTask(TaskNode taskNode);
 }

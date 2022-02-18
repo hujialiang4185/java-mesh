@@ -94,9 +94,9 @@ public class PerfTestListenerConfig implements ITestLifeCycleListener {
             ExecResult result;
             StatusCategory category = perfTest.getStatus().getCategory();
             if (category == StatusCategory.ERROR || category == StatusCategory.STOP) {
-                result = ExecResult.fail(perfTest.getProgressMessage());
+                result = ExecResult.fail(perfTest.getProgressMessage() + perfTest.getLastProgressMessage());
             } else {
-                result = ExecResult.success(perfTest.getProgressMessage());
+                result = ExecResult.success(perfTest.getProgressMessage() + perfTest.getLastProgressMessage());
             }
             poolExecutor.execute(() -> handlerFactory.completePerfTest(records.get(0), result));
         } catch (Exception e) {

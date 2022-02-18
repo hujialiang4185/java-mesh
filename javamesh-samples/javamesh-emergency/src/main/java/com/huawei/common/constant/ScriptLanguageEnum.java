@@ -32,24 +32,26 @@ import java.util.Locale;
 @Getter
 public enum ScriptLanguageEnum {
 
-    SHELL("Shell", "0", ScriptTypeEnum.NORMAL),
-    JYTHON("Jython", "1", ScriptTypeEnum.NORMAL),
-    GROOVY("Groovy", "2", ScriptTypeEnum.NORMAL),
-    GUI("GUI", "3", ScriptTypeEnum.GUI),
-    PERF_JYTHON("jython", "4", ScriptTypeEnum.IDE),
-    PERF_GROOVY("groovy", "5", ScriptTypeEnum.IDE),
-    PERF_GROOVY_MAVEN("groovy_maven", "6", ScriptTypeEnum.IDE),
-    JAVASCRIPT("JavaScript", "7", ScriptTypeEnum.NORMAL);
+    SHELL("Shell", "0", ScriptTypeEnum.NORMAL,"sh"),
+    JYTHON("Jython", "1", ScriptTypeEnum.NORMAL,"py"),
+    GROOVY("Groovy", "2", ScriptTypeEnum.NORMAL,"groovy"),
+    GUI("GUI", "3", ScriptTypeEnum.GUI,"groovy"),
+    PERF_JYTHON("jython", "4", ScriptTypeEnum.IDE,"py"),
+    PERF_GROOVY("groovy", "5", ScriptTypeEnum.IDE,"groovy"),
+    PERF_GROOVY_MAVEN("groovy_maven", "6", ScriptTypeEnum.IDE,"groovy"),
+    JAVASCRIPT("JavaScript", "7", ScriptTypeEnum.NORMAL, "js");
 
     private String language;
     private String value;
     private ScriptTypeEnum scriptType;
+    private String suffix;
 
 
-    ScriptLanguageEnum(String language, String value, ScriptTypeEnum scriptType) {
+    ScriptLanguageEnum(String language, String value, ScriptTypeEnum scriptType, String suffix) {
         this.language = language;
         this.value = value;
         this.scriptType = scriptType;
+        this.suffix = suffix;
     }
 
     public static ScriptLanguageEnum matchByValue(String value) {

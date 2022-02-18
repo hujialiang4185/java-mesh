@@ -22,6 +22,7 @@ import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.PlanStatus;
 import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ScheduleType;
+import com.huawei.common.constant.ScriptLanguageEnum;
 import com.huawei.common.constant.TaskTypeEnum;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.common.filter.UserFilter;
@@ -38,6 +39,8 @@ import com.huawei.emergency.entity.EmergencyPlan;
 import com.huawei.emergency.entity.EmergencyPlanDetail;
 import com.huawei.emergency.entity.EmergencyPlanDetailExample;
 import com.huawei.emergency.entity.EmergencyPlanExample;
+import com.huawei.emergency.entity.EmergencyScript;
+import com.huawei.emergency.entity.EmergencyScriptExample;
 import com.huawei.emergency.entity.EmergencyTask;
 import com.huawei.emergency.entity.User;
 import com.huawei.emergency.mapper.EmergencyExecMapper;
@@ -45,6 +48,7 @@ import com.huawei.emergency.mapper.EmergencyExecRecordDetailMapper;
 import com.huawei.emergency.mapper.EmergencyExecRecordMapper;
 import com.huawei.emergency.mapper.EmergencyPlanDetailMapper;
 import com.huawei.emergency.mapper.EmergencyPlanMapper;
+import com.huawei.emergency.mapper.EmergencyScriptMapper;
 import com.huawei.emergency.mapper.EmergencyServerMapper;
 import com.huawei.emergency.mapper.EmergencyTaskMapper;
 import com.huawei.emergency.schedule.thread.TaskScheduleCenter;
@@ -135,6 +139,9 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     @Autowired
     private EmergencyServerMapper serverMapper;
 
+    @Autowired
+    private EmergencyScriptMapper scriptMapper;
+
     @Override
     public CommonResult add(EmergencyPlan emergencyPlan) {
         if (StringUtils.isEmpty(emergencyPlan.getPlanName())) {
@@ -142,8 +149,8 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         }
         EmergencyPlanExample isPlanNameExist = new EmergencyPlanExample();
         isPlanNameExist.createCriteria()
-                .andPlanNameEqualTo(emergencyPlan.getPlanName())
-                .andIsValidEqualTo(ValidEnum.VALID.getValue());
+            .andPlanNameEqualTo(emergencyPlan.getPlanName())
+            .andIsValidEqualTo(ValidEnum.VALID.getValue());
         if (planMapper.countByExample(isPlanNameExist) > 0) {
             return CommonResult.failed("已存在预案名称相同的预案");
         }
@@ -254,11 +261,11 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
 
         // 开始执行不需要任何前置条件的场景
         allExecRecords.stream()
-                .filter(record -> record.getTaskId() == null && record.getPreSceneId() == null)
-                .forEach(record -> {
-                    LOGGER.debug("Submit record_id={}. exec_id={}, task_id={}.", record.getRecordId(), record.getExecId(), record.getTaskId());
-                    threadPoolExecutor.execute(handlerFactory.handle(record));
-                });
+            .filter(record -> record.getTaskId() == null && record.getPreSceneId() == null)
+            .forEach(record -> {
+                LOGGER.debug("Submit record_id={}. exec_id={}, task_id={}.", record.getRecordId(), record.getExecId(), record.getTaskId());
+                threadPoolExecutor.execute(handlerFactory.handle(record));
+            });
         LOGGER.debug("threadPoolExecutor = {} ", threadPoolExecutor);
         WebSocketServer.sendMessage("/plan/" + planId);
         return CommonResult.success(emergencyExec);
@@ -312,7 +319,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         }
         if (scheduleType == ScheduleType.CORN) {
             if (StringUtils.isEmpty(plan.getScheduleConf())
-                    || !CronSequenceGenerator.isValidExpression(plan.getScheduleConf())) {
+                || !CronSequenceGenerator.isValidExpression(plan.getScheduleConf())) {
                 return CommonResult.failed("corn表达式不合法");
             }
         }
@@ -341,7 +348,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             }
         } else {
             nextTriggerTime =
-                    scheduleCenter.calculateNextTriggerTime(plan, new Date(System.currentTimeMillis())).getTime();
+                scheduleCenter.calculateNextTriggerTime(plan, new Date(System.currentTimeMillis())).getTime();
         }
         EmergencyPlan updatePlan = new EmergencyPlan();
         updatePlan.setPlanId(plan.getPlanId());
@@ -400,7 +407,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             return CommonResult.failed("审核结果不能为空");
         }
         if (!PlanStatus.APPROVED.getValue().equals(plan.getStatus())
-                && !PlanStatus.REJECT.getValue().equals(plan.getStatus())) {
+            && !PlanStatus.REJECT.getValue().equals(plan.getStatus())) {
             return CommonResult.failed("审核结果不正确");
         }
         EmergencyPlan updatePlan = new EmergencyPlan();
@@ -416,7 +423,6 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
 
     @Override
     public CommonResult query(int planId) {
-
         List<TaskNode> taskNodes = detailMapper.selectSceneNodeByPlanId(planId);
         taskNodes.forEach(scene -> {
             List<TaskNode> children = detailMapper.selectTaskNodeBySceneId(scene.getPlanId(), scene.getSceneId());
@@ -491,8 +497,8 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     public CommonResult<EmergencyPlan> get(int planId) {
         EmergencyPlanExample queryExample = new EmergencyPlanExample();
         queryExample.createCriteria()
-                .andPlanIdEqualTo(planId)
-                .andIsValidEqualTo("1");
+            .andPlanIdEqualTo(planId)
+            .andIsValidEqualTo("1");
         List<EmergencyPlan> emergencyPlans = planMapper.selectByExample(queryExample);
         return CommonResult.success(emergencyPlans.size() > 0 ? emergencyPlans.get(0) : null);
     }
@@ -510,7 +516,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         } else {
             task.setTaskName(taskNode.getTaskName());
             task.setScriptId(taskNode.getScriptId());
-            task.setScriptName(StringUtils.isNotEmpty(taskNode.getScriptName()) ?  taskNode.getScriptName(): taskNode.getGuiScriptName());
+            task.setScriptName(StringUtils.isNotEmpty(taskNode.getScriptName()) ? taskNode.getScriptName() : taskNode.getGuiScriptName());
             task.setChannelType(taskNode.getChannelType());
             task.setServerId(StringUtils.join(taskNode.getServiceId(), ","));
             task.setCreateUser(taskNode.getCreateUser());
@@ -521,6 +527,14 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
                 perfTest.setCreatedDate(new Date());
                 perfTest.setAgentCount(taskNode.getServiceId() == null ? 0 : taskNode.getServiceId().length);
                 perfTest.setScriptName(task.getScriptName());
+                EmergencyScriptExample scriptExample = new EmergencyScriptExample();
+                scriptExample.createCriteria().andScriptNameEqualTo(task.getScriptName());
+                final List<EmergencyScript> emergencyScripts = scriptMapper.selectByExample(scriptExample);
+                if (emergencyScripts.size() > 0) {
+                    ScriptLanguageEnum scriptLanguageEnum =
+                        ScriptLanguageEnum.matchByValue(emergencyScripts.get(0).getScriptType());
+                    perfTest.setScriptName(task.getScriptName() + "." + scriptLanguageEnum.getSuffix());
+                }
                 PerfTest insertPerfTest = perfTestController.saveOne(UserFilter.currentGrinderUser(), perfTest);
                 if (insertPerfTest == null || insertPerfTest.getId() == null) {
                     return CommonResult.failed("创建压测任务失败");
@@ -542,11 +556,11 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     @Override
     public CommonResult plan(CommonPage<PlanQueryParams> params) {
         Page<PlanQueryDto> pageInfo = PageHelper
-                .startPage(params.getPageIndex(), params.getPageSize(), StringUtils.isEmpty(params.getSortType()) ? "" :
-                        params.getSortField() + System.lineSeparator() + params.getSortType())
-                .doSelectPage(() -> {
-                    planMapper.queryPlanDto(params.getObject());
-                });
+            .startPage(params.getPageIndex(), params.getPageSize(), StringUtils.isEmpty(params.getSortType()) ? "" :
+                params.getSortField() + System.lineSeparator() + params.getSortType())
+            .doSelectPage(() -> {
+                planMapper.queryPlanDto(params.getObject());
+            });
         List<PlanQueryDto> result = pageInfo.getResult();
         User user = UserFilter.currentUser();
         List<String> auth = user.getAuth();
@@ -554,7 +568,9 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         String group = user.getGroup();
         // 查询明细
         result.forEach(planQueryDto -> {
-            if ("approving".equals(planQueryDto.getStatus()) && ("admin".equals(userName) || ((auth.contains(AUTH_ADMIN) || (auth.contains(AUTH_APPROVER) && userName.equals(planQueryDto.getCheckUser()))) && group.equals(planQueryDto.getGroupName())))) {
+            if ("approving".equals(planQueryDto.getStatus()) && ("admin".equals(userName) || (
+                (auth.contains(AUTH_ADMIN) || (auth.contains(AUTH_APPROVER)
+                    && userName.equals(planQueryDto.getCheckUser()))) && group.equals(planQueryDto.getGroupName())))) {
                 planQueryDto.setAuditable(true);
             }
             List<PlanDetailQueryDto> planDetails = planMapper.queryPlanDetailDto(planQueryDto.getPlanId());
@@ -564,6 +580,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
                 }
                 PerfTest perfTest = perfTestService.getOne(planDetail.getPerfTestId());
                 if (perfTest != null) {
+                    planDetail.setTestId(perfTest.getId());
                     planDetail.setStartTime(perfTest.getStartTime());
                     planDetail.setDuration(perfTest.getDuration());
                     planDetail.setUserId(perfTest.getUserId());
@@ -635,7 +652,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             return CommonResult.failed("预案不存在");
         }
         if (!PlanStatus.NEW.getValue().equals(plan.getStatus())
-                && !PlanStatus.REJECT.getValue().equals(plan.getStatus())) {
+            && !PlanStatus.REJECT.getValue().equals(plan.getStatus())) {
             return CommonResult.failed("预案不为待提审或驳回状态");
         }
 
@@ -666,6 +683,37 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         copyTaskNodes(allTasks, emergencyPlan.getCreateUser());
         save(plan.getPlanId(), allTasks, emergencyPlan.getCreateUser());
         return addResult;
+    }
+
+    @Override
+    public CommonResult updateTask(TaskNode taskNode) {
+        if (taskNode == null || taskNode.getKey() == null ) {
+            return CommonResult.failed("请选择要操作的任务");
+        }
+        EmergencyTask task = taskMapper.selectByPrimaryKey(taskNode.getKey());
+        if (task == null) {
+            return CommonResult.failed("请选择正确的任务");
+        }
+        TaskTypeEnum taskTypeEnum = TaskTypeEnum.matchByValue(taskNode.getTaskType());
+        if (taskTypeEnum == null || !task.getTaskType().equals(taskTypeEnum.getValue())) {
+            return CommonResult.failed("任务类型不可修改");
+        }
+        task.setTaskName(taskNode.getTaskName());
+        task.setScriptId(taskNode.getScriptId());
+        task.setScriptName(StringUtils.isNotEmpty(taskNode.getScriptName()) ? taskNode.getScriptName() : taskNode.getGuiScriptName());
+        task.setChannelType(taskNode.getChannelType());
+        task.setServerId(StringUtils.join(taskNode.getServiceId(), ","));
+        EmergencyScriptExample scriptExample = new EmergencyScriptExample();
+        scriptExample.createCriteria().andScriptNameEqualTo(task.getScriptName());
+        final List<EmergencyScript> emergencyScripts = scriptMapper.selectByExample(scriptExample);
+        if (emergencyScripts.size() > 0) {
+            ScriptLanguageEnum scriptLanguageEnum =
+                ScriptLanguageEnum.matchByValue(emergencyScripts.get(0).getScriptType());
+            task.setScriptId(emergencyScripts.get(0).getScriptId());
+            task.setSubmitInfo(emergencyScripts.get(0).getSubmitInfo());
+            task.setScriptName(emergencyScripts.get(0).getScriptName());
+        }
+        return CommonResult.success(taskNode);
     }
 
     /**
@@ -719,7 +767,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             insertTaskDetail.setTaskId(task.getKey());
             insertTaskDetail.setPreSceneId(planDetail.getPreSceneId());
             insertTaskDetail.setParentTaskId(
-                    planDetail.getTaskId() == null ? planDetail.getSceneId() : planDetail.getTaskId());
+                planDetail.getTaskId() == null ? planDetail.getSceneId() : planDetail.getTaskId());
             if ("异步".equals(task.getSync())) {
                 insertTaskDetail.setSync("异步");
             } else {
@@ -767,9 +815,9 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     private boolean haveRunning(int planId) {
         EmergencyExecRecordExample isRunningCondition = new EmergencyExecRecordExample();
         isRunningCondition.createCriteria()
-                .andStatusIn(RecordStatus.HAS_RUNNING_STATUS)
-                .andPlanIdEqualTo(planId)
-                .andIsValidEqualTo(ValidEnum.VALID.getValue());
+            .andStatusIn(RecordStatus.HAS_RUNNING_STATUS)
+            .andPlanIdEqualTo(planId)
+            .andIsValidEqualTo(ValidEnum.VALID.getValue());
         return recordMapper.countByExample(isRunningCondition) > 0;
     }
 
@@ -782,9 +830,9 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     private boolean havePass(int planId) {
         EmergencyPlanExample havePassCondition = new EmergencyPlanExample();
         havePassCondition.createCriteria()
-                .andStatusNotIn(UN_PASSED_STATUS)
-                .andIsValidEqualTo(ValidEnum.VALID.getValue())
-                .andPlanIdEqualTo(planId);
+            .andStatusNotIn(UN_PASSED_STATUS)
+            .andIsValidEqualTo(ValidEnum.VALID.getValue())
+            .andPlanIdEqualTo(planId);
         return planMapper.countByExample(havePassCondition) > 0;
     }
 

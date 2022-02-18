@@ -209,6 +209,18 @@ public class EmergencyPlanController {
     }
 
     /**
+     * 更新任务
+     *
+     * @param taskNode 任务信息
+     * @return {@link CommonResult}
+     */
+    @PutMapping ("/plan/task")
+    public CommonResult updateTask(@RequestBody TaskNode taskNode) {
+        taskNode.setCreateUser(UserFilter.currentUserName());
+        return planService.updateTask(taskNode);
+    }
+
+    /**
      * 新增一个预案
      *
      * @param emergencyPlan {@link EmergencyPlan#getPlanName()} 预案名称
