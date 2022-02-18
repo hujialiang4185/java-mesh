@@ -3,6 +3,7 @@ import axios from "axios"
 import { debounce } from "lodash"
 import React, { useEffect, useRef, useState } from "react"
 import { FileSearchOutlined, SearchOutlined } from '@ant-design/icons'
+import "./SearchSelect.scss"
 
 export default function App(props: { value?: string, onChange?: (value: string) => void, type?: string }) {
   const [options, setOptions] = useState()

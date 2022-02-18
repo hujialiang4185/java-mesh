@@ -1,4 +1,4 @@
-import { Button, Divider, Drawer, Form, Input, InputNumber, message, Radio, Select, Switch } from "antd";
+import { Button, Divider, Drawer, Form, Input, InputNumber, message, Radio, Switch } from "antd";
 import axios from "axios";
 import React, { useState } from "react";
 import "./AddPlanTask.scss"
@@ -7,27 +7,23 @@ import TabelTransfer from "./TabelTransfer";
 import Editor from "@monaco-editor/react";
 import { RootBasicScenario, RootPresure } from "../../../component/TreeOrchestrate/FormItems";
 
-const types = ["自定义脚本压测", "全链路引流压测", "命令行脚本"]
-export default function App(props: { onFinish: (values: any) => void }) {
+export default function App(props: { onFinish: (values: any) => Promise<void>, initialValues: any, children: React.ReactNode }) {
   const [isModalVisible, setIsModalVisible] = useState(false);
   // const [script, setScript] = useState("")
   const [isCmd, setIsCmd] = useState(false)
   const [form] = Form.useForm();
+  const types = ["自定义脚本压测", "引流压测", "命令行脚本"]
   return <>
-    <Button type="link" size="small" onClick={function () { setIsModalVisible(true) }}>加任务</Button>
-    <Drawer className="AddPlanTask" title="加任务" width={950} visible={isModalVisible} maskClosable={false} footer={null} onClose={function () {
+    <Button type="link" size="small" onClick={function () { setIsModalVisible(true) }}>{props.children}</Button>
+    <Drawer className="AddPlanTask" title={props.children} width={950} visible={isModalVisible} maskClosable={false} footer={null} onClose={function () {
       setIsModalVisible(false)
     }}>
       <Form form={form} requiredMark={false} labelCol={{ span: 2 }}
-        initialValues={{ channel_type: "SSH", task_type: types[isCmd ? 2 : 0] }}
+        initialValues={props.initialValues}
         onFinish={async (values) => {
           try {
-            values.sync === false ? values.sync = "异步" : values.sync = "同步"
-            // 获取key
-            const res = await axios.post("/argus-emergency/api/plan/task", values)
-            props.onFinish({ ...values, ...res.data.data, title: values.task_name })
+            await props.onFinish(values)
             form.resetFields()
-            // setScript("")
             setIsModalVisible(false)
           } catch (error: any) {
             message.error(error.message)
@@ -35,8 +31,16 @@ export default function App(props: { onFinish: (values: any) => void }) {
         }}>
         <Form.Item label="名称" name="task_name" rules={[{ required: true, max: 64 }]}><Input /></Form.Item>
         <div className="Line">
-          <Form.Item labelCol={{ span: 4 }} className="Middle" label="通道类型" name="channel_type">
-            <Select options={[{ value: "SSH" }, { value: "API" }]} />
+          <Form.Item labelCol={{ span: 4 }} className="Middle" label="任务类型" name="task_type" rules={[{required: true}]}>
+            <Radio.Group onChange={function (e) {
+              setIsCmd(e.target.value === "命令行脚本")
+            }} options={types.map(function (item, index) {
+              return {
+                value: item,
+                label: item,
+                disabled: index === 1,
+              }
+            })} />
           </Form.Item>
           <Form.Item labelCol={{ span: 4 }} className="Middle" label="执行方式" name="sync" valuePropName="checked">
             <Switch checkedChildren="同步" unCheckedChildren="异步" defaultChecked />
@@ -45,17 +49,7 @@ export default function App(props: { onFinish: (values: any) => void }) {
         <Form.Item label="执行主机" name="service_id">
           <TabelTransfer />
         </Form.Item>
-        <Form.Item label="任务类型" name="task_type">
-          <Radio.Group onChange={function (e) {
-            setIsCmd(e.target.value === "命令行脚本")
-          }} options={types.map(function (item, index) {
-            return {
-              value: item,
-              label: item,
-              disabled: index === 1,
-            }
-          })} />
-        </Form.Item>
+
         {isCmd ? <CmdFormItems /> : <TaskFormItems />}
         <Form.Item className="Buttons">
           <Button type="primary" htmlType="submit">创建</Button>
@@ -111,9 +105,6 @@ function TaskFormItems() {
       <Editor height={150} language="shell" options={{ readOnly: true }} value={script.content} />
     </div>
     <Divider orientation="left">压测配置</Divider>
-    <Form.Item name="agent" label="代理数" labelCol={{ span: 3 }} labelAlign="left" rules={[{ type: "integer" }]}>
-      <InputNumber min={1} />
-    </Form.Item>
     <Form.Item name="vuser" label="虚拟用户数" labelCol={{ span: 3 }} labelAlign="left" rules={[{ type: "integer" }]}>
       <InputNumber min={1} />
     </Form.Item>

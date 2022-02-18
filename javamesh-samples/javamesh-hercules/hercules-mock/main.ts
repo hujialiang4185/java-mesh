@@ -728,6 +728,9 @@ app.post("/argus-emergency/api/plan/run", function (req, res) {
         }
     })
 })
+app.put("/argus-emergency/api/plan/task", function (req, res) {
+    res.json()
+})
 app.post("/argus-emergency/api/plan/submitReview", function (req, res){
     res.json()
 })
@@ -743,17 +746,13 @@ app.get("/argus-emergency/api/plan/task", function (req, res) {
             key: 1,
             title: "场景1",
             task_no: 1,
-            task_name: "任务1",
-            channel_type: "SSH",
-            script_name: "a.sh",
-            submit_info: "xxx",
-            sync: "同步",
+            task_name: "场景1",
             children: [{
                 key: 2,
                 title: "任务2",
                 task_no: 2,
                 task_name: "任务2",
-                channel_type: "SSH",
+                task_type: "自定义脚本压测",
                 script_name: "a.sh",
                 submit_info: "xxx",
                 sync: "同步",
@@ -762,7 +761,7 @@ app.get("/argus-emergency/api/plan/task", function (req, res) {
                     title: "任务3",
                     task_no: 3,
                     task_name: "任务3",
-                    channel_type: "SSH",
+                    task_type: "自定义脚本压测",
                     script_name: "a.sh",
                     submit_info: "xxx",
                     sync: "同步",
@@ -772,20 +771,10 @@ app.get("/argus-emergency/api/plan/task", function (req, res) {
                     title: "任务4, 长文本长文本长文本长文本长文本长文本",
                     task_no: 4,
                     task_name: "任务4",
-                    channel_type: "SSH",
+                    task_type: "自定义脚本压测",
                     script_name: "a.sh",
                     submit_info: "xxx",
                     sync: "同步",
-                    children: [{
-                        key: 6,
-                        title: "任务6, 长文本长文本长文本长文本长文本长文本",
-                        task_no: 6,
-                        task_name: "任务6",
-                        channel_type: "SSH",
-                        script_name: "a.sh",
-                        submit_info: "xxx",
-                        sync: "同步",
-                    }]
                 }]
             }]
         },
@@ -793,11 +782,7 @@ app.get("/argus-emergency/api/plan/task", function (req, res) {
             key: 5,
             title: "场景5",
             task_no: 5,
-            task_name: "任务5",
-            channel_type: "SSH",
-            script_name: "a.sh",
-            submit_info: "xxx",
-            sync: "同步",
+            task_name: "场景5",
         }]
     })
 })

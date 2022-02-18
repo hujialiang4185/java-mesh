@@ -7,7 +7,8 @@ import AddPlanTask from "./AddPlanTask"
 type Data = {
   key: Key,
   title: string,
-  children?: Data[]
+  children?: Data[],
+  sync: string
 }
 function loop(data: Data[], key: Key, callback: (data: Data, i: number, gData: Data[]) => void) {
   for (let i = 0; i < data.length; i++) {
@@ -72,9 +73,9 @@ export default class App extends React.Component<{ plan_id: string }> {
           console.log(dragRoot, dropRoot, info.dropToGap)
           if (!dragRoot && dropRoot && info.dropToGap) return
           if (dragRoot && !info.dropToGap) return
-          
+
           // Find dragObject
-          let dragObj: Data = { key: 0, title: "" };
+          let dragObj: Data = { key: 0, title: "", sync: "同步" };
           loop(data, dragKey, (item, index, arr) => {
             arr.splice(index, 1);
             dragObj = item;
@@ -128,28 +129,56 @@ export default class App extends React.Component<{ plan_id: string }> {
         }} dataSource={this.state.gData}
         columns={[
           { title: "任务(场景)名称", dataIndex: "title", width: 250, ellipsis: true },
-          { title: "通道类型", dataIndex: "channel_type", ellipsis: true },
+          { title: "任务类型", dataIndex: "task_type", ellipsis: true },
           { title: "脚本名称", dataIndex: "script_name", ellipsis: true },
           { title: "脚本用途", dataIndex: "submit_info", ellipsis: true },
           { title: "执行方式", dataIndex: "sync", ellipsis: true },
           {
-            title: <AddScenaTask onFinish={(value: Data) => {
+            title: <AddScenaTask initialValues={{}} onFinish={async values => {
+              values.title = values.task_name
+              // 获取key
+              const res = await axios.post("/argus-emergency/api/plan/task", values)
               const data = [...this.state.gData];
-              data.push(value);
+              data.push({ ...res.data.data, ...values });
               // 保存
               this.save(data)
-            }} />,
-            width: 120, align: "left", dataIndex: "key", render: (key) => {
+            }} >加场景</AddScenaTask>,
+            width: 170, align: "left", dataIndex: "key", render: (key, record) => {
               return <>
-                <AddPlanTask onFinish={value => {
+                <AddPlanTask initialValues={{ channel_type: "SSH", task_type: "自定义脚本压测" }} onFinish={async values => {
+                  values.sync === false ? values.sync = "异步" : values.sync = "同步"
+                  values.title = values.task_name
+                  // 获取key
+                  const res = await axios.post("/argus-emergency/api/plan/task", values)
                   const data = [...this.state.gData];
                   loop(data, key, item => {
                     item.children = item.children || [];
-                    item.children.push(value);
+                    item.children.push({ ...res.data.data, ...values });
                   });
                   // 保存
                   this.save(data)
-                }} />
+                }} >加任务</AddPlanTask>
+                {this.state.gData.find(function (item) {
+                  return key === item.key;
+                }) ? <AddScenaTask initialValues={record} onFinish={async values => {
+                  values.title = values.task_name
+                  await axios.put("/argus-emergency/api/plan/task", { key, ...values })
+                  const data = [...this.state.gData];
+                  const index = data.findIndex(item => item.key = key)
+                  data[index] = { ...data[index], ...values };
+                  // 保存
+                  setTimeout(()=>{this.save(data)} )
+                }}>修改</AddScenaTask> : <AddPlanTask initialValues={{...record, sync: record.sync === "同步"}} onFinish={async values => {
+                  values.title = values.task_name
+                  values.sync === false ? values.sync = "异步" : values.sync = "同步"
+                  await axios.put("/argus-emergency/api/plan/task", { key, ...values})
+                  const data = [...this.state.gData];
+                  loop(data, key, (item, i, arr) => {
+                    arr[i] = { ...item, ...values }
+                  });
+                  // 保存
+                  setTimeout(()=>{this.save(data)} )
+                }} >修改</AddPlanTask>}
                 <Popconfirm title="是否删除?" onConfirm={() => {
                   const data = [...this.state.gData];
                   loop(data, key, (item, index, arr) => {
@@ -168,20 +197,17 @@ export default class App extends React.Component<{ plan_id: string }> {
   }
 }
 
-function AddScenaTask(props: { onFinish: (values: any) => void }) {
+function AddScenaTask(props: { onFinish: (values: any) => Promise<void>, initialValues: any, children: React.ReactNode }) {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
   return <>
-    <Button type="link" size="small" onClick={function () { setIsModalVisible(true) }}>加场景</Button>
-    <Modal className="AddScenaTask" title="加场景" width={950} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
+    <Button type="link" size="small" onClick={function () { setIsModalVisible(true) }}>{props.children}</Button>
+    <Modal className="AddScenaTask" title={props.children} width={950} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
       setIsModalVisible(false)
     }}>
-      <Form form={form} requiredMark={false} labelCol={{ span: 4 }} initialValues={{ channel_type: "SSH" }} onFinish={async (values) => {
+      <Form form={form} requiredMark={false} labelCol={{ span: 4 }} initialValues={props.initialValues} onFinish={async (values) => {
         try {
-          values.sync === false ? values.sync = "异步" : values.sync = "同步"
-          // 获取key
-          const res = await axios.post("/argus-emergency/api/plan/task", values)
-          props.onFinish({ ...values, ...res.data.data, title: values.task_name })
+          await props.onFinish(values)
           form.resetFields()
           setIsModalVisible(false)
         } catch (error: any) {
@@ -195,7 +221,7 @@ function AddScenaTask(props: { onFinish: (values: any) => void }) {
           <Input.TextArea showCount maxLength={50} autoSize={{ minRows: 2, maxRows: 2 }} />
         </Form.Item>
         <Form.Item className="Buttons">
-          <Button type="primary" htmlType="submit">创建</Button>
+          <Button type="primary" htmlType="submit">提交</Button>
           <Button onClick={function () {
             setIsModalVisible(false)
           }}>取消</Button>
