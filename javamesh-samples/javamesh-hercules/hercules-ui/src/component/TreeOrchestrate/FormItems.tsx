@@ -30,8 +30,6 @@ export { defaultFieldsValues }
 
 export default function App(props: { type: String }) {
     switch (props.type) {
-        case "Root":
-            return <RootPresure />
         case "TransactionController":
             return <>
                 <Form.Item name="presure" label="压力分配(%)">

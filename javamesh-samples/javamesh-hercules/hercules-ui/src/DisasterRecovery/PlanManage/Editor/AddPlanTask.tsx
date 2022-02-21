@@ -1,4 +1,4 @@
-import { Button, Divider, Drawer, Form, Input, InputNumber, message, Radio, Switch } from "antd";
+import { Button, Collapse, Divider, Drawer, Form, Input, InputNumber, message, Radio, Switch } from "antd";
 import axios from "axios";
 import React, { useState } from "react";
 import "./AddPlanTask.scss"
@@ -31,7 +31,7 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
         }}>
         <Form.Item label="名称" name="task_name" rules={[{ required: true, max: 64 }]}><Input /></Form.Item>
         <div className="Line">
-          <Form.Item labelCol={{ span: 4 }} className="Middle" label="任务类型" name="task_type" rules={[{required: true}]}>
+          <Form.Item labelCol={{ span: 4 }} className="Middle" label="任务类型" name="task_type" rules={[{ required: true }]}>
             <Radio.Group onChange={function (e) {
               setIsCmd(e.target.value === "命令行脚本")
             }} options={types.map(function (item, index) {
@@ -49,8 +49,13 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
         <Form.Item label="执行主机" name="service_id">
           <TabelTransfer />
         </Form.Item>
-
-        {isCmd ? <CmdFormItems /> : <TaskFormItems />}
+        <Collapse expandIconPosition="right" expandIcon={function ({ isActive }) {
+          return <span className={`icon fa fa-angle-double-${isActive ? "down" : "right"}`}></span>
+        }}>
+          <Collapse.Panel header="高级配置" key="0">
+            {isCmd ? <CmdFormItems /> : <TaskFormItems />}
+          </Collapse.Panel>
+        </Collapse>
         <Form.Item className="Buttons">
           <Button type="primary" htmlType="submit">创建</Button>
           <Button onClick={function () {

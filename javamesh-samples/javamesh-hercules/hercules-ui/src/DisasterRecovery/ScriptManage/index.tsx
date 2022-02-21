@@ -189,14 +189,11 @@ function Home() {
                     },
                     {
                         title: "操作",
-                        width: 200,
+                        width: 160,
                         dataIndex: "script_id",
                         render(script_id, record) {
                             return <>
                                 <ViewScript data={record} />
-                                {auth.includes("operator") && <Button type="link" size="small" onClick={function () {
-                                    batchDelete([script_id])
-                                }}>删除</Button>}
                                 {auth.includes("operator") && <Link to={
                                     path + "/" + record.type + "?script_id=" + script_id
                                 }>

@@ -27,6 +27,18 @@ li {
 .ant-input-number-group-wrapper {
   width: 100%;
 }
+.ant-collapse {
+  border: none;
+  .ant-collapse-item {
+    .ant-collapse-header {
+      background-color: #ffffff;
+      color: #0185FF;
+      .icon {
+          font-size: 20px;
+      }
+    }
+  }
+}
 .WithoutLabel {
   .ant-form-item-label {
       display: none;

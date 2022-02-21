@@ -132,7 +132,7 @@ function Home() {
                                 }} />
                                 <TaskLog record={record} />
                                 <Button type="primary" size="small" disabled={!record.test_id}>
-                                    <Link to={path + "/Report?test_id" + record.test_id}>报告</Link>
+                                    <Link to={path + "/Report?test_id=" + record.test_id}>报告</Link>
                                 </Button>
                             </>
                         }
