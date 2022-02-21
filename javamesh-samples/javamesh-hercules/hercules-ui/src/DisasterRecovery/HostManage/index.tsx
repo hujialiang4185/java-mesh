@@ -45,7 +45,7 @@ export default function App() {
         if (submit) return
         submit = true
         Modal.confirm({
-            title: '是否删除？',
+            title: '是否删除?',
             icon: <ExclamationCircleOutlined />,
             content: '删除后无法恢复, 请谨慎操作',
             okType: 'danger',
@@ -65,14 +65,14 @@ export default function App() {
         if (submit) return
         submit = true
         Modal.confirm({
-            title: '是否安装？',
+            title: '是否安装?',
             icon: <ExclamationCircleOutlined />,
             content: '将批量安装代理, 请谨慎操作',
             okType: 'danger',
             async onOk() {
                 try {
                     await axios.post("/argus-emergency/api/host/install", { server_id: selectedRowKeys })
-                    message.success("安装已提交，请稍等")
+                    message.success("安装已提交,请稍等")
                 } catch (e: any) {
                     message.error(e.message)
                 }
@@ -102,7 +102,7 @@ export default function App() {
     statusMap.set("success", "#2BBF2A")
     statusMap.set("fail", "#FF4E4E")
     return <div className="HostManage">
-        <Breadcrumb label="主机管理" />
+        <Breadcrumb label="引擎管理" />
         <Card>
             <div className="ToolBar">
                 <AddHost load={load} />
@@ -151,7 +151,7 @@ export default function App() {
                         sorter: true,
                         ellipsis: true
                     },
-                    { ellipsis: true, title: "主机名称", dataIndex: "server_name" },
+                    { ellipsis: true, title: "引擎名称", dataIndex: "server_name" },
                     { ellipsis: true, title: "服务器IP", dataIndex: "server_ip" },
                     { ellipsis: true, title: "SSH用户", dataIndex: "server_user" },
                     { ellipsis: true, title: "有无密码", dataIndex: "have_password" },
@@ -180,6 +180,7 @@ export default function App() {
                             </span>
                         }
                     },
+                    { ellipsis: true, title: "分组", dataIndex: "group_name" },
                 ]}
             />
         </Card>
@@ -192,8 +193,8 @@ function AddHost(props: { load: () => void }) {
     const [isLocal, setIsLocal] = useState(true)
     const [form] = useForm()
     return <>
-        <Button type="primary" icon={<PlusOutlined />} onClick={function () { setIsModalVisible(true) }}>添加主机</Button>
-        <Modal className="AddHost" title="添加主机" visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () { setIsModalVisible(false) }}>
+        <Button type="primary" icon={<PlusOutlined />} onClick={function () { setIsModalVisible(true) }}>添加引擎</Button>
+        <Modal className="AddHost" title="添加引擎" visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () { setIsModalVisible(false) }}>
             <Form form={form} requiredMark={false} labelCol={{ span: 4 }}
                 initialValues={{ have_password: "无", password_mode: "本地", server_port: 22 }}
                 onFinish={async function (values) {
@@ -208,7 +209,7 @@ function AddHost(props: { load: () => void }) {
                     }
                 }}
             >
-                <Form.Item name="server_name" label="主机名称" rules={[{ required: true, max: 32 }]}>
+                <Form.Item name="server_name" label="引擎名称" rules={[{ required: true, max: 32 }]}>
                     <Input />
                 </Form.Item>
                 <div className="Line">
@@ -223,6 +224,9 @@ function AddHost(props: { load: () => void }) {
                         <InputNumber min={0} max={65535} />
                     </Form.Item>
                 </div>
+                <Form.Item name="group_name" label="分组">
+                    <ServiceSelect allowClear url="/argus-user/api/group/search" />
+                </Form.Item>
                 <Form.Item name="have_password" label="有无密码">
                     <Radio.Group options={["无", "有"]} onChange={function (e) {
                         setHasPwd(e.target.value === "有")

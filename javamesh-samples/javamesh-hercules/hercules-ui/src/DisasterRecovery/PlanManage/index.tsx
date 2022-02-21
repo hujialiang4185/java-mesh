@@ -25,7 +25,7 @@ export default function App() {
     </CacheSwitch>
 }
 
-type Data = { plan_id: string, expand: { key: string, scena_no: string, task_no: string }[], status_label: string, status: string, history_id: string }
+type Data = { plan_id: string, expand: { key: string, scena_no: string, task_no: string }[], status_label: string, status: string, history_id: string, auditable: boolean, group_id: string }
 function Home() {
     const { path } = useRouteMatch()
     const { auth } = useContext(Context)
@@ -50,7 +50,7 @@ function Home() {
             setData(res.data)
             // 需要监听的任务列表
             keysRef.current = res.data.data.map(function (item: Data) {
-               return "/plan/" + item.plan_id
+                return "/plan/" + item.plan_id
             })
         } catch (error: any) {
             message.error(error.message)
@@ -74,7 +74,7 @@ function Home() {
     }, [])
     useDidRecover(load)
     return <div className="PlanManage">
-        <Breadcrumb label="活动管理" />
+        <Breadcrumb label="项目管理" />
         {data && <Card>
             <div className="ToolBar">
                 <AddPlan />
@@ -84,7 +84,7 @@ function Home() {
                     load()
                 }}>
                     <Form.Item className="Input" name="plan_name_no">
-                        <Input placeholder="活动名称、编号" />
+                        <Input placeholder="项目名称、编号" />
                     </Form.Item>
                     <Form.Item className="Input" name="scena_name_no">
                         <Input placeholder="场景名称、编号" />
@@ -96,7 +96,7 @@ function Home() {
                         <Input placeholder="脚本名称" />
                     </Form.Item>
                     <Form.Item className="Input" name="status_label">
-                        <ServiceSelect placeholder="活动状态" url="/argus-emergency/api/plan/search/status_label" allowClear />
+                        <ServiceSelect placeholder="项目状态" url="/argus-emergency/api/plan/search/status_label" allowClear />
                     </Form.Item>
                     <Button htmlType="submit" icon={<SearchOutlined />}>查找</Button>
                 </Form>
@@ -137,21 +137,9 @@ function Home() {
                         return <Table size="small" className="TreeTable" rowKey="key" pagination={false} dataSource={record.expand}
                             columns={[
                                 {
-                                    title: "场景编号", dataIndex: "scena_no", ellipsis: true,
-                                    render(value, row) {
-                                        return { children: value, props: { rowSpan: scenaRowSpans.get(row.key) }, }
-                                    }
-                                },
-                                {
                                     title: "场景名称", dataIndex: "scena_name", ellipsis: true,
                                     render(value, row) {
                                         return { children: value, props: { rowSpan: scenaRowSpans.get(row.key) }, }
-                                    }
-                                },
-                                {
-                                    title: "任务编号", dataIndex: "task_no", ellipsis: true,
-                                    render(value, row) {
-                                        return { children: value, props: { rowSpan: taskRowSpans.get(row.key) }, }
                                     }
                                 },
                                 {
@@ -160,22 +148,28 @@ function Home() {
                                         return { children: value, props: { rowSpan: taskRowSpans.get(row.key) }, }
                                     }
                                 },
-                                { title: "子任务编号", dataIndex: "subtask_no", ellipsis: true },
                                 { title: "子任务名称", dataIndex: "subtask_name", ellipsis: true },
                                 { title: "通道类型", dataIndex: "channel_type", ellipsis: true },
                                 { title: "脚本名称", dataIndex: "script_name", ellipsis: true },
                                 { title: "脚本用途", dataIndex: "submit_info", ellipsis: true },
+                                { title: "所有者", dataIndex: "user_id", ellipsis: true },
+                                { title: "标签", dataIndex: "tag_string", ellipsis: true },
+                                { title: "开始时间", dataIndex: "start_time", ellipsis: true },
+                                { title: "持续阈值", dataIndex: "duration", ellipsis: true },
+                                { title: "TPS", dataIndex: "tps", ellipsis: true },
+                                { title: "MIT出错率", dataIndex: "mean_test_time", ellipsis: true },
                             ]}
                         />
                     }
                 }}
                 columns={[
-                    { title: "活动编号", dataIndex: "plan_no", sorter: true, ellipsis: true },
-                    { title: "活动名称", dataIndex: "plan_name", ellipsis: true },
-                    { title: "活动状态", dataIndex: "status_label", ellipsis: true },
+                    { title: "项目编号", dataIndex: "plan_no", sorter: true, ellipsis: true },
+                    { title: "项目名称", dataIndex: "plan_name", ellipsis: true },
+                    { title: "项目状态", dataIndex: "status_label", ellipsis: true },
                     { title: "创建时间", dataIndex: "create_time", sorter: true, ellipsis: true },
                     { title: "创建人", dataIndex: "creator", ellipsis: true },
                     { title: "备注", dataIndex: "comment", ellipsis: true },
+                    { title: "分组", dataIndex: "group_name", ellipsis: true },
                     {
                         title: "操作", width: 350, dataIndex: "plan_id", render(plan_id, record) {
                             return <>
@@ -183,18 +177,8 @@ function Home() {
                                 {record.status !== "running" && auth.includes("operator") && <Link to={path + "/Editor?plan_id=" + plan_id}>
                                     <Button type="link" size="small">修改</Button>
                                 </Link>}
-                                {record.status === "approving" && auth.includes("approver") && <ApprovePlan plan_id={plan_id} load={load} />}
-                                {record.status === "unapproved" && auth.includes("operator") && <Popconfirm title="是否提交审核？" onConfirm={async function () {
-                                    try {
-                                        await axios.post('/argus-emergency/api/plan/submitReview', { plan_id })
-                                        message.success("提交成功")
-                                        load()
-                                    } catch (error: any) {
-                                        message.error(error.message)
-                                    }
-                                }} >
-                                    <Button type="link" size="small">提审</Button>
-                                </Popconfirm>}
+                                {record.auditable && <ApprovePlan plan_id={plan_id} load={load} />}
+                                {record.status === "unapproved" && auth.includes("operator") && <SubmitReview load={load} group_id={record.group_id} plan_id={plan_id}/>}
                                 {(record.status === "approved" || record.status === "ran") && auth.includes("operator") && <Button type="link" size="small" onClick={async function () {
                                     if (submit) return
                                     submit = true
@@ -207,7 +191,7 @@ function Home() {
                                     submit = false
                                 }}>立即执行</Button>}
                                 {(record.status === "approved" || record.status === "ran") && auth.includes("operator") && <RunPlan plan_id={plan_id} load={load} />}
-                                {record.status === "wait" && auth.includes("operator") && <Popconfirm title="是否取消预约？" onConfirm={async function () {
+                                {record.status === "wait" && auth.includes("operator") && <Popconfirm title="是否取消预约?" onConfirm={async function () {
                                     try {
                                         await axios.post("/argus-emergency/api/plan/cancel", { plan_id })
                                         message.success("取消成功")
@@ -223,11 +207,42 @@ function Home() {
                                 </Link>}
                             </>
                         }
-                    }
+                    },
                 ]}
             />
         </Card>}
     </div>
+}
+
+function SubmitReview(props: { load: () => void, plan_id: string, group_id: string }) {
+    const [isModalVisible, setIsModalVisible] = useState(false)
+    const [form] = useForm()
+    return <>
+        <Button type="link" size="small" onClick={function () { setIsModalVisible(true) }}>提审</Button>
+        <Modal className="SubmitPlanReview" title="提交审核" visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () { setIsModalVisible(false) }}>
+            <Form form={form} requiredMark={false} labelCol={{ span: 4 }} onFinish={async function (values) {
+                try {
+                    await axios.post('/argus-emergency/api/plan/submitReview', { ...values, plan_id: props.plan_id })
+                    message.success("提交成功")
+                    setIsModalVisible(false)
+                    form.resetFields()
+                    props.load()
+                } catch (error: any) {
+                    message.error(error.message)
+                }
+            }}>
+                <Form.Item name="approver" label="审批人" rules={[{ required: true }]}>
+                    <ServiceSelect url='/argus-user/api/user/approver/search' />
+                </Form.Item>
+                <Form.Item className="Buttons">
+                    <Button type="primary" htmlType="submit">提交</Button>
+                    <Button onClick={function () {
+                        setIsModalVisible(false)
+                    }}>取消</Button>
+                </Form.Item>
+            </Form>
+        </Modal>
+    </>
 }
 
 function AddPlan() {
@@ -238,11 +253,11 @@ function AddPlan() {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [form] = useForm()
     return <>
-        <Button disabled={!auth.includes("operator")} type="primary" icon={<PlusOutlined />} onClick={function () { setIsModalVisible(true) }}>添加活动</Button>
-        <Modal className="AddPlan" title="添加活动" width={700} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
+        <Button disabled={!auth.includes("operator")} type="primary" icon={<PlusOutlined />} onClick={function () { setIsModalVisible(true) }}>添加项目</Button>
+        <Modal className="AddPlan" title="添加项目" width={700} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form form={form} requiredMark={false} onFinish={async function (values) {
+            <Form form={form} labelCol={{span: 3}} requiredMark={false} onFinish={async function (values) {
                 if (submit) return
                 submit = true
                 try {
@@ -255,7 +270,10 @@ function AddPlan() {
                 }
                 submit = false
             }}>
-                <Form.Item label="活动名称" name="plan_name" rules={[{ required: true, max: 64 }]}><Input /></Form.Item>
+                <Form.Item label="项目名称" name="plan_name" rules={[{ required: true, max: 64 }]}><Input /></Form.Item>
+                <Form.Item name="group_name" label="分组">
+                    <ServiceSelect allowClear url="/argus-user/api/group/search" />
+                </Form.Item>
                 <Form.Item className="Buttons">
                     <Button type="primary" htmlType="submit">创建</Button>
                     <Button onClick={function () {
@@ -289,7 +307,7 @@ function CopyPlan({ plan_id }: { plan_id: string }) {
                 }
                 submit = false
             }}>
-                <Form.Item label="活动名称" name="plan_name" rules={[{ required: true, max: 64 }]}><Input /></Form.Item>
+                <Form.Item label="项目名称" name="plan_name" rules={[{ required: true, max: 64 }]}><Input /></Form.Item>
                 <Form.Item className="Buttons">
                     <Button type="primary" htmlType="submit">创建</Button>
                     <Button onClick={function () {
@@ -305,7 +323,7 @@ function ApprovePlan(props: { plan_id: string, load: () => {} }) {
     const [isModalVisible, setIsModalVisible] = useState(false);
     return <>
         <Button type="link" size="small" onClick={function () { setIsModalVisible(true) }}>审核</Button>
-        <Modal className="ApprovePlan" title="审核活动" width={400} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
+        <Modal className="ApprovePlan" title="审核项目" width={400} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
             <Form className="Form" requiredMark={false} onFinish={async function (values) {

@@ -1,4 +1,4 @@
-import { Button, Descriptions, Form, Input, message, Modal, Popconfirm, Radio, Table } from "antd"
+import { Button, Descriptions, Form, Input, message, Modal, Radio, Table } from "antd"
 import React, { useContext, useEffect, useRef, useState } from "react"
 import Breadcrumb from "../../component/Breadcrumb"
 import Card from "../../component/Card"
@@ -6,22 +6,27 @@ import { CloseOutlined, SearchOutlined, PlusOutlined, ExclamationCircleOutlined 
 import axios from "axios"
 import CacheRoute, { CacheSwitch, useDidRecover } from 'react-router-cache-route'
 import { Link, Route, useHistory, useRouteMatch } from "react-router-dom"
-import Create from "./Create"
-import Orchestrate from "./Orchestrate"
+import GUI from "./GUI"
 import "./index.scss"
 import Editor from "@monaco-editor/react"
 import Context from "../../ContextProvider"
 import ApproveFormItems from "../ApproveFormItems"
-import Update from "./Update"
+import NORMAL from "./NORMAL"
+import NORMALCreate from "./NORMALCreate"
 import { useForm } from "antd/lib/form/Form"
+import ServiceSelect from "../../component/ServiceSelect"
+import IDE from "./IDE"
+import IDECreate from "./IDECreate"
 
 export default function App() {
     const { path } = useRouteMatch();
     return <CacheSwitch>
         <CacheRoute exact path={path} component={Home} />
-        <Route exact path={path + '/Create'}><Create /></Route>
-        <Route exact path={path + '/Update'}><Update /></Route>
-        <Route exact path={path + '/Orchestrate'}><Orchestrate /></Route>
+        <Route exact path={path + '/IDECreate'}><IDECreate /></Route>
+        <Route exact path={path + '/NORMALCreate'}><NORMALCreate /></Route>
+        <Route exact path={path + '/NORMAL'}><NORMAL /></Route>
+        <Route exact path={path + '/GUI'}><GUI /></Route>
+        <Route exact path={path + '/IDE'}><IDE /></Route>
     </CacheSwitch>
 }
 
@@ -29,7 +34,7 @@ type Data = {
     script_id: string, script_name: string, param: string,
     owner: string, status: string, submit_info: string,
     has_pwd: string, pwd_from: string, content: string,
-    type: string
+    type: string, group_id: string, auditable: string
 }
 function Home() {
     let submit = false
@@ -65,7 +70,7 @@ function Home() {
         if (submit) return
         submit = true
         Modal.confirm({
-            title: '是否删除？',
+            title: '是否删除?',
             icon: <ExclamationCircleOutlined />,
             content: '删除后无法恢复, 请谨慎操作',
             okType: 'danger',
@@ -91,9 +96,6 @@ function Home() {
         <Breadcrumb label="脚本管理" />
         <Card>
             <div className="ToolBar">
-                <Link className="Add" to={path + "/Create"}>
-                    <Button disabled={!auth.includes("operator")} type="primary" icon={<PlusOutlined />}>命令行脚本</Button>
-                </Link>
                 <AddScript />
                 <Button icon={<CloseOutlined />} onClick={function () {
                     if (selectedRowKeys.length === 0) {
@@ -144,7 +146,14 @@ function Home() {
                         dataIndex: "type",
                         ellipsis: true,
                         render(value) {
-                            return value === "shell" ? "命令行" : "编排"
+                            switch (value) {
+                                case "GUI":
+                                    return "GUI脚本"
+                                case "IDE":
+                                    return "非GUI脚本"
+                                case "NORMAL":
+                                    return "非压测脚本"
+                            }
                         }
                     },
                     {
@@ -155,6 +164,11 @@ function Home() {
                     {
                         title: "脚本状态",
                         dataIndex: "status_label",
+                        ellipsis: true
+                    },
+                    {
+                        title: "审核人",
+                        dataIndex: "approver",
                         ellipsis: true
                     },
                     {
@@ -169,6 +183,11 @@ function Home() {
                         ellipsis: true
                     },
                     {
+                        title: "分组",
+                        dataIndex: "group_name",
+                        ellipsis: true
+                    },
+                    {
                         title: "操作",
                         width: 200,
                         dataIndex: "script_id",
@@ -179,28 +198,49 @@ function Home() {
                                     batchDelete([script_id])
                                 }}>删除</Button>}
                                 {auth.includes("operator") && <Link to={
-                                    path + "/" + (record.type === "shell" ? "Update" : "Orchestrate") + "?script_id=" + script_id
+                                    path + "/" + record.type + "?script_id=" + script_id
                                 }>
                                     <Button type="link" size="small">修改</Button>
                                 </Link>}
-                                {record.status === "approving" && auth.includes("approver") && <ApproveScript key="approve" data={record} load={load} />}
-                                {record.status === "unapproved" && auth.includes("operator") && <Popconfirm key="submit" title="是否提交审核？" onConfirm={async function () {
-                                    try {
-                                        await axios.post('/argus-emergency/api/script/submitReview', { script_id })
-                                        message.success("提交成功")
-                                        load()
-                                    } catch (error: any) {
-                                        message.error(error.message)
-                                    }
-                                }} >
-                                    <Button type="link" size="small">提审</Button>
-                                </Popconfirm>}
+                                {record.auditable && <ApproveScript key="approve" data={record} load={load} />}
+                                {record.status === "unapproved" && auth.includes("operator") && <SubmitReview load={load} script_id={script_id} group_id={record.group_id} />}
                             </>
                         }
                     },
                 ]} />
         </Card>
     </div>
+}
+
+function SubmitReview(props: { load: () => void, script_id: string, group_id: string }) {
+    const [isModalVisible, setIsModalVisible] = useState(false)
+    const [form] = useForm()
+    return <>
+        <Button type="link" size="small" onClick={function () { setIsModalVisible(true) }}>提审</Button>
+        <Modal className="SubmitScriptReview" title="提交审核" visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () { setIsModalVisible(false) }}>
+            <Form form={form} requiredMark={false} labelCol={{ span: 4 }} onFinish={async function (values) {
+                try {
+                    await axios.post('/argus-emergency/api/script/submitReview', { ...values, script_id: props.script_id })
+                    message.success("提交成功")
+                    setIsModalVisible(false)
+                    form.resetFields()
+                    props.load()
+                } catch (error: any) {
+                    message.error(error.message)
+                }
+            }}>
+                <Form.Item name="approver" label="审批人" rules={[{ required: true }]}>
+                    <ServiceSelect url='/argus-user/api/user/approver/search' />
+                </Form.Item>
+                <Form.Item className="Buttons">
+                    <Button type="primary" htmlType="submit">提交</Button>
+                    <Button onClick={function () {
+                        setIsModalVisible(false)
+                    }}>取消</Button>
+                </Form.Item>
+            </Form>
+        </Modal>
+    </>
 }
 
 function ViewScript(props: { data: Data }) {
@@ -262,45 +302,56 @@ function AddScript() {
     const history = useHistory();
     const { path } = useRouteMatch()
     const [isModalVisible, setIsModalVisible] = useState(false);
+    const [normal, setNormal] = useState(false)
     const [form] = useForm()
     return <>
-        <Button disabled={!auth.includes("operator")} icon={<PlusOutlined />} onClick={function () { setIsModalVisible(true) }}>编排脚本</Button>
-        <Modal className="AddScript" title="添加编排脚本" width={700} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
+        <Button disabled={!auth.includes("operator")} type="primary" icon={<PlusOutlined />} onClick={function () { setIsModalVisible(true) }}>添加脚本</Button>
+        <Modal className="AddScript" title="添加脚本" width={950} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form form={form} requiredMark={false} labelCol={{ span: 6 }} initialValues={{ public: "私有", orchestrate_type: "普通脚本" }} onFinish={async function (values) {
+            <Form form={form} requiredMark={false} labelCol={{ span: 2 }} initialValues={{ public: "私有", type: normal ? "非压测脚本" : "压测脚本", orchestrate_type: "GUI", language: "Shell" }} onFinish={async function (values) {
                 if (submit) return
                 submit = true
                 try {
-                    const res = await axios.post("/argus-emergency/api/script/orchestrate", values)
+                    if (values.orchestrate_type === "GUI") {
+                        const res = await axios.post("/argus-emergency/api/script/orchestrate", values)
+                        history.push(`${path}/GUI?script_id=${res.data.data.script_id}`)
+                    } else {
+                        history.push(`${path}/${values.type === "压测脚本" ? "IDECreate" : "NORMALCreate"}`, values)
+                    }
                     setIsModalVisible(false)
                     form.resetFields()
-                    history.push(path + "/Orchestrate?script_id=" + res.data.data.script_id)
                 } catch (error: any) {
                     message.error(error.message)
                 }
                 submit = false
             }}>
-                <Form.Item labelCol={{ span: 3 }} name="script_name" label="脚本名" rules={[
-                    { max: 25, required: true, whitespace: true },
-                    { pattern: /^\w+$/, message: "请输入英文、数字、下划线" }
-                ]}>
-                    <Input />
-                </Form.Item>
                 <div className="Line">
-                    <Form.Item className="Middle" name="orchestrate_type" label="编排类型">
-                        <Radio.Group options={[
-                            {value: "普通脚本", label: "普通脚本"},
-                            {label: "引流压测", value: "引流压测", disabled: true}
-                        ]} />
+                    <Form.Item className="Middle" labelCol={{ span: 4 }} name="script_name" label="脚本名" rules={[
+                        { min: 3, max: 20, required: true, whitespace: true },
+                        { pattern: /^[A-Za-z][\w.-]+$/, message: "格式不正确" }
+                    ]}>
+                        <Input placeholder='必须以字母开头, 可以包括字母, 数字和 ._- 最短3位, 最长20位'/>
                     </Form.Item>
-                    <Form.Item className="Middle" name="public" label="是否公有">
-                        <Radio.Group options={["私有", "公有"]} />
+                    <Form.Item className="Middle" labelCol={{ span: 4 }} name="group_name" label="分组">
+                        <ServiceSelect allowClear url="/argus-user/api/group/search" />
                     </Form.Item>
                 </div>
-                <Form.Item labelCol={{ span: 3 }} label="脚本用途" name="submit_info" rules={[{ required: true }]}>
+                <Form.Item label="脚本用途" name="submit_info" rules={[{ required: true }]}>
                     <Input.TextArea maxLength={50} showCount autoSize={{ minRows: 2, maxRows: 2 }} />
                 </Form.Item>
+                <div className="Line">
+                    <Form.Item className="Middle" labelCol={{ span: 4 }} name="type" label="脚本类型">
+                        <Radio.Group options={["压测脚本", "非压测脚本"]} onChange={function(e) {
+                            setNormal(e.target.value === "非压测脚本")
+                        }}/>
+                    </Form.Item>
+                    {normal ? <Form.Item className="Middle" labelCol={{ span: 4 }} name="language" label="脚本类型">
+                        <Radio.Group options={["Shell", "Groovy", "Jython"]} />
+                    </Form.Item> : <Form.Item className="Middle" labelCol={{ span: 4 }} name="orchestrate_type" label="编排方式">
+                        <Radio.Group options={["GUI", "非GUI"]} />
+                    </Form.Item>}
+                </div>
                 <Form.Item className="Buttons">
                     <Button type="primary" htmlType="submit">创建</Button>
                     <Button onClick={function () {

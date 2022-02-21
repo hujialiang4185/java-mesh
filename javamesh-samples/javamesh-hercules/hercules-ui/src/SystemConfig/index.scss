@@ -9,8 +9,14 @@
         display: flex;
         margin-top: 5px;
         margin-bottom: 15px;
+        button + button {
+            margin-left: 10px;
+        }
+        .Input {
+            width: 230px;
+        }
         .Button{
-            margin-right: 10px;
+            margin-left: 10px;
         }
         .Space {
             flex-grow: 1;

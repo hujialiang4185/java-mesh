@@ -43,8 +43,7 @@ export default function App() {
   }, [history, setAuth])
   const menuList = [
     { path: "/SystemConfig", label: "系统配置", comp: <SystemConfig />, icon: <SettingOutlined />, auth: "admin" },
-    // { path: "/PerformanceTest", label: "性能测试", comp: <PerformanceTest />, icon: <AppstoreOutlined /> },
-    // { path: "/DisasterRecovery", label: "容灾切换", comp: <DisasterRecovery />, icon: <ThunderboltOutlined /> }
+    // { path: "/PerformanceTest", label: "性能测试(旧)", comp: <PerformanceTest />, icon: <AppstoreOutlined /> },
     { path: "/DisasterRecovery", label: "性能测试", comp: <DisasterRecovery />, icon: <ThunderboltOutlined /> }
   ]
 

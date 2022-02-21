@@ -6,7 +6,7 @@ import Editor from "@monaco-editor/react"
 import { useLocation } from "react-router-dom"
 import axios from "axios"
 import CloseCircleOutlined from "@ant-design/icons/lib/icons/CloseCircleOutlined"
-import HostForm from "../../../component/TestTask/Create/HostForm"
+import HostForm from "../../TestTask/Create/HostForm"
 import { debounce } from 'lodash';
 import "./index.scss"
 import modal from "antd/lib/modal"
@@ -156,24 +156,7 @@ function ScriptEditor(props: { onChange?: (value: any) => void, path: string }) 
 function ScriptOrchestrate(props: {setScript: (script: string)=> void, path: string}) {
     let submit = false
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [data, setData] = useState<Values>()
     const valuesRef = useRef<Values>()
-    useEffect(function () {
-        (async function () {
-            try {
-                const res = await axios.get("/argus-emergency/api/script/argus/orchestrate", { params: { path: props.path } })
-                const tree = res.data.data.tree
-                const mapData = res.data.data.map
-                const map = new Map()
-                for (const key in mapData) {
-                    map.set(key, mapData[key])
-                }
-                setData({ tree, map })
-            } catch (error: any) {
-                message.error(error.message)
-            }
-        })()
-    }, [props.path])
     return <>
         <Button type="primary" onClick={function () {
             setIsModalVisible(true)
@@ -181,9 +164,18 @@ function ScriptOrchestrate(props: {setScript: (script: string)=> void, path: str
         <Modal className="ScriptDetailOrchestrate" title="新建脚本" width={1200} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            {data && <TreeOrchestrate initialValues={data} onSave={async function (values) {
+            <TreeOrchestrate initialValues={async function () {
+                const res = await axios.get("/argus-emergency/api/script/argus/orchestrate", { params: { path: props.path } })
+                const tree = res.data.data.tree
+                const mapData = res.data.data.map
+                const map = new Map()
+                for (const key in mapData) {
+                    map.set(key, mapData[key])
+                }
+                return{ tree, map }
+            }} onSave={async function (values) {
                 valuesRef.current = values
-            }} />}
+            }} />
             <div className="Buttons">
                 <Button type="primary" onClick={async function () {
                     if (submit) return

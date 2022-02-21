@@ -9,7 +9,7 @@ import { Link, Route, useRouteMatch } from "react-router-dom"
 import Detail from "./Detail"
 import "./index.scss"
 import Upload from "../../component/Upload"
-import { debounce } from "lodash"
+import ServiceSelect from "../../component/ServiceSelect"
 
 export default function App() {
     const { path } = useRouteMatch();
@@ -59,9 +59,9 @@ function Home() {
             const res = await axios.get("/argus/api/script/deleteCheck", { params })
             const confirm = res.data.data
             Modal.confirm({
-                title: '是否删除？',
+                title: '是否删除?',
                 icon: <ExclamationCircleOutlined />,
-                content: confirm && confirm.length > 0 && "这些脚本或文件夹被其他压测场景使用, 仍然删除？" + confirm.join(" "),
+                content: confirm && confirm.length > 0 && "这些脚本或文件夹被其他压测场景使用, 仍然删除?" + confirm.join(" "),
                 okType: 'danger',
                 async onOk() {
                     try {
@@ -136,7 +136,7 @@ function Home() {
                         align: "center",
                     },
                     {
-                        title: "脚本（目录）名称",
+                        title: "脚本(目录)名称",
                         dataIndex: "script_name",
                         sorter: true,
                         width: 240,
@@ -191,11 +191,12 @@ function Home() {
                         ellipsis: true
                     },
                     {
-                        title: "大小（KB) ",
+                        title: "大小(KB)",
                         dataIndex: "size",
                         sorter: true,
                         ellipsis: true
                     },
+                    { ellipsis: true, title: "分组", dataIndex: "group_name" },
                     {
                         title: "下载",
                         render: function (_, record) {
@@ -205,7 +206,6 @@ function Home() {
                                     <span className="icon md" style={{ fontSize: 18, color: "#0185FF" }}>system_update_alt</span>
                                 </a>
                         },
-                        width: 80,
                         align: "center"
                     },
                 ]} />
@@ -216,20 +216,8 @@ function Home() {
 
 function AddFile(props: { load: () => {}, folder: string[] }) {
     let submit = false
-    let hostname = ""
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [form] = Form.useForm();
-    const debounceRef = useRef(debounce(function (url: URL) {
-        const cookies = form.getFieldValue("cookies") || [{}]
-        cookies.forEach(function (item: { value_a: string }) {
-            item.value_a = url.hostname
-        })
-        form.setFields([{
-            name: "cookies",
-            value: cookies,
-        }])
-        hostname = url.hostname
-    }, 100))
     return <>
         <Button type="primary" icon={<FileTextOutlined />} onClick={function () {
             setIsModalVisible(true)
@@ -254,24 +242,24 @@ function AddFile(props: { load: () => {}, folder: string[] }) {
             }}>
                 <div className="Line">
                     <div className="Label">脚本名</div>
-                    <Form.Item name="language">
-                        <Select style={{ width: 200 }}>
+                    <Form.Item name="language" style={{ width: 200 }}>
+                        <Select>
                             <Select.Option value="Jython">Jython</Select.Option>
                             <Select.Option value="Groovy">Groovy</Select.Option>
                             <Select.Option value="Groovy Maven Project">Groovy Maven Project</Select.Option>
                         </Select>
                     </Form.Item>
-                    <Form.Item className="WithoutLabel" name="script_name" label="脚本名" rules={[
+                    <Form.Item className="WithoutLabel" style={{ width: 525 }} name="script_name" label="脚本名" rules={[
                         { min: 3, max: 20, required: true, whitespace: true },
                         { pattern: /^[A-Za-z][\w.-]+$/, message: "格式不正确" }
                     ]}>
-                        <Input style={{ width: 525 }} placeholder='必须以字母开头, 可以包括字母, 数字和 ._- 最短3位, 最长20位' />
+                        <Input placeholder='必须以字母开头, 可以包括字母, 数字和 ._- 最短3位, 最长20位' />
                     </Form.Item>
                 </div>
                 <div className="Line">
                     <div className="Label">被测的URL</div>
-                    <Form.Item name="method">
-                        <Select style={{ width: 200 }}>
+                    <Form.Item name="method" style={{ width: 200 }}>
+                        <Select>
                             <Select.Option value="GET">GET</Select.Option>
                             <Select.Option value="POST">POST</Select.Option>
                         </Select>
@@ -281,13 +269,20 @@ function AddFile(props: { load: () => {}, folder: string[] }) {
                         {
                             async validator(_, value) {
                                 if (!value) return
-                                let url
+                                let url: URL
                                 try {
                                     url = new URL(value)
                                 } catch (error) {
                                     throw new Error("URL格式不合法")
                                 }
-                                debounceRef.current(url)
+                                const cookies = form.getFieldValue("cookies") || [{}]
+                                cookies.forEach(function (item: { value_a: string }) {
+                                    item.value_a = url.hostname
+                                })
+                                form.setFields([{
+                                    name: "cookies",
+                                    value: cookies,
+                                }])
                             }
                         }
                     ]}>
@@ -299,8 +294,13 @@ function AddFile(props: { load: () => {}, folder: string[] }) {
                     <Form.Item valuePropName="checked" name="has_resource">
                         <Checkbox>创建资源和库目录</Checkbox>
                     </Form.Item>
-                    <span className="Info">
-                        <InfoCircleOutlined />您可以上传".class", ".py", ".jar" 类型的文件到lib目录, 或者其他任何资源到resources目录</span>
+                    <span className="Info"><InfoCircleOutlined />您可以上传".class", ".py", ".jar" 类型的文件到lib目录, 或者其他任何资源到resources目录</span>
+                </div>
+                <div className="Line">
+                    <div className="Label">分组</div>
+                    <Form.Item name="group_name" style={{ width: 200 }}>
+                        <ServiceSelect allowClear url="/argus-user/api/group/search" />
+                    </Form.Item>
                 </div>
                 <Collapse expandIconPosition="right" expandIcon={function ({ isActive }) {
                     return <span className={`icon fa fa-angle-double-${isActive ? "down" : "right"}`}></span>
@@ -334,14 +334,14 @@ function AddFile(props: { load: () => {}, folder: string[] }) {
                                         return <div key={item.key} className="FormList">
                                             <Form.Item name={[item.name, "key"]} rules={[{ max: 32 }]}><Input /></Form.Item>
                                             <span className="Equal">=</span>
-                                            <Form.Item name={[item.name, "value"]} rules={[{ max: 32 }]}><Input /></Form.Item>
-                                            <Form.Item name={[item.name, "value_a"]} rules={[{ max: 32 }]}><Input style={{ width: 120 }} placeholder="host" /></Form.Item>
-                                            <Form.Item name={[item.name, "value_b"]} rules={[{ max: 32 }]}><Input style={{ width: 120 }} placeholder="path" /></Form.Item>
+                                            <Form.Item name={[item.name, "value"]} rules={[{ max: 32 }]} style={{ width: 100 }}><Input /></Form.Item>
+                                            <Form.Item name={[item.name, "value_a"]} rules={[{ max: 32 }]} style={{ width: 100 }}><Input placeholder="host" /></Form.Item>
+                                            <Form.Item name={[item.name, "value_b"]} rules={[{ max: 32 }]} style={{ width: 100 }}><Input placeholder="path" /></Form.Item>
                                             {item.key !== 0 && <MinusCircleOutlined onClick={function () {
                                                 remove(item.name)
                                             }} />}
                                             <PlusCircleOutlined onClick={function () {
-                                                add({ value_a: hostname })
+                                                add({ value_a: new URL(form.getFieldValue("for_url")).hostname })
                                             }} />
                                         </div>
                                     })
@@ -389,10 +389,10 @@ function AddFolder(props: { load: () => {}, folder: string[] }) {
         <Button icon={<FolderOpenFilled />} onClick={function () {
             setIsModalVisible(true)
         }}>新建文件夹</Button>
-        <Modal className="AddFolder" title="新建文件夹" width={700} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
+        <Modal className="AddFolder" title="新建文件夹" width={500} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form form={form} className="Form" labelCol={{ span: 6 }} requiredMark={false} onFinish={async function (values) {
+            <Form form={form} className="Form" labelCol={{ span: 4 }} requiredMark={false} onFinish={async function (values) {
                 if (submit) return
                 submit = true
                 try {
@@ -407,11 +407,14 @@ function AddFolder(props: { load: () => {}, folder: string[] }) {
                 }
                 submit = false
             }}>
-                <div className="Inputs">
-                    <Form.Item name="folder_name" className="Input" wrapperCol={{ span: 16 }} label="文件夹名" rules={[
-                        { max: 64, required: true, whitespace: true },
-                    ]}><Input /></Form.Item>
-                </div>
+                <Form.Item name="folder_name" className="Input" label="文件夹名" rules={[
+                    { max: 64, required: true, whitespace: true },
+                ]}>
+                    <Input />
+                </Form.Item>
+                <Form.Item name="group_name" label="分组">
+                    <ServiceSelect allowClear url="/argus-user/api/group/search" />
+                </Form.Item>
                 <Form.Item className="Buttons">
                     <Button type="primary" htmlType="submit">创建</Button>
                     <Button onClick={function () {
@@ -431,10 +434,10 @@ function UploadFile(props: { load: () => {}, folder: string[] }) {
         <Button icon={<CloudUploadOutlined />} onClick={function () {
             setIsModalVisible(true)
         }}>上传脚本或资源</Button>
-        <Modal className="AddFolder" title="上传脚本或资源" width={700} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
+        <Modal className="AddFolder" title="上传脚本或资源" width={500} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form form={form} className="Form" labelCol={{ span: 6 }} requiredMark={false} onFinish={async function (values) {
+            <Form form={form} className="Form" labelCol={{ span: 5 }} requiredMark={false} onFinish={async function (values) {
                 if (submit) return
                 submit = true
                 try {
@@ -452,14 +455,17 @@ function UploadFile(props: { load: () => {}, folder: string[] }) {
                 }
                 submit = false
             }}>
-                <div className="Inputs">
-                    <Form.Item name="commit" className="Input" wrapperCol={{ span: 16 }} label="提交信息" rules={[
-                        { max: 64, required: true, whitespace: true },
-                    ]}><Input placeholder="单行输入" /></Form.Item>
-                    <Form.Item name="file" valuePropName="fileList" wrapperCol={{ span: 16 }} label="文件" rules={[{ required: true }]}>
-                        <Upload max={1} />
-                    </Form.Item>
-                </div>
+                <Form.Item name="commit" className="Input" label="提交信息" rules={[
+                    { max: 64, required: true, whitespace: true },
+                ]}>
+                    <Input placeholder="单行输入" />
+                </Form.Item>
+                <Form.Item name="group_name" label="分组">
+                    <ServiceSelect allowClear url="/argus-user/api/group/search" />
+                </Form.Item>
+                <Form.Item name="file" valuePropName="fileList" label="文件" rules={[{ required: true }]}>
+                    <Upload max={1} />
+                </Form.Item>
                 <Form.Item className="Buttons">
                     <Button type="primary" htmlType="submit">创建</Button>
                     <Button onClick={function () {

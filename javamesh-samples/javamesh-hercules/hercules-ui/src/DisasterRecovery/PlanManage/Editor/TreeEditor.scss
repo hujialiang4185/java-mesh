@@ -13,3 +13,12 @@
         }
     }
 }
+.AddScenaTask {
+    .Buttons {
+        text-align: center;
+        margin-top: 20px;
+        button + button {
+            margin-left: 10px;
+        }
+    }
+}

@@ -1,13 +1,26 @@
 import { Button, Form, Input, message, Modal, Popconfirm, Select, Table } from "antd"
 import React, { useEffect, useRef, useState } from "react"
-import { PlusOutlined, CloseOutlined, SearchOutlined, UpOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
+import { PlusOutlined, CloseOutlined, SearchOutlined, UpOutlined, ExclamationCircleOutlined, SwapOutlined } from '@ant-design/icons'
 import Card from "../component/Card"
 import "./index.scss"
 import axios from "axios"
+import { Link, Route, Switch, useRouteMatch } from "react-router-dom"
+import Group from "./Group"
+import Breadcrumb from "../component/Breadcrumb"
+import ServiceSelect from "../component/ServiceSelect"
+
+export default function App() {
+    let { path } = useRouteMatch()
+    return <Switch>
+        <Route exact path={path}><Home /></Route>
+        <Route exact path={`${path}/Group`}><Group /></Route>
+    </Switch>
+}
 
 type Data = { role: string, username: string, status: string }
-export default function App() {
+function Home() {
     let submit = false
+    let { path } = useRouteMatch()
     const [data, setData] = useState<{ data: Data[], total: number }>({ data: [], total: 0 })
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
     const [loading, setLoading] = useState(false)
@@ -46,7 +59,7 @@ export default function App() {
         if (submit) return
         submit = true
         Modal.confirm({
-            title: '是否启用这些用户？',
+            title: '是否启用这些用户?',
             icon: <ExclamationCircleOutlined />,
             okType: 'danger',
             async onOk() {
@@ -78,7 +91,7 @@ export default function App() {
         if (submit) return
         submit = true
         Modal.confirm({
-            title: '是否禁用这些用户？',
+            title: '是否禁用这些用户?',
             icon: <ExclamationCircleOutlined />,
             okType: 'danger',
             async onOk() {
@@ -96,15 +109,18 @@ export default function App() {
     }
 
     useEffect(function () {
-        stateRef.current = {}
         load()
     }, [])
     return <div className="UserManagement">
+        <Breadcrumb label="系统配置" />
         <Card>
             <div className="ToolBar">
                 <AddUser load={load} />
-                <Button className="Button" icon={<CloseOutlined />} onClick={deactiveUser}>禁用账号</Button>
+                <Button icon={<CloseOutlined />} onClick={deactiveUser}>禁用账号</Button>
                 <Button icon={<UpOutlined />} onClick={activeUser}>启用账号</Button>
+                <Link to={path+"/Group"} className="Button">
+                    <Button icon={<SwapOutlined />} onClick={activeUser}>分组管理</Button>
+                </Link>
                 <div className="Space"></div>
                 <Form layout="inline" onFinish={function (values) {
                     stateRef.current.search = values
@@ -153,6 +169,11 @@ export default function App() {
                         ellipsis: true
                     },
                     {
+                        title: "用户分组",
+                        dataIndex: "group_name",
+                        ellipsis: true
+                    },
+                    {
                         title: "用户状态",
                         dataIndex: "status",
                         ellipsis: true
@@ -171,7 +192,7 @@ export default function App() {
                         render(username, record) {
                             return <>
                                 <UpdateUser data={record} load={load} />
-                                <Popconfirm disabled={record.role === "管理员"} title="是否重置密码？" onConfirm={async function () {
+                                <Popconfirm disabled={record.role === "管理员"} title="是否重置密码?" onConfirm={async function () {
                                     if (submit) return
                                     submit = true
                                     try {
@@ -202,7 +223,7 @@ function AddUser(props: { load: () => void }) {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [form] = Form.useForm();
     return <>
-        <Button className="Button" type="primary" icon={<PlusOutlined />} onClick={function () { setIsModalVisible(true) }}>添加账号</Button>
+        <Button type="primary" icon={<PlusOutlined />} onClick={function () { setIsModalVisible(true) }}>添加账号</Button>
         <Modal className="AddUser" title="添加账号" width={400} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
@@ -232,6 +253,9 @@ function AddUser(props: { load: () => void }) {
                 </Form.Item>
                 <Form.Item name="role" label="用户角色" rules={[{ required: true }]}>
                     <Select options={[{ value: "操作员" }, { value: "审核员" }, { value: "管理员" }]} />
+                </Form.Item>
+                <Form.Item name="group_name" label="用户分组">
+                    <ServiceSelect allowClear url="/argus-user/api/group/search" />
                 </Form.Item>
                 <Form.Item className="Buttons">
                     <Button type="primary" htmlType="submit">创建</Button>
@@ -270,6 +294,9 @@ function UpdateUser(props: { data: Data, load: () => {} }) {
                 </Form.Item>
                 <Form.Item name="role" label="用户角色" rules={[{ required: true }]}>
                     <Select options={[{ value: "操作员" }, { value: "审核员" }, { value: "管理员" }]} />
+                </Form.Item>
+                <Form.Item name="group_name" label="用户分组">
+                    <ServiceSelect allowClear url="/argus-user/api/group/search" />
                 </Form.Item>
                 <Form.Item className="Buttons">
                     <Button type="primary" htmlType="submit">修改</Button>
