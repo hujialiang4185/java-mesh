@@ -13,7 +13,7 @@ export default function App() {
     const { path } = useRouteMatch();
     return <CacheSwitch>
         <CacheRoute exact path={path} component={Home} />
-        <Route exact path={path + '/Detail'}><Detail /></Route>
+        <Route path={path + '/Detail'}><Detail /></Route>
     </CacheSwitch>
 }
 

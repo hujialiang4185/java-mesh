@@ -14,7 +14,7 @@ import moment, { Moment } from "moment"
 import PageInfo from "../../component/PageInfo"
 import socket from "../socket"
 import { debounce } from "lodash"
-import View from "./View"
+import View from "../../component/TaskView"
 
 export default function App() {
     const { path } = useRouteMatch();

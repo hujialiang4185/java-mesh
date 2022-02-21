@@ -828,7 +828,8 @@ app.get('/argus-emergency/api/history/scenario/task', function (req, res) {
                 end_time: "2021-01-01 00:00:00",
                 sync: "同步",
                 status: ['error', 'process', 'finish', 'wait'][index % 4],
-                status_label: ["失败", "运行中", "成功", "待执行"][index % 4]
+                status_label: ["失败", "运行中", "成功", "待执行"][index % 4],
+                test_id: index === 0 ? 1 : null
             }
         })
     })

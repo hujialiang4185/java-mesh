@@ -5,9 +5,9 @@ import axios from "axios";
 import moment from "moment";
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import Breadcrumb from "../../../component/Breadcrumb";
-import Card from "../../../component/Card";
-import ServiceSelect from "../../../component/ServiceSelect";
+import Breadcrumb from "../Breadcrumb";
+import Card from "../Card";
+import ServiceSelect from "../ServiceSelect";
 import "./index.scss"
 
 export default function App() {
@@ -78,7 +78,7 @@ export default function App() {
                 </div>
                 <div className="Item">
                     <div className="Value">{data.avg_time}</div>
-                    <div className="Title">平均时间（ms）</div>
+                    <div className="Title">平均时间(ms)</div>
                 </div>
                 <div className="Item">
                     <div className="Value">{data.test_count}</div>

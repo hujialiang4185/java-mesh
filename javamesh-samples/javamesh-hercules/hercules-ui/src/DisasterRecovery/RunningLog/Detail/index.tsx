@@ -5,13 +5,22 @@ import Card from "../../../component/Card"
 import socket from "../../socket"
 import "./index.scss"
 import axios from "axios"
-import { useLocation } from "react-router-dom"
+import { Link, Route, Switch, useLocation, useRouteMatch } from "react-router-dom"
 import Editor from "@monaco-editor/react";
 import { debounce } from 'lodash';
+import TaskView from "../../../component/TaskView"
+
+export default function App() {
+    const { path } = useRouteMatch();
+    return <Switch>
+        <Route exact path={path} component={Home} />
+        <Route exact path={path + '/Report'}><TaskView /></Route>
+    </Switch>
+}
 
 type Scena = { key: string, scena_name: string, scena_id: string, status: 'wait' | 'process' | 'finish' | 'error', status_label: string }
-type Task = { key: string, status: string }
-export default function App() {
+type Task = { key: string, status: string, test_id: string }
+function Home() {
     let submit = false
     const urlSearchParams = new URLSearchParams(useLocation().search)
     const history_id = urlSearchParams.get("history_id") || ""
@@ -22,6 +31,7 @@ export default function App() {
     const scenaKeysRef = useRef<string[]>([])
     const taskKeysRef = useRef<string[]>([])
     const scenaIdRef = useRef<string>()
+    const { path } = useRouteMatch();
 
     async function loadTask(history_id: string) {
         setLoading(true)
@@ -100,7 +110,10 @@ export default function App() {
                         title: "执行状态", dataIndex: "status_label", ellipsis: true
                     },
                     {
-                        title: "操作", width: 200, dataIndex: "key", align: "center", render(key, record) {
+                        title: "执行方式", dataIndex: "sync", ellipsis: true
+                    },
+                    {
+                        title: "操作", width: 300, dataIndex: "key", align: "center", render(key, record) {
                             return <>
                                 <Button type="primary" disabled={record.status !== "error"} size="small" onClick={async function () {
                                     if (submit) return
@@ -117,17 +130,13 @@ export default function App() {
                                 <TaskConfirm record={record} load={function () {
                                     loadTask(history_id)
                                 }} />
+                                <TaskLog record={record} />
+                                <Button type="primary" size="small" disabled={!record.test_id}>
+                                    <Link to={path + "/Report?test_id" + record.test_id}>报告</Link>
+                                </Button>
                             </>
                         }
                     },
-                    {
-                        title: "执行方式", dataIndex: "sync", ellipsis: true
-                    },
-                    {
-                        title: "执行日志", width: 100, render(_, record) {
-                            return <TaskLog record={record} />
-                        }
-                    }
                 ]}
             />
         </Card>
@@ -142,7 +151,7 @@ function TaskConfirm(props: { record: Task, load: () => void }) {
         <Modal className="TaskConfirm" title="人工确认" width={400} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form requiredMark={false} initialValues={{confirm: "成功"}} onFinish={async function (values) {
+            <Form requiredMark={false} initialValues={{ confirm: "成功" }} onFinish={async function (values) {
                 if (submit) return
                 submit = true
                 try {
@@ -190,7 +199,7 @@ function TaskLog(props: { record: Task }) {
         return function () {
             clearInterval(timeIntervalRef.current)
         }
-    },[])
+    }, [])
     return <>
         <Button type="primary" size="small" onClick={async function () {
             if (submit) return
@@ -206,7 +215,7 @@ function TaskLog(props: { record: Task }) {
                     clearInterval(timeIntervalRef.current)
                 }
             }, 1000) as any
-        }}>查看日志</Button>
+        }}>日志</Button>
         {isModalVisible && <Modal className="LogButton" title="查看日志" width={1200} visible={true} maskClosable={false} footer={null} onCancel={function () {
             clearInterval(timeIntervalRef.current)
             setIsModalVisible(false)
