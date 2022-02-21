@@ -674,9 +674,16 @@ app.get("/argus-emergency/api/plan", function (req, res) {
                 group_name: "分组1",
                 auditable: index === 1,
                 expand: [
-                    { key: 1, scena_no: "C01", scena_name: "场景一", channel_type: "SSH", script_name: "C01.sh", submit_info: "提交信息" },
-                    { key: 2, scena_no: "C01", scena_name: "场景一", task_no: "C01T01", task_name: "任务一", channel_type: "SSH", script_name: "C01T01.sh", submit_info: "提交信息" },
-                    { key: 3, scena_no: "C01", scena_name: "场景一", task_no: "C01T01", task_name: "任务一", subtask_no: "C01T01S01", subtask_name: "子任务一", channel_type: "SSH", script_name: "C01T01S01.sh", submit_info: "提交信息" },
+                    { key: 1, scena_no: "C01", scena_name: "场景一", channel_type: "SSH", script_name: "C01.sh", submit_info: "提交信息", test_id: 1 },
+                    {
+                        key: 2, scena_no: "C01", scena_name: "场景一", task_no: "C01T01", task_name: "任务一", channel_type: "SSH",
+                        script_name: "C01T01.sh", submit_info: "提交信息", test_id: 1
+                    },
+                    {
+                        key: 3, scena_no: "C01", scena_name: "场景一", task_no: "C01T01", task_name: "任务一", subtask_no: "C01T01S01",
+                        subtask_name: "子任务一", channel_type: "SSH", script_name: "C01T01S01.sh", submit_info: "提交信息", test_id: 1, 
+                        user_id: "Username", tag_string: "test, group", start_time: "2017-02-01 10:12:13", duration: 800, tps: 10, mean_test_time: 12.1
+                    },
                 ]
             }
         }),
@@ -731,7 +738,7 @@ app.post("/argus-emergency/api/plan/run", function (req, res) {
 app.put("/argus-emergency/api/plan/task", function (req, res) {
     res.json()
 })
-app.post("/argus-emergency/api/plan/submitReview", function (req, res){
+app.post("/argus-emergency/api/plan/submitReview", function (req, res) {
     res.json()
 })
 app.post("/argus-emergency/api/plan/cancel", function (req, res) {

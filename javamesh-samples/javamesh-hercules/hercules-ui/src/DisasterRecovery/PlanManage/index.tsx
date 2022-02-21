@@ -16,16 +16,18 @@ import ApproveFormItems from "../ApproveFormItems"
 import { useForm } from "antd/lib/form/Form"
 import socket from "../socket"
 import { debounce } from "lodash"
+import TaskView from "../../component/TaskView"
 
 export default function App() {
     const { path } = useRouteMatch();
     return <CacheSwitch>
         <CacheRoute exact path={path} component={Home} />
         <Route exact path={path + '/Editor'}><Editor /></Route>
+        <Route exact path={path + '/Report'}><TaskView /></Route>
     </CacheSwitch>
 }
 
-type Data = { plan_id: string, expand: { key: string, scena_no: string, task_no: string }[], status_label: string, status: string, history_id: string, auditable: boolean, group_id: string }
+type Data = { plan_id: string, expand: { key: string, scena_no: string, task_no: string, test_id: string }[], status_label: string, status: string, history_id: string, auditable: boolean, group_id: string }
 function Home() {
     const { path } = useRouteMatch()
     const { auth } = useContext(Context)
@@ -84,13 +86,13 @@ function Home() {
                     load()
                 }}>
                     <Form.Item className="Input" name="plan_name_no">
-                        <Input placeholder="项目名称、编号" />
+                        <Input placeholder="项目名称" />
                     </Form.Item>
                     <Form.Item className="Input" name="scena_name_no">
-                        <Input placeholder="场景名称、编号" />
+                        <Input placeholder="场景名称" />
                     </Form.Item>
                     <Form.Item className="Input" name="task_name_no">
-                        <Input placeholder="任务名称、编号" />
+                        <Input placeholder="任务名称" />
                     </Form.Item>
                     <Form.Item className="Input" name="script_name">
                         <Input placeholder="脚本名称" />
@@ -139,16 +141,20 @@ function Home() {
                                 {
                                     title: "场景名称", dataIndex: "scena_name", ellipsis: true,
                                     render(value, row) {
-                                        return { children: value, props: { rowSpan: scenaRowSpans.get(row.key) }, }
+                                        return { children: !row.test_id ? value : <Link to={path + "/Report?test_id=" + row.test_id}>{value}</Link>, props: { rowSpan: scenaRowSpans.get(row.key) }, }
                                     }
                                 },
                                 {
                                     title: "任务名称", dataIndex: "task_name", ellipsis: true,
                                     render(value, row) {
-                                        return { children: value, props: { rowSpan: taskRowSpans.get(row.key) }, }
+                                        return { children: !row.test_id ? value : <Link to={path + "/Report?test_id=" + row.test_id}>{value}</Link>, props: { rowSpan: taskRowSpans.get(row.key) }, }
                                     }
                                 },
-                                { title: "子任务名称", dataIndex: "subtask_name", ellipsis: true },
+                                {
+                                    title: "子任务名称", dataIndex: "subtask_name", ellipsis: true, render(value, row) {
+                                        return !row.test_id ? value : <Link to={path + "/Report?test_id=" + row.test_id}>{value}</Link>
+                                    }
+                                },
                                 { title: "通道类型", dataIndex: "channel_type", ellipsis: true },
                                 { title: "脚本名称", dataIndex: "script_name", ellipsis: true },
                                 { title: "脚本用途", dataIndex: "submit_info", ellipsis: true },
@@ -157,7 +163,7 @@ function Home() {
                                 { title: "开始时间", dataIndex: "start_time", ellipsis: true },
                                 { title: "持续阈值", dataIndex: "duration", ellipsis: true },
                                 { title: "TPS", dataIndex: "tps", ellipsis: true },
-                                { title: "MIT出错率", dataIndex: "mean_test_time", ellipsis: true },
+                                { title: "MIT出错率(%)", dataIndex: "mean_test_time", ellipsis: true },
                             ]}
                         />
                     }
@@ -178,7 +184,7 @@ function Home() {
                                     <Button type="link" size="small">修改</Button>
                                 </Link>}
                                 {record.auditable && <ApprovePlan plan_id={plan_id} load={load} />}
-                                {record.status === "unapproved" && auth.includes("operator") && <SubmitReview load={load} group_id={record.group_id} plan_id={plan_id}/>}
+                                {record.status === "unapproved" && auth.includes("operator") && <SubmitReview load={load} group_id={record.group_id} plan_id={plan_id} />}
                                 {(record.status === "approved" || record.status === "ran") && auth.includes("operator") && <Button type="link" size="small" onClick={async function () {
                                     if (submit) return
                                     submit = true
@@ -257,7 +263,7 @@ function AddPlan() {
         <Modal className="AddPlan" title="添加项目" width={700} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form form={form} labelCol={{span: 3}} requiredMark={false} onFinish={async function (values) {
+            <Form form={form} labelCol={{ span: 3 }} requiredMark={false} onFinish={async function (values) {
                 if (submit) return
                 submit = true
                 try {

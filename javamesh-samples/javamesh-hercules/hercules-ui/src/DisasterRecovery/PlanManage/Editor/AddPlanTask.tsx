@@ -49,13 +49,9 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
         <Form.Item label="执行主机" name="service_id">
           <TabelTransfer />
         </Form.Item>
-        <Collapse expandIconPosition="right" expandIcon={function ({ isActive }) {
-          return <span className={`icon fa fa-angle-double-${isActive ? "down" : "right"}`}></span>
-        }}>
-          <Collapse.Panel header="高级配置" key="0">
-            {isCmd ? <CmdFormItems /> : <TaskFormItems />}
-          </Collapse.Panel>
-        </Collapse>
+
+        {isCmd ? <CmdFormItems /> : <TaskFormItems />}
+
         <Form.Item className="Buttons">
           <Button type="primary" htmlType="submit">创建</Button>
           <Button onClick={function () {
@@ -71,44 +67,56 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
 function CmdFormItems() {
   const [script, setScript] = useState({ submit_info: "", content: "" })
   return <>
-    <Form.Item className="ScriptName" label="脚本名称" name="script_name">
-      <SearchSelect onChange={async function (name) {
-        try {
-          const res = await axios.get("/argus-emergency/api/script/getByName", { params: { name, status: "approved" } })
-          setScript(res.data.data)
-        } catch (error: any) {
-          message.error(error.message)
-        }
-      }} />
-    </Form.Item>
-    <Form.Item label="脚本用途">
-      <Input.TextArea value={script.submit_info} disabled />
-    </Form.Item>
-    <div className="Editor">
-      <Editor height={150} language="shell" options={{ readOnly: true }} value={script.content} />
-    </div>
+    <Collapse expandIconPosition="right" expandIcon={function ({ isActive }) {
+      return <span className={`icon fa fa-angle-double-${isActive ? "down" : "right"}`}></span>
+    }}>
+      <Collapse.Panel header="高级配置" key="0">
+        <Form.Item className="ScriptName" label="脚本名称" name="script_name">
+          <SearchSelect onChange={async function (name) {
+            try {
+              const res = await axios.get("/argus-emergency/api/script/getByName", { params: { name, status: "approved" } })
+              setScript(res.data.data)
+            } catch (error: any) {
+              message.error(error.message)
+            }
+          }} />
+        </Form.Item>
+        <Form.Item label="脚本用途">
+          <Input.TextArea value={script.submit_info} disabled />
+        </Form.Item>
+        <div className="Editor">
+          <Editor height={150} language="shell" options={{ readOnly: true }} value={script.content} />
+        </div>
+      </Collapse.Panel>
+    </Collapse>
   </>
 }
 
 function TaskFormItems() {
   const [script, setScript] = useState({ submit_info: "", content: "" })
   return <>
-    <Form.Item className="ScriptName" label="脚本名称" name="gui_script_name">
-      <SearchSelect type="gui" onChange={async function (name) {
-        try {
-          const res = await axios.get("/argus-emergency/api/script/getByName", { params: { name, status: "approved" } })
-          setScript(res.data.data)
-        } catch (error: any) {
-          message.error(error.message)
-        }
-      }} />
-    </Form.Item>
-    <Form.Item label="脚本用途">
-      <Input.TextArea value={script.submit_info} disabled />
-    </Form.Item>
-    <div className="Editor">
-      <Editor height={150} language="shell" options={{ readOnly: true }} value={script.content} />
-    </div>
+    <Collapse expandIconPosition="right" expandIcon={function ({ isActive }) {
+      return <span className={`icon fa fa-angle-double-${isActive ? "down" : "right"}`}></span>
+    }}>
+      <Collapse.Panel header="高级配置" key="0">
+        <Form.Item className="ScriptName" label="脚本名称" name="gui_script_name">
+          <SearchSelect type="gui" onChange={async function (name) {
+            try {
+              const res = await axios.get("/argus-emergency/api/script/getByName", { params: { name, status: "approved" } })
+              setScript(res.data.data)
+            } catch (error: any) {
+              message.error(error.message)
+            }
+          }} />
+        </Form.Item>
+        <Form.Item label="脚本用途">
+          <Input.TextArea value={script.submit_info} disabled />
+        </Form.Item>
+        <div className="Editor">
+          <Editor height={150} language="shell" options={{ readOnly: true }} value={script.content} />
+        </div>
+      </Collapse.Panel>
+    </Collapse>
     <Divider orientation="left">压测配置</Divider>
     <Form.Item name="vuser" label="虚拟用户数" labelCol={{ span: 3 }} labelAlign="left" rules={[{ type: "integer" }]}>
       <InputNumber min={1} />
