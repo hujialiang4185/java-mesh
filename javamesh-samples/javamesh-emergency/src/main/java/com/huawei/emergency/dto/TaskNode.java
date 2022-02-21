@@ -92,7 +92,7 @@ public class TaskNode {
     public PerfTest parse() {
         PerfTest perfTest = new PerfTest();
         perfTest.setTestName(StringUtils.isEmpty(this.getTestName()) ? this.getTaskName() : this.getTestName());
-        perfTest.setAgentCount(this.getAgent());
+        perfTest.setAgentCount(this.getServiceId() == null ? 0 : this.getServiceId().length);
         if (this.getVuser() != null ) {
             perfTest.setProcesses(getProcessCount(this.getVuser()));
             perfTest.setThreads(this.getVuser() / perfTest.getProcesses());

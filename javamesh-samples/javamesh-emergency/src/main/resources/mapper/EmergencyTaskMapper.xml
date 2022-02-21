@@ -77,8 +77,8 @@
     </where>
   </sql>
   <sql id="Base_Column_List">
-    task_id, task_no, task_name, scene_id, script_id, pre_task_id, create_user, create_time, 
-    is_valid, channel_type, script_name, submit_info, server_id, perf_test_id
+    task_id, task_no, task_name, task_type, scene_id, script_id, pre_task_id, create_user, 
+    create_time, is_valid, channel_type, script_name, submit_info, server_id, perf_test_id
   </sql>
   <select id="selectByExample" parameterType="com.huawei.emergency.entity.EmergencyTaskExample" resultMap="BaseResultMap">
     select
@@ -115,16 +115,16 @@
     <selectKey keyProperty="taskId" order="AFTER" resultType="java.lang.Integer">
       SELECT LAST_INSERT_ID()
     </selectKey>
-    insert into emergency_task (task_no, task_name, task_type, scene_id,
-      script_id, pre_task_id, create_user, 
-      create_time, is_valid, channel_type, 
-      script_name, submit_info, server_id, 
-      perf_test_id)
-    values (#{taskNo,jdbcType=VARCHAR}, #{taskName,jdbcType=VARCHAR}, #{taskType,jdbcType=VARCHAR}, #{sceneId,jdbcType=INTEGER},
-      #{scriptId,jdbcType=INTEGER}, #{preTaskId,jdbcType=INTEGER}, #{createUser,jdbcType=VARCHAR}, 
-      #{createTime,jdbcType=TIMESTAMP}, #{isValid,jdbcType=VARCHAR}, #{channelType,jdbcType=VARCHAR}, 
-      #{scriptName,jdbcType=VARCHAR}, #{submitInfo,jdbcType=VARCHAR}, #{serverId,jdbcType=VARCHAR}, 
-      #{perfTestId,jdbcType=INTEGER})
+    insert into emergency_task (task_no, task_name, task_type, 
+      scene_id, script_id, pre_task_id, 
+      create_user, create_time, is_valid, 
+      channel_type, script_name, submit_info, 
+      server_id, perf_test_id)
+    values (#{taskNo,jdbcType=VARCHAR}, #{taskName,jdbcType=VARCHAR}, #{taskType,jdbcType=VARCHAR}, 
+      #{sceneId,jdbcType=INTEGER}, #{scriptId,jdbcType=INTEGER}, #{preTaskId,jdbcType=INTEGER}, 
+      #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{isValid,jdbcType=VARCHAR}, 
+      #{channelType,jdbcType=VARCHAR}, #{scriptName,jdbcType=VARCHAR}, #{submitInfo,jdbcType=VARCHAR}, 
+      #{serverId,jdbcType=VARCHAR}, #{perfTestId,jdbcType=INTEGER})
   </insert>
   <insert id="insertSelective" parameterType="com.huawei.emergency.entity.EmergencyTask">
     <selectKey keyProperty="taskId" order="AFTER" resultType="java.lang.Integer">
@@ -366,7 +366,6 @@
       perf_test_id = #{perfTestId,jdbcType=INTEGER}
     where task_id = #{taskId,jdbcType=INTEGER}
   </update>
-
   <select id="countPassedPlanByTaskId" parameterType="Integer" resultType="java.lang.Long">
     SELECT
       count(1)
@@ -381,7 +380,6 @@
       AND t4.check_result = '1'
       AND t4.is_valid = '1'
   </select>
-
   <update id="tryClearTaskNo">
     UPDATE emergency_task t
     SET t.task_no = NULL
@@ -404,7 +402,6 @@
         AND is_valid = '1'
     )
   </update>
-
   <select id="selectMaxSubTaskNo" resultType="java.lang.Integer">
     SELECT
       IFNULL( SUBSTR( max( task_no ), LENGTH( #{preTaskNo})+ 1 ), 0 )

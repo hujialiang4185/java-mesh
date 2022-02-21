@@ -350,7 +350,8 @@
                END
              )                                                     `status`,
            parse_exec_status(
-                   parse_scene_exec_status(t1.exec_id, t1.scene_id)) status_label
+                   parse_scene_exec_status(t1.exec_id, t1.scene_id)) status_label,
+           t1.perf_test_id as testId
     FROM emergency_exec_record t1
            LEFT JOIN emergency_task t2 ON t1.scene_id = t2.task_id
     WHERE t1.exec_id = #{execId}
@@ -384,7 +385,8 @@
            DATE_FORMAT(t1.start_time, '%Y-%m-%d %H:%i:%s') start_time,
            DATE_FORMAT(t1.end_time, '%Y-%m-%d %H:%i:%s')   end_time,
            t1.sync,
-           IFNULL((select user_name from NUSER where user_id = t1.create_user),t1.create_user) operator
+           IFNULL((select user_name from NUSER where user_id = t1.create_user),t1.create_user) operator,
+           t1.perf_test_id as testId
     FROM emergency_exec_record t1
            LEFT JOIN emergency_task scene ON t1.scene_id = scene.task_id
            LEFT JOIN emergency_task task ON t1.task_id = task.task_id

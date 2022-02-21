@@ -62,6 +62,7 @@ import org.apache.commons.lang.StringUtils;
 import org.ngrinder.model.MonitoringHost;
 import org.ngrinder.model.PerfTest;
 import org.ngrinder.model.RampUp;
+import org.ngrinder.perftest.repository.PerfTestRepository;
 import org.ngrinder.perftest.service.PerfTestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,6 +133,9 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
 
     @Autowired
     private PerfTestService perfTestService;
+
+    @Autowired
+    private PerfTestRepository perfTestRepository;
 
     private static final String AUTH_ADMIN = "admin";
     private static final String AUTH_APPROVER = "approver";
@@ -425,6 +429,10 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     public CommonResult query(int planId) {
         List<TaskNode> taskNodes = detailMapper.selectSceneNodeByPlanId(planId);
         taskNodes.forEach(scene -> {
+            TaskTypeEnum taskTypeEnum = TaskTypeEnum.matchByValue(scene.getTaskType());
+            if (taskTypeEnum != null) {
+                scene.setTaskType(taskTypeEnum.getDesc());
+            }
             List<TaskNode> children = detailMapper.selectTaskNodeBySceneId(scene.getPlanId(), scene.getSceneId());
             if (children.size() > 0) {
                 scene.setChildren(children);
@@ -451,8 +459,12 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         if (test == null) {
             return;
         }
+        TaskTypeEnum taskTypeEnum = TaskTypeEnum.matchByValue(node.getTaskType());
+        if (taskTypeEnum != null) {
+            node.setTaskType(taskTypeEnum.getDesc());
+        }
         node.setTestId(test.getId());
-        node.setGuiScriptName(test.getScriptName());
+        node.setGuiScriptName(node.getScriptName());
         node.setAgent(test.getAgentCount());
         node.setTestName(test.getTestName());
         node.setVuser(test.getVuserPerAgent());
@@ -525,7 +537,6 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
                 PerfTest perfTest = taskNode.parse();
                 perfTest.setCreatedUser(UserFilter.currentGrinderUser());
                 perfTest.setCreatedDate(new Date());
-                perfTest.setAgentCount(taskNode.getServiceId() == null ? 0 : taskNode.getServiceId().length);
                 perfTest.setScriptName(task.getScriptName());
                 EmergencyScriptExample scriptExample = new EmergencyScriptExample();
                 scriptExample.createCriteria().andScriptNameEqualTo(task.getScriptName());
@@ -690,29 +701,38 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         if (taskNode == null || taskNode.getKey() == null ) {
             return CommonResult.failed("请选择要操作的任务");
         }
-        EmergencyTask task = taskMapper.selectByPrimaryKey(taskNode.getKey());
-        if (task == null) {
+        EmergencyTask originTask = taskMapper.selectByPrimaryKey(taskNode.getKey());
+        if (originTask == null) {
             return CommonResult.failed("请选择正确的任务");
         }
-        TaskTypeEnum taskTypeEnum = TaskTypeEnum.matchByValue(taskNode.getTaskType());
-        if (taskTypeEnum == null || !task.getTaskType().equals(taskTypeEnum.getValue())) {
+        TaskTypeEnum taskTypeEnum = TaskTypeEnum.matchByDesc(taskNode.getTaskType());
+        if (taskTypeEnum == null || !taskTypeEnum.getValue().equals(originTask.getTaskType())) {
             return CommonResult.failed("任务类型不可修改");
         }
-        task.setTaskName(taskNode.getTaskName());
-        task.setScriptId(taskNode.getScriptId());
-        task.setScriptName(StringUtils.isNotEmpty(taskNode.getScriptName()) ? taskNode.getScriptName() : taskNode.getGuiScriptName());
-        task.setChannelType(taskNode.getChannelType());
-        task.setServerId(StringUtils.join(taskNode.getServiceId(), ","));
+        EmergencyTask updateTask = new EmergencyTask();
+        updateTask.setTaskId(originTask.getTaskId());
+        updateTask.setTaskName(taskNode.getTaskName());
+        updateTask.setScriptId(taskNode.getScriptId());
+        updateTask.setScriptName(StringUtils.isNotEmpty(taskNode.getScriptName()) ? taskNode.getScriptName() : taskNode.getGuiScriptName());
+        updateTask.setChannelType(taskNode.getChannelType());
+        updateTask.setServerId(StringUtils.join(taskNode.getServiceId(), ","));
         EmergencyScriptExample scriptExample = new EmergencyScriptExample();
-        scriptExample.createCriteria().andScriptNameEqualTo(task.getScriptName());
-        final List<EmergencyScript> emergencyScripts = scriptMapper.selectByExample(scriptExample);
+        scriptExample.createCriteria().andScriptNameEqualTo(updateTask.getScriptName());
+        List<EmergencyScript> emergencyScripts = scriptMapper.selectByExample(scriptExample);
         if (emergencyScripts.size() > 0) {
             ScriptLanguageEnum scriptLanguageEnum =
                 ScriptLanguageEnum.matchByValue(emergencyScripts.get(0).getScriptType());
-            task.setScriptId(emergencyScripts.get(0).getScriptId());
-            task.setSubmitInfo(emergencyScripts.get(0).getSubmitInfo());
-            task.setScriptName(emergencyScripts.get(0).getScriptName());
+            updateTask.setScriptId(emergencyScripts.get(0).getScriptId());
+            updateTask.setSubmitInfo(emergencyScripts.get(0).getSubmitInfo());
+            updateTask.setScriptName(emergencyScripts.get(0).getScriptName());
+            if (originTask.getPerfTestId() != null) {
+                PerfTest perfTest = taskNode.parse();
+                perfTest.setScriptName(updateTask.getScriptName() + "." + scriptLanguageEnum.getLanguage());
+                perfTest.setId(originTask.getPerfTestId().longValue());
+                perfTestRepository.saveAndFlush(perfTest);
+            }
         }
+        taskMapper.updateByPrimaryKeySelective(updateTask);
         return CommonResult.success(taskNode);
     }
 
@@ -798,6 +818,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     public List<TaskNode> getChildren(int planId, int sceneId, int taskId) {
         List<TaskNode> result = detailMapper.selectTaskNodeByTaskId(planId, sceneId, taskId);
         result.forEach(detail -> {
+            queryPerfTest(detail);
             List<TaskNode> children = getChildren(detail.getPlanId(), detail.getSceneId(), detail.getTaskId());
             if (children.size() > 0) {
                 detail.setChildren(children);

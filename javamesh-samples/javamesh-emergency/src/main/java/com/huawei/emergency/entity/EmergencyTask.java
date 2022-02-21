@@ -62,7 +62,7 @@ public class EmergencyTask {
     }
 
     public void setTaskType(String taskType) {
-        this.taskType = taskType;
+        this.taskType = taskType == null ? null : taskType.trim();
     }
 
     public Integer getSceneId() {

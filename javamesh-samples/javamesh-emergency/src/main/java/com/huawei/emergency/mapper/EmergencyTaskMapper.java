@@ -1,23 +1,12 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2021. All rights reserved.
- */
-
 package com.huawei.emergency.mapper;
 
 import com.huawei.emergency.entity.EmergencyTask;
 import com.huawei.emergency.entity.EmergencyTaskExample;
+import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.List;
-
-/**
- * 任务mapper
- *
- * @author y30010171
- * @since 2021-11-15
- **/
 @Mapper
 public interface EmergencyTaskMapper {
     long countByExample(EmergencyTaskExample example);

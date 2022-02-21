@@ -36,5 +36,6 @@ public class SceneExecDto {
     private String status;
     private String statusLabel;
     private String sync;
+    private Integer testId;
     private List<EmergencyExecRecordDetail> scheduleInfo;
 }

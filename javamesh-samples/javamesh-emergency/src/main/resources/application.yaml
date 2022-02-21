@@ -106,4 +106,4 @@ heartbeat:
 ngrinder:
   auto:
     execute:
-      test: true
+      test: false
