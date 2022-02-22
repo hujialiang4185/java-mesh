@@ -38,6 +38,10 @@ import com.huawei.script.exec.session.ServerInfo;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.ngrinder.common.constant.WebConstants;
+import org.ngrinder.model.PerfTest;
+import org.ngrinder.model.User;
+import org.ngrinder.perftest.service.PerfTestService;
+import org.ngrinder.user.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,6 +109,9 @@ public class ExecRecordHandlerFactory {
 
     @Autowired
     private RestPerfTestController perfTestController;
+
+    @Autowired
+    private PerfTestService perfTestService;
 
     /**
      * 获取一个执行器实例
@@ -552,8 +559,14 @@ public class ExecRecordHandlerFactory {
         if (perfTestId == null) {
             return false;
         }
+        PerfTest perfTest = perfTestService.getOne(perfTestId.longValue());
+        if (perfTest == null) {
+            return false;
+        }
+        User user = new User();
+        user.setUserId(perfTest.getUserId());
         Map<String, Object> resultMap =
-            perfTestController.startOne(UserFilter.currentGrinderUser(), perfTestId.longValue());
+            perfTestController.startOne(user, perfTestId.longValue());
         return Boolean.parseBoolean(resultMap.getOrDefault(WebConstants.JSON_SUCCESS, "false").toString());
     }
 

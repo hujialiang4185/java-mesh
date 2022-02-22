@@ -53,6 +53,7 @@ import com.huawei.emergency.mapper.EmergencyServerMapper;
 import com.huawei.emergency.mapper.EmergencyTaskMapper;
 import com.huawei.emergency.schedule.thread.TaskScheduleCenter;
 import com.huawei.emergency.service.EmergencyPlanService;
+import com.huawei.emergency.service.EmergencyScriptService;
 import com.huawei.emergency.service.EmergencyTaskService;
 
 import com.github.pagehelper.Page;
@@ -146,6 +147,9 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     @Autowired
     private EmergencyScriptMapper scriptMapper;
 
+    @Autowired
+    private EmergencyScriptService scriptService;
+
     @Override
     public CommonResult add(EmergencyPlan emergencyPlan) {
         if (StringUtils.isEmpty(emergencyPlan.getPlanName())) {
@@ -165,7 +169,6 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         insertPlan.setUpdateTime(new Date());
         insertPlan.setStatus(PlanStatus.NEW.getValue());
         planMapper.insertSelective(insertPlan);
-
         EmergencyPlan updatePlanNo = new EmergencyPlan();
         updatePlanNo.setPlanId(insertPlan.getPlanId());
         updatePlanNo.setPlanNo(generatePlanNo(insertPlan.getPlanId()));
@@ -542,9 +545,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
                 scriptExample.createCriteria().andScriptNameEqualTo(task.getScriptName());
                 final List<EmergencyScript> emergencyScripts = scriptMapper.selectByExample(scriptExample);
                 if (emergencyScripts.size() > 0) {
-                    ScriptLanguageEnum scriptLanguageEnum =
-                        ScriptLanguageEnum.matchByValue(emergencyScripts.get(0).getScriptType());
-                    perfTest.setScriptName(task.getScriptName() + "." + scriptLanguageEnum.getSuffix());
+                    perfTest.setScriptName(scriptService.grinderPath(emergencyScripts.get(0)));
                 }
                 PerfTest insertPerfTest = perfTestController.saveOne(UserFilter.currentGrinderUser(), perfTest);
                 if (insertPerfTest == null || insertPerfTest.getId() == null) {

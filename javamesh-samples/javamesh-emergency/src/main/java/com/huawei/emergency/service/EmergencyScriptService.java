@@ -85,4 +85,12 @@ public interface EmergencyScriptService {
      * @return
      */
     CommonResult updateIdeScript(ScriptManageDto scriptManageDto);
+
+    /**
+     * 获取脚本路径
+     *
+     * @param script {@link EmergencyScript} 脚本信息
+     * @return 脚本路径
+     */
+    String grinderPath(EmergencyScript script);
 }
