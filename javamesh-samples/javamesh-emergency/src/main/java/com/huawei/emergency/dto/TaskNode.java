@@ -7,21 +7,13 @@ package com.huawei.emergency.dto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import net.grinder.common.GrinderProperties;
 import org.apache.commons.lang.StringUtils;
-import org.ngrinder.model.MonitoringHost;
-import org.ngrinder.model.PerfScene;
 import org.ngrinder.model.PerfTest;
 import org.ngrinder.model.RampUp;
 import org.ngrinder.model.Status;
-import org.ngrinder.model.Tag;
-import org.springframework.beans.BeanUtils;
 
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
 import java.util.StringJoiner;
 
 /**

@@ -387,7 +387,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         if (scriptType == null || scriptType.getScriptType() == ScriptTypeEnum.NORMAL) {
             return;
         }
-        updateGrinderScript(script.getScriptName(), script.getContent()); //更新脚本内容
+        updateGrinderScript(script); //更新脚本内容
     }
 
     /**
@@ -404,16 +404,15 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     /**
      * 更新压测脚本
      *
-     * @param scriptName    脚本名称
-     * @param scriptContent 脚本内容
+     * @param script {@link EmergencyScript} 脚本信息
      */
-    public boolean updateGrinderScript(String scriptName, String scriptContent) {
+    public boolean updateGrinderScript(EmergencyScript script) {
         //createGrinderScript();
-        String grinderPath = grinderPath(scriptName);
+        String grinderPath = grinderPath(script);
         FileEntry fileEntry = new FileEntry();
         fileEntry.setCreatedUser(UserFilter.currentGrinderUser());
-        fileEntry.setContent(scriptContent);
-        fileEntry.setContentBytes(scriptContent.getBytes(StandardCharsets.UTF_8));
+        fileEntry.setContent(script.getContent());
+        fileEntry.setContentBytes(script.getContent().getBytes(StandardCharsets.UTF_8));
         fileEntry.setPath(grinderPath);
         try {
             fileEntryService.saveFile(UserFilter.currentGrinderUser(), fileEntry);
@@ -723,8 +722,9 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         return false;
     }
 
-    private String grinderPath(String scriptName) {
-        return scriptName + ".groovy";
+    private String grinderPath(EmergencyScript script) {
+        final ScriptLanguageEnum scriptLanguageEnum = ScriptLanguageEnum.matchByValue(script.getScriptType());
+        return script.getScriptName() + "." + scriptLanguageEnum.getSuffix();
     }
 
     private String generateIdeScript(org.ngrinder.model.User user, String path, String testUrl, String fileName, String scriptType,
