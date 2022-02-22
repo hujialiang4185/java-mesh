@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS `emergency_plan`  (
                                    `trigger_next_time` bigint(13) NOT NULL DEFAULT 0 COMMENT '下次触发的时间戳',
     `update_time` timestamp  NULL DEFAULT NULL COMMENT '更新时间',
     `update_user` varchar(40) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '更新人',
+    `plan_group` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '预案分组名',
                                    PRIMARY KEY (`plan_id`) USING BTREE,
                                    UNIQUE INDEX `plan_no`(`plan_no`) USING BTREE,
                                    INDEX `is_valid`(`is_valid`) USING BTREE

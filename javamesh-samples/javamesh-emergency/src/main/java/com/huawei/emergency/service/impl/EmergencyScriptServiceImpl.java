@@ -466,7 +466,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         newScript.setContent("");
         newScript.setScriptUser(UserFilter.currentUserName());
         newScript.setScriptStatus("0");
-        script.setScriptGroup(UserFilter.currentUser().getGroup());
+        newScript.setScriptGroup(UserFilter.currentUser().getGroup());
         mapper.insertSelective(newScript);
         generateTemplate(newScript); // 生成编排模板
         return CommonResult.success(newScript);
