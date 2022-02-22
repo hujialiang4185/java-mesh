@@ -532,7 +532,6 @@
         s.approver,
         s.submit_info,
         s.script_status,
-        s.comment,
         s.update_time,
         s.content,
         s.param,

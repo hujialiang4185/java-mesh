@@ -153,7 +153,9 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         String scriptStatus;
         for (EmergencyScript script : emergencyScripts) {
             scriptStatus = script.getScriptStatus();
-            if (scriptStatus.equals(APPROVING_STATUS) && (userName.equals("admin") || ((userAuth.contains(AUTH_ADMIN) || (userAuth.contains(AUTH_APPROVER) && script.getApprover().equals(userName))) && group.equals(script.getScriptGroup())))) {
+            if (scriptStatus.equals(APPROVING_STATUS) && ("admin".equals(userName) ||
+                    ((userAuth.contains(AUTH_ADMIN) || (userAuth.contains(AUTH_APPROVER) && userName.equals(script.getApprover())))
+                            && group.equals(script.getScriptGroup())))) {
                 script.setAuditable(true);
             }
             switch (scriptStatus) {
