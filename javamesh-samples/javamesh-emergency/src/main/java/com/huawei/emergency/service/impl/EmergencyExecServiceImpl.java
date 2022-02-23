@@ -304,7 +304,9 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
         oldRecord.setRecordId(null);
         oldRecord.setLog(null);
         oldRecord.setStatus(RecordStatus.PENDING.getValue());
-        planService.createPerfTestByTestId(oldRecord); // 更新压测任务
+        if (oldRecord.getPerfTestId() != null) {
+            planService.createPerfTestByTestId(oldRecord); // 更新压测任务
+        }
         recordMapper.insertSelective(oldRecord);
         threadPoolExecutor.execute(handlerFactory.handle(oldRecord));
         return CommonResult.success(oldRecord);

@@ -80,7 +80,7 @@ public class RemoteScriptExecutor implements ScriptExecutor {
                 return uploadFileResult;
             }
             fileName = uploadFileResult.getMsg();
-            return exec(session, commands("sh", fileName, scriptExecInfo.getParams()), logCallback, scriptExecInfo.getId(), scriptExecInfo.getTimeOut());
+            return exec(session, commands("sh", fileName, scriptExecInfo.getParams()), logCallback, scriptExecInfo.getDetailId(), scriptExecInfo.getTimeOut());
         } catch (JSchException | IOException | SftpException e) {
             LOGGER.error("Can't get remote server session.", e);
             return ExecResult.error(e.getMessage());

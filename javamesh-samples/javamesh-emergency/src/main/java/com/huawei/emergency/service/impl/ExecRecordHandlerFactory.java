@@ -10,7 +10,6 @@ import com.huawei.common.config.CommonConfig;
 import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.common.exception.ApiException;
-import com.huawei.common.filter.UserFilter;
 import com.huawei.common.util.PasswordUtil;
 import com.huawei.common.ws.WebSocketServer;
 import com.huawei.emergency.entity.EmergencyElement;
@@ -41,7 +40,6 @@ import org.ngrinder.common.constant.WebConstants;
 import org.ngrinder.model.PerfTest;
 import org.ngrinder.model.User;
 import org.ngrinder.perftest.service.PerfTestService;
-import org.ngrinder.user.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -347,7 +345,7 @@ public class ExecRecordHandlerFactory {
      */
     public ScriptExecInfo generateExecInfo(EmergencyExecRecordWithBLOBs record, EmergencyExecRecordDetail recordDetail) {
         ScriptExecInfo execInfo = new ScriptExecInfo();
-        execInfo.setId(recordDetail.getDetailId());
+        execInfo.setDetailId(recordDetail.getDetailId());
         execInfo.setScriptName(record.getScriptName() + "-" + record.getRecordId());
         execInfo.setScriptType(record.getScriptType());
         execInfo.setScriptContent(record.getScriptContent());
@@ -369,7 +367,6 @@ public class ExecRecordHandlerFactory {
         }
         execInfo.setPerfTestId(record.getPerfTestId());
         execInfo.setParam(record.getScriptParams());
-        execInfo.setRecordId(execInfo.getId());
         execInfo.setContent(execInfo.getScriptContent());
         return execInfo;
     }
