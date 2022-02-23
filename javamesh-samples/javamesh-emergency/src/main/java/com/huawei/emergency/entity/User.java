@@ -10,6 +10,9 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class User {
+
+    private Long userId;
+
     private String nickName;
 
     private String userName;

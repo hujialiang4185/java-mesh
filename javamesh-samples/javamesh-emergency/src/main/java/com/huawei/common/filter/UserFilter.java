@@ -74,6 +74,7 @@ public class UserFilter implements Filter {
                 String role = mapper.getRoleByUserName(userId);
                 List<String> auth = mapper.getAuthByRole(role);
                 user = new User(userId, (String) userInfo.get("userName"), role, auth, group);
+                user.setUserId(userInfo.getLong("id"));
                 session.setAttribute("userInfo", user);
                 USERS.set(user);
                 CommonConfig.setRequest(request);
@@ -130,7 +131,7 @@ public class UserFilter implements Filter {
         grinderUser.setUserName(user.getNickName());
         grinderUser.setRole(Role.ADMIN);
         grinderUser.setUserLanguage("en");
-        grinderUser.setId(1L);
+        grinderUser.setId(user.getUserId());
         grinderUser.setUserId(user.getUserName());
         grinderUser.setTimeZone("Asia/Shanghai");
         grinderUser.setExternal(true);

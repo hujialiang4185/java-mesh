@@ -238,6 +238,7 @@ public class ExecRecordHandlerFactory {
             LOGGER.error("Failed to process script, {}", e.getMessage());
             complete(record, recordDetail, ExecResult.fail(e.getMessage()));
         } catch (Exception e) {
+            e.printStackTrace();
             LOGGER.error("Failed to exec detailId={}.{}", recordDetail.getDetailId(), e.getMessage());
             complete(record, recordDetail, ExecResult.fail(e.getMessage()));
         }
@@ -564,7 +565,7 @@ public class ExecRecordHandlerFactory {
             return false;
         }
         User user = new User();
-        user.setUserId(perfTest.getUserId());
+        user.setUserId(perfTest.getCreatedUser().getUserId());
         Map<String, Object> resultMap =
             perfTestController.startOne(user, perfTestId.longValue());
         return Boolean.parseBoolean(resultMap.getOrDefault(WebConstants.JSON_SUCCESS, "false").toString());

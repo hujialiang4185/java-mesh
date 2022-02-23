@@ -164,7 +164,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         }
         EmergencyPlan insertPlan = new EmergencyPlan();
         insertPlan.setPlanName(emergencyPlan.getPlanName());
-        insertPlan.setCreateUser(emergencyPlan.getCreateUser());
+        insertPlan.setCreateUser(UserFilter.currentUserName());
         insertPlan.setPlanGroup(emergencyPlan.getPlanGroup());
         insertPlan.setUpdateTime(new Date());
         insertPlan.setStatus(PlanStatus.NEW.getValue());

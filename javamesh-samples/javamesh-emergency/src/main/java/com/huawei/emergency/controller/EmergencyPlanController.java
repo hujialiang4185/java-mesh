@@ -204,7 +204,6 @@ public class EmergencyPlanController {
      */
     @PostMapping("/plan/task")
     public CommonResult addTask(@RequestBody TaskNode taskNode) {
-        taskNode.setCreateUser(UserFilter.currentUserName());
         return planService.addTask(taskNode);
     }
 
@@ -230,7 +229,7 @@ public class EmergencyPlanController {
     public CommonResult addPlan(@RequestBody EmergencyPlan emergencyPlan) {
         User user = UserFilter.currentUser();
         emergencyPlan.setPlanGroup(user.getGroup());
-        emergencyPlan.setCreateUser(user.getNickName());
+        emergencyPlan.setCreateUser(user.getUserName());
         return planService.add(emergencyPlan);
     }
 
