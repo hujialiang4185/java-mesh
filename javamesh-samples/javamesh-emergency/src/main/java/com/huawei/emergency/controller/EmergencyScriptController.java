@@ -7,7 +7,6 @@ package com.huawei.emergency.controller;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.FailedInfo;
 import com.huawei.common.constant.ResultCode;
-import com.huawei.emergency.dto.ArgusScript;
 import com.huawei.emergency.dto.ScriptManageDto;
 import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyScript;
@@ -17,7 +16,6 @@ import com.huawei.emergency.service.EmergencyScriptService;
 import com.huawei.script.exec.ExecResult;
 import com.huawei.script.exec.log.LogResponse;
 import io.swagger.annotations.Api;
-import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -307,8 +305,8 @@ public class EmergencyScriptController {
 
     @PostMapping("/execComplete")
     public CommonResult execComplete(@RequestBody ExecResult execResult){
-        if(execResult.getRecordId() == 0){
-            return CommonResult.failed("recordId is valid. ");
+        if(execResult.getDetailId() == 0){
+            return CommonResult.failed("detailId is valid. ");
         }
         return execService.execComplete(execResult);
     }

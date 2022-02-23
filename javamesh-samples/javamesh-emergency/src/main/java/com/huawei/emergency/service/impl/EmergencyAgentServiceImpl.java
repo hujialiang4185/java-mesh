@@ -3,6 +3,7 @@ package com.huawei.emergency.service.impl;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.emergency.entity.EmergencyAgent;
 import com.huawei.emergency.entity.EmergencyAgentExample;
+import com.huawei.emergency.entity.EmergencyServer;
 import com.huawei.emergency.entity.EmergencyServerExample;
 import com.huawei.emergency.mapper.EmergencyAgentMapper;
 import com.huawei.emergency.mapper.EmergencyServerMapper;
@@ -13,13 +14,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
+import java.util.List;
+
 @Service
 public class EmergencyAgentServiceImpl implements EmergencyAgentService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EmergencyAgentServiceImpl.class);
-
-    @Autowired
-    private EmergencyAgentMapper mapper;
 
     @Autowired
     private EmergencyServerMapper serverMapper;
@@ -27,42 +28,42 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
     @Override
     public void addAgent(String ip, String port) {
         try {
-            EmergencyAgent agent = new EmergencyAgent();
-            agent.setIp(ip);
-            agent.setPort(port);
-            agent.setStatus("READY");
-            mapper.insert(agent);
-        } catch (Exception e) {
-            LOGGER.error("add agent error.", e);
-        } finally {
             EmergencyServerExample serverExample = new EmergencyServerExample();
             serverExample.createCriteria()
-                .andServerIpEqualTo(ip)
-                .andIsValidEqualTo(ValidEnum.VALID.getValue());
-            serverMapper.selectByExample(serverExample).forEach(server -> {
+                .andServerIpEqualTo(ip);
+            List<EmergencyServer> serverList = serverMapper.selectByExample(serverExample);
+            if (serverList.size() == 0) {
+                EmergencyServer server = new EmergencyServer();
+                server.setServerName(ip);
+                server.setServerPort(Integer.valueOf(port));
+                server.setServerUser("root");
+                server.setCreateUser("admin");
+                server.setHavePassword("0");
+                server.setCreateTime(new Date());
+                serverMapper.insert(server);
+            }
+            serverList.forEach(server -> {
+                server.setIsValid(ValidEnum.VALID.getValue());
                 server.setAgentPort(Integer.valueOf(port));
                 serverMapper.updateByPrimaryKeySelective(server);
             });
+        } catch (Exception e) {
+            LOGGER.error("add agent error.", e);
         }
     }
 
     @Override
     public void removeAgent(String ip) {
         try {
-            EmergencyAgentExample example = new EmergencyAgentExample();
-            example.createCriteria().andIpEqualTo(ip);
-            mapper.deleteByExample(example);
-        } catch (Exception e) {
-            LOGGER.error("remove agent error.", e);
-        } finally {
             EmergencyServerExample serverExample = new EmergencyServerExample();
             serverExample.createCriteria().andServerIpEqualTo(ip)
-                .andAgentPortIsNotNull()
-                .andIsValidEqualTo(ValidEnum.VALID.getValue());
+                .andAgentPortIsNotNull();
             serverMapper.selectByExample(serverExample).forEach(server -> {
                 server.setAgentPort(null);
                 serverMapper.updateByPrimaryKey(server);
             });
+        } catch (Exception e) {
+            LOGGER.error("remove agent error.", e);
         }
     }
 }
