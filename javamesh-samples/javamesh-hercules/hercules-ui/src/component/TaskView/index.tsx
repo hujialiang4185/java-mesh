@@ -1,10 +1,10 @@
 import { Line, LineOptions, Liquid, LiquidOptions } from "@antv/g2plot";
-import { Button, Descriptions, message, Table, Tabs, Tag } from "antd";
+import {Descriptions, message, Table, Tabs, Tag } from "antd";
 import { PresetColorTypes } from "antd/lib/_util/colors";
 import axios from "axios";
 import moment from "moment";
 import React, { useEffect, useRef, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import Breadcrumb from "../Breadcrumb";
 import Card from "../Card";
 import ServiceSelect from "../ServiceSelect";
@@ -55,9 +55,6 @@ export default function App() {
                         <div className="Title">描述</div>
                     }>{data.desc}</Descriptions.Item>
                 </Descriptions>
-                <Link to={"/PerformanceTest/TestReport/Detail?test_id=" + test_id}>
-                    <Button type="primary">详细报告</Button>
-                </Link>
             </div>
             <div className="SubCard Basic">
                 <div className="Item">
