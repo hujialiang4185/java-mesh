@@ -30,6 +30,7 @@ import com.huawei.emergency.mapper.EmergencyExecRecordMapper;
 import com.huawei.emergency.mapper.EmergencyPlanMapper;
 import com.huawei.emergency.mapper.EmergencyServerMapper;
 import com.huawei.emergency.service.EmergencyExecService;
+import com.huawei.emergency.service.EmergencyPlanService;
 import com.huawei.emergency.service.EmergencySceneService;
 import com.huawei.emergency.service.EmergencyTaskService;
 import com.huawei.script.exec.ExecResult;
@@ -102,6 +103,9 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
 
     @Autowired
     private Map<String, ScriptExecutor> scriptExecutors;
+
+    @Autowired
+    private EmergencyPlanService planService;
 
     @Override
     public CommonResult exec(EmergencyScript script) {
@@ -297,7 +301,6 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
         updateRecord.setRecordId(oldRecord.getRecordId());
         updateRecord.setIsValid(ValidEnum.IN_VALID.getValue());
         recordMapper.updateByPrimaryKeySelective(updateRecord);
-
         oldRecord.setCreateUser(userName);
         oldRecord.setCreateTime(new Date());
         oldRecord.setStartTime(null);
@@ -306,6 +309,7 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
         oldRecord.setRecordId(null);
         oldRecord.setLog(null);
         oldRecord.setStatus(RecordStatus.PENDING.getValue());
+        planService.createPerfTestByTestId(oldRecord); // 更新压测任务
         recordMapper.insertSelective(oldRecord);
         threadPoolExecutor.execute(handlerFactory.handle(oldRecord));
         return CommonResult.success(oldRecord);

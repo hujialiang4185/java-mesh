@@ -63,6 +63,7 @@ import org.apache.commons.lang.StringUtils;
 import org.ngrinder.model.MonitoringHost;
 import org.ngrinder.model.PerfTest;
 import org.ngrinder.model.RampUp;
+import org.ngrinder.model.Status;
 import org.ngrinder.perftest.repository.PerfTestRepository;
 import org.ngrinder.perftest.service.PerfTestService;
 import org.slf4j.Logger;
@@ -75,7 +76,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -253,7 +253,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             record.setCreateUser(userName);
             record.setExecId(emergencyExec.getExecId());
             if (record.getPerfTestId() != null) { // 如果是自定义脚本压测，根据此压测模板生成压测任务
-                createPerfTest(record);
+                createPerfTestByTestId(record);
             }
             recordMapper.insertSelective(record);
         });
@@ -278,7 +278,8 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         return CommonResult.success(emergencyExec);
     }
 
-    public void createPerfTest(EmergencyExecRecord record) {
+    @Override
+    public void createPerfTestByTestId(EmergencyExecRecord record) {
         PerfTest testTemplate = perfTestService.getOne(record.getPerfTestId().longValue());
         PerfTest newTest = new PerfTest();
         BeanUtils.copyProperties(testTemplate, newTest);
@@ -290,6 +291,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         newTest.setId(null);
         newTest.setCreatedDate(new Date());
         newTest.setCreatedUser(UserFilter.currentGrinderUser());
+        newTest.setStatus(Status.READY);
         if (StringUtils.isNotEmpty(record.getServerId())) {
             final List<String> allServerIds =
                 Arrays.stream(record.getServerId().split(",")).collect(Collectors.toList());
@@ -683,6 +685,8 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         if (emergencyPlan.getPlanId() == null) {
             return CommonResult.failed("请选择要克隆的预案");
         }
+        EmergencyPlan oldPlan = planMapper.selectByPrimaryKey(emergencyPlan.getPlanId());
+        emergencyPlan.setPlanGroup(oldPlan.getPlanGroup());
         CommonResult<EmergencyPlan> addResult = add(emergencyPlan);
         if (StringUtils.isNotEmpty(addResult.getMsg())) {
             return addResult;

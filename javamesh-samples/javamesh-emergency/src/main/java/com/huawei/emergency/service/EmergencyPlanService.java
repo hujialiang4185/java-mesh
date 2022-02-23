@@ -70,4 +70,6 @@ public interface EmergencyPlanService extends EmergencyCommonService<EmergencyPl
     CommonResult copy(EmergencyPlan emergencyPlan);
 
     CommonResult updateTask(TaskNode taskNode);
+
+    void createPerfTestByTestId(EmergencyExecRecord record);
 }
