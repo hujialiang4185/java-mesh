@@ -322,7 +322,12 @@ public class UserServiceImpl implements UserService {
             result[0]=userName;
             return CommonResult.success(result);
         }
-        List<String> userEntities = mapper.approverSearch(user.getGroupName());
+        List<String> userEntities;
+        if(user.getAuth().contains("admin")){
+            userEntities = mapper.adminApproverSearch(user.getGroupName());
+        } else {
+            userEntities = mapper.approverSearch(user.getGroupName());
+        }
         return CommonResult.success(userEntities);
     }
 

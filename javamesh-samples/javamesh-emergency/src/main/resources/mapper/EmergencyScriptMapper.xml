@@ -650,6 +650,9 @@
                     #{scriptType}
                 </foreach>
             </if>
+            <if test="groupName!='' and groupName!=null">
+                AND script_group = #{groupName}
+            </if>
         </where>
         ORDER BY update_time DESC LIMIT 5
     </select>

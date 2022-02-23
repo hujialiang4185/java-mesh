@@ -326,7 +326,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
                 .map(ScriptLanguageEnum::getValue)
                 .collect(Collectors.toList());
 
-        return mapper.searchScript(EscapeUtil.escapeChar(scriptName), userName, auth, status, scriptTypes);
+        return mapper.searchScript(EscapeUtil.escapeChar(scriptName), userName, auth, status, scriptTypes, user.getGroup());
     }
 
     @Override
