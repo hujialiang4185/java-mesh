@@ -35,4 +35,6 @@ public interface UserMapper {
     String getGroupByUser(String userName);
 
     List<String> approverSearch(String groupName);
+
+    List<String> adminApproverSearch(String groupName);
 }
