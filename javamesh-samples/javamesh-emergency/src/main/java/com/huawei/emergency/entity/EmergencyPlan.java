@@ -19,6 +19,8 @@ public class EmergencyPlan {
 
     private String planName;
 
+    private String planGroup;
+
     private String createUser;
 
     private Date createTime;
@@ -47,17 +49,7 @@ public class EmergencyPlan {
 
     private String updateUser;
 
-    private String planGroup;
-
     private String approver;
-
-    public String getApprover() {
-        return approver;
-    }
-
-    public void setApprover(String approver) {
-        this.approver = approver;
-    }
 
     public Integer getPlanId() {
         return planId;
@@ -81,6 +73,14 @@ public class EmergencyPlan {
 
     public void setPlanName(String planName) {
         this.planName = planName == null ? null : planName.trim();
+    }
+
+    public String getPlanGroup() {
+        return planGroup;
+    }
+
+    public void setPlanGroup(String planGroup) {
+        this.planGroup = planGroup == null ? null : planGroup.trim();
     }
 
     public String getCreateUser() {
@@ -195,11 +195,11 @@ public class EmergencyPlan {
         this.updateUser = updateUser == null ? null : updateUser.trim();
     }
 
-    public String getPlanGroup() {
-        return planGroup;
+    public String getApprover() {
+        return approver;
     }
 
-    public void setPlanGroup(String planGroup) {
-        this.planGroup = planGroup;
+    public void setApprover(String approver) {
+        this.approver = approver;
     }
 }

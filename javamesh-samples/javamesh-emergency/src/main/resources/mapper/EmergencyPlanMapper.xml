@@ -5,6 +5,7 @@
     <id column="plan_id" jdbcType="INTEGER" property="planId" />
     <result column="plan_no" jdbcType="VARCHAR" property="planNo" />
     <result column="plan_name" jdbcType="VARCHAR" property="planName" />
+    <result column="plan_group" jdbcType="VARCHAR" property="planGroup" />
     <result column="create_user" jdbcType="VARCHAR" property="createUser" />
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
     <result column="is_valid" jdbcType="VARCHAR" property="isValid" />
@@ -79,9 +80,9 @@
     </where>
   </sql>
   <sql id="Base_Column_List">
-    plan_id, plan_no, plan_name, create_user, create_time, is_valid, check_user, check_time, 
-    check_remark, status, schedule_type, schedule_conf, schedule_status, trigger_last_time, 
-    trigger_next_time, update_time, update_user
+    plan_id, plan_no, plan_name, plan_group, create_user, create_time, is_valid, check_user, 
+    check_time, check_remark, status, schedule_type, schedule_conf, schedule_status, 
+    trigger_last_time, trigger_next_time, update_time, update_user
   </sql>
   <select id="selectByExample" parameterType="com.huawei.emergency.entity.EmergencyPlanExample" resultMap="BaseResultMap">
     select
@@ -118,18 +119,18 @@
     <selectKey keyProperty="planId" order="AFTER" resultType="java.lang.Integer">
       SELECT LAST_INSERT_ID()
     </selectKey>
-    insert into emergency_plan (plan_no, plan_name, create_user, 
-      create_time, is_valid, check_user, 
-      check_time, check_remark, status, 
-      schedule_type, schedule_conf, schedule_status, 
-      trigger_last_time, trigger_next_time, update_time, 
-      update_user)
-    values (#{planNo,jdbcType=VARCHAR}, #{planName,jdbcType=VARCHAR}, #{createUser,jdbcType=VARCHAR}, 
-      #{createTime,jdbcType=TIMESTAMP}, #{isValid,jdbcType=VARCHAR}, #{checkUser,jdbcType=VARCHAR}, 
-      #{checkTime,jdbcType=TIMESTAMP}, #{checkRemark,jdbcType=VARCHAR}, #{status,jdbcType=VARCHAR}, 
-      #{scheduleType,jdbcType=VARCHAR}, #{scheduleConf,jdbcType=VARCHAR}, #{scheduleStatus,jdbcType=VARCHAR}, 
-      #{triggerLastTime,jdbcType=BIGINT}, #{triggerNextTime,jdbcType=BIGINT}, #{updateTime,jdbcType=TIMESTAMP}, 
-      #{updateUser,jdbcType=VARCHAR})
+    insert into emergency_plan (plan_no, plan_name, plan_group, 
+      create_user, create_time, is_valid, 
+      check_user, check_time, check_remark, 
+      status, schedule_type, schedule_conf, 
+      schedule_status, trigger_last_time, trigger_next_time, 
+      update_time, update_user)
+    values (#{planNo,jdbcType=VARCHAR}, #{planName,jdbcType=VARCHAR}, #{planGroup,jdbcType=VARCHAR}, 
+      #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{isValid,jdbcType=VARCHAR}, 
+      #{checkUser,jdbcType=VARCHAR}, #{checkTime,jdbcType=TIMESTAMP}, #{checkRemark,jdbcType=VARCHAR}, 
+      #{status,jdbcType=VARCHAR}, #{scheduleType,jdbcType=VARCHAR}, #{scheduleConf,jdbcType=VARCHAR}, 
+      #{scheduleStatus,jdbcType=VARCHAR}, #{triggerLastTime,jdbcType=BIGINT}, #{triggerNextTime,jdbcType=BIGINT}, 
+      #{updateTime,jdbcType=TIMESTAMP}, #{updateUser,jdbcType=VARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.huawei.emergency.entity.EmergencyPlan">
     <selectKey keyProperty="planId" order="AFTER" resultType="java.lang.Integer">
@@ -142,6 +143,9 @@
       </if>
       <if test="planName != null">
         plan_name,
+      </if>
+      <if test="planGroup != null">
+        plan_group,
       </if>
       <if test="createUser != null">
         create_user,
@@ -185,9 +189,6 @@
       <if test="updateUser != null">
         update_user,
       </if>
-      <if test="planGroup != null">
-        plan_group,
-      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="planNo != null">
@@ -195,6 +196,9 @@
       </if>
       <if test="planName != null">
         #{planName,jdbcType=VARCHAR},
+      </if>
+      <if test="planGroup != null">
+        #{planGroup,jdbcType=VARCHAR},
       </if>
       <if test="createUser != null">
         #{createUser,jdbcType=VARCHAR},
@@ -238,9 +242,6 @@
       <if test="updateUser != null">
         #{updateUser,jdbcType=VARCHAR},
       </if>
-      <if test="planGroup != null">
-        #{planGroup,jdbcType=VARCHAR},
-      </if>
     </trim>
   </insert>
   <select id="countByExample" parameterType="com.huawei.emergency.entity.EmergencyPlanExample" resultType="java.lang.Long">
@@ -260,6 +261,9 @@
       </if>
       <if test="record.planName != null">
         plan_name = #{record.planName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.planGroup != null">
+        plan_group = #{record.planGroup,jdbcType=VARCHAR},
       </if>
       <if test="record.createUser != null">
         create_user = #{record.createUser,jdbcType=VARCHAR},
@@ -313,6 +317,7 @@
     set plan_id = #{record.planId,jdbcType=INTEGER},
       plan_no = #{record.planNo,jdbcType=VARCHAR},
       plan_name = #{record.planName,jdbcType=VARCHAR},
+      plan_group = #{record.planGroup,jdbcType=VARCHAR},
       create_user = #{record.createUser,jdbcType=VARCHAR},
       create_time = #{record.createTime,jdbcType=TIMESTAMP},
       is_valid = #{record.isValid,jdbcType=VARCHAR},
@@ -339,6 +344,9 @@
       </if>
       <if test="planName != null">
         plan_name = #{planName,jdbcType=VARCHAR},
+      </if>
+      <if test="planGroup != null">
+        plan_group = #{planGroup,jdbcType=VARCHAR},
       </if>
       <if test="createUser != null">
         create_user = #{createUser,jdbcType=VARCHAR},
@@ -389,6 +397,7 @@
     update emergency_plan
     set plan_no = #{planNo,jdbcType=VARCHAR},
       plan_name = #{planName,jdbcType=VARCHAR},
+      plan_group = #{planGroup,jdbcType=VARCHAR},
       create_user = #{createUser,jdbcType=VARCHAR},
       create_time = #{createTime,jdbcType=TIMESTAMP},
       is_valid = #{isValid,jdbcType=VARCHAR},
@@ -442,16 +451,16 @@
         LEFT JOIN emergency_script task_script ON task_script.script_id = task.script_id
         WHERE plan.is_valid = '1'
         <if test="planName !=null and planName !=''">
-            and (locate(#{planName},plan_name) > 0 or locate(#{planName},plan_no) > 0)
+            and (locate(#{planName},plan_name) &gt; 0 or locate(#{planName},plan_no) &gt; 0)
         </if>
         <if test="sceneName !=null and sceneName !=''">
-            and (locate(#{sceneName},scene.task_name) > 0 or locate(#{sceneName},scene.task_no) > 0)
+            and (locate(#{sceneName},scene.task_name) &gt; 0 or locate(#{sceneName},scene.task_no) &gt; 0)
         </if>
         <if test="taskName !=null and taskName !=''">
-            and (locate(#{taskName},task.task_name) > 0 or locate(#{taskName},task.task_no) > 0)
+            and (locate(#{taskName},task.task_name) &gt; 0 or locate(#{taskName},task.task_no) &gt; 0)
         </if>
         <if test="scriptName !=null and scriptName !=''">
-            and (locate(#{scriptName},scene_script.script_name) > 0 or locate(#{scriptName},task_script.script_name) >
+            and (locate(#{scriptName},scene_script.script_name) &gt; 0 or locate(#{scriptName},task_script.script_name) &gt;
             0)
         </if>
         <if test="status !=null and status !=''">
