@@ -9,7 +9,7 @@ export default function App(props: { onChange?: (value: Data[]) => void, value?:
     const [leftData, setLeftData] = useState<{ data: Data[], total: number }>({ data: [], total: 0 })
     const [rightData, setRightData] = useState<Data[]>(props.value || [])
     const [loading, setLoading] = useState(false)
-    const stateRef = useRef<any>({})
+    const stateRef = useRef<any>({excludes: props.value?.map(function (item){ return item.server_id})})
     async function load() {
         setLoading(true)
         const params = {
