@@ -325,7 +325,7 @@ function StartButton(props: { load: () => void, test_id: string }) {
         <Modal className="StartButton" title="启动代理" width={500} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form labelCol={{ span: 6 }} requiredMark={false} onFinish={async function (values) {
+            <Form labelCol={{ span: 6 }}  onFinish={async function (values) {
                 const start_time = values.start_time
                 if (start_time) {
                     values.start_time = start_time.format("YYYY-MM-DD HH:mm:ss")

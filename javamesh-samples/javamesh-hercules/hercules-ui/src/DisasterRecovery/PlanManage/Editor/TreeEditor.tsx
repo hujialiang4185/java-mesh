@@ -207,7 +207,7 @@ function AddScenaTask(props: { onFinish: (values: any) => Promise<void>, initial
     <Modal className="AddScenaTask" title={props.children} width={950} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
       setIsModalVisible(false)
     }}>
-      <Form form={form} requiredMark={false} labelCol={{ span: 4 }} initialValues={props.initialValues} onFinish={async (values) => {
+      <Form form={form}  labelCol={{ span: 4 }} initialValues={props.initialValues} onFinish={async (values) => {
         try {
           await props.onFinish(values)
           form.resetFields()

@@ -1,6 +1,5 @@
 import { Col, Divider, Form, Input, InputNumber, Radio, Row, Select } from "antd"
 import Checkbox from "antd/lib/checkbox/Checkbox"
-import { FormItemLabelProps } from "antd/lib/form/FormItemLabel"
 import { PlusCircleOutlined, MinusCircleOutlined } from '@ant-design/icons'
 import React, { useEffect, useRef, useState } from "react"
 import "./FormItems.scss"
@@ -208,58 +207,6 @@ function ScriptEditor() {
     </>
 }
 
-export function RootBasicScenario(props: FormItemLabelProps) {
-    const [basic, setBasic] = useState(false)
-    return <Form.Item {...props} className="RootBasicScenario" initialValue="by_time" name="basic">
-        <Radio.Group onChange={function (e) {
-            setBasic(e.target.value === "by_count")
-        }}>
-            <Radio value="by_time">测试时长</Radio>
-            <div>
-                <Form.Item label="小时" className="WithoutLabel" name="by_time_h" rules={[{ type: "integer" }]}>
-                    <InputNumber disabled={basic} className="Time" min={0} />
-                </Form.Item>
-                <span className="Sep">:</span>
-                <Form.Item label="分钟" className="WithoutLabel" name="by_time_m" rules={[{ type: "integer" }]}>
-                    <InputNumber disabled={basic} className="Time" min={0} max={60} />
-                </Form.Item>
-                <span className="Sep">:</span>
-                <Form.Item label="秒" className="WithoutLabel" name="by_time_s" rules={[{ type: "integer" }]}>
-                    <InputNumber disabled={basic} className="Time" min={0} max={60} />
-                </Form.Item>
-                <span className="Format">HH:MM:SS</span>
-            </div>
-            <Radio value="by_count">测试次数</Radio>
-            <div>
-                <Form.Item label="次数" className="WithoutLabel" name="by_count" rules={[{ type: "integer" }]}>
-                    <InputNumber disabled={!basic} className="Count" min={0} max={10000} addonAfter="最大值: 10000" />
-                </Form.Item>
-            </div>
-        </Radio.Group>
-    </Form.Item>
-}
-
-export function RootPresure() {
-    const [disabled, setDisabled] = useState(true)
-    return <>
-        <Divider orientation="left">压力配置</Divider>
-        <Form.Item name="is_increased" valuePropName="checked">
-            <Checkbox onChange={function (e) { setDisabled(!e.target.checked) }}>压力递增</Checkbox>
-        </Form.Item>
-        <Form.Item labelCol={{ span: 3 }} labelAlign="left" label="初始数" name="init_value" rules={[{ type: "integer" }]}>
-            <InputNumber disabled={disabled} className="InputNumber" min={0} />
-        </Form.Item>
-        <Form.Item labelCol={{ span: 3 }} labelAlign="left" label="增量" name="increment" rules={[{ type: "integer" }]} >
-            <InputNumber disabled={disabled} className="InputNumber" min={0} />
-        </Form.Item>
-        <Form.Item labelCol={{ span: 3 }} labelAlign="left" label="初始等待时间" name="init_wait" rules={[{ type: "integer" }]}>
-            <InputNumber disabled={disabled} className="InputNumber" min={0} addonAfter="MS" />
-        </Form.Item>
-        <Form.Item labelCol={{ span: 3 }} labelAlign="left" label="进程增长间隔" name="growth_interval" rules={[{ type: "integer" }]}>
-            <InputNumber disabled={disabled} addonAfter="MS" min={0} className="InputNumber" />
-        </Form.Item>
-    </>
-}
 
 function HTTPRequest(props: { name: string }) {
     return <div className="HTTPRequestHeaders">

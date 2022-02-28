@@ -127,7 +127,7 @@ function ChangePwd({ username }: { username: string }) {
     <Modal className="ChangePwd" title="修改密码" width={400} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
       setIsModalVisible(false)
     }}>
-      <Form form={form} initialValues={{ username }} labelCol={{ span: 4 }} requiredMark={false} onFinish={async function (values) {
+      <Form form={form} initialValues={{ username }} labelCol={{ span: 4 }}  onFinish={async function (values) {
         try {
           await axios.post("/argus-user/api/user/chagnePwd", values)
           form.resetFields()

@@ -21,7 +21,7 @@ export default function App() {
     return <div className="ScriptDetail">
         <Breadcrumb label="脚本管理" sub={{ label: "详情", parentUrl: "/PerformanceTest/ScriptManage" }} />
         <Card>
-            <Form initialValues={{ path }} form={form} requiredMark={false} labelCol={{ span: 2 }} onFinish={async function (values) {
+            <Form initialValues={{ path }} form={form}  labelCol={{ span: 2 }} onFinish={async function (values) {
                 if (submit) return
                 submit = true
                 try {

@@ -215,7 +215,7 @@ function SubmitReview(props: { load: () => void, script_id: string, group_id: st
     return <>
         <Button type="link" size="small" onClick={function () { setIsModalVisible(true) }}>提审</Button>
         <Modal className="SubmitScriptReview" title="提交审核" visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () { setIsModalVisible(false) }}>
-            <Form form={form} requiredMark={false} labelCol={{ span: 4 }} onFinish={async function (values) {
+            <Form form={form}  labelCol={{ span: 4 }} onFinish={async function (values) {
                 try {
                     await axios.post('/argus-emergency/api/script/submitReview', { ...values, script_id: props.script_id })
                     message.success("提交成功")
@@ -260,7 +260,7 @@ function ApproveScript(props: { data: Data, load: () => {} }) {
             setIsModalVisible(false)
         }}>
             {isModalVisible && <ScriptDetail data={props.data} />}
-            <Form className="Form" requiredMark={false} onFinish={async function (values) {
+            <Form className="Form"  onFinish={async function (values) {
                 try {
                     await axios.post("/argus-emergency/api/script/approve", { ...values, script_id: props.data.script_id })
                     props.load()
@@ -306,7 +306,7 @@ function AddScript() {
         <Modal className="AddScript" title="添加脚本" width={950} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form form={form} requiredMark={false} labelCol={{ span: 2 }} initialValues={{ public: "私有", type: normal ? "非压测脚本" : "压测脚本", orchestrate_type: "GUI", language: "Shell" }} onFinish={async function (values) {
+            <Form form={form}  labelCol={{ span: 2 }} initialValues={{ public: "私有", type: normal ? "非压测脚本" : "压测脚本", orchestrate_type: "GUI", language: "Shell" }} onFinish={async function (values) {
                 if (submit) return
                 submit = true
                 try {

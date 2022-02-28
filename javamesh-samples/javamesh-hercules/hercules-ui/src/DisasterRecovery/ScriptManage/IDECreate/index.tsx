@@ -15,7 +15,7 @@ export default function App() {
     return <div className="IDECreate">
         <Breadcrumb label="脚本管理" sub={{ label: "详情", parentUrl: "/DisasterRecovery/ScriptManage" }} />
         <Card>
-            <Form form={form} labelCol={{ span: 2 }} initialValues={{ language: "Jython", method: "GET", ...state }} requiredMark={false} onFinish={async function (values) {
+            <Form form={form} labelCol={{ span: 2 }} initialValues={{ language: "Jython", method: "GET", ...state }}  onFinish={async function (values) {
                 if (submit) return
                 submit = true
                 try {

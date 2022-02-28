@@ -225,7 +225,7 @@ function AddFile(props: { load: () => {}, folder: string[] }) {
         <Modal className="AddFile" title="新建脚本" width={950} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form form={form} labelCol={{ span: 2 }} initialValues={{ language: "Jython", method: "GET" }} requiredMark={false} onFinish={async function (values) {
+            <Form form={form} labelCol={{ span: 2 }} initialValues={{ language: "Jython", method: "GET" }}  onFinish={async function (values) {
                 if (submit) return
                 submit = true
                 try {
@@ -392,7 +392,7 @@ function AddFolder(props: { load: () => {}, folder: string[] }) {
         <Modal className="AddFolder" title="新建文件夹" width={500} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form form={form} className="Form" labelCol={{ span: 4 }} requiredMark={false} onFinish={async function (values) {
+            <Form form={form} className="Form" labelCol={{ span: 4 }}  onFinish={async function (values) {
                 if (submit) return
                 submit = true
                 try {
@@ -437,7 +437,7 @@ function UploadFile(props: { load: () => {}, folder: string[] }) {
         <Modal className="AddFolder" title="上传脚本或资源" width={500} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form form={form} className="Form" labelCol={{ span: 5 }} requiredMark={false} onFinish={async function (values) {
+            <Form form={form} className="Form" labelCol={{ span: 5 }}  onFinish={async function (values) {
                 if (submit) return
                 submit = true
                 try {

@@ -226,7 +226,7 @@ function SubmitReview(props: { load: () => void, plan_id: string, group_id: stri
     return <>
         <Button type="link" size="small" onClick={function () { setIsModalVisible(true) }}>提审</Button>
         <Modal className="SubmitPlanReview" title="提交审核" visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () { setIsModalVisible(false) }}>
-            <Form form={form} requiredMark={false} labelCol={{ span: 4 }} onFinish={async function (values) {
+            <Form form={form}  labelCol={{ span: 4 }} onFinish={async function (values) {
                 try {
                     await axios.post('/argus-emergency/api/plan/submitReview', { ...values, plan_id: props.plan_id })
                     message.success("提交成功")
@@ -263,7 +263,7 @@ function AddPlan() {
         <Modal className="AddPlan" title="添加项目" width={700} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form form={form} labelCol={{ span: 3 }} requiredMark={false} onFinish={async function (values) {
+            <Form form={form} labelCol={{ span: 3 }}  onFinish={async function (values) {
                 if (submit) return
                 submit = true
                 try {
@@ -301,7 +301,7 @@ function CopyPlan({ plan_id }: { plan_id: string }) {
         <Modal className="CopyPlan" title="克隆" width={700} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form requiredMark={false} onFinish={async function (values) {
+            <Form  onFinish={async function (values) {
                 if (submit) return
                 submit = true
                 try {
@@ -332,7 +332,7 @@ function ApprovePlan(props: { plan_id: string, load: () => {} }) {
         <Modal className="ApprovePlan" title="审核项目" width={400} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form className="Form" requiredMark={false} onFinish={async function (values) {
+            <Form className="Form"  onFinish={async function (values) {
                 try {
                     await axios.post("/argus-emergency/api/plan/approve", { ...values, plan_id: props.plan_id })
                     setIsModalVisible(false)
@@ -363,7 +363,7 @@ function RunPlan(props: { plan_id: string, load: () => {} }) {
         <Modal className="RunPlan" title="预约执行" width={500} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form labelCol={{ span: 6 }} requiredMark={false} onFinish={async function (values) {
+            <Form labelCol={{ span: 6 }}  onFinish={async function (values) {
                 const start_time = values.start_time
                 const plan_id = props.plan_id
                 try {

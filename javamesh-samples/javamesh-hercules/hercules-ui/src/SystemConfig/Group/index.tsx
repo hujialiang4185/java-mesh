@@ -79,7 +79,7 @@ function AddGroup(props: { load: () => void }) {
         <Modal className="AddGroup" title="添加分组" width={400} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form form={form} requiredMark={false} onFinish={async function (values) {
+            <Form form={form}  onFinish={async function (values) {
                 try {
                     await axios.post("/argus-user/api/group", values)
                     form.resetFields()

@@ -39,7 +39,7 @@ export default function App() {
     return <div className="ScriptUpdate">
         <Breadcrumb label="脚本管理" sub={{ label: "详情", parentUrl: "/DisasterRecovery/ScriptManage" }} />
         <Card>
-            <Form form={form} requiredMark={false} labelCol={{ span: 3 }}
+            <Form form={form}  labelCol={{ span: 3 }}
                 initialValues={{ language: "Shell", pwd_from: "本地", script_from: "手工录入", public: "私有", has_pwd: "无" }}
                 onFinish={async function (values) {
                     if (submit) return

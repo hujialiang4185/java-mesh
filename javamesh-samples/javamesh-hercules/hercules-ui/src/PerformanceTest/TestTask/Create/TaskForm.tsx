@@ -79,7 +79,7 @@ export default function App(props: { scenarioName?: string }) {
             line.destroy()
         }
     }, [])
-    return <Form className="TaskForm" form={form} requiredMark={false} labelCol={{ span: 4 }}
+    return <Form className="TaskForm" form={form}  labelCol={{ span: 4 }}
         initialValues={{ scenario_name: props.scenarioName, is_monitor: true, sampling_interval: 2, sampling_ignore: 0 }}
         onFinish={save}>
         <div className="Title">任务信息</div>
@@ -248,7 +248,7 @@ function SaveRun(props: { form: FormInstance<any>, onFinish: (values: any) => vo
         <Modal className="SaveRun" title="启动代理" width={500} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form labelCol={{ span: 6 }} requiredMark={false} onFinish={props.onFinish}>
+            <Form labelCol={{ span: 6 }}  onFinish={props.onFinish}>
                 <PageInfo>预约时间为空则立即执行</PageInfo>
                 <Form.Item name="start_time" label="预约启动时间" rules={[{
                     async validator(_, value: Moment | null) {

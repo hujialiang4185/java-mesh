@@ -165,7 +165,7 @@ export default class App extends React.Component<{ initialValues: () => Promise<
                     }}
                 />
             </div>
-            <Form className="Form" requiredMark={false} ref={this.formRef} onChange={this.onChange}>
+            <Form className="Form"  ref={this.formRef} onChange={this.onChange}>
                 <h3>{menus.get(this.state.selected.slice(14))}</h3>
                 <Form.Item name="title" label="名称" rules={[{ required: true }]}>
                     <Input maxLength={128} disabled={this.state.selected.slice(14) === "Root"} />

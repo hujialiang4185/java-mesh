@@ -151,7 +151,7 @@ function TaskConfirm(props: { record: Task, load: () => void }) {
         <Modal className="TaskConfirm" title="人工确认" width={400} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form requiredMark={false} initialValues={{ confirm: "成功" }} onFinish={async function (values) {
+            <Form  initialValues={{ confirm: "成功" }} onFinish={async function (values) {
                 if (submit) return
                 submit = true
                 try {
