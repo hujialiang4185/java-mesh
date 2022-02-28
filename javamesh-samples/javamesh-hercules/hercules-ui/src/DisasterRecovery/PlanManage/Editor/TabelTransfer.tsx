@@ -5,9 +5,9 @@ import React, { useEffect, useRef, useState } from "react"
 import "./TabelTransfer.scss"
 
 type Data = { server_id: string }
-export default function App(props: { onChange?: (value: string[]) => void }) {
+export default function App(props: { onChange?: (value: Data[]) => void, value?: Data[] }) {
     const [leftData, setLeftData] = useState<{ data: Data[], total: number }>({ data: [], total: 0 })
-    const [rightData, setRightData] = useState<Data[]>([])
+    const [rightData, setRightData] = useState<Data[]>(props.value || [])
     const [loading, setLoading] = useState(false)
     const stateRef = useRef<any>({})
     async function load() {
@@ -52,8 +52,8 @@ export default function App(props: { onChange?: (value: string[]) => void }) {
                 })
             }
             setRightData(rightDataNew)
+            props.onChange?.(rightDataNew)
             const rightKeys = rightDataNew.map(function (item) { return item.server_id })
-            props.onChange?.(rightKeys)
             stateRef.current.excludes = rightKeys
             load()
         }}

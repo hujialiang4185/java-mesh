@@ -8,9 +8,8 @@ import Editor from "@monaco-editor/react";
 import { FormItemLabelProps } from "antd/lib/form/FormItemLabel";
 
 export default function App(props: { onFinish: (values: any) => Promise<void>, initialValues: any, children: React.ReactNode }) {
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  // const [script, setScript] = useState("")
-  const [isCmd, setIsCmd] = useState(false)
+  const [isModalVisible, setIsModalVisible] = useState(false)
+  const [isCmd, setIsCmd] = useState(props.initialValues.task_type === "命令行脚本")
   const [form] = Form.useForm();
   const types = ["自定义脚本压测", "引流压测", "命令行脚本"]
   return <>
@@ -34,6 +33,7 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
           <Form.Item labelCol={{ span: 4 }} className="Middle" label="任务类型" name="task_type" rules={[{ required: true }]}>
             <Radio.Group onChange={function (e) {
               setIsCmd(e.target.value === "命令行脚本")
+              form.setFields([{name: "script_name", value: ""}])
             }} options={types.map(function (item, index) {
               return {
                 value: item,
@@ -49,11 +49,9 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
         <Form.Item label="执行主机" name="service_id">
           <TabelTransfer />
         </Form.Item>
-
         {isCmd ? <CmdFormItems /> : <TaskFormItems />}
-
         <Form.Item className="Buttons">
-          <Button type="primary" htmlType="submit">创建</Button>
+          <Button type="primary" htmlType="submit">提交</Button>
           <Button onClick={function () {
             setIsModalVisible(false)
           }}>取消</Button>
@@ -67,11 +65,11 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
 function CmdFormItems() {
   const [script, setScript] = useState({ submit_info: "", content: "" })
   return <>
-    <Collapse expandIconPosition="right" expandIcon={function ({ isActive }) {
+    <Collapse expandIconPosition="right" defaultActiveKey="0" expandIcon={function ({ isActive }) {
       return <span className={`icon fa fa-angle-double-${isActive ? "down" : "right"}`}></span>
     }}>
-      <Collapse.Panel header="高级配置" key="0">
-        <Form.Item className="ScriptName" label="脚本名称" name="script_name">
+      <Collapse.Panel header="脚本配置" key="0">
+        <Form.Item className="ScriptName" label="脚本名称" name="script_name" rules={[{required: true}]}>
           <SearchSelect onChange={async function (name) {
             try {
               const res = await axios.get("/argus-emergency/api/script/getByName", { params: { name, status: "approved" } })
@@ -95,11 +93,11 @@ function CmdFormItems() {
 function TaskFormItems() {
   const [script, setScript] = useState({ submit_info: "", content: "" })
   return <>
-    <Collapse expandIconPosition="right" expandIcon={function ({ isActive }) {
+    <Collapse expandIconPosition="right" defaultActiveKey="0" expandIcon={function ({ isActive }) {
       return <span className={`icon fa fa-angle-double-${isActive ? "down" : "right"}`}></span>
     }}>
-      <Collapse.Panel header="高级配置" key="0">
-        <Form.Item className="ScriptName" label="脚本名称" name="gui_script_name">
+      <Collapse.Panel header="脚本配置" key="0">
+        <Form.Item className="ScriptName" label="脚本名称" name="script_name" rules={[{required: true}]}>
           <SearchSelect type="gui" onChange={async function (name) {
             try {
               const res = await axios.get("/argus-emergency/api/script/getByName", { params: { name, status: "approved" } })
@@ -118,12 +116,12 @@ function TaskFormItems() {
       </Collapse.Panel>
     </Collapse>
     <Divider orientation="left">压测配置</Divider>
-    <Form.Item name="vuser" label="虚拟用户数" labelCol={{ span: 3 }} labelAlign="left" rules={[{ type: "integer" }]}>
+    <Form.Item name="vuser" label="虚拟用户数" labelCol={{ span: 3 }} labelAlign="left" rules={[{ type: "integer", required: true }]}>
       <InputNumber min={1} />
     </Form.Item>
     <RootBasicScenario labelCol={{ span: 3 }} labelAlign="left" label="基础场景" />
     <Form.Item labelCol={{ span: 3 }} labelAlign="left" label="采样间隔" name="sampling_interval" rules={[{ type: "integer" }]}>
-      <InputNumber className="InputNumber" min={0} />
+      <InputNumber className="InputNumber" min={0} addonAfter="MS"/>
     </Form.Item>
     <Form.Item labelCol={{ span: 3 }} labelAlign="left" label="忽略采样数量" name="sampling_ignore" rules={[{ type: "integer" }]}>
       <InputNumber className="InputNumber" min={0} />

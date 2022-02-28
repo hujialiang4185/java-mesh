@@ -139,6 +139,7 @@ export default class App extends React.Component<{ plan_id: string }> {
             title: <AddScenaTask initialValues={{}} onFinish={async values => {
               values.title = values.task_name
               // 获取key
+              console.log(values)
               const res = await axios.post("/argus-emergency/api/plan/task", values)
               const data = [...this.state.gData];
               data.push({ ...res.data.data, ...values });
@@ -147,10 +148,11 @@ export default class App extends React.Component<{ plan_id: string }> {
             }} >加场景</AddScenaTask>,
             width: 170, align: "left", dataIndex: "key", render: (key, record) => {
               return <>
-                <AddPlanTask initialValues={{ channel_type: "SSH", task_type: "自定义脚本压测", sampling_interval: 2, sampling_ignore: 0 }} onFinish={async values => {
+                <AddPlanTask initialValues={{ channel_type: "SSH", task_type: "自定义脚本压测", sampling_interval: 2, sampling_ignore: 0, vuser: 5 }} onFinish={async values => {
                   values.sync === false ? values.sync = "异步" : values.sync = "同步"
                   values.title = values.task_name
                   // 获取key
+                  console.log(values)
                   const res = await axios.post("/argus-emergency/api/plan/task", values)
                   const data = [...this.state.gData];
                   loop(data, key, item => {
@@ -164,6 +166,7 @@ export default class App extends React.Component<{ plan_id: string }> {
                   return key === item.key;
                 }) ? <AddScenaTask initialValues={record} onFinish={async values => {
                   values.title = values.task_name
+                  console.log(values)
                   await axios.put("/argus-emergency/api/plan/task", { key, ...values })
                   const data = [...this.state.gData];
                   const index = data.findIndex(item => item.key = key)
@@ -173,6 +176,7 @@ export default class App extends React.Component<{ plan_id: string }> {
                 }}>修改</AddScenaTask> : <AddPlanTask initialValues={{ ...record, sync: record.sync === "同步" }} onFinish={async values => {
                   values.title = values.task_name
                   values.sync === false ? values.sync = "异步" : values.sync = "同步"
+                  console.log(values)
                   await axios.put("/argus-emergency/api/plan/task", { key, ...values })
                   const data = [...this.state.gData];
                   loop(data, key, (item, i, arr) => {
