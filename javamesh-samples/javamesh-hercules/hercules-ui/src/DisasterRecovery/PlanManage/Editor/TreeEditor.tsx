@@ -139,7 +139,6 @@ export default class App extends React.Component<{ plan_id: string }> {
             title: <AddScenaTask initialValues={{}} onFinish={async values => {
               values.title = values.task_name
               // 获取key
-              console.log(values)
               const res = await axios.post("/argus-emergency/api/plan/task", values)
               const data = [...this.state.gData];
               data.push({ ...res.data.data, ...values });
@@ -152,7 +151,6 @@ export default class App extends React.Component<{ plan_id: string }> {
                   values.sync === false ? values.sync = "异步" : values.sync = "同步"
                   values.title = values.task_name
                   // 获取key
-                  console.log(values)
                   const res = await axios.post("/argus-emergency/api/plan/task", values)
                   const data = [...this.state.gData];
                   loop(data, key, item => {
@@ -166,7 +164,6 @@ export default class App extends React.Component<{ plan_id: string }> {
                   return key === item.key;
                 }) ? <AddScenaTask initialValues={record} onFinish={async values => {
                   values.title = values.task_name
-                  console.log(values)
                   await axios.put("/argus-emergency/api/plan/task", { key, ...values })
                   const data = [...this.state.gData];
                   const index = data.findIndex(item => item.key = key)
@@ -176,7 +173,6 @@ export default class App extends React.Component<{ plan_id: string }> {
                 }}>修改</AddScenaTask> : <AddPlanTask initialValues={{ ...record, sync: record.sync === "同步" }} onFinish={async values => {
                   values.title = values.task_name
                   values.sync === false ? values.sync = "异步" : values.sync = "同步"
-                  console.log(values)
                   await axios.put("/argus-emergency/api/plan/task", { key, ...values })
                   const data = [...this.state.gData];
                   loop(data, key, (item, i, arr) => {
