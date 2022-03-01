@@ -6,14 +6,11 @@ package com.huawei.emergency.service.impl;
 
 import com.huawei.argus.restcontroller.RestPerfTestController;
 import com.huawei.common.api.CommonResult;
-import com.huawei.common.config.CommonConfig;
 import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.common.exception.ApiException;
 import com.huawei.common.util.PasswordUtil;
 import com.huawei.common.ws.WebSocketServer;
-import com.huawei.emergency.entity.EmergencyElement;
-import com.huawei.emergency.entity.EmergencyElementExample;
 import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyExecRecordDetail;
 import com.huawei.emergency.entity.EmergencyExecRecordDetailExample;
@@ -21,7 +18,6 @@ import com.huawei.emergency.entity.EmergencyExecRecordExample;
 import com.huawei.emergency.entity.EmergencyExecRecordWithBLOBs;
 import com.huawei.emergency.entity.EmergencyServer;
 import com.huawei.emergency.entity.EmergencyServerExample;
-import com.huawei.emergency.entity.EmergencyTask;
 import com.huawei.emergency.mapper.EmergencyElementMapper;
 import com.huawei.emergency.mapper.EmergencyExecRecordDetailMapper;
 import com.huawei.emergency.mapper.EmergencyExecRecordMapper;
@@ -35,6 +31,7 @@ import com.huawei.script.exec.log.LogMemoryStore;
 import com.huawei.script.exec.session.ServerInfo;
 
 import com.alibaba.fastjson.JSONObject;
+
 import org.apache.commons.lang.StringUtils;
 import org.ngrinder.common.constant.WebConstants;
 import org.ngrinder.model.PerfTest;
@@ -224,7 +221,8 @@ public class ExecRecordHandlerFactory {
                 }
                 ServerInfo remoteServerInfo = execInfo.getRemoteServerInfo();
                 String url =
-                    String.format(Locale.ROOT, "http://%s:%s/agent/execute", remoteServerInfo.getServerIp(), remoteServerInfo.getServerPort());
+                    String.format(Locale.ROOT, "http://%s:%s/agent/execute", remoteServerInfo.getServerIp(),
+                        remoteServerInfo.getServerPort());
                 execInfo.setRemoteServerInfo(null);
                 CommonResult result = restTemplate.postForObject(url, execInfo, CommonResult.class);
                 if (StringUtils.isNotEmpty(result.getMsg())) {
@@ -275,7 +273,8 @@ public class ExecRecordHandlerFactory {
             );
             if (recordDetailMapper.updateByExampleSelective(updateRecordDetail, whenRunning)
                 == 0) { // 做个状态判断，防止人为取消 也被标记为执行成功
-                LOGGER.info("recordId={}, detailId={} was canceled", recordDetail.getRecordId(), recordDetail.getDetailId());
+                LOGGER.info("recordId={}, detailId={} was canceled", recordDetail.getRecordId(),
+                    recordDetail.getDetailId());
             } else {
                 recordMapper.tryUpdateEndTimeAndLog(record.getRecordId(), endTime, updateRecordDetail.getLog());
                 recordMapper.tryUpdateStatus(record.getRecordId());
@@ -313,7 +312,8 @@ public class ExecRecordHandlerFactory {
             EmergencyExecRecordDetail updateRecordDetail = new EmergencyExecRecordDetail();
             updateRecordDetail.setEndTime(endTime);
             updateRecordDetail.setLog(result.getMsg());
-            updateRecordDetail.setStatus(result.isSuccess() ? RecordStatus.SUCCESS.getValue() : RecordStatus.FAILED.getValue());
+            updateRecordDetail.setStatus(
+                result.isSuccess() ? RecordStatus.SUCCESS.getValue() : RecordStatus.FAILED.getValue());
             recordDetailMapper.updateByExampleSelective(updateRecordDetail, whenRunning); // 更新所有detail的状态
             EmergencyExecRecordWithBLOBs updateRecord = new EmergencyExecRecordWithBLOBs();
             updateRecord.setEndTime(endTime);
@@ -335,7 +335,6 @@ public class ExecRecordHandlerFactory {
         }
     }
 
-
     /**
      * 生成可执行的信息
      *
@@ -343,7 +342,8 @@ public class ExecRecordHandlerFactory {
      * @param recordDetail
      * @return
      */
-    public ScriptExecInfo generateExecInfo(EmergencyExecRecordWithBLOBs record, EmergencyExecRecordDetail recordDetail) {
+    public ScriptExecInfo generateExecInfo(EmergencyExecRecordWithBLOBs record,
+        EmergencyExecRecordDetail recordDetail) {
         ScriptExecInfo execInfo = new ScriptExecInfo();
         execInfo.setDetailId(recordDetail.getDetailId());
         execInfo.setScriptName(record.getScriptName() + "-" + record.getRecordId());
@@ -370,48 +370,6 @@ public class ExecRecordHandlerFactory {
         execInfo.setContent(execInfo.getScriptContent());
         return execInfo;
     }
-
-    @Deprecated
-    public ScriptExecInfo createPerfTest(EmergencyExecRecord record, ScriptExecInfo execInfo) {
-        EmergencyElementExample elementExample = new EmergencyElementExample();
-        elementExample.createCriteria()
-            .andScriptIdEqualTo(record.getScriptId())
-            .andIsValidEqualTo(ValidEnum.VALID.getValue())
-            .andElementTypeEqualTo("Root");
-        List<EmergencyElement> rootElements = elementMapper.selectByExampleWithBLOBs(elementExample); // 查找编排脚本root节点
-        if (rootElements.size() == 0) {
-            LOGGER.warn("can't found root element. {}", record.getScriptId());
-            return execInfo;
-        }
-        Integer id = record.getSceneId() == null ? record.getTaskId() : record.getSceneId();
-        String perfSceneName = "测试场景-" + id;
-        createArgusScene(record.getScriptName(), perfSceneName); // 不存在则创建压测场景。
-        execInfo.setPerfSceneName(perfSceneName);
-
-        EmergencyTask task = taskMapper.selectByPrimaryKey(id);
-        if (task.getPerfTestId() == null) { //创建压测任务
-            String elementParams = rootElements.get(0).getElementParams();
-            JSONObject jsonObject = JSONObject.parseObject(elementParams);
-            if (jsonObject == null) {
-                return execInfo;
-            }
-            jsonObject.put("test_name", task.getTaskName());
-            jsonObject.put("scenario_name", perfSceneName);
-            int perfTestId = createArgusTest(record.getRecordId(), jsonObject);
-            LOGGER.info("create perf test,recordId={}", record.getRecordId());
-            if (perfTestId > 0) {
-                execInfo.setPerfTestName(task.getTaskName());
-                execInfo.setPerfTestId(id);
-                task.setPerfTestId(perfTestId);
-                taskMapper.updateByPrimaryKeySelective(task);
-            }
-        } else {
-            execInfo.setPerfTestName(task.getTaskName());
-            execInfo.setPerfTestId(task.getPerfTestId());
-        }
-        return execInfo;
-    }
-
 
     /**
      * 生成任务分发明细
@@ -466,22 +424,17 @@ public class ExecRecordHandlerFactory {
     /**
      * 选择分发的服务器
      *
+     * @param serverList
      * @return
      */
     public List<EmergencyServer> filterServer(List<EmergencyServer> serverList) {
-        /*if (serverList == null || serverList.size() == 0) {
-            return Collections.EMPTY_LIST;
-        }
-        return serverList.stream()
-            .filter(server -> server != null && server.getAgentPort() != null && ValidEnum.VALID.getValue().equals(server.getLicensed()))
-            .collect(Collectors.toList());*/
         return serverList;
     }
 
     /**
      * 解析密码
      *
-     * @param mode   模式
+     * @param mode 模式
      * @param source 密文
      * @return
      */
@@ -515,7 +468,7 @@ public class ExecRecordHandlerFactory {
     /**
      * 向前端推送刷新执行记录下，场景页面的通知
      *
-     * @param execId  执行Id
+     * @param execId 执行Id
      * @param sceneId 场景ID
      */
     public void notifySceneRefresh(int execId, int sceneId) {
@@ -591,17 +544,5 @@ public class ExecRecordHandlerFactory {
             LOGGER.error("failed to start grinder task {}. {}", testId, e.getMessage());
             return false;
         }
-    }
-
-    public void createArgusScene(String scriptName, String sceneName) {
-        JSONObject params = new JSONObject();
-        params.put("app_name", "测试应用");
-        params.put("scenario_name", sceneName);
-        params.put("desc", "create at " + System.currentTimeMillis());
-        params.put("script_path", CommonConfig.GRINDER_FOLDER + "/" + scriptName + ".groovy");
-        params.put("label", "");
-        params.put("scenario_type", "自定义脚本");
-        LOGGER.info("create grinder scene. {}", restTemplate.postForObject(
-            argusUrl + "/api/scenario", params, JSONObject.class));
     }
 }
