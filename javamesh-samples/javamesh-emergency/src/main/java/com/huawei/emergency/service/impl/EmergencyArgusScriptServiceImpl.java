@@ -16,7 +16,6 @@
 
 package com.huawei.emergency.service.impl;
 
-import com.alibaba.fastjson.JSONObject;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.common.filter.UserFilter;
@@ -32,7 +31,11 @@ import com.huawei.emergency.layout.TreeResponse;
 import com.huawei.emergency.layout.template.GroovyClassTemplate;
 import com.huawei.emergency.mapper.EmergencyElementMapper;
 import com.huawei.emergency.service.EmergencyArgusScriptService;
+
+import com.alibaba.fastjson.JSONObject;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,6 +47,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -74,7 +78,7 @@ public class EmergencyArgusScriptServiceImpl implements EmergencyArgusScriptServ
             .andArgusPathEqualTo(path)
             .andParentIdIsNull()
             .andIsValidEqualTo(ValidEnum.VALID.getValue());
-        List<EmergencyElement> emergencyElements = elementMapper.selectByExampleWithBLOBs(rootElementExample);
+        List<EmergencyElement> emergencyElements = elementMapper.selectByExample(rootElementExample);
         if (emergencyElements.size() == 0) {
             rootElement = generateTemplate(path, UserFilter.currentUserName());
         } else {
@@ -105,7 +109,7 @@ public class EmergencyArgusScriptServiceImpl implements EmergencyArgusScriptServ
         elementExample.createCriteria()
             .andParentIdEqualTo(parent.getElementId())
             .andIsValidEqualTo(ValidEnum.VALID.getValue());
-        List<EmergencyElement> emergencyElements = elementMapper.selectByExampleWithBLOBs(elementExample);
+        List<EmergencyElement> emergencyElements = elementMapper.selectByExample(elementExample);
         for (EmergencyElement emergencyElement : emergencyElements) {
             TreeNode node = new TreeNode();
             node.setElementId(emergencyElement.getElementId());
@@ -195,6 +199,7 @@ public class EmergencyArgusScriptServiceImpl implements EmergencyArgusScriptServ
 
     /**
      * 生成默认的编排模板
+     *
      * @param path 压测脚本路径
      * @param userName 用户名
      */

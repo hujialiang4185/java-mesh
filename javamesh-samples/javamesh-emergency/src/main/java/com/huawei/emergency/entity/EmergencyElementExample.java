@@ -375,6 +375,76 @@ public class EmergencyElementExample {
             return (Criteria) this;
         }
 
+        public Criteria andElementParamsIsNull() {
+            addCriterion("element_params is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andElementParamsIsNotNull() {
+            addCriterion("element_params is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andElementParamsEqualTo(String value) {
+            addCriterion("element_params =", value, "elementParams");
+            return (Criteria) this;
+        }
+
+        public Criteria andElementParamsNotEqualTo(String value) {
+            addCriterion("element_params <>", value, "elementParams");
+            return (Criteria) this;
+        }
+
+        public Criteria andElementParamsGreaterThan(String value) {
+            addCriterion("element_params >", value, "elementParams");
+            return (Criteria) this;
+        }
+
+        public Criteria andElementParamsGreaterThanOrEqualTo(String value) {
+            addCriterion("element_params >=", value, "elementParams");
+            return (Criteria) this;
+        }
+
+        public Criteria andElementParamsLessThan(String value) {
+            addCriterion("element_params <", value, "elementParams");
+            return (Criteria) this;
+        }
+
+        public Criteria andElementParamsLessThanOrEqualTo(String value) {
+            addCriterion("element_params <=", value, "elementParams");
+            return (Criteria) this;
+        }
+
+        public Criteria andElementParamsLike(String value) {
+            addCriterion("element_params like", value, "elementParams");
+            return (Criteria) this;
+        }
+
+        public Criteria andElementParamsNotLike(String value) {
+            addCriterion("element_params not like", value, "elementParams");
+            return (Criteria) this;
+        }
+
+        public Criteria andElementParamsIn(List<String> values) {
+            addCriterion("element_params in", values, "elementParams");
+            return (Criteria) this;
+        }
+
+        public Criteria andElementParamsNotIn(List<String> values) {
+            addCriterion("element_params not in", values, "elementParams");
+            return (Criteria) this;
+        }
+
+        public Criteria andElementParamsBetween(String value1, String value2) {
+            addCriterion("element_params between", value1, value2, "elementParams");
+            return (Criteria) this;
+        }
+
+        public Criteria andElementParamsNotBetween(String value1, String value2) {
+            addCriterion("element_params not between", value1, value2, "elementParams");
+            return (Criteria) this;
+        }
+
         public Criteria andParentIdIsNull() {
             addCriterion("parent_id is null");
             return (Criteria) this;

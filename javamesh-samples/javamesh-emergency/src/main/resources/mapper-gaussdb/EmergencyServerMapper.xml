@@ -417,6 +417,38 @@
         where server_id = #{serverId,jdbcType=INTEGER}
     </update>
 
+    <select id="selectByKeyword" resultType="com.huawei.emergency.entity.EmergencyServer">
+        select server_id,
+        server_ip,
+        server_user,
+        server_port,
+        case when have_password = '0' then '无' else '有' end have_password,
+        case when password_mode = '0' then '本地' when password_mode = '1' then '平台' else password_mode end password_mode,
+        server_name,
+        agent_port,
+        status,
+        case when status = 'pending' then '准备中'
+        when status = 'running' then '运行中'
+        when status = 'success' then '成功'
+        when status = 'fail' then '失败'
+        else status end status_label,
+        case when licensed = '0' then 'false' when licensed = '1' then 'true' else licensed end licensed
+        from emergency_server
+        where is_valid = '1'
+        <if test="keyword !=null and keyword != ''">
+            and (instr(#{keyword},server_name) &gt; -1 or instr(#{keyword},server_ip) &gt; -1)
+        </if>
+        <if test="server !=null and server.serverName != null and server.serverName != ''">
+            and instr(#{server.serverName},server_name) &gt; -1
+        </if>
+        <if test=" excludeServerIds != null and excludeServerIds.length > 0">
+            and server_id not in
+            <foreach close=")" collection="excludeServerIds" index="index" item="serverId" open="(" separator=",">
+                #{serverId}
+            </foreach>
+        </if>
+        order by create_time desc
+    </select>
     <select id="selectAgentIdsByServerIds" resultType="java.lang.Integer">
         select t2.id
         from emergency_server t1, AGENT t2

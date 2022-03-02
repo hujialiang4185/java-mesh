@@ -16,13 +16,14 @@
 
 package com.huawei.emergency.service.impl;
 
+import static com.huawei.common.constant.PlanStatus.UN_PASSED_STATUS;
+
 import com.huawei.argus.restcontroller.RestPerfTestController;
 import com.huawei.common.api.CommonPage;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.PlanStatus;
 import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ScheduleType;
-import com.huawei.common.constant.ScriptLanguageEnum;
 import com.huawei.common.constant.TaskTypeEnum;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.common.filter.UserFilter;
@@ -34,7 +35,6 @@ import com.huawei.emergency.dto.TaskNode;
 import com.huawei.emergency.entity.EmergencyExec;
 import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyExecRecordExample;
-import com.huawei.emergency.entity.EmergencyExecRecordWithBLOBs;
 import com.huawei.emergency.entity.EmergencyPlan;
 import com.huawei.emergency.entity.EmergencyPlanDetail;
 import com.huawei.emergency.entity.EmergencyPlanDetailExample;
@@ -66,7 +66,6 @@ import org.ngrinder.model.RampUp;
 import org.ngrinder.model.Status;
 import org.ngrinder.perftest.repository.PerfTestRepository;
 import org.ngrinder.perftest.service.PerfTestService;
-import org.python.antlr.op.In;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -86,8 +85,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
-
-import static com.huawei.common.constant.PlanStatus.UN_PASSED_STATUS;
 
 /**
  * 预案管理接口的实现类
@@ -249,7 +246,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         emergencyExec.setHistoryId(emergencyExec.getExecId());
 
         // 获取所有的拓扑关系，添加详细的执行记录
-        List<EmergencyExecRecordWithBLOBs> allExecRecords = recordMapper.selectAllPlanDetail(planId);
+        List<EmergencyExecRecord> allExecRecords = recordMapper.selectAllPlanDetail(planId);
         allExecRecords.forEach(record -> {
             record.setCreateUser(userName);
             record.setExecId(emergencyExec.getExecId());
@@ -272,7 +269,8 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         allExecRecords.stream()
             .filter(record -> record.getTaskId() == null && record.getPreSceneId() == null)
             .forEach(record -> {
-                LOGGER.debug("Submit record_id={}. exec_id={}, task_id={}.", record.getRecordId(), record.getExecId(), record.getTaskId());
+                LOGGER.debug("Submit record_id={}. exec_id={}, task_id={}.", record.getRecordId(), record.getExecId(),
+                    record.getTaskId());
                 threadPoolExecutor.execute(handlerFactory.handle(record));
             });
         LOGGER.debug("threadPoolExecutor = {} ", threadPoolExecutor);
@@ -543,7 +541,8 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         } else {
             task.setTaskName(taskNode.getTaskName());
             task.setScriptId(taskNode.getScriptId());
-            task.setScriptName(StringUtils.isNotEmpty(taskNode.getScriptName()) ? taskNode.getScriptName() : taskNode.getGuiScriptName());
+            task.setScriptName(StringUtils.isNotEmpty(taskNode.getScriptName()) ? taskNode.getScriptName()
+                : taskNode.getGuiScriptName());
             task.setChannelType(taskNode.getChannelType());
             task.setServerId(StringUtils.join(taskNode.getServiceId(), ","));
             task.setCreateUser(taskNode.getCreateUser());
@@ -732,7 +731,8 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         updateTask.setTaskId(originTask.getTaskId());
         updateTask.setTaskName(taskNode.getTaskName());
         updateTask.setScriptId(taskNode.getScriptId());
-        updateTask.setScriptName(StringUtils.isNotEmpty(taskNode.getScriptName()) ? taskNode.getScriptName() : taskNode.getGuiScriptName());
+        updateTask.setScriptName(
+            StringUtils.isNotEmpty(taskNode.getScriptName()) ? taskNode.getScriptName() : taskNode.getGuiScriptName());
         updateTask.setChannelType(taskNode.getChannelType());
         updateTask.setServerId(StringUtils.join(taskNode.getServiceId(), ","));
 
@@ -786,13 +786,14 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     /**
      * 生成子任务
      *
-     * @param planDetail   父任务信息
+     * @param planDetail 父任务信息
      * @param childrenNode 子任务信息
-     * @param parentNo     父任务编号
-     * @param isSubTask    是否为子任务
+     * @param parentNo 父任务编号
+     * @param isSubTask 是否为子任务
      * @return
      */
-    private void handleChildren(EmergencyPlanDetail planDetail, List<TaskNode> childrenNode, String parentNo, boolean isSubTask) {
+    private void handleChildren(EmergencyPlanDetail planDetail, List<TaskNode> childrenNode, String parentNo,
+        boolean isSubTask) {
         Integer preTaskId = null;
         if (childrenNode == null) {
             return;
@@ -830,7 +831,6 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             handleChildren(insertTaskDetail, task.getChildren(), isSubTask ? parentNo : updateTask.getTaskNo(), true);
         }
     }
-
 
     /**
      * 迭代查找此任务的子任务

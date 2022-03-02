@@ -433,7 +433,7 @@
         WHEN plan.status = '4' THEN 'running'
         WHEN plan.status = '5' THEN 'ran'
         WHEN plan.status = '6' THEN 'ran'
-        WHEN plan.status = '7' THEN 'wait' END) `status`,
+        WHEN plan.status = '7' THEN 'wait' END) status,
         (CASE
         WHEN plan.status = '0' THEN '待提审'
         WHEN plan.status = '1' THEN '待审核'
@@ -443,10 +443,10 @@
         WHEN plan.status = '5' THEN '运行成功'
         WHEN plan.status = '6' THEN '运行失败'
         WHEN plan.status = '7' THEN '已预约' END) status_label,
-        plan.check_remark comment,
-        date_format(plan.create_time, '%Y-%m-%d %H:%i:%s') create_time,
-        date_format(plan.update_time, '%Y-%m-%d %H:%i:%s') update_time,
-        IFNULL((select user_name from NUSER where user_id = plan.create_user),plan.create_user) creator,
+        plan.check_remark as "comment",
+        to_char(plan.create_time,'yyyy-mm-dd hh24:mi:ss') create_time,
+        to_char(plan.update_time,'yyyy-mm-dd hh24:mi:ss') update_time,
+        NULLIF((select user_name from NUSER where user_id = plan.create_user),plan.create_user) creator,
         (select max(exec_id) from emergency_exec where plan_id = plan.plan_id) as history_id
         FROM emergency_plan plan
         LEFT JOIN emergency_plan_detail plan_detail ON plan_detail.plan_id = plan.plan_id and plan_detail.is_valid = '1'
@@ -456,18 +456,18 @@
         LEFT JOIN emergency_script task_script ON task_script.script_id = task.script_id
         WHERE plan.is_valid = '1'
         <if test="planName !=null and planName !=''">
-            and (locate(#{planName},plan_name) &gt; 0 or locate(#{planName},plan_no) &gt; 0)
+            and (instr(#{planName},plan_name) &gt; -1 or instr(#{planName},plan_no) &gt; -1)
         </if>
         <if test="sceneName !=null and sceneName !=''">
-            and (locate(#{sceneName},scene.task_name) &gt; 0 or locate(#{sceneName},scene.task_no) &gt; 0)
+            and (instr(#{sceneName},scene.task_name) &gt; -1 or instr(#{sceneName},scene.task_no) &gt; -1)
         </if>
         <if test="taskName !=null and taskName !=''">
-            and (locate(#{taskName},task.task_name) &gt; 0 or locate(#{taskName},task.task_no) &gt; 0)
+            and (instr(#{taskName},task.task_name) &gt; -1 or instr(#{taskName},task.task_no) &gt; -1)
         </if>
         <if test="scriptName !=null and scriptName !=''">
-            and (locate(#{scriptName},scene_script.script_name) &gt; 0 or locate(#{scriptName},task_script.script_name)
+            and (instr(#{scriptName},scene_script.script_name) &gt; -1 or instr(#{scriptName},task_script.script_name)
             &gt;
-            0)
+            -1)
         </if>
         <if test="status !=null and status !=''">
             and plan.status = #{status}
@@ -479,7 +479,7 @@
         ORDER BY plan.create_time desc
     </select>
     <select id="queryPlanDetailDto" resultType="com.huawei.emergency.dto.PlanDetailQueryDto">
-        SELECT t1.detail_id AS                                                                     `key`,
+        SELECT t1.detail_id AS                                                                     key,
                t2.task_no                                                                          scene_no,
                t2.task_name                                                                        scene_name,
                t2.task_no                                                                          scena_no,
@@ -493,11 +493,13 @@
                (CASE WHEN t1.task_id IS NULL THEN t2.submit_info ELSE t4.submit_info END)          submit_info,
                (select max(perf_test_id)
                 from emergency_exec_record
-                where plan_id = t1.plan_id and plan_detail_id = t1.detail_id)                      perf_test_id
+                where plan_id = t1.plan_id
+                  and plan_detail_id = t1.detail_id)                                               perf_test_id
         FROM emergency_plan_detail t1
-                 LEFT JOIN emergency_task t2 ON t1.scene_id = t2.task_id
-                 LEFT JOIN emergency_task t3 ON t1.parent_task_id = t3.task_id
-                 LEFT JOIN emergency_task t4 ON t1.task_id = t4.task_id
+            LEFT JOIN emergency_task t2
+        ON t1.scene_id = t2.task_id
+            LEFT JOIN emergency_task t3 ON t1.parent_task_id = t3.task_id
+            LEFT JOIN emergency_task t4 ON t1.task_id = t4.task_id
         WHERE t1.plan_id = #{id}
           and t1.is_valid = '1'
     </select>

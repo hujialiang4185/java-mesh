@@ -11,7 +11,11 @@ public class EmergencyExecRecordDetail {
 
     private String status;
 
+    private Integer serverId;
+
     private String serverIp;
+
+    private String log;
 
     private String createUser;
 
@@ -28,10 +32,6 @@ public class EmergencyExecRecordDetail {
     private String isValid;
 
     private Integer pid;
-
-    private Integer serverId;
-
-    private String log;
 
     public Integer getDetailId() {
         return detailId;

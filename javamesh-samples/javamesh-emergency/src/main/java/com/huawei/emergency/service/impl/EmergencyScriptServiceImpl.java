@@ -80,6 +80,8 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -302,6 +304,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         if (StringUtils.isEmpty(script.getSubmitInfo())) {
             script.setSubmitInfo("");
         }
+        script.setUpdateTime(Timestamp.from(Instant.now()));
         count = mapper.insertSelective(script);
         if (count != 1) {
             return ResultCode.FAIL;
@@ -311,26 +314,16 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
 
     @Override
     public int updateScript(EmergencyScript script) {
-        if (isParamInvalid(script)) {
+        if (script.getScriptId() == null || StringUtils.isEmpty(script.getContent())) {
             return ResultCode.PARAM_INVALID;
         }
-        if (script.getScriptId() == null) {
-            return ResultCode.PARAM_INVALID;
-        }
-
-        // 脚本名是否修改了
-        String oldScriptName = mapper.selectScriptNameById(script.getScriptId());
-        String scriptName = script.getScriptName();
-        if (!oldScriptName.equals(scriptName)) {
-            EmergencyScriptExample example = new EmergencyScriptExample();
-            example.createCriteria().andScriptNameEqualTo(scriptName);
-            long count = mapper.countByExample(example);
-            if (count > 0) {
-                return ResultCode.SCRIPT_NAME_EXISTS;
-            }
-        }
-        script.setScriptStatus(TYPE_ZERO); // 变为待提审
-        return mapper.updateByPrimaryKeySelective(script);
+        EmergencyScript updateScript = new EmergencyScript();
+        updateScript.setScriptId(script.getScriptId());
+        updateScript.setContent(script.getContent());
+        updateScript.setParam(script.getParam());
+        updateScript.setScriptStatus(TYPE_ZERO); // 变为待提审
+        updateScript.setUpdateTime(Timestamp.from(Instant.now()));
+        return mapper.updateByPrimaryKeySelective(updateScript);
     }
 
     @Override
@@ -477,6 +470,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         newScript.setScriptUser(UserFilter.currentUserName());
         newScript.setScriptStatus(TYPE_ZERO);
         newScript.setScriptGroup(UserFilter.currentUser().getGroup());
+        newScript.setUpdateTime(Timestamp.from(Instant.now()));
         mapper.insertSelective(newScript);
         generateTemplate(newScript); // 生成编排模板
         return CommonResult.success(newScript);
@@ -553,6 +547,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             script.setScriptId(treeResponse.getScriptId());
             script.setContent(scriptContent);
             script.setScriptStatus(TYPE_ZERO);
+            script.setUpdateTime(Timestamp.from(Instant.now()));
             mapper.updateByPrimaryKeySelective(script);
             ArgusScript argusScript = new ArgusScript();
             argusScript.setPath(treeResponse.getPath());
@@ -619,7 +614,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             .andScriptIdEqualTo(scriptId)
             .andParentIdIsNull()
             .andIsValidEqualTo(ValidEnum.VALID.getValue());
-        List<EmergencyElement> emergencyElements = elementMapper.selectByExampleWithBLOBs(rootElementExample);
+        List<EmergencyElement> emergencyElements = elementMapper.selectByExample(rootElementExample);
         if (emergencyElements.size() == 0) {
             return CommonResult.success();
         }
@@ -647,7 +642,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         elementExample.createCriteria()
             .andParentIdEqualTo(parent.getElementId())
             .andIsValidEqualTo(ValidEnum.VALID.getValue());
-        List<EmergencyElement> emergencyElements = elementMapper.selectByExampleWithBLOBs(elementExample);
+        List<EmergencyElement> emergencyElements = elementMapper.selectByExample(elementExample);
         for (EmergencyElement emergencyElement : emergencyElements) {
             TreeNode node = new TreeNode();
             node.setElementId(emergencyElement.getElementId());
@@ -692,14 +687,14 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         script.setScriptUser(UserFilter.currentUserName());
         script.setScriptStatus(TYPE_ZERO);
         script.setScriptGroup(UserFilter.currentUser().getGroup());
+        script.setUpdateTime(Timestamp.from(Instant.now()));
         mapper.insertSelective(script);
         return CommonResult.success(script);
     }
 
     @Override
     public CommonResult updateIdeScript(ScriptManageDto scriptManageDto) {
-
-        return null;
+        return CommonResult.success();
     }
 
     public boolean isScriptNameExist(String scriptName) {
