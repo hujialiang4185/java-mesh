@@ -845,6 +845,76 @@ public class EmergencyExecRecordExample {
             return (Criteria) this;
         }
 
+        public Criteria andScriptContentIsNull() {
+            addCriterion("script_content is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andScriptContentIsNotNull() {
+            addCriterion("script_content is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andScriptContentEqualTo(String value) {
+            addCriterion("script_content =", value, "scriptContent");
+            return (Criteria) this;
+        }
+
+        public Criteria andScriptContentNotEqualTo(String value) {
+            addCriterion("script_content <>", value, "scriptContent");
+            return (Criteria) this;
+        }
+
+        public Criteria andScriptContentGreaterThan(String value) {
+            addCriterion("script_content >", value, "scriptContent");
+            return (Criteria) this;
+        }
+
+        public Criteria andScriptContentGreaterThanOrEqualTo(String value) {
+            addCriterion("script_content >=", value, "scriptContent");
+            return (Criteria) this;
+        }
+
+        public Criteria andScriptContentLessThan(String value) {
+            addCriterion("script_content <", value, "scriptContent");
+            return (Criteria) this;
+        }
+
+        public Criteria andScriptContentLessThanOrEqualTo(String value) {
+            addCriterion("script_content <=", value, "scriptContent");
+            return (Criteria) this;
+        }
+
+        public Criteria andScriptContentLike(String value) {
+            addCriterion("script_content like", value, "scriptContent");
+            return (Criteria) this;
+        }
+
+        public Criteria andScriptContentNotLike(String value) {
+            addCriterion("script_content not like", value, "scriptContent");
+            return (Criteria) this;
+        }
+
+        public Criteria andScriptContentIn(List<String> values) {
+            addCriterion("script_content in", values, "scriptContent");
+            return (Criteria) this;
+        }
+
+        public Criteria andScriptContentNotIn(List<String> values) {
+            addCriterion("script_content not in", values, "scriptContent");
+            return (Criteria) this;
+        }
+
+        public Criteria andScriptContentBetween(String value1, String value2) {
+            addCriterion("script_content between", value1, value2, "scriptContent");
+            return (Criteria) this;
+        }
+
+        public Criteria andScriptContentNotBetween(String value1, String value2) {
+            addCriterion("script_content not between", value1, value2, "scriptContent");
+            return (Criteria) this;
+        }
+
         public Criteria andScriptTypeIsNull() {
             addCriterion("script_type is null");
             return (Criteria) this;
@@ -1402,6 +1472,76 @@ public class EmergencyExecRecordExample {
 
         public Criteria andPasswordNotBetween(String value1, String value2) {
             addCriterion("password not between", value1, value2, "password");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogIsNull() {
+            addCriterion("log is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogIsNotNull() {
+            addCriterion("log is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogEqualTo(String value) {
+            addCriterion("log =", value, "log");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogNotEqualTo(String value) {
+            addCriterion("log <>", value, "log");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogGreaterThan(String value) {
+            addCriterion("log >", value, "log");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogGreaterThanOrEqualTo(String value) {
+            addCriterion("log >=", value, "log");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogLessThan(String value) {
+            addCriterion("log <", value, "log");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogLessThanOrEqualTo(String value) {
+            addCriterion("log <=", value, "log");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogLike(String value) {
+            addCriterion("log like", value, "log");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogNotLike(String value) {
+            addCriterion("log not like", value, "log");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogIn(List<String> values) {
+            addCriterion("log in", values, "log");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogNotIn(List<String> values) {
+            addCriterion("log not in", values, "log");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogBetween(String value1, String value2) {
+            addCriterion("log between", value1, value2, "log");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogNotBetween(String value1, String value2) {
+            addCriterion("log not between", value1, value2, "log");
             return (Criteria) this;
         }
 

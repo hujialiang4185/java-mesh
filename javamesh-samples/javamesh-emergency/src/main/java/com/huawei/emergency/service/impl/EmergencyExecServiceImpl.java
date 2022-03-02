@@ -4,8 +4,6 @@
 
 package com.huawei.emergency.service.impl;
 
-import com.github.pagehelper.Page;
-import com.github.pagehelper.PageHelper;
 import com.huawei.common.api.CommonPage;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.PlanStatus;
@@ -18,7 +16,6 @@ import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyExecRecordDetail;
 import com.huawei.emergency.entity.EmergencyExecRecordDetailExample;
 import com.huawei.emergency.entity.EmergencyExecRecordExample;
-import com.huawei.emergency.entity.EmergencyExecRecordWithBLOBs;
 import com.huawei.emergency.entity.EmergencyPlan;
 import com.huawei.emergency.entity.EmergencyScript;
 import com.huawei.emergency.entity.EmergencyServer;
@@ -36,9 +33,13 @@ import com.huawei.script.exec.ExecResult;
 import com.huawei.script.exec.executor.ScriptExecutor;
 import com.huawei.script.exec.log.LogMemoryStore;
 import com.huawei.script.exec.log.LogResponse;
-
 import com.huawei.script.exec.session.ServerInfo;
+
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+
 import lombok.Setter;
+
 import org.apache.commons.lang.StringUtils;
 import org.ngrinder.model.PerfTest;
 import org.slf4j.Logger;
@@ -129,7 +130,7 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
         execMapper.insertSelective(exec);
 
         // 增加执行明细 BeanUtils.copyProperties(script,record);
-        EmergencyExecRecordWithBLOBs record = new EmergencyExecRecordWithBLOBs();
+        EmergencyExecRecord record = new EmergencyExecRecord();
         record.setExecId(exec.getExecId());
         record.setPlanId(0);
         record.setSceneId(0);
@@ -169,7 +170,7 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
         exec.setCreateUser("system");
         execMapper.insertSelective(exec);
 
-        EmergencyExecRecordWithBLOBs record = new EmergencyExecRecordWithBLOBs();
+        EmergencyExecRecord record = new EmergencyExecRecord();
         record.setExecId(exec.getExecId());
         record.setPlanId(0);
         record.setSceneId(0);
@@ -220,9 +221,9 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
 
     @Override
     public LogResponse getRecordLog(int recordId, int line) {
-        EmergencyExecRecordWithBLOBs record = recordMapper.selectByPrimaryKey(recordId);
+        EmergencyExecRecord record = recordMapper.selectByPrimaryKey(recordId);
         if (record != null && StringUtils.isNotEmpty(record.getLog())) {
-            return LogResponse.parse(record.getLog(),line);
+            return LogResponse.parse(record.getLog(), line);
         }
         EmergencyExecRecordDetailExample recordDetailExample = new EmergencyExecRecordDetailExample();
         recordDetailExample.createCriteria()
@@ -238,7 +239,7 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
 
     @Override
     public CommonResult ensure(int recordId, String result, String userName) {
-        EmergencyExecRecordWithBLOBs needEnsureRecord = recordMapper.selectByPrimaryKey(recordId);
+        EmergencyExecRecord needEnsureRecord = recordMapper.selectByPrimaryKey(recordId);
         if (needEnsureRecord == null || needEnsureRecord.getRecordId() == null) {
             return CommonResult.failed("请选择正确的子任务。");
         }
@@ -246,7 +247,7 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
             return CommonResult.failed("该子任务不处于执行失败，无需确认！");
         }
 
-        EmergencyExecRecordWithBLOBs updateRecord = new EmergencyExecRecordWithBLOBs();
+        EmergencyExecRecord updateRecord = new EmergencyExecRecord();
         updateRecord.setStatus(result);
         updateRecord.setRecordId(needEnsureRecord.getRecordId());
         updateRecord.setEnsureUser(userName);
@@ -274,8 +275,8 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
     }
 
     public void stopOtherRecordsById(int recordId) {
-        EmergencyExecRecordWithBLOBs record = recordMapper.selectByPrimaryKey(recordId);
-        EmergencyExecRecordWithBLOBs updateRecord = new EmergencyExecRecordWithBLOBs();
+        EmergencyExecRecord record = recordMapper.selectByPrimaryKey(recordId);
+        EmergencyExecRecord updateRecord = new EmergencyExecRecord();
         updateRecord.setStatus(RecordStatus.ENSURE_FAILED.getValue());
         EmergencyExecRecordExample updateCondition = new EmergencyExecRecordExample();
         updateCondition.createCriteria()
@@ -287,13 +288,13 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
 
     @Override
     public CommonResult reExec(int recordId, String userName) {
-        EmergencyExecRecordWithBLOBs oldRecord = recordMapper.selectByPrimaryKey(recordId);
+        EmergencyExecRecord oldRecord = recordMapper.selectByPrimaryKey(recordId);
         if (!RecordStatus.FAILED.getValue().equals(oldRecord.getStatus()) ||
             !ValidEnum.VALID.getValue().equals(oldRecord.getIsValid())) {
             return CommonResult.failed("请选择执行失败的执行记录");
         }
 
-        EmergencyExecRecordWithBLOBs updateRecord = new EmergencyExecRecordWithBLOBs();
+        EmergencyExecRecord updateRecord = new EmergencyExecRecord();
         updateRecord.setRecordId(oldRecord.getRecordId());
         updateRecord.setIsValid(ValidEnum.IN_VALID.getValue());
         recordMapper.updateByPrimaryKeySelective(updateRecord);
@@ -334,7 +335,8 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
             ServerInfo serverInfo =
                 new ServerInfo(server.getServerIp(), server.getServerUser(), server.getServerPort());
             if ("1".equals(server.getHavePassword())) {
-                serverInfo.setServerPassword(handlerFactory.parsePassword(server.getPasswordMode(), server.getPassword()));
+                serverInfo.setServerPassword(
+                    handlerFactory.parsePassword(server.getPasswordMode(), server.getPassword()));
             }
             cancelResult = scriptExecutors.get("remoteScriptExecutor").cancel(serverInfo, recordDetail.getPid());
         }
@@ -351,7 +353,8 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
         for (String log : logResponse.getData()) {
             logBuilder.append(log);
         }
-        logBuilder.append(userName).append("于").append(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)).append("取消执行");
+        logBuilder.append(userName).append("于")
+            .append(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)).append("取消执行");
         updateDetail.setLog(logBuilder.toString());
         recordDetailMapper.updateByPrimaryKeySelective(updateDetail);
         return CommonResult.success();
@@ -368,7 +371,7 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
             && !RecordStatus.CANCEL.getValue().equals(oldDetail.getStatus())) {
             return CommonResult.failed("请选择执行失败或取消的记录");
         }
-        EmergencyExecRecordWithBLOBs record = recordMapper.selectByPrimaryKey(oldDetail.getRecordId());
+        EmergencyExecRecord record = recordMapper.selectByPrimaryKey(oldDetail.getRecordId());
         if (record == null || ValidEnum.IN_VALID.equals(record.getIsValid())) {
             return CommonResult.failed("该任务的执行记录不存在");
         }
@@ -401,7 +404,7 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
             || !RecordStatus.FAILED.getValue().equals(recordDetail.getStatus())) {
             return CommonResult.failed("请选择执行失败的记录");
         }
-        EmergencyExecRecordWithBLOBs record = recordMapper.selectByPrimaryKey(recordDetail.getRecordId());
+        EmergencyExecRecord record = recordMapper.selectByPrimaryKey(recordDetail.getRecordId());
         if (record == null || ValidEnum.IN_VALID.equals(record.getIsValid())) {
             return CommonResult.failed("该任务的执行记录不存在");
         }
@@ -439,11 +442,12 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
             }
             return log;
         }
-        return LogResponse.parse(recordDetail.getLog(),line);
+        return LogResponse.parse(recordDetail.getLog(), line);
     }
 
     @Override
-    public CommonResult allPlanExecRecords(CommonPage<EmergencyPlan> params, String[] filterPlanNames, String[] filterCreators) {
+    public CommonResult allPlanExecRecords(CommonPage<EmergencyPlan> params, String[] filterPlanNames,
+        String[] filterCreators) {
         Map<String, Object> filters = new HashMap<>();
         filters.put("planNames", filterPlanNames);
         filters.put("creators", filterCreators);
@@ -478,7 +482,7 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
         if (recordDetail == null || ValidEnum.IN_VALID.getValue().equals(recordDetail.getIsValid())) {
             return CommonResult.failed("detailId is invalid");
         }
-        EmergencyExecRecordWithBLOBs record = recordMapper.selectByPrimaryKey(recordDetail.getRecordId());
+        EmergencyExecRecord record = recordMapper.selectByPrimaryKey(recordDetail.getRecordId());
         if (record == null || ValidEnum.IN_VALID.getValue().equals(record.getIsValid())) {
             return CommonResult.failed("detailId is invalid");
         }

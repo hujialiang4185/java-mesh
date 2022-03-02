@@ -355,6 +355,66 @@ public class EmergencyExecRecordDetailExample {
             return (Criteria) this;
         }
 
+        public Criteria andServerIdIsNull() {
+            addCriterion("server_id is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerIdIsNotNull() {
+            addCriterion("server_id is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerIdEqualTo(Integer value) {
+            addCriterion("server_id =", value, "serverId");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerIdNotEqualTo(Integer value) {
+            addCriterion("server_id <>", value, "serverId");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerIdGreaterThan(Integer value) {
+            addCriterion("server_id >", value, "serverId");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerIdGreaterThanOrEqualTo(Integer value) {
+            addCriterion("server_id >=", value, "serverId");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerIdLessThan(Integer value) {
+            addCriterion("server_id <", value, "serverId");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerIdLessThanOrEqualTo(Integer value) {
+            addCriterion("server_id <=", value, "serverId");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerIdIn(List<Integer> values) {
+            addCriterion("server_id in", values, "serverId");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerIdNotIn(List<Integer> values) {
+            addCriterion("server_id not in", values, "serverId");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerIdBetween(Integer value1, Integer value2) {
+            addCriterion("server_id between", value1, value2, "serverId");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerIdNotBetween(Integer value1, Integer value2) {
+            addCriterion("server_id not between", value1, value2, "serverId");
+            return (Criteria) this;
+        }
+
         public Criteria andServerIpIsNull() {
             addCriterion("server_ip is null");
             return (Criteria) this;
@@ -422,6 +482,76 @@ public class EmergencyExecRecordDetailExample {
 
         public Criteria andServerIpNotBetween(String value1, String value2) {
             addCriterion("server_ip not between", value1, value2, "serverIp");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogIsNull() {
+            addCriterion("log is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogIsNotNull() {
+            addCriterion("log is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogEqualTo(String value) {
+            addCriterion("log =", value, "log");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogNotEqualTo(String value) {
+            addCriterion("log <>", value, "log");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogGreaterThan(String value) {
+            addCriterion("log >", value, "log");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogGreaterThanOrEqualTo(String value) {
+            addCriterion("log >=", value, "log");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogLessThan(String value) {
+            addCriterion("log <", value, "log");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogLessThanOrEqualTo(String value) {
+            addCriterion("log <=", value, "log");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogLike(String value) {
+            addCriterion("log like", value, "log");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogNotLike(String value) {
+            addCriterion("log not like", value, "log");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogIn(List<String> values) {
+            addCriterion("log in", values, "log");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogNotIn(List<String> values) {
+            addCriterion("log not in", values, "log");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogBetween(String value1, String value2) {
+            addCriterion("log between", value1, value2, "log");
+            return (Criteria) this;
+        }
+
+        public Criteria andLogNotBetween(String value1, String value2) {
+            addCriterion("log not between", value1, value2, "log");
             return (Criteria) this;
         }
 
@@ -932,66 +1062,6 @@ public class EmergencyExecRecordDetailExample {
 
         public Criteria andPidNotBetween(Integer value1, Integer value2) {
             addCriterion("pid not between", value1, value2, "pid");
-            return (Criteria) this;
-        }
-
-        public Criteria andServerIdIsNull() {
-            addCriterion("server_id is null");
-            return (Criteria) this;
-        }
-
-        public Criteria andServerIdIsNotNull() {
-            addCriterion("server_id is not null");
-            return (Criteria) this;
-        }
-
-        public Criteria andServerIdEqualTo(Integer value) {
-            addCriterion("server_id =", value, "serverId");
-            return (Criteria) this;
-        }
-
-        public Criteria andServerIdNotEqualTo(Integer value) {
-            addCriterion("server_id <>", value, "serverId");
-            return (Criteria) this;
-        }
-
-        public Criteria andServerIdGreaterThan(Integer value) {
-            addCriterion("server_id >", value, "serverId");
-            return (Criteria) this;
-        }
-
-        public Criteria andServerIdGreaterThanOrEqualTo(Integer value) {
-            addCriterion("server_id >=", value, "serverId");
-            return (Criteria) this;
-        }
-
-        public Criteria andServerIdLessThan(Integer value) {
-            addCriterion("server_id <", value, "serverId");
-            return (Criteria) this;
-        }
-
-        public Criteria andServerIdLessThanOrEqualTo(Integer value) {
-            addCriterion("server_id <=", value, "serverId");
-            return (Criteria) this;
-        }
-
-        public Criteria andServerIdIn(List<Integer> values) {
-            addCriterion("server_id in", values, "serverId");
-            return (Criteria) this;
-        }
-
-        public Criteria andServerIdNotIn(List<Integer> values) {
-            addCriterion("server_id not in", values, "serverId");
-            return (Criteria) this;
-        }
-
-        public Criteria andServerIdBetween(Integer value1, Integer value2) {
-            addCriterion("server_id between", value1, value2, "serverId");
-            return (Criteria) this;
-        }
-
-        public Criteria andServerIdNotBetween(Integer value1, Integer value2) {
-            addCriterion("server_id not between", value1, value2, "serverId");
             return (Criteria) this;
         }
     }

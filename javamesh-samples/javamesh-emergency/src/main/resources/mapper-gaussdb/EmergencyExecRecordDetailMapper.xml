@@ -371,19 +371,19 @@
 
     <select id="selectAllServerDetail" resultType="com.huawei.emergency.entity.EmergencyExecRecordDetail">
         select t1.detail_id,
-               IFNULL(t1.server_ip, 'local') server_ip,
+               NULLIF(t1.server_ip, 'local') server_ip,
                (CASE
-                    WHEN t1.`status` = '0' THEN
+                    WHEN t1.status = '0' THEN
                         'wait'
-                    WHEN t1.`status` = '1' THEN
+                    WHEN t1.status = '1' THEN
                         'process'
-                    WHEN t1.`status` IN ('2', '5') THEN
+                    WHEN t1.status IN ('2', '5') THEN
                         'finish'
-                    WHEN t1.`status` IN ('3', '4', '6') THEN
+                    WHEN t1.status IN ('3', '4', '6') THEN
                         'error'
-                    ELSE t1.`status`
+                    ELSE t1.status
                    END
-                   )                         `status`
+                   )                         status
         from emergency_exec_record_detail t1
         where t1.record_id = #{recordId}
           and is_valid = '1'

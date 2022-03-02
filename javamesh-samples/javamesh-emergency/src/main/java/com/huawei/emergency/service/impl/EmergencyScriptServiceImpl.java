@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) Ltd. 2021-2022. Huawei Technologies Co., All rights reserved
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.huawei.emergency.service.impl;
 
 import static org.ngrinder.common.util.CollectionUtils.newHashMap;
@@ -17,8 +33,11 @@ import com.huawei.common.util.FileUtil;
 import com.huawei.common.util.PasswordUtil;
 import com.huawei.emergency.dto.ArgusScript;
 import com.huawei.emergency.dto.ScriptManageDto;
-import com.huawei.emergency.entity.*;
-import com.huawei.emergency.entity.UserEntity;
+import com.huawei.emergency.entity.EmergencyElement;
+import com.huawei.emergency.entity.EmergencyElementExample;
+import com.huawei.emergency.entity.EmergencyScript;
+import com.huawei.emergency.entity.EmergencyScriptExample;
+import com.huawei.emergency.entity.User;
 import com.huawei.emergency.layout.DefaultElementProcessContext;
 import com.huawei.emergency.layout.ElementProcessContext;
 import com.huawei.emergency.layout.TestElementFactory;
@@ -63,6 +82,8 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -279,6 +300,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         if (StringUtils.isEmpty(script.getSubmitInfo())) {
             script.setSubmitInfo("");
         }
+        script.setUpdateTime(Timestamp.from(Instant.now()));
         count = mapper.insertSelective(script);
         if (count != 1) {
             return ResultCode.FAIL;
@@ -288,32 +310,16 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
 
     @Override
     public int updateScript(EmergencyScript script) {
-        if (isParamInvalid(script)) {
+        if (script.getScriptId() == null || StringUtils.isEmpty(script.getContent())) {
             return ResultCode.PARAM_INVALID;
         }
-        if (script.getScriptId() == null) {
-            return ResultCode.PARAM_INVALID;
-        }
-
-        // 脚本名是否修改了
-        String oldScriptName = mapper.selectScriptNameById(script.getScriptId());
-        String scriptName = script.getScriptName();
-        if (!oldScriptName.equals(scriptName)) {
-            EmergencyScriptExample example = new EmergencyScriptExample();
-            example.createCriteria().andScriptNameEqualTo(scriptName);
-            long count = mapper.countByExample(example);
-            if (count > 0) {
-                return ResultCode.SCRIPT_NAME_EXISTS;
-            }
-        }
-        script.setScriptStatus(TYPE_ZERO); // 变为待提审
-        script.setIsPublic(PRIVATE.equals(script.getIsPublic()) ? TYPE_ZERO : TYPE_ONE);
-        ScriptLanguageEnum scriptType = ScriptLanguageEnum.match(script.getScriptType(), ScriptTypeEnum.NORMAL);
-        if (scriptType == null) {
-            throw new ApiException("请选择正确的脚本语言");
-        }
-        script.setScriptType(scriptType.getValue());
-        return mapper.updateByPrimaryKeySelective(script);
+        EmergencyScript updateScript = new EmergencyScript();
+        updateScript.setScriptId(script.getScriptId());
+        updateScript.setContent(script.getContent());
+        updateScript.setParam(script.getParam());
+        updateScript.setScriptStatus(TYPE_ZERO); // 变为待提审
+        updateScript.setUpdateTime(Timestamp.from(Instant.now()));
+        return mapper.updateByPrimaryKeySelective(updateScript);
     }
 
     @Override
@@ -459,6 +465,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         newScript.setScriptUser(user.getUserName());
         newScript.setScriptStatus(TYPE_ZERO);
         newScript.setScriptGroup(user.getGroup());
+        newScript.setUpdateTime(Timestamp.from(Instant.now()));
         mapper.insertSelective(newScript);
         generateTemplate(newScript); // 生成编排模板
         return CommonResult.success(newScript);
@@ -535,6 +542,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             script.setScriptId(treeResponse.getScriptId());
             script.setContent(scriptContent);
             script.setScriptStatus(TYPE_ZERO);
+            script.setUpdateTime(Timestamp.from(Instant.now()));
             mapper.updateByPrimaryKeySelective(script);
             ArgusScript argusScript = new ArgusScript();
             argusScript.setPath(treeResponse.getPath());
@@ -593,6 +601,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         }
     }
 
+
     @Override
     public CommonResult queryGuiScript(int scriptId) {
         EmergencyElementExample rootElementExample = new EmergencyElementExample();
@@ -600,7 +609,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             .andScriptIdEqualTo(scriptId)
             .andParentIdIsNull()
             .andIsValidEqualTo(ValidEnum.VALID.getValue());
-        List<EmergencyElement> emergencyElements = elementMapper.selectByExampleWithBLOBs(rootElementExample);
+        List<EmergencyElement> emergencyElements = elementMapper.selectByExample(rootElementExample);
         if (emergencyElements.size() == 0) {
             return CommonResult.success();
         }
@@ -628,7 +637,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         elementExample.createCriteria()
             .andParentIdEqualTo(parent.getElementId())
             .andIsValidEqualTo(ValidEnum.VALID.getValue());
-        List<EmergencyElement> emergencyElements = elementMapper.selectByExampleWithBLOBs(elementExample);
+        List<EmergencyElement> emergencyElements = elementMapper.selectByExample(elementExample);
         for (EmergencyElement emergencyElement : emergencyElements) {
             TreeNode node = new TreeNode();
             node.setElementId(emergencyElement.getElementId());
@@ -670,6 +679,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         script.setContent(generateIdeScript(JwtAuthenticationTokenFilter.currentGrinderUser(), "", scriptManageDto.getForUrl(), script.getScriptName(), scriptLanguage.getLanguage(), scriptManageDto.isHasResource(), null));
         script.setScriptUser(user.getUserName());
         script.setScriptStatus(TYPE_ZERO);
+        script.setUpdateTime(Timestamp.from(Instant.now()));
         script.setScriptGroup(user.getGroup());
         mapper.insertSelective(script);
         return CommonResult.success(script);
@@ -677,8 +687,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
 
     @Override
     public CommonResult updateIdeScript(ScriptManageDto scriptManageDto) {
-
-        return null;
+        return CommonResult.success();
     }
 
     public boolean isScriptNameExist(String scriptName) {
