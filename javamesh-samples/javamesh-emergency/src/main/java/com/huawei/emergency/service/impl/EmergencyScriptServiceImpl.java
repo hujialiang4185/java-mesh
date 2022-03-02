@@ -307,6 +307,12 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             }
         }
         script.setScriptStatus(TYPE_ZERO); // 变为待提审
+        script.setIsPublic(PRIVATE.equals(script.getIsPublic()) ? TYPE_ZERO : TYPE_ONE);
+        ScriptLanguageEnum scriptType = ScriptLanguageEnum.match(script.getScriptType(), ScriptTypeEnum.NORMAL);
+        if (scriptType == null) {
+            throw new ApiException("请选择正确的脚本语言");
+        }
+        script.setScriptType(scriptType.getValue());
         return mapper.updateByPrimaryKeySelective(script);
     }
 
