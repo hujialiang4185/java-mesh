@@ -20,7 +20,6 @@ import static org.ngrinder.common.util.CollectionUtils.newHashMap;
 import static org.ngrinder.common.util.ExceptionUtils.processException;
 
 import com.huawei.common.api.CommonResult;
-import com.huawei.common.config.CommonConfig;
 import com.huawei.common.constant.FailedInfo;
 import com.huawei.common.constant.ResultCode;
 import com.huawei.common.constant.ScriptLanguageEnum;
@@ -33,11 +32,9 @@ import com.huawei.common.util.FileUtil;
 import com.huawei.common.util.PasswordUtil;
 import com.huawei.emergency.dto.ArgusScript;
 import com.huawei.emergency.dto.ScriptManageDto;
-import com.huawei.emergency.entity.EmergencyElement;
-import com.huawei.emergency.entity.EmergencyElementExample;
-import com.huawei.emergency.entity.EmergencyScript;
-import com.huawei.emergency.entity.EmergencyScriptExample;
-import com.huawei.emergency.entity.User;
+import com.huawei.emergency.entity.*;
+import com.huawei.common.util.*;
+import com.huawei.emergency.entity.UserEntity;
 import com.huawei.emergency.layout.DefaultElementProcessContext;
 import com.huawei.emergency.layout.ElementProcessContext;
 import com.huawei.emergency.layout.TestElementFactory;
@@ -71,7 +68,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -90,6 +86,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * 脚本管理service
  *
@@ -559,9 +559,9 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
      *
      * @param scriptId 脚本ID
      * @param parentId 父节点ID
-     * @param node 当前节点
-     * @param map 参数集合
-     * @param seq 顺序号
+     * @param node     当前节点
+     * @param map      参数集合
+     * @param seq      顺序号
      */
     private void updateOrchestrate(String userName,int scriptId, int parentId, TreeNode node, Map<String, Map> map, int seq, List<String> resourceList) {
         EmergencyElement element = new EmergencyElement();
@@ -600,7 +600,6 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             updateOrchestrate(userName,scriptId, element.getElementId(), node.getChildren().get(i), map, i + 1, resourceList);
         }
     }
-
 
     @Override
     public CommonResult queryGuiScript(int scriptId) {
@@ -711,22 +710,20 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         return script.getScriptName() + File.separator + script.getScriptName() + "." + scriptLanguageEnum.getSuffix();
     }
 
-    private String generateIdeScript(org.ngrinder.model.User user, String path, String url, String fileName,
-        String scriptType,
-        boolean createLibAndResources, String options) {
+    private String generateIdeScript(org.ngrinder.model.User user, String path, String testUrl, String fileName, String scriptType,
+                                     boolean createLibAndResources, String options) {
         String hostIp = "Test1";
-        String testUrl = url;
-        if (StringUtils.isEmpty(url)) {
-            testUrl = StringUtils.defaultIfBlank(url, "http://please_modify_this.com");
+        if (StringUtils.isEmpty(testUrl)) {
+            testUrl = StringUtils.defaultIfBlank(testUrl, "http://please_modify_this.com");
         } else {
-            hostIp = UrlUtils.getHost(url);
+            hostIp = UrlUtils.getHost(testUrl);
         }
+        ScriptHandler scriptHandler = fileEntryService.getScriptHandler(scriptType);
         Map<String, Object> map = newHashMap();
         map.put("url", testUrl);
         map.put("userName", user.getUserName());
         map.put("name", hostIp);
         map.put("options", options);
-        ScriptHandler scriptHandler = fileEntryService.getScriptHandler(scriptType);
         if (scriptHandler instanceof ProjectHandler) {
             String scriptContent = getScriptTemplate(map, scriptHandler.getExtension());
             scriptHandler.prepareScriptEnv(user, path, StringUtils.trimToEmpty(fileName), hostIp, testUrl,

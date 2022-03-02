@@ -24,6 +24,7 @@ import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.PlanStatus;
 import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ScheduleType;
+import com.huawei.common.constant.ScriptLanguageEnum;
 import com.huawei.common.constant.TaskTypeEnum;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.common.filter.JwtAuthenticationTokenFilter;
@@ -723,7 +724,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
 
     @Override
     public CommonResult updateTask(TaskNode taskNode) {
-        if (taskNode == null || taskNode.getKey() == null) {
+        if (taskNode == null || taskNode.getKey() == null ) {
             return CommonResult.failed("请选择要操作的任务");
         }
         EmergencyTask originTask = taskMapper.selectByPrimaryKey(taskNode.getKey());
@@ -793,10 +794,10 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     /**
      * 生成子任务
      *
-     * @param planDetail 父任务信息
+     * @param planDetail   父任务信息
      * @param childrenNode 子任务信息
-     * @param parentNo 父任务编号
-     * @param isSubTask 是否为子任务
+     * @param parentNo     父任务编号
+     * @param isSubTask    是否为子任务
      * @return
      */
     private void handleChildren(EmergencyPlanDetail planDetail, List<TaskNode> childrenNode, String parentNo,
