@@ -1,5 +1,8 @@
 package com.huawei.emergency.service.impl;
 
+import static org.ngrinder.common.util.CollectionUtils.newHashMap;
+import static org.ngrinder.common.util.ExceptionUtils.processException;
+
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.config.CommonConfig;
 import com.huawei.common.constant.FailedInfo;
@@ -15,7 +18,6 @@ import com.huawei.common.util.PasswordUtil;
 import com.huawei.emergency.dto.ArgusScript;
 import com.huawei.emergency.dto.ScriptManageDto;
 import com.huawei.emergency.entity.*;
-import com.huawei.common.util.*;
 import com.huawei.emergency.entity.UserEntity;
 import com.huawei.emergency.layout.DefaultElementProcessContext;
 import com.huawei.emergency.layout.ElementProcessContext;
@@ -41,20 +43,16 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang.StringUtils;
 import org.ngrinder.common.util.UrlUtils;
-import org.ngrinder.model.User;
 import org.ngrinder.script.handler.ProjectHandler;
 import org.ngrinder.script.handler.ScriptHandler;
 import org.ngrinder.script.model.FileEntry;
 import org.ngrinder.script.service.NfsFileEntryService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -71,10 +69,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 /**
  * 脚本管理service
  *
@@ -390,17 +384,6 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             return;
         }
         updateGrinderScript(script); // 更新脚本内容
-    }
-
-    /**
-     * 创建压测脚本文件夹
-     */
-    public void createGrinderScript() {
-        try {
-            fileEntryService.addFolder(JwtAuthenticationTokenFilter.currentGrinderUser(), "", CommonConfig.GRINDER_FOLDER);
-        } catch (IOException e) {
-            log.error("create grinder folder error.", e);
-        }
     }
 
     /**
