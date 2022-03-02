@@ -136,7 +136,6 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     @Autowired
     private NfsFileEntryService fileEntryService;
 
-
     @Autowired
     private Configuration freemarkerConfig;
 
@@ -560,9 +559,9 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
      *
      * @param scriptId 脚本ID
      * @param parentId 父节点ID
-     * @param node     当前节点
-     * @param map      参数集合
-     * @param seq      顺序号
+     * @param node 当前节点
+     * @param map 参数集合
+     * @param seq 顺序号
      */
     private void updateOrchestrate(String userName,int scriptId, int parentId, TreeNode node, Map<String, Map> map, int seq, List<String> resourceList) {
         EmergencyElement element = new EmergencyElement();
@@ -711,13 +710,15 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         return script.getScriptName() + File.separator + script.getScriptName() + "." + scriptLanguageEnum.getSuffix();
     }
 
-    private String generateIdeScript(org.ngrinder.model.User user, String path, String testUrl, String fileName, String scriptType,
-                                     boolean createLibAndResources, String options) {
+    private String generateIdeScript(org.ngrinder.model.User user, String path, String url, String fileName,
+        String scriptType,
+        boolean createLibAndResources, String options) {
         String hostIp = "Test1";
-        if (StringUtils.isEmpty(testUrl)) {
-            testUrl = StringUtils.defaultIfBlank(testUrl, "http://please_modify_this.com");
+        String testUrl = url;
+        if (StringUtils.isEmpty(url)) {
+            testUrl = StringUtils.defaultIfBlank(url, "http://please_modify_this.com");
         } else {
-            hostIp = UrlUtils.getHost(testUrl);
+            hostIp = UrlUtils.getHost(url);
         }
         ScriptHandler scriptHandler = fileEntryService.getScriptHandler(scriptType);
         Map<String, Object> map = newHashMap();
