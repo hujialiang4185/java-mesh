@@ -62,7 +62,7 @@ public class LocalScriptExecutor implements ScriptExecutor {
         String fileName = "";
         try {
             fileName = createScriptFile(scriptExecInfo.getScriptName(), scriptExecInfo.getScriptContent());
-            return exec(commands(fileName, scriptExecInfo.getParams()), logCallback, scriptExecInfo.getId(), scriptExecInfo.getTimeOut());
+            return exec(commands(fileName, scriptExecInfo.getParams()), logCallback, scriptExecInfo.getDetailId(), scriptExecInfo.getTimeOut());
         } catch (FileNotFoundException e) {
             return ExecResult.error("Please check out your scriptLocation.");
         } catch (IOException e) {

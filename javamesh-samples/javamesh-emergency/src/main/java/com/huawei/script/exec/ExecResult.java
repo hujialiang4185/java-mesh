@@ -19,14 +19,11 @@ public class ExecResult {
     public static final int FAIL_CODE = -1;
     public static final int ERROR_CODE = -99;
 
+    @JsonProperty("detailId")
+    private int detailId;
     private int code;
     private String msg;
 
-    @JsonProperty("recordId")
-    private int recordId;
-    private String info;
-    @JsonProperty("errorInfo")
-    private String errorInfo;
 
     public static ExecResult success(String msg) {
         ExecResult execResult = new ExecResult();

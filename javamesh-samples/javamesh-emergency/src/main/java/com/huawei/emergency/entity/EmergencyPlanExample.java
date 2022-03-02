@@ -315,6 +315,76 @@ public class EmergencyPlanExample {
             return (Criteria) this;
         }
 
+        public Criteria andPlanGroupIsNull() {
+            addCriterion("plan_group is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andPlanGroupIsNotNull() {
+            addCriterion("plan_group is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andPlanGroupEqualTo(String value) {
+            addCriterion("plan_group =", value, "planGroup");
+            return (Criteria) this;
+        }
+
+        public Criteria andPlanGroupNotEqualTo(String value) {
+            addCriterion("plan_group <>", value, "planGroup");
+            return (Criteria) this;
+        }
+
+        public Criteria andPlanGroupGreaterThan(String value) {
+            addCriterion("plan_group >", value, "planGroup");
+            return (Criteria) this;
+        }
+
+        public Criteria andPlanGroupGreaterThanOrEqualTo(String value) {
+            addCriterion("plan_group >=", value, "planGroup");
+            return (Criteria) this;
+        }
+
+        public Criteria andPlanGroupLessThan(String value) {
+            addCriterion("plan_group <", value, "planGroup");
+            return (Criteria) this;
+        }
+
+        public Criteria andPlanGroupLessThanOrEqualTo(String value) {
+            addCriterion("plan_group <=", value, "planGroup");
+            return (Criteria) this;
+        }
+
+        public Criteria andPlanGroupLike(String value) {
+            addCriterion("plan_group like", value, "planGroup");
+            return (Criteria) this;
+        }
+
+        public Criteria andPlanGroupNotLike(String value) {
+            addCriterion("plan_group not like", value, "planGroup");
+            return (Criteria) this;
+        }
+
+        public Criteria andPlanGroupIn(List<String> values) {
+            addCriterion("plan_group in", values, "planGroup");
+            return (Criteria) this;
+        }
+
+        public Criteria andPlanGroupNotIn(List<String> values) {
+            addCriterion("plan_group not in", values, "planGroup");
+            return (Criteria) this;
+        }
+
+        public Criteria andPlanGroupBetween(String value1, String value2) {
+            addCriterion("plan_group between", value1, value2, "planGroup");
+            return (Criteria) this;
+        }
+
+        public Criteria andPlanGroupNotBetween(String value1, String value2) {
+            addCriterion("plan_group not between", value1, value2, "planGroup");
+            return (Criteria) this;
+        }
+
         public Criteria andCreateUserIsNull() {
             addCriterion("create_user is null");
             return (Criteria) this;

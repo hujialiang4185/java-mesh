@@ -7,12 +7,14 @@ import com.huawei.emergency.entity.JwtUser;
 import com.huawei.emergency.entity.UserEntity;
 import com.huawei.emergency.layout.TreeResponse;
 import com.huawei.script.exec.log.LogResponse;
+
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.List;
-import java.util.Map;
 
 public interface EmergencyScriptService {
     CommonResult<List<EmergencyScript>> listScript(JwtUser jwtUser, String scriptName, String scriptUser, int pageSize, int current, String sorter, String order, String status);
@@ -68,9 +70,6 @@ public interface EmergencyScriptService {
      * @return
      */
     CommonResult queryGuiScript(int scriptId);
-
-
-    void exec(HttpServletRequest request);
 
     /**
      * 创建IDE脚本

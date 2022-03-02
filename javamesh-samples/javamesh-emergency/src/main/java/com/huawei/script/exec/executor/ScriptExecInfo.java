@@ -20,7 +20,7 @@ public class ScriptExecInfo {
     /**
      * 任务详情ID
      */
-    private int id;
+    private int detailId;
     /**
      * 脚本名称
      */

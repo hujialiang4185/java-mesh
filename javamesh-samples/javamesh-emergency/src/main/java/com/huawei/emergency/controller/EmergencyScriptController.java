@@ -7,7 +7,6 @@ package com.huawei.emergency.controller;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.FailedInfo;
 import com.huawei.common.constant.ResultCode;
-import com.huawei.emergency.dto.ArgusScript;
 import com.huawei.emergency.dto.ScriptManageDto;
 import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyScript;
@@ -18,17 +17,24 @@ import com.huawei.emergency.service.EmergencyExecService;
 import com.huawei.emergency.service.EmergencyScriptService;
 import com.huawei.script.exec.ExecResult;
 import com.huawei.script.exec.log.LogResponse;
+
 import io.swagger.annotations.Api;
-import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
+
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * 脚本管理controller
@@ -226,7 +232,7 @@ public class EmergencyScriptController {
 
     @GetMapping("/debugLog")
     public LogResponse debugLog(@RequestParam(value = "debug_id") int id,
-                                @RequestParam(value = "line", defaultValue = "1") int lineNum) {
+        @RequestParam(value = "line", defaultValue = "1") int lineNum) {
         int lineIndex = lineNum;
         if (lineIndex <= 0) {
             lineIndex = 1;
@@ -304,15 +310,10 @@ public class EmergencyScriptController {
         return selectScript(scriptId);
     }
 
-    @GetMapping("/exec")
-    public void exec(HttpServletRequest request) {
-        service.exec(request);
-    }
-
     @PostMapping("/execComplete")
     public CommonResult execComplete(@RequestBody ExecResult execResult) {
-        if (execResult.getRecordId() == 0) {
-            return CommonResult.failed("recordId is valid. ");
+        if (execResult.getDetailId() == 0) {
+            return CommonResult.failed("detailId is valid. ");
         }
         return execService.execComplete(execResult);
     }

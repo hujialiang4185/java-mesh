@@ -13,7 +13,6 @@ import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.emergency.dto.PlanQueryDto;
 import com.huawei.emergency.dto.SceneExecDto;
-import com.huawei.emergency.dto.TestReportDto;
 import com.huawei.emergency.entity.EmergencyExec;
 import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyExecRecordDetail;
@@ -40,13 +39,10 @@ import com.huawei.script.exec.log.LogResponse;
 
 import com.huawei.script.exec.session.ServerInfo;
 import lombok.Setter;
-import net.grinder.util.Pair;
 import org.apache.commons.lang.StringUtils;
 import org.ngrinder.model.PerfTest;
-import org.ngrinder.perftest.service.PerfTestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -309,7 +305,10 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
         oldRecord.setRecordId(null);
         oldRecord.setLog(null);
         oldRecord.setStatus(RecordStatus.PENDING.getValue());
-        planService.createPerfTestByTestId(oldRecord); // 更新压测任务
+        if (oldRecord.getPerfTestId() != null) {
+            PerfTest perfTest = planService.copyPerfTestByTestId(oldRecord.getPerfTestId()); // 更新压测任务
+            oldRecord.setPerfTestId(perfTest.getId().intValue());
+        }
         recordMapper.insertSelective(oldRecord);
         threadPoolExecutor.execute(handlerFactory.handle(oldRecord));
         return CommonResult.success(oldRecord);
@@ -475,7 +474,7 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
 
     @Override
     public CommonResult execComplete(ExecResult execResult) {
-        EmergencyExecRecordDetail recordDetail = recordDetailMapper.selectByPrimaryKey(execResult.getRecordId());
+        EmergencyExecRecordDetail recordDetail = recordDetailMapper.selectByPrimaryKey(execResult.getDetailId());
         if (recordDetail == null || ValidEnum.IN_VALID.getValue().equals(recordDetail.getIsValid())) {
             return CommonResult.failed("detailId is invalid");
         }
@@ -483,13 +482,7 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
         if (record == null || ValidEnum.IN_VALID.getValue().equals(record.getIsValid())) {
             return CommonResult.failed("detailId is invalid");
         }
-        ExecResult result;
-        if (StringUtils.isNotEmpty(execResult.getErrorInfo())) {
-            result = ExecResult.error(execResult.getErrorInfo());
-        } else {
-            result = ExecResult.success(execResult.getInfo());
-        }
-        ExecResult finalResult = result;
+        ExecResult finalResult = execResult;
         threadPoolExecutor.execute(() -> handlerFactory.complete(record, recordDetail, finalResult));
         return CommonResult.success();
     }
