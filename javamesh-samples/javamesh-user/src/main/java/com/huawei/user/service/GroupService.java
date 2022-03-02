@@ -2,6 +2,7 @@ package com.huawei.user.service;
 
 import com.huawei.user.common.api.CommonResult;
 import com.huawei.user.entity.EmergencyGroup;
+import com.huawei.user.entity.UserEntity;
 import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -15,5 +16,5 @@ public interface GroupService {
 
     int deleteGroup(int[] groupId) throws MySQLIntegrityConstraintViolationException;
 
-    CommonResult searchGroup(HttpServletRequest request, String groupName);
+    CommonResult searchGroup(UserEntity user, String groupName);
 }

@@ -1,27 +1,24 @@
 package com.huawei.user.service;
 
-import com.alibaba.fastjson.JSONObject;
 import com.huawei.user.common.api.CommonResult;
+import com.huawei.user.entity.JwtUser;
 import com.huawei.user.entity.UserEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 
 public interface UserService {
+    CommonResult getUserInfo(HttpServletResponse response, JwtUser jwtUser);
 
-    JSONObject login(String username, String password, String nativeLanguage, String userTimezone);
-
-    CommonResult getUserInfo(HttpServletRequest request);
-
-    String logout();
-
-    String changePwd(HttpServletRequest request,Map<String, String> param);
+    String changePwd(UserEntity user,Map<String, String> param);
 
     String register(UserEntity entity);
 
     CommonResult listUser(String nickName, String userName, String role, String status, int pageSize, int current, String sorter, String order);
 
-    String suspend(HttpServletRequest request, String[] usernames);
+    String suspend(UserEntity user, String[] usernames);
 
     String enable(String[] usernames);
 
@@ -29,9 +26,11 @@ public interface UserService {
 
     CommonResult resetPwd(UserEntity user);
 
-    String updateUser(HttpServletRequest request,UserEntity user);
+    String updateUser(UserEntity loginUser,UserEntity user);
 
-    String getUserStatus(String userName);
+    CommonResult approverSearch(String groupId, JwtUser jwtUser);
 
-    CommonResult approverSearch(String groupId, HttpServletRequest request);
+    UserDetails loadUserByUsername(String username);
+
+    CommonResult login(HttpServletResponse response,String username, String password);
 }

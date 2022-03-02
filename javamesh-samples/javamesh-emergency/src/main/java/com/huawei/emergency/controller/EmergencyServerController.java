@@ -20,7 +20,7 @@ import com.huawei.common.api.CommonPage;
 import com.huawei.common.api.CommonResult;
 import com.huawei.emergency.dto.ServerDto;
 import com.huawei.emergency.entity.EmergencyServer;
-import com.huawei.emergency.entity.User;
+import com.huawei.emergency.entity.UserEntity;
 import com.huawei.emergency.service.EmergencyServerService;
 import io.swagger.annotations.Api;
 import org.slf4j.Logger;
@@ -34,7 +34,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -120,9 +119,9 @@ public class EmergencyServerController {
     private String parseUserName(HttpServletRequest request) {
         String userName = "";
         try {
-            User user = (User) request.getSession().getAttribute("userInfo");
-            if (user != null) {
-                userName = user.getNickName();
+            UserEntity userEntity = (UserEntity) request.getSession().getAttribute("userInfo");
+            if (userEntity != null) {
+                userName = userEntity.getNickName();
             }
         } catch (Exception e) {
             LOGGER.error("get user info error.", e);

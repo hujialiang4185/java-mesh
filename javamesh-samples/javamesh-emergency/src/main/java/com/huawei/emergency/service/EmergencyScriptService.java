@@ -3,40 +3,39 @@ package com.huawei.emergency.service;
 import com.huawei.common.api.CommonResult;
 import com.huawei.emergency.dto.ScriptManageDto;
 import com.huawei.emergency.entity.EmergencyScript;
+import com.huawei.emergency.entity.JwtUser;
+import com.huawei.emergency.entity.UserEntity;
 import com.huawei.emergency.layout.TreeResponse;
 import com.huawei.script.exec.log.LogResponse;
-
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
+import java.util.Map;
 
 public interface EmergencyScriptService {
-    CommonResult<List<EmergencyScript>> listScript(HttpServletRequest request, String scriptName, String scriptUser,
-        int pageSize, int current, String sorter, String order, String status);
+    CommonResult<List<EmergencyScript>> listScript(JwtUser jwtUser, String scriptName, String scriptUser, int pageSize, int current, String sorter, String order, String status);
 
     int deleteScripts(int[] scriptIds);
 
     void downloadScript(int scriptId, HttpServletResponse response);
 
-    int uploadScript(HttpServletRequest request, EmergencyScript script, MultipartFile file);
+    int uploadScript(UserEntity user, EmergencyScript script, MultipartFile file);
 
     EmergencyScript selectScript(int scriptId);
 
-    int insertScript(HttpServletRequest request, EmergencyScript script);
+    int insertScript(UserEntity user, EmergencyScript script);
 
     int updateScript(EmergencyScript script);
 
-    List<String> searchScript(HttpServletRequest request, String scriptName, String status, String scriptType);
+    List<String> searchScript(JwtUser jwtUser, String scriptName, String status, String scriptType);
 
     EmergencyScript getScriptByName(String scriptName);
 
-    String submitReview(HttpServletRequest request, EmergencyScript script);
+    String submitReview(JwtUser jwtUser, EmergencyScript script);
 
-    int approve(Map<String, Object> map);
+    int approve(String userName, Map<String, Object> map);
 
     CommonResult debugScript(int scriptId);
 
@@ -52,7 +51,7 @@ public interface EmergencyScriptService {
      * @param script 脚本信息
      * @return
      */
-    CommonResult createGuiScript(EmergencyScript script);
+    CommonResult createGuiScript(UserEntity user, EmergencyScript script);
 
     /**
      * 更新GUI脚本
@@ -60,7 +59,7 @@ public interface EmergencyScriptService {
      * @param treeResponse
      * @return
      */
-    CommonResult updateGuiScript(TreeResponse treeResponse);
+    CommonResult updateGuiScript(String userName, TreeResponse treeResponse);
 
     /**
      * 查询编排脚本
@@ -70,13 +69,16 @@ public interface EmergencyScriptService {
      */
     CommonResult queryGuiScript(int scriptId);
 
+
+    void exec(HttpServletRequest request);
+
     /**
      * 创建IDE脚本
      *
      * @param scriptManageDto 脚本信息
      * @return
      */
-    CommonResult createIdeScript(ScriptManageDto scriptManageDto);
+    CommonResult createIdeScript(UserEntity user,ScriptManageDto scriptManageDto);
 
     /**
      * 修改IDE脚本

@@ -3,8 +3,10 @@ package com.huawei.user.controller;
 import com.huawei.user.common.api.CommonResult;
 import com.huawei.user.common.constant.FailedInfo;
 import com.huawei.user.entity.EmergencyGroup;
+import com.huawei.user.entity.JwtUser;
 import com.huawei.user.service.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -49,8 +51,8 @@ public class GroupController {
     }
 
     @GetMapping("/group/search")
-    public CommonResult search(HttpServletRequest request,
+    public CommonResult search(UsernamePasswordAuthenticationToken authentication,
                                @RequestParam(value = "value", required = false) String groupName) {
-        return service.searchGroup(request,groupName);
+        return service.searchGroup(((JwtUser) authentication.getPrincipal()).getUserEntity(),groupName);
     }
 }

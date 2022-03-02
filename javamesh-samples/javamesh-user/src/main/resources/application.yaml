@@ -54,6 +54,18 @@ mybatis:
     map-underscore-to-camel-case: true
   type-aliases-package: com.huawei.user.mapper
   mapper-locations: classpath*:mapper/*.xml
+jwt:
+  tokenHeader: Authorization #JWT存储的请求头
+  secret: mall-admin-secret #JWT加解密使用的密钥
+  expiration: 604800 #JWT的超期限时间(60*60*24*7)
+  tokenHead: 'Bearer '  #JWT负载中拿到开头
+secure:
+  ignored:
+    urls: #安全路径白名单
+      - /api/user/login
+      - /api/user/me
+      - /api/user/registe
+      - /api/user/logout
 #用户名
 user_name: admin
 key: 1234123412341234

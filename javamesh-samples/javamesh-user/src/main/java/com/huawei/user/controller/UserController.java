@@ -2,18 +2,21 @@ package com.huawei.user.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.huawei.user.common.api.CommonResult;
+import com.huawei.user.common.constant.FailedInfo;
+import com.huawei.user.entity.JwtUser;
 import com.huawei.user.entity.UserEntity;
 import com.huawei.user.service.UserService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.security.Principal;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api")
@@ -26,35 +29,24 @@ public class UserController {
     @PostMapping("/user/login")
     public CommonResult login(HttpServletResponse response, @RequestBody JSONObject params) {
         String username = params.getString("username");
-        String enabled = service.getUserStatus(username);
-        if (StringUtils.isNotBlank(enabled) && enabled.equals("F")) {
-            return CommonResult.failed("账号已被禁用");
-        }
         String password = params.getString("password");
-        String nativeLanguage = "cn";
-        String userTimezone = "Asia/Shanghai";
-        JSONObject jsonObject = service.login(username, password, nativeLanguage, userTimezone);
-        if (jsonObject != null && Boolean.parseBoolean(jsonObject.get("success").toString())) {
-            String sessionId = jsonObject.get("JSESSIONID").toString();
-            Cookie cookie = new Cookie("JSESSIONID", sessionId);
-            cookie.setMaxAge(12 * 60 * 60);
-            cookie.setPath("/");
-            cookie.setHttpOnly(true);
-            response.addCookie(cookie);
-            return CommonResult.success();
-        } else {
-            return CommonResult.failed("登录账号或密码不存在");
-        }
+        return service.login(response,username, password);
     }
 
     @GetMapping("/user/me")
-    public CommonResult getUserInfo(HttpServletRequest request) {
-        return service.getUserInfo(request);
+    public CommonResult getUserInfo(HttpServletResponse response, UsernamePasswordAuthenticationToken authentication) {
+        if (authentication == null) {
+            response.setStatus(200);
+            return CommonResult.failed(FailedInfo.GET_USER_FAILED);
+        }
+        JwtUser jwtUser = (JwtUser) authentication.getPrincipal();
+        return service.getUserInfo(response, jwtUser);
     }
 
     @PostMapping("/user/chagnePwd")
-    public CommonResult changePwd(HttpServletRequest request, @RequestBody Map<String, String> param) {
-        String result = service.changePwd(request, param);
+    public CommonResult changePwd(UsernamePasswordAuthenticationToken authentication, @RequestBody Map<String, String> param) {
+        UserEntity user = ((JwtUser) authentication.getPrincipal()).getUserEntity();
+        String result = service.changePwd(user, param);
         if (!result.equals(SUCCESS)) {
             return CommonResult.failed(result);
         }
@@ -63,19 +55,21 @@ public class UserController {
 
     @PostMapping("/user/logout")
     public CommonResult logout(HttpServletResponse response) {
-        String logout = service.logout();
-        Cookie cookie = new Cookie("JSESSIONID", null);
+        Cookie cookie = new Cookie("token", null);
         cookie.setMaxAge(0);
+        cookie.setPath("/");
         response.addCookie(cookie);
-        return CommonResult.success(logout);
+        response.setStatus(200);
+        return CommonResult.success();
     }
 
     @PostMapping("/user/registe")
-    public CommonResult register(@RequestBody UserEntity entity) {
+    public CommonResult register(HttpServletResponse response,@RequestBody UserEntity entity) {
         String result = service.register(entity);
         if (!result.equals(SUCCESS)) {
             return CommonResult.failed(result);
         }
+        response.setStatus(200);
         return CommonResult.success(result);
     }
 
@@ -92,9 +86,8 @@ public class UserController {
     }
 
     @PostMapping("/user/batchDeactive")
-    public CommonResult suspend(HttpServletRequest request, @RequestBody Map<String, String[]> param) {
-        String[] usernames = param.get("username");
-        String result = service.suspend(request, usernames);
+    public CommonResult suspend(UsernamePasswordAuthenticationToken authentication, @RequestBody Map<String, String[]> param) {
+        String result = service.suspend(((JwtUser) authentication.getPrincipal()).getUserEntity(), param.get("username"));
         if (result.equals(SUCCESS)) {
             return CommonResult.success(result);
         } else {
@@ -124,8 +117,8 @@ public class UserController {
     }
 
     @PutMapping("/user")
-    public CommonResult updateUser(HttpServletRequest request,@RequestBody UserEntity user) {
-        String result = service.updateUser(request,user);
+    public CommonResult updateUser(UsernamePasswordAuthenticationToken authentication,@RequestBody UserEntity user) {
+        String result = service.updateUser(((JwtUser) authentication.getPrincipal()).getUserEntity(),user);
         if (result.equals(SUCCESS)) {
             return CommonResult.success(result);
         } else {
@@ -134,7 +127,7 @@ public class UserController {
     }
 
     @GetMapping("/user/approver/search")
-    public CommonResult approverSearch(@RequestParam(value = "group_id", required = false) String groupId, HttpServletRequest request) {
-        return service.approverSearch(groupId,request);
+    public CommonResult approverSearch(@RequestParam(value = "group_id", required = false) String groupId, UsernamePasswordAuthenticationToken authentication) {
+        return service.approverSearch(groupId,(JwtUser) authentication.getPrincipal());
     }
 }

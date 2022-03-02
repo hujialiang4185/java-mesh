@@ -25,6 +25,7 @@ public class FailedInfo {
     public static final String ADMIN_HAS_NOT_GROUP = "当前管理员没有自己所属的分组";
     public static final String USER_HAVE_NOT_GROUP = "用户没有分组,请先对用户分组后操作";
     public static final String CANNOT_UPDATE_OTHER_GROUP_USERS = "不能修改其他分组的用户";
+    public static final String GET_USER_FAILED = "获取用户信息失败";
 
     private FailedInfo() {
     }

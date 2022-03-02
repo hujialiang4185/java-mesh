@@ -8,8 +8,9 @@ import com.huawei.common.api.CommonPage;
 import com.huawei.common.api.CommonResult;
 import com.huawei.emergency.dto.PlanQueryParams;
 import com.huawei.emergency.dto.TaskNode;
+import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyPlan;
-import org.ngrinder.model.PerfTest;
+import com.huawei.emergency.entity.JwtUser;
 
 import java.util.List;
 
@@ -61,7 +62,7 @@ public interface EmergencyPlanService extends EmergencyCommonService<EmergencyPl
 
     CommonResult addTask(TaskNode taskNode);
 
-    CommonResult plan(CommonPage<PlanQueryParams> params);
+    CommonResult plan(CommonPage<PlanQueryParams> params, JwtUser jwtUser);
 
     CommonResult save(int planId, List<TaskNode> listNodes, String userName);
 
@@ -71,5 +72,5 @@ public interface EmergencyPlanService extends EmergencyCommonService<EmergencyPl
 
     CommonResult updateTask(TaskNode taskNode);
 
-    PerfTest copyPerfTestByTestId(Integer perfTestId);
+    void createPerfTestByTestId(EmergencyExecRecord record);
 }

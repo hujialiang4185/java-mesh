@@ -4,6 +4,7 @@
 
 package com.huawei.emergency.mapper;
 
+import com.huawei.emergency.entity.UserEntity;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -23,4 +24,6 @@ public interface UserMapper {
     String getUserStatus(String userName);
 
     String getGroupByUser(String userName);
+
+    UserEntity selectUserByName(String username);
 }

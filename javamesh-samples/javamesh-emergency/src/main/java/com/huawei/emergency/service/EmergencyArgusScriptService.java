@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServletRequest;
  * @since 2021-12-27
  **/
 public interface EmergencyArgusScriptService {
-    CommonResult createArgusOrchestrate(ArgusScript script);
+    CommonResult createArgusOrchestrate(String userName,ArgusScript script);
 
     /**
      * 获取压测脚本的编排脚本信息
@@ -35,14 +35,14 @@ public interface EmergencyArgusScriptService {
      * @param path 压测脚本路径
      * @return
      */
-    CommonResult getArgusOrchestrate(String path);
+    CommonResult getArgusOrchestrate(String userName,String path);
 
     /**
      * 更新压测脚本的编排脚本信息
      *
-     * @param request
+     * @param userName
      * @param treeResponse
      * @return
      */
-    CommonResult updateArgusOrchestrate(HttpServletRequest request, TreeResponse treeResponse);
+    CommonResult updateArgusOrchestrate(String userName, TreeResponse treeResponse);
 }

@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
+public class UserEntity {
 
     private Long userId;
 
@@ -25,7 +25,9 @@ public class User {
 
     private String group;
 
-    public User(String userName, String nickName, String role, List<String> auth,String group) {
+    private String enabled;
+
+    public UserEntity(String userName, String nickName, String role, List<String> auth, String group) {
         this.userName = userName;
         this.nickName = nickName;
         this.role = role;
