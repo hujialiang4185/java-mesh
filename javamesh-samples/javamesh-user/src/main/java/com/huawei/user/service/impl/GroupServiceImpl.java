@@ -71,8 +71,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public CommonResult searchGroup(HttpServletRequest request, String groupName) {
-        UserEntity user = (UserEntity) request.getSession().getAttribute("userInfo");
+    public CommonResult searchGroup(UserEntity user, String groupName) {
         String userName = user.getUserName();
         if (!userName.equals("admin")) {
             String[] result = new String[1];

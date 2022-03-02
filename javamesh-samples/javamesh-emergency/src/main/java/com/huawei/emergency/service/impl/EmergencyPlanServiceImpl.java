@@ -25,24 +25,13 @@ import com.huawei.common.constant.ScheduleType;
 import com.huawei.common.constant.ScriptLanguageEnum;
 import com.huawei.common.constant.TaskTypeEnum;
 import com.huawei.common.constant.ValidEnum;
-import com.huawei.common.filter.UserFilter;
+import com.huawei.common.filter.JwtAuthenticationTokenFilter;
 import com.huawei.common.ws.WebSocketServer;
 import com.huawei.emergency.dto.PlanDetailQueryDto;
 import com.huawei.emergency.dto.PlanQueryDto;
 import com.huawei.emergency.dto.PlanQueryParams;
 import com.huawei.emergency.dto.TaskNode;
-import com.huawei.emergency.entity.EmergencyExec;
-import com.huawei.emergency.entity.EmergencyExecRecord;
-import com.huawei.emergency.entity.EmergencyExecRecordExample;
-import com.huawei.emergency.entity.EmergencyExecRecordWithBLOBs;
-import com.huawei.emergency.entity.EmergencyPlan;
-import com.huawei.emergency.entity.EmergencyPlanDetail;
-import com.huawei.emergency.entity.EmergencyPlanDetailExample;
-import com.huawei.emergency.entity.EmergencyPlanExample;
-import com.huawei.emergency.entity.EmergencyScript;
-import com.huawei.emergency.entity.EmergencyScriptExample;
-import com.huawei.emergency.entity.EmergencyTask;
-import com.huawei.emergency.entity.User;
+import com.huawei.emergency.entity.*;
 import com.huawei.emergency.mapper.EmergencyExecMapper;
 import com.huawei.emergency.mapper.EmergencyExecRecordDetailMapper;
 import com.huawei.emergency.mapper.EmergencyExecRecordMapper;
@@ -164,7 +153,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         }
         EmergencyPlan insertPlan = new EmergencyPlan();
         insertPlan.setPlanName(emergencyPlan.getPlanName());
-        insertPlan.setCreateUser(UserFilter.currentUserName());
+        insertPlan.setCreateUser(emergencyPlan.getCreateUser());
         insertPlan.setPlanGroup(emergencyPlan.getPlanGroup());
         insertPlan.setUpdateTime(new Date());
         insertPlan.setStatus(PlanStatus.NEW.getValue());
@@ -290,7 +279,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         }
         newTest.setId(null);
         newTest.setCreatedDate(new Date());
-        newTest.setCreatedUser(UserFilter.currentGrinderUser());
+        newTest.setCreatedUser(JwtAuthenticationTokenFilter.currentGrinderUser());
         newTest.setStatus(Status.READY);
         if (StringUtils.isNotEmpty(record.getServerId())) {
             final List<String> allServerIds =
@@ -302,7 +291,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
                 LOGGER.warn("Can't found special agent to run. sceneId is {}, taskId is {}", record.getSceneId(), record.getTaskId());
             }
         }
-        PerfTest perfTest = perfTestController.saveOne(UserFilter.currentGrinderUser(), newTest);
+        PerfTest perfTest = perfTestController.saveOne(JwtAuthenticationTokenFilter.currentGrinderUser(), newTest);
         LOGGER.info("create perfTest {}", perfTest.getId());
         record.setPerfTestId(perfTest.getId().intValue());
     }
@@ -540,7 +529,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             task.setTaskType(taskType.getValue());
             if (taskType == TaskTypeEnum.CUSTOM) { // 创建自定义脚本压测任务
                 PerfTest perfTest = taskNode.parse();
-                perfTest.setCreatedUser(UserFilter.currentGrinderUser());
+                perfTest.setCreatedUser(JwtAuthenticationTokenFilter.currentGrinderUser());
                 perfTest.setCreatedDate(new Date());
                 perfTest.setScriptName(task.getScriptName());
                 EmergencyScriptExample scriptExample = new EmergencyScriptExample();
@@ -549,7 +538,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
                 if (emergencyScripts.size() > 0) {
                     perfTest.setScriptName(scriptService.grinderPath(emergencyScripts.get(0)));
                 }
-                PerfTest insertPerfTest = perfTestController.saveOne(UserFilter.currentGrinderUser(), perfTest);
+                PerfTest insertPerfTest = perfTestController.saveOne(JwtAuthenticationTokenFilter.currentGrinderUser(), perfTest);
                 if (insertPerfTest == null || insertPerfTest.getId() == null) {
                     return CommonResult.failed("创建压测任务失败");
                 }
@@ -568,7 +557,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     }
 
     @Override
-    public CommonResult plan(CommonPage<PlanQueryParams> params) {
+    public CommonResult plan(CommonPage<PlanQueryParams> params, JwtUser jwtUser) {
         Page<PlanQueryDto> pageInfo = PageHelper
             .startPage(params.getPageIndex(), params.getPageSize(), StringUtils.isEmpty(params.getSortType()) ? "" :
                 params.getSortField() + System.lineSeparator() + params.getSortType())
@@ -576,10 +565,9 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
                 planMapper.queryPlanDto(params.getObject());
             });
         List<PlanQueryDto> result = pageInfo.getResult();
-        User user = UserFilter.currentUser();
-        List<String> auth = user.getAuth();
-        String userName = user.getUserName();
-        String group = user.getGroup();
+        List<String> auth = jwtUser.getAuthList();
+        String userName = jwtUser.getUsername();
+        String group = jwtUser.getGroupName();
         // 查询明细
         result.forEach(planQueryDto -> {
             if ("approving".equals(planQueryDto.getStatus()) && ("admin".equals(userName) || (

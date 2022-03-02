@@ -10,6 +10,7 @@ import com.huawei.emergency.dto.PlanQueryParams;
 import com.huawei.emergency.dto.TaskNode;
 import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyPlan;
+import com.huawei.emergency.entity.JwtUser;
 
 import java.util.List;
 
@@ -61,7 +62,7 @@ public interface EmergencyPlanService extends EmergencyCommonService<EmergencyPl
 
     CommonResult addTask(TaskNode taskNode);
 
-    CommonResult plan(CommonPage<PlanQueryParams> params);
+    CommonResult plan(CommonPage<PlanQueryParams> params, JwtUser jwtUser);
 
     CommonResult save(int planId, List<TaskNode> listNodes, String userName);
 

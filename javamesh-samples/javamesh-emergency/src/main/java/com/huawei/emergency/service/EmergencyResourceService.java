@@ -27,7 +27,7 @@ import javax.servlet.ServletOutputStream;
  * @since 2022-01-14
  **/
 public interface EmergencyResourceService {
-    CommonResult upload(int scriptId, String originalFilename, InputStream inputStream);
+    CommonResult upload(String userName,int scriptId, String originalFilename, InputStream inputStream);
 
     void refreshResource(int scriptId, List<String> resourceList);
 

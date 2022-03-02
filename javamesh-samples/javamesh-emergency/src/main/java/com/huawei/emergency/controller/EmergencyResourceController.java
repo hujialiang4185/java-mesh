@@ -18,6 +18,7 @@ package com.huawei.emergency.controller;
 
 import com.huawei.common.api.CommonResult;
 import com.huawei.emergency.entity.EmergencyResource;
+import com.huawei.emergency.entity.JwtUser;
 import com.huawei.emergency.layout.TestElementFactory;
 import com.huawei.emergency.service.EmergencyResourceService;
 import io.swagger.annotations.Api;
@@ -26,6 +27,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -66,7 +68,8 @@ public class EmergencyResourceController {
      */
     @ApiOperation(value = "上传资源文件", notes = "用于上传脚本运行相关依赖")
     @PostMapping
-    public CommonResult upload(@RequestParam(value = "script_id", required = false) Integer scriptId,
+    public CommonResult upload(UsernamePasswordAuthenticationToken authentication,
+                               @RequestParam(value = "script_id", required = false) Integer scriptId,
                                @RequestParam(value = "path", required = false) String path,
                                @RequestParam(value = "file") MultipartFile file, HttpServletResponse response) throws IOException {
         if (file == null || StringUtils.isEmpty(file.getOriginalFilename())) {
@@ -80,7 +83,7 @@ public class EmergencyResourceController {
         CommonResult upload;
         if (scriptId != null) {
             try {
-                upload = resourceService.upload(scriptId, file.getOriginalFilename(), file.getInputStream());
+                upload = resourceService.upload(((JwtUser) authentication.getPrincipal()).getUsername(),scriptId, file.getOriginalFilename(), file.getInputStream());
             } catch (IOException e) {
                 LOGGER.error("can't upload resource.", e);
                 upload = CommonResult.failed(e.getMessage());

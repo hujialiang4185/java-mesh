@@ -18,7 +18,6 @@ package com.huawei.emergency.service.impl;
 
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.ValidEnum;
-import com.huawei.common.filter.UserFilter;
 import com.huawei.emergency.dto.ResourceDto;
 import com.huawei.emergency.entity.EmergencyResource;
 import com.huawei.emergency.entity.EmergencyResourceExample;
@@ -60,7 +59,7 @@ public class EmergencyResourceServiceImpl implements EmergencyResourceService {
     private String uploadPath;
 
     @Override
-    public CommonResult upload(int scriptId, String originalFilename, InputStream inputStream) {
+    public CommonResult upload(String userName,int scriptId, String originalFilename, InputStream inputStream) {
         File resourceDirectory = new File(uploadPath + File.separatorChar + scriptId);
         if (!resourceDirectory.exists()) {
             resourceDirectory.mkdirs();
@@ -85,7 +84,7 @@ public class EmergencyResourceServiceImpl implements EmergencyResourceService {
         EmergencyResource resource = new EmergencyResource();
         resource.setResourceName(originalFilename);
         resource.setScriptId(scriptId);
-        resource.setCreateUser(UserFilter.currentUserName());
+        resource.setCreateUser(userName);
         resourceMapper.insertSelective(resource);
         ResourceDto dto = new ResourceDto();
         dto.setUid(resource.getResourceId());

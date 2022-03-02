@@ -1,3 +1,4 @@
+/*
 package com.huawei.common.filter;
 
 import com.alibaba.fastjson.JSONObject;
@@ -6,7 +7,7 @@ import com.huawei.argus.config.UserFactory;
 import com.huawei.common.config.CommonConfig;
 import com.huawei.common.constant.FailedInfo;
 import com.huawei.common.util.UserFeignClient;
-import com.huawei.emergency.entity.User;
+import com.huawei.emergency.entity.UserEntity;
 import com.huawei.emergency.mapper.UserMapper;
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
@@ -30,14 +31,14 @@ public class UserFilter implements Filter {
     @Resource
     private UserFeignClient userFeignClient;
 
-    private static final ThreadLocal<User> USERS = new ThreadLocal<>();
+    private static final ThreadLocal<UserEntity> USERS = new ThreadLocal<>();
 
     @Autowired
     private UserMapper mapper;
 
     private HttpSession session;
 
-    private User user;
+    private UserEntity userEntity;
 
     private static final Set<String> ALLOWED_PATHS = Collections.unmodifiableSet(new HashSet<>(
         Arrays.asList("/ws", "/swagger-ui.html","/api/script/execComplete")));
@@ -73,15 +74,17 @@ public class UserFilter implements Filter {
                 }
                 String role = mapper.getRoleByUserName(userId);
                 List<String> auth = mapper.getAuthByRole(role);
-                user = new User(userId, (String) userInfo.get("userName"), role, auth, group);
-                user.setUserId(userInfo.getLong("id"));
-                session.setAttribute("userInfo", user);
-                USERS.set(user);
+                userEntity = new UserEntity(userId, (String) userInfo.get("userName"), role, auth, group);
+                userEntity.setUserId(userInfo.getLong("id"));
+                session.setAttribute("userInfo", userEntity);
+                USERS.set(userEntity);
                 CommonConfig.setRequest(request);
             } catch (FeignException e) {
-                log.error("No login. ");
+                */
+/*log.error("No login. ");
                 response.setStatus(401);
-                return;
+                return;*//*
+
             }
         }
         filterChain.doFilter(servletRequest, servletResponse);
@@ -109,33 +112,34 @@ public class UserFilter implements Filter {
         Filter.super.destroy();
     }
 
-    public static User currentUser() {
+    public static UserEntity currentUser() {
         return USERS.get();
     }
 
     public static String currentUserName() {
-        User user = USERS.get();
-        if (user == null) {
+        UserEntity userEntity = USERS.get();
+        if (userEntity == null) {
             return null;
         }
-        return user.getUserName();
+        return userEntity.getUserName();
     }
 
     public static org.ngrinder.model.User currentGrinderUser() {
-        User user = USERS.get();
-        if (user == null) {
+        UserEntity userEntity = USERS.get();
+        if (userEntity == null) {
             log.error("schedule task with no login.");
             return UserFactory.newInstance();
         }
         org.ngrinder.model.User grinderUser = new org.ngrinder.model.User();
-        grinderUser.setUserName(user.getNickName());
+        grinderUser.setUserName(userEntity.getNickName());
         grinderUser.setRole(Role.ADMIN);
         grinderUser.setUserLanguage("en");
-        grinderUser.setId(user.getUserId());
-        grinderUser.setUserId(user.getUserName());
+        grinderUser.setId(userEntity.getUserId());
+        grinderUser.setUserId(userEntity.getUserName());
         grinderUser.setTimeZone("Asia/Shanghai");
         grinderUser.setExternal(true);
         grinderUser.setEnabled(true);
         return grinderUser;
     }
 }
+*/

@@ -36,18 +36,4 @@ public class UserEntity {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @JsonProperty("update_time")
     private Timestamp updateTime;
-
-    public UserEntity(String userName, String nickName, String role, List<String> auth) {
-        this.userName = userName;
-        this.nickName = nickName;
-        this.role = role;
-        this.auth = auth;
-    }
-    public UserEntity(String userName, String nickName, String role, List<String> auth,String groupName) {
-        this.userName = userName;
-        this.nickName = nickName;
-        this.role = role;
-        this.auth = auth;
-        this.groupName = groupName;
-    }
 }

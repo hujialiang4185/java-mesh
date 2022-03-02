@@ -10,7 +10,6 @@ import com.huawei.common.config.CommonConfig;
 import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.common.exception.ApiException;
-import com.huawei.common.filter.UserFilter;
 import com.huawei.common.util.PasswordUtil;
 import com.huawei.common.ws.WebSocketServer;
 import com.huawei.emergency.entity.EmergencyElement;

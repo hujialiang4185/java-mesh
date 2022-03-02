@@ -8,13 +8,13 @@ import com.huawei.common.api.CommonPage;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.PlanStatus;
 import com.huawei.common.constant.ScheduleType;
-import com.huawei.common.filter.UserFilter;
 import com.huawei.emergency.dto.PlanQueryDto;
 import com.huawei.emergency.dto.PlanQueryParams;
 import com.huawei.emergency.dto.PlanSaveParams;
 import com.huawei.emergency.dto.TaskNode;
 import com.huawei.emergency.entity.EmergencyPlan;
-import com.huawei.emergency.entity.User;
+import com.huawei.emergency.entity.JwtUser;
+import com.huawei.emergency.entity.UserEntity;
 import com.huawei.emergency.service.EmergencyPlanService;
 
 import io.swagger.annotations.Api;
@@ -22,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,8 +36,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.stream.Collectors;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * 预案管理controller
@@ -61,8 +60,8 @@ public class EmergencyPlanController {
      * @return {@link CommonResult}
      */
     @PutMapping("/plan")
-    public CommonResult save(@RequestBody PlanSaveParams params) {
-        return planService.save(params.getPlanId(), params.getExpand(), UserFilter.currentUserName());
+    public CommonResult save(UsernamePasswordAuthenticationToken authentication, @RequestBody PlanSaveParams params) {
+        return planService.save(params.getPlanId(), params.getExpand(), ((JwtUser) authentication.getPrincipal()).getUsername());
     }
 
     /**
@@ -72,11 +71,11 @@ public class EmergencyPlanController {
      * @return {@link CommonResult}
      */
     @PostMapping("/plan/run")
-    public CommonResult run(@RequestBody EmergencyPlan plan) {
+    public CommonResult run(UsernamePasswordAuthenticationToken authentication, @RequestBody EmergencyPlan plan) {
         if (plan.getPlanId() == null) {
             return CommonResult.failed("请选择需要运行的预案");
         }
-        return planService.exec(plan.getPlanId(), UserFilter.currentUserName());
+        return planService.exec(plan.getPlanId(), ((JwtUser) authentication.getPrincipal()).getUsername());
     }
 
     /**
@@ -86,7 +85,7 @@ public class EmergencyPlanController {
      * @return {@link CommonResult}
      */
     @PostMapping("/plan/schedule")
-    public CommonResult start(@RequestBody PlanQueryDto param) {
+    public CommonResult start(UsernamePasswordAuthenticationToken authentication, @RequestBody PlanQueryDto param) {
         if (param.getPlanId() == null) {
             return CommonResult.failed("请选择需要启动的预案");
         }
@@ -103,7 +102,7 @@ public class EmergencyPlanController {
         } else {
             plan.setScheduleType(ScheduleType.NONE.getValue());
         }
-        return planService.start(plan, UserFilter.currentUserName());
+        return planService.start(plan, ((JwtUser) authentication.getPrincipal()).getUsername());
     }
 
     /**
@@ -113,11 +112,11 @@ public class EmergencyPlanController {
      * @return {@link CommonResult}
      */
     @PostMapping("/plan/cancel")
-    public CommonResult stop(@RequestBody EmergencyPlan plan) {
+    public CommonResult stop(UsernamePasswordAuthenticationToken authentication, @RequestBody EmergencyPlan plan) {
         if (plan.getPlanId() == null) {
             return CommonResult.failed("请选择需要停止的预案");
         }
-        return planService.stop(plan.getPlanId(), UserFilter.currentUserName());
+        return planService.stop(plan.getPlanId(), ((JwtUser) authentication.getPrincipal()).getUsername());
     }
 
     /**
@@ -154,7 +153,8 @@ public class EmergencyPlanController {
      * @return {@link CommonResult}
      */
     @GetMapping("/plan")
-    public CommonResult queryPlan(@RequestParam(value = "plan_name_no", required = false) String planName,
+    public CommonResult queryPlan(UsernamePasswordAuthenticationToken authentication,
+                                  @RequestParam(value = "plan_name_no", required = false) String planName,
                                   @RequestParam(value = "scena_name_no", required = false) String sceneName,
                                   @RequestParam(value = "task_name_no", required = false) String taskName,
                                   @RequestParam(value = "script_name", required = false) String scriptName,
@@ -177,12 +177,13 @@ public class EmergencyPlanController {
         planParams.setSceneName(sceneName);
         planParams.setTaskName(taskName);
         planParams.setScriptName(scriptName);
-        planParams.setPlanGroup(UserFilter.currentUser().getGroup());
+        JwtUser jwtUser = (JwtUser) authentication.getPrincipal();
+        planParams.setPlanGroup(jwtUser.getGroupName());
         if (StringUtils.isNotEmpty(statusLabel)) {
             planParams.setStatus(PlanStatus.matchByLabel(statusLabel, PlanStatus.NEW).getValue());
         }
         params.setObject(planParams);
-        return planService.plan(params);
+        return planService.plan(params,jwtUser);
     }
 
     /**
@@ -213,9 +214,9 @@ public class EmergencyPlanController {
      * @param taskNode 任务信息
      * @return {@link CommonResult}
      */
-    @PutMapping ("/plan/task")
-    public CommonResult updateTask(@RequestBody TaskNode taskNode) {
-        taskNode.setCreateUser(UserFilter.currentUserName());
+    @PutMapping("/plan/task")
+    public CommonResult updateTask(UsernamePasswordAuthenticationToken authentication,@RequestBody TaskNode taskNode) {
+        taskNode.setCreateUser(((JwtUser) authentication.getPrincipal()).getUsername());
         return planService.updateTask(taskNode);
     }
 
@@ -226,10 +227,10 @@ public class EmergencyPlanController {
      * @return {@link CommonResult}
      */
     @PostMapping("/plan")
-    public CommonResult addPlan(@RequestBody EmergencyPlan emergencyPlan) {
-        User user = UserFilter.currentUser();
-        emergencyPlan.setPlanGroup(user.getGroup());
-        emergencyPlan.setCreateUser(user.getUserName());
+    public CommonResult addPlan(UsernamePasswordAuthenticationToken authentication, @RequestBody EmergencyPlan emergencyPlan) {
+        UserEntity userEntity = ((JwtUser) authentication.getPrincipal()).getUserEntity();
+        emergencyPlan.setPlanGroup(userEntity.getGroup());
+        emergencyPlan.setCreateUser(userEntity.getUserName());
         return planService.add(emergencyPlan);
     }
 
@@ -254,7 +255,7 @@ public class EmergencyPlanController {
      */
     @PostMapping("plan/submitReview")
     public CommonResult submitReview(@RequestBody EmergencyPlan emergencyPlan) {
-        return planService.submit(emergencyPlan.getPlanId(),emergencyPlan.getApprover());
+        return planService.submit(emergencyPlan.getPlanId(), emergencyPlan.getApprover());
     }
 
     /**
@@ -266,12 +267,12 @@ public class EmergencyPlanController {
      * @return {@link CommonResult}
      */
     @PostMapping("/plan/approve")
-    public CommonResult approve(@RequestBody PlanQueryDto planQueryDto) {
+    public CommonResult approve(UsernamePasswordAuthenticationToken authentication,@RequestBody PlanQueryDto planQueryDto) {
         EmergencyPlan plan = new EmergencyPlan();
         plan.setPlanId(planQueryDto.getPlanId());
         plan.setStatus(parseCheckResult(planQueryDto.getApprove()));
         plan.setCheckRemark(planQueryDto.getComment());
-        return planService.approve(plan, UserFilter.currentUserName());
+        return planService.approve(plan, ((JwtUser) authentication.getPrincipal()).getUsername());
     }
 
     private String parseCheckResult(String checkResult) {
@@ -287,15 +288,15 @@ public class EmergencyPlanController {
     @GetMapping("/plan/search/status_label")
     public CommonResult planStatus() {
         return CommonResult.success(
-            Arrays.stream(PlanStatus.values())
-                .map(PlanStatus::getStatusLabel)
-                .collect(Collectors.toList()).toArray()
+                Arrays.stream(PlanStatus.values())
+                        .map(PlanStatus::getStatusLabel)
+                        .collect(Collectors.toList()).toArray()
         );
     }
 
     @PostMapping("/plan/copy")
-    public CommonResult copyPlan(@RequestBody EmergencyPlan emergencyPlan) {
-        emergencyPlan.setCreateUser(UserFilter.currentUserName());
+    public CommonResult copyPlan(UsernamePasswordAuthenticationToken authentication, @RequestBody EmergencyPlan emergencyPlan) {
+        emergencyPlan.setCreateUser(((JwtUser) authentication.getPrincipal()).getUsername());
         return planService.copy(emergencyPlan);
     }
 }

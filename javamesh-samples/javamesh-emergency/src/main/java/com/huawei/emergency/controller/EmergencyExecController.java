@@ -6,15 +6,13 @@ package com.huawei.emergency.controller;
 
 import com.huawei.common.api.CommonPage;
 import com.huawei.common.api.CommonResult;
-import com.huawei.common.filter.UserFilter;
 import com.huawei.emergency.dto.PlanQueryDto;
 import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyExecRecordDetail;
 import com.huawei.emergency.entity.EmergencyPlan;
-import com.huawei.emergency.entity.User;
+import com.huawei.emergency.entity.JwtUser;
 import com.huawei.emergency.mapper.EmergencyExecMapper;
 import com.huawei.emergency.service.EmergencyExecService;
-import com.huawei.emergency.service.EmergencyPlanService;
 import com.huawei.script.exec.log.LogResponse;
 
 import cn.hutool.poi.excel.ExcelUtil;
@@ -24,6 +22,7 @@ import io.swagger.annotations.Api;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,10 +32,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.util.Arrays;
 
 import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -64,11 +61,11 @@ public class EmergencyExecController {
      * @return {@link CommonResult}
      */
     @PostMapping("/scenario/task/runAgain")
-    public CommonResult reExec(@RequestBody PlanQueryDto params) {
+    public CommonResult reExec(UsernamePasswordAuthenticationToken authentication,@RequestBody PlanQueryDto params) {
         if (params.getKey() == null) {
             return CommonResult.failed("请选择正确的执行记录");
         }
-        return execService.reExec(params.getKey(), UserFilter.currentUserName());
+        return execService.reExec(params.getKey(), ((JwtUser) authentication.getPrincipal()).getUsername());
     }
 
     /**
@@ -78,15 +75,15 @@ public class EmergencyExecController {
      * @return {@link CommonResult}
      */
     @PostMapping("/scenario/task/ensure")
-    public CommonResult success(@RequestBody PlanQueryDto params) {
+    public CommonResult success(UsernamePasswordAuthenticationToken authentication,@RequestBody PlanQueryDto params) {
         if (params.getKey() == null) {
             return CommonResult.failed("请选择正确的执行记录");
         }
         if ("成功".equals(params.getConfirm())) {
-            return execService.ensure(params.getKey(), "5", UserFilter.currentUserName());
+            return execService.ensure(params.getKey(), "5", ((JwtUser) authentication.getPrincipal()).getUsername());
         }
         if ("失败".equals(params.getConfirm())) {
-            return execService.ensure(params.getKey(), "6", UserFilter.currentUserName());
+            return execService.ensure(params.getKey(), "6", ((JwtUser) authentication.getPrincipal()).getUsername());
         }
         return CommonResult.failed("请选择确认成功或者失败");
     }
@@ -206,25 +203,25 @@ public class EmergencyExecController {
     }
 
     @PostMapping("/stop")
-    public CommonResult stopOneServer(@RequestBody EmergencyExecRecordDetail detail) {
-        return execService.stopOneServer(detail.getDetailId(), UserFilter.currentUserName());
+    public CommonResult stopOneServer(UsernamePasswordAuthenticationToken authentication,@RequestBody EmergencyExecRecordDetail detail) {
+        return execService.stopOneServer(detail.getDetailId(), ((JwtUser) authentication.getPrincipal()).getUsername());
     }
 
     @PostMapping("/start")
-    public CommonResult startOneServer(@RequestBody EmergencyExecRecordDetail detail) {
-        return execService.startOneServer(detail.getDetailId(), UserFilter.currentUserName());
+    public CommonResult startOneServer(UsernamePasswordAuthenticationToken authentication,@RequestBody EmergencyExecRecordDetail detail) {
+        return execService.startOneServer(detail.getDetailId(), ((JwtUser) authentication.getPrincipal()).getUsername());
     }
 
     @PostMapping("/ensure")
-    public CommonResult ensureOneServer(@RequestBody EmergencyExecRecordDetail detail) {
+    public CommonResult ensureOneServer(UsernamePasswordAuthenticationToken authentication,@RequestBody EmergencyExecRecordDetail detail) {
         if (detail.getDetailId() == null) {
             return CommonResult.failed("请选择正确的执行记录");
         }
         if ("成功".equals(detail.getStatus())) {
-            return execService.ensure(detail.getDetailId(), "5", UserFilter.currentUserName());
+            return execService.ensure(detail.getDetailId(), "5", ((JwtUser) authentication.getPrincipal()).getUsername());
         }
         if ("失败".equals(detail.getStatus())) {
-            return execService.ensure(detail.getDetailId(), "6", UserFilter.currentUserName());
+            return execService.ensure(detail.getDetailId(), "6", ((JwtUser) authentication.getPrincipal()).getUsername());
         }
         return CommonResult.failed("请选择确认成功或者失败");
     }

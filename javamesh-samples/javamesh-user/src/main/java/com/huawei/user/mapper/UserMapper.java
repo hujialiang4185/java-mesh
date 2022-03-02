@@ -10,13 +10,13 @@ import java.util.List;
 public interface UserMapper {
     List<String> getAuthByRole(String userName);
 
-    String getRoleByUserName(String userName);
-
     UserEntity selectUserByName(String userName);
 
     int countByName(String userName);
 
     int insertUser(UserEntity entity);
+
+    int insertUserToEmergency(UserEntity entity);
 
     List<UserEntity> listUser(UserEntity user);
 
@@ -26,15 +26,11 @@ public interface UserMapper {
 
     int updateUser(UserEntity user);
 
-    int insertRole(UserEntity entity);
-
-    void updateRole(UserEntity user);
-
-    String getUserStatus(String userName);
-
     String getGroupByUser(String userName);
 
     List<String> approverSearch(String groupName);
 
     List<String> adminApproverSearch(String groupName);
+
+    int updateEmergencyUser(UserEntity user);
 }
