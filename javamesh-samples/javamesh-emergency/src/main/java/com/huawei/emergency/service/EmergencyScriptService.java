@@ -13,11 +13,11 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public interface EmergencyScriptService {
-    CommonResult<List<EmergencyScript>> listScript(JwtUser jwtUser, String scriptName, String scriptUser, int pageSize, int current, String sorter, String order, String status);
+    CommonResult<List<EmergencyScript>> listScript(JwtUser jwtUser, String scriptName, String scriptUser, int pageSize,
+        int current, String sorter, String order, String status);
 
     int deleteScripts(int[] scriptIds);
 
@@ -77,7 +77,7 @@ public interface EmergencyScriptService {
      * @param scriptManageDto 脚本信息
      * @return
      */
-    CommonResult createIdeScript(UserEntity user,ScriptManageDto scriptManageDto);
+    CommonResult createIdeScript(UserEntity user, ScriptManageDto scriptManageDto);
 
     /**
      * 修改IDE脚本

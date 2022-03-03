@@ -17,17 +17,14 @@
 package com.huawei.common.config;
 
 import com.huawei.argus.listener.ITestLifeCycleListener;
-import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.emergency.entity.EmergencyExecRecord;
-import com.huawei.emergency.entity.EmergencyExecRecordDetail;
-import com.huawei.emergency.entity.EmergencyExecRecordDetailExample;
 import com.huawei.emergency.entity.EmergencyExecRecordExample;
-import com.huawei.emergency.entity.EmergencyExecRecordWithBLOBs;
 import com.huawei.emergency.mapper.EmergencyExecRecordDetailMapper;
 import com.huawei.emergency.mapper.EmergencyExecRecordMapper;
 import com.huawei.emergency.service.impl.ExecRecordHandlerFactory;
 import com.huawei.script.exec.ExecResult;
+
 import org.ngrinder.model.PerfTest;
 import org.ngrinder.model.StatusCategory;
 import org.ngrinder.perftest.service.PerfTestRunnable;
@@ -35,13 +32,11 @@ import org.ngrinder.service.IPerfTestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
@@ -86,8 +81,8 @@ public class PerfTestListenerConfig implements ITestLifeCycleListener {
             recordExample.createCriteria()
                 .andPerfTestIdEqualTo(perfTest.getId().intValue())
                 .andIsValidEqualTo(ValidEnum.VALID.getValue());
-            List<EmergencyExecRecordWithBLOBs> records =
-                recordMapper.selectByExampleWithBLOBs(recordExample);
+            List<EmergencyExecRecord> records =
+                recordMapper.selectByExample(recordExample);
             if (records.size() == 0) {
                 return;
             }

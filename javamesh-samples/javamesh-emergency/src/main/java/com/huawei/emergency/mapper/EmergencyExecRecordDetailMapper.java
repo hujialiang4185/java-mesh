@@ -6,10 +6,11 @@ package com.huawei.emergency.mapper;
 
 import com.huawei.emergency.entity.EmergencyExecRecordDetail;
 import com.huawei.emergency.entity.EmergencyExecRecordDetailExample;
-import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * 预案执行记录明细mapper
@@ -29,25 +30,21 @@ public interface EmergencyExecRecordDetailMapper {
 
     int insertSelective(EmergencyExecRecordDetail record);
 
-    List<EmergencyExecRecordDetail> selectByExampleWithBLOBs(EmergencyExecRecordDetailExample example);
-
     List<EmergencyExecRecordDetail> selectByExample(EmergencyExecRecordDetailExample example);
 
     EmergencyExecRecordDetail selectByPrimaryKey(Integer detailId);
 
-    int updateByExampleSelective(@Param("record") EmergencyExecRecordDetail record, @Param("example") EmergencyExecRecordDetailExample example);
+    int updateByExampleSelective(@Param("record") EmergencyExecRecordDetail record,
+        @Param("example") EmergencyExecRecordDetailExample example);
 
-    int updateByExampleWithBLOBs(@Param("record") EmergencyExecRecordDetail record, @Param("example") EmergencyExecRecordDetailExample example);
-
-    int updateByExample(@Param("record") EmergencyExecRecordDetail record, @Param("example") EmergencyExecRecordDetailExample example);
+    int updateByExample(@Param("record") EmergencyExecRecordDetail record,
+        @Param("example") EmergencyExecRecordDetailExample example);
 
     int updateByPrimaryKeySelective(EmergencyExecRecordDetail record);
-
-    int updateByPrimaryKeyWithBLOBs(EmergencyExecRecordDetail record);
 
     int updateByPrimaryKey(EmergencyExecRecordDetail record);
 
     List<EmergencyExecRecordDetail> selectAllServerDetail(int recordId);
 
-    int updateLogIfAbsent(@Param("detailId") int detailId,@Param("log") String log);
+    int updateLogIfAbsent(@Param("detailId") int detailId, @Param("log") String log);
 }

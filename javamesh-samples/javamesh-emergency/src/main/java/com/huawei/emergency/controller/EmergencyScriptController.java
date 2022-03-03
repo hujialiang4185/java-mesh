@@ -11,7 +11,6 @@ import com.huawei.emergency.dto.ScriptManageDto;
 import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyScript;
 import com.huawei.emergency.entity.JwtUser;
-import com.huawei.emergency.entity.UserEntity;
 import com.huawei.emergency.layout.TreeResponse;
 import com.huawei.emergency.service.EmergencyExecService;
 import com.huawei.emergency.service.EmergencyScriptService;
@@ -19,6 +18,7 @@ import com.huawei.script.exec.ExecResult;
 import com.huawei.script.exec.log.LogResponse;
 
 import io.swagger.annotations.Api;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,8 +29,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
@@ -56,14 +63,14 @@ public class EmergencyScriptController {
 
     @GetMapping
     public CommonResult<List<EmergencyScript>> listScript(
-            UsernamePasswordAuthenticationToken authentication,
-            @RequestParam(value = "script_name", required = false) String scriptName,
-            @RequestParam(value = "owner", required = false) String scriptUser,
-            @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
-            @RequestParam(value = "current", defaultValue = "1") int current,
-            @RequestParam(value = "sorter", required = false) String sorter,
-            @RequestParam(value = "order", required = false) String order,
-            @RequestParam(value = "status", required = false) String status) {
+        UsernamePasswordAuthenticationToken authentication,
+        @RequestParam(value = "script_name", required = false) String scriptName,
+        @RequestParam(value = "owner", required = false) String scriptUser,
+        @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
+        @RequestParam(value = "current", defaultValue = "1") int current,
+        @RequestParam(value = "sorter", required = false) String sorter,
+        @RequestParam(value = "order", required = false) String order,
+        @RequestParam(value = "status", required = false) String status) {
         JwtUser jwtUser = (JwtUser) authentication.getPrincipal();
         return service.listScript(jwtUser, scriptName, scriptUser, pageSize, current, sorter, order, status);
     }
@@ -106,17 +113,17 @@ public class EmergencyScriptController {
      */
     @PostMapping("/upload")
     public CommonResult uploadScript(UsernamePasswordAuthenticationToken authentication,
-                                     @RequestParam(value = "script_name") String scriptName,
-                                     @RequestParam(value = "submit_info") String submitInfo,
-                                     @RequestParam(value = "account", required = false) String serverUser,
-                                     @RequestParam(value = "server_ip", required = false) String serverIp,
-                                     @RequestParam(value = "has_pwd", required = false) String havePassword,
-                                     @RequestParam(value = "language") String scriptType,
-                                     @RequestParam(value = "param", required = false) String param,
-                                     @RequestParam(value = "public") String isPublic,
-                                     @RequestParam(value = "pwd", required = false) String password,
-                                     @RequestParam(value = "pwd_from", required = false) String passwordMode,
-                                     @RequestParam(value = "file") MultipartFile file) {
+        @RequestParam(value = "script_name") String scriptName,
+        @RequestParam(value = "submit_info") String submitInfo,
+        @RequestParam(value = "account", required = false) String serverUser,
+        @RequestParam(value = "server_ip", required = false) String serverIp,
+        @RequestParam(value = "has_pwd", required = false) String havePassword,
+        @RequestParam(value = "language") String scriptType,
+        @RequestParam(value = "param", required = false) String param,
+        @RequestParam(value = "public") String isPublic,
+        @RequestParam(value = "pwd", required = false) String password,
+        @RequestParam(value = "pwd_from", required = false) String passwordMode,
+        @RequestParam(value = "file") MultipartFile file) {
         EmergencyScript script = new EmergencyScript();
         script.setScriptName(scriptName);
         script.setSubmitInfo(submitInfo);
@@ -156,7 +163,8 @@ public class EmergencyScriptController {
     }
 
     @PostMapping
-    public CommonResult insertScript(UsernamePasswordAuthenticationToken authentication, @RequestBody EmergencyScript script) {
+    public CommonResult insertScript(UsernamePasswordAuthenticationToken authentication,
+        @RequestBody EmergencyScript script) {
         int result = service.insertScript(((JwtUser) authentication.getPrincipal()).getUserEntity(), script);
         if (result == ResultCode.SCRIPT_NAME_EXISTS) {
             return CommonResult.failed(FailedInfo.SCRIPT_NAME_EXISTS);
@@ -183,10 +191,11 @@ public class EmergencyScriptController {
 
     @GetMapping("/search")
     public CommonResult searchScript(UsernamePasswordAuthenticationToken authentication,
-                                     @RequestParam(value = "value", required = false) String scriptName,
-                                     @RequestParam(value = "status", required = false) String status,
-                                     @RequestParam(value = "type", required = false) String scriptType) {
-        List<String> scriptNames = service.searchScript((JwtUser) authentication.getPrincipal(), scriptName, status, scriptType);
+        @RequestParam(value = "value", required = false) String scriptName,
+        @RequestParam(value = "status", required = false) String status,
+        @RequestParam(value = "type", required = false) String scriptType) {
+        List<String> scriptNames = service.searchScript((JwtUser) authentication.getPrincipal(), scriptName, status,
+            scriptType);
         return CommonResult.success(scriptNames);
     }
 
@@ -197,7 +206,8 @@ public class EmergencyScriptController {
     }
 
     @PostMapping("/submitReview")
-    public CommonResult submitReview(UsernamePasswordAuthenticationToken authentication, @RequestBody EmergencyScript script) {
+    public CommonResult submitReview(UsernamePasswordAuthenticationToken authentication,
+        @RequestBody EmergencyScript script) {
         String result = service.submitReview((JwtUser) authentication.getPrincipal(), script);
         if (result.equals(SUCCESS)) {
             return CommonResult.success(result);
@@ -207,8 +217,9 @@ public class EmergencyScriptController {
     }
 
     @PostMapping("/approve")
-    public CommonResult approve(UsernamePasswordAuthenticationToken authentication, @RequestBody Map<String, Object> map) {
-        int count = service.approve(((JwtUser) authentication.getPrincipal()).getUsername(),map);
+    public CommonResult approve(UsernamePasswordAuthenticationToken authentication,
+        @RequestBody Map<String, Object> map) {
+        int count = service.approve(((JwtUser) authentication.getPrincipal()).getUsername(), map);
         if (count == 0) {
             return CommonResult.failed(FailedInfo.APPROVE_FAIL);
         } else {
@@ -247,7 +258,8 @@ public class EmergencyScriptController {
      * @return
      */
     @PostMapping("/orchestrate")
-    public CommonResult createGuiScript(UsernamePasswordAuthenticationToken authentication, @RequestBody EmergencyScript script) {
+    public CommonResult createGuiScript(UsernamePasswordAuthenticationToken authentication,
+        @RequestBody EmergencyScript script) {
         return service.createGuiScript(((JwtUser) authentication.getPrincipal()).getUserEntity(), script);
     }
 
@@ -258,8 +270,9 @@ public class EmergencyScriptController {
      * @return {@link CommonResult}
      */
     @PutMapping("/orchestrate")
-    public CommonResult updateGuiScript(UsernamePasswordAuthenticationToken authentication,@RequestBody TreeResponse treeResponse) {
-        return service.updateGuiScript(((JwtUser) authentication.getPrincipal()).getUsername(),treeResponse);
+    public CommonResult updateGuiScript(UsernamePasswordAuthenticationToken authentication,
+        @RequestBody TreeResponse treeResponse) {
+        return service.updateGuiScript(((JwtUser) authentication.getPrincipal()).getUsername(), treeResponse);
     }
 
     /**
@@ -280,8 +293,9 @@ public class EmergencyScriptController {
      * @return
      */
     @PostMapping("/ide")
-    public CommonResult createIdeScript(UsernamePasswordAuthenticationToken authentication,@RequestBody ScriptManageDto scriptManageDto) {
-        return service.createIdeScript(((JwtUser) authentication.getPrincipal()).getUserEntity(),scriptManageDto);
+    public CommonResult createIdeScript(UsernamePasswordAuthenticationToken authentication,
+        @RequestBody ScriptManageDto scriptManageDto) {
+        return service.createIdeScript(((JwtUser) authentication.getPrincipal()).getUserEntity(), scriptManageDto);
     }
 
     /**

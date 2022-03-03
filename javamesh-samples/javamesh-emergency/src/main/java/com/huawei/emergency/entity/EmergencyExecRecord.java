@@ -27,6 +27,8 @@ public class EmergencyExecRecord {
 
     private String scriptName;
 
+    private String scriptContent;
+
     private String scriptType;
 
     private String scriptParams;
@@ -42,6 +44,8 @@ public class EmergencyExecRecord {
     private String passwordMode;
 
     private String password;
+
+    private String log;
 
     private String createUser;
 
@@ -155,6 +159,14 @@ public class EmergencyExecRecord {
         this.scriptName = scriptName == null ? null : scriptName.trim();
     }
 
+    public String getScriptContent() {
+        return scriptContent;
+    }
+
+    public void setScriptContent(String scriptContent) {
+        this.scriptContent = scriptContent == null ? null : scriptContent.trim();
+    }
+
     public String getScriptType() {
         return scriptType;
     }
@@ -217,6 +229,14 @@ public class EmergencyExecRecord {
 
     public void setPassword(String password) {
         this.password = password == null ? null : password.trim();
+    }
+
+    public String getLog() {
+        return log;
+    }
+
+    public void setLog(String log) {
+        this.log = log == null ? null : log.trim();
     }
 
     public String getCreateUser() {

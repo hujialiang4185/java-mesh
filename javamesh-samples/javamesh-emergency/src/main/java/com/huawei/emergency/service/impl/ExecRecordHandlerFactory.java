@@ -15,7 +15,6 @@ import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyExecRecordDetail;
 import com.huawei.emergency.entity.EmergencyExecRecordDetailExample;
 import com.huawei.emergency.entity.EmergencyExecRecordExample;
-import com.huawei.emergency.entity.EmergencyExecRecordWithBLOBs;
 import com.huawei.emergency.entity.EmergencyServer;
 import com.huawei.emergency.entity.EmergencyServerExample;
 import com.huawei.emergency.mapper.EmergencyElementMapper;
@@ -118,7 +117,7 @@ public class ExecRecordHandlerFactory {
         return new ExecRecordHandler(currentRecord);
     }
 
-    public Runnable handleDetail(EmergencyExecRecordWithBLOBs record, EmergencyExecRecordDetail recordDetail) {
+    public Runnable handleDetail(EmergencyExecRecord record, EmergencyExecRecordDetail recordDetail) {
         return new ExecRecordDetailHandler(record, recordDetail);
     }
 
@@ -137,7 +136,7 @@ public class ExecRecordHandlerFactory {
 
         @Override
         public void run() {
-            EmergencyExecRecordWithBLOBs record = recordMapper.selectByPrimaryKey(currentRecord.getRecordId());
+            EmergencyExecRecord record = recordMapper.selectByPrimaryKey(currentRecord.getRecordId());
             int retryTimes = 10;
             while (record == null && retryTimes > 0) { // 出现事务还未提交，此时查不到这条数据
                 try {
@@ -159,11 +158,11 @@ public class ExecRecordHandlerFactory {
                     throw new ApiException("执行已取消.");
                 }
                 List<EmergencyExecRecordDetail> emergencyExecRecordDetails = generateRecordDetail(record);
-                EmergencyExecRecordWithBLOBs finalRecord = record;
+                EmergencyExecRecord finalRecord = record;
                 emergencyExecRecordDetails.forEach(recordDetail -> handle(finalRecord, recordDetail));
             } catch (ApiException e) {
                 LOGGER.error("failed to generateRecordDetail. {}.{}", record.getRecordId(), e.getMessage());
-                EmergencyExecRecordWithBLOBs errorRecord = new EmergencyExecRecordWithBLOBs();
+                EmergencyExecRecord errorRecord = new EmergencyExecRecord();
                 errorRecord.setRecordId(record.getRecordId());
                 errorRecord.setLog(e.getMessage());
                 errorRecord.setStatus(RecordStatus.FAILED.getValue());
@@ -180,10 +179,10 @@ public class ExecRecordHandlerFactory {
      * @since 2021-11-04
      **/
     public class ExecRecordDetailHandler implements Runnable {
-        private final EmergencyExecRecordWithBLOBs record; // 任务信息
+        private final EmergencyExecRecord record; // 任务信息
         private final EmergencyExecRecordDetail recordDetail; // 任务分发明细
 
-        private ExecRecordDetailHandler(EmergencyExecRecordWithBLOBs record, EmergencyExecRecordDetail recordDetail) {
+        private ExecRecordDetailHandler(EmergencyExecRecord record, EmergencyExecRecordDetail recordDetail) {
             this.record = record;
             this.recordDetail = recordDetail;
         }
@@ -194,7 +193,7 @@ public class ExecRecordHandlerFactory {
         }
     }
 
-    public void handle(EmergencyExecRecordWithBLOBs record, EmergencyExecRecordDetail recordDetail) {
+    public void handle(EmergencyExecRecord record, EmergencyExecRecordDetail recordDetail) {
         EmergencyExecRecordDetail updateRecordDetail = new EmergencyExecRecordDetail();
         updateRecordDetail.setDetailId(recordDetail.getDetailId());
         updateRecordDetail.setStartTime(new Date());
@@ -315,7 +314,7 @@ public class ExecRecordHandlerFactory {
             updateRecordDetail.setStatus(
                 result.isSuccess() ? RecordStatus.SUCCESS.getValue() : RecordStatus.FAILED.getValue());
             recordDetailMapper.updateByExampleSelective(updateRecordDetail, whenRunning); // 更新所有detail的状态
-            EmergencyExecRecordWithBLOBs updateRecord = new EmergencyExecRecordWithBLOBs();
+            EmergencyExecRecord updateRecord = new EmergencyExecRecord();
             updateRecord.setEndTime(endTime);
             updateRecord.setLog(result.getMsg());
             updateRecord.setRecordId(record.getRecordId());
@@ -342,7 +341,7 @@ public class ExecRecordHandlerFactory {
      * @param recordDetail
      * @return
      */
-    public ScriptExecInfo generateExecInfo(EmergencyExecRecordWithBLOBs record,
+    public ScriptExecInfo generateExecInfo(EmergencyExecRecord record,
         EmergencyExecRecordDetail recordDetail) {
         ScriptExecInfo execInfo = new ScriptExecInfo();
         execInfo.setDetailId(recordDetail.getDetailId());

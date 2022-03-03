@@ -15,6 +15,7 @@
  */
 
 import com.huawei.test.asserts.RegularAssert;
+import com.huawei.test.configelement.enums.SharingMode;
 import com.huawei.test.configelement.impl.CommonCounter;
 import com.huawei.test.configelement.config.CounterConfig;
 import com.huawei.test.scriptexecutor.impl.JavaScriptExecutor;

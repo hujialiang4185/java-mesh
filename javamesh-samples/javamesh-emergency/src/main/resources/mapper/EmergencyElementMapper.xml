@@ -1,377 +1,328 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.huawei.emergency.mapper.EmergencyElementMapper">
-  <resultMap id="BaseResultMap" type="com.huawei.emergency.entity.EmergencyElement">
-    <id column="element_id" jdbcType="INTEGER" property="elementId" />
-    <result column="element_no" jdbcType="VARCHAR" property="elementNo" />
-    <result column="element_title" jdbcType="VARCHAR" property="elementTitle" />
-    <result column="element_type" jdbcType="VARCHAR" property="elementType" />
-    <result column="parent_id" jdbcType="INTEGER" property="parentId" />
-    <result column="script_id" jdbcType="INTEGER" property="scriptId" />
-    <result column="argus_path" jdbcType="VARCHAR" property="argusPath" />
-    <result column="is_valid" jdbcType="VARCHAR" property="isValid" />
-    <result column="create_user" jdbcType="VARCHAR" property="createUser" />
-    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
-    <result column="seq" jdbcType="INTEGER" property="seq" />
-  </resultMap>
-  <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.huawei.emergency.entity.EmergencyElement">
-    <result column="element_params" jdbcType="LONGVARCHAR" property="elementParams" />
-  </resultMap>
-  <sql id="Example_Where_Clause">
-    <where>
-      <foreach collection="oredCriteria" item="criteria" separator="or">
-        <if test="criteria.valid">
-          <trim prefix="(" prefixOverrides="and" suffix=")">
-            <foreach collection="criteria.criteria" item="criterion">
-              <choose>
-                <when test="criterion.noValue">
-                  and ${criterion.condition}
-                </when>
-                <when test="criterion.singleValue">
-                  and ${criterion.condition} #{criterion.value}
-                </when>
-                <when test="criterion.betweenValue">
-                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
-                </when>
-                <when test="criterion.listValue">
-                  and ${criterion.condition}
-                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
-                    #{listItem}
-                  </foreach>
-                </when>
-              </choose>
+    <resultMap id="BaseResultMap" type="com.huawei.emergency.entity.EmergencyElement">
+        <id column="element_id" jdbcType="INTEGER" property="elementId"/>
+        <result column="element_no" jdbcType="VARCHAR" property="elementNo"/>
+        <result column="element_title" jdbcType="VARCHAR" property="elementTitle"/>
+        <result column="element_type" jdbcType="VARCHAR" property="elementType"/>
+        <result column="element_params" jdbcType="VARCHAR" property="elementParams"/>
+        <result column="parent_id" jdbcType="INTEGER" property="parentId"/>
+        <result column="script_id" jdbcType="INTEGER" property="scriptId"/>
+        <result column="argus_path" jdbcType="VARCHAR" property="argusPath"/>
+        <result column="is_valid" jdbcType="VARCHAR" property="isValid"/>
+        <result column="create_user" jdbcType="VARCHAR" property="createUser"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="seq" jdbcType="INTEGER" property="seq"/>
+    </resultMap>
+    <sql id="Example_Where_Clause">
+        <where>
+            <foreach collection="oredCriteria" item="criteria" separator="or">
+                <if test="criteria.valid">
+                    <trim prefix="(" prefixOverrides="and" suffix=")">
+                        <foreach collection="criteria.criteria" item="criterion">
+                            <choose>
+                                <when test="criterion.noValue">
+                                    and ${criterion.condition}
+                                </when>
+                                <when test="criterion.singleValue">
+                                    and ${criterion.condition} #{criterion.value}
+                                </when>
+                                <when test="criterion.betweenValue">
+                                    and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                                </when>
+                                <when test="criterion.listValue">
+                                    and ${criterion.condition}
+                                    <foreach close=")" collection="criterion.value" item="listItem" open="("
+                                            separator=",">
+                                        #{listItem}
+                                    </foreach>
+                                </when>
+                            </choose>
+                        </foreach>
+                    </trim>
+                </if>
             </foreach>
-          </trim>
-        </if>
-      </foreach>
-    </where>
-  </sql>
-  <sql id="Update_By_Example_Where_Clause">
-    <where>
-      <foreach collection="example.oredCriteria" item="criteria" separator="or">
-        <if test="criteria.valid">
-          <trim prefix="(" prefixOverrides="and" suffix=")">
-            <foreach collection="criteria.criteria" item="criterion">
-              <choose>
-                <when test="criterion.noValue">
-                  and ${criterion.condition}
-                </when>
-                <when test="criterion.singleValue">
-                  and ${criterion.condition} #{criterion.value}
-                </when>
-                <when test="criterion.betweenValue">
-                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
-                </when>
-                <when test="criterion.listValue">
-                  and ${criterion.condition}
-                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
-                    #{listItem}
-                  </foreach>
-                </when>
-              </choose>
+        </where>
+    </sql>
+    <sql id="Update_By_Example_Where_Clause">
+        <where>
+            <foreach collection="example.oredCriteria" item="criteria" separator="or">
+                <if test="criteria.valid">
+                    <trim prefix="(" prefixOverrides="and" suffix=")">
+                        <foreach collection="criteria.criteria" item="criterion">
+                            <choose>
+                                <when test="criterion.noValue">
+                                    and ${criterion.condition}
+                                </when>
+                                <when test="criterion.singleValue">
+                                    and ${criterion.condition} #{criterion.value}
+                                </when>
+                                <when test="criterion.betweenValue">
+                                    and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                                </when>
+                                <when test="criterion.listValue">
+                                    and ${criterion.condition}
+                                    <foreach close=")" collection="criterion.value" item="listItem" open="("
+                                            separator=",">
+                                        #{listItem}
+                                    </foreach>
+                                </when>
+                            </choose>
+                        </foreach>
+                    </trim>
+                </if>
             </foreach>
-          </trim>
+        </where>
+    </sql>
+    <sql id="Base_Column_List">
+        element_id
+        , element_no, element_title, element_type, element_params, parent_id, script_id,
+    argus_path, is_valid, create_user, create_time, seq
+    </sql>
+    <select id="selectByExample" parameterType="com.huawei.emergency.entity.EmergencyElementExample"
+            resultMap="BaseResultMap">
+        select
+        <if test="distinct">
+            distinct
         </if>
-      </foreach>
-    </where>
-  </sql>
-  <sql id="Base_Column_List">
-    element_id, element_no, element_title, element_type, parent_id, script_id, argus_path, 
-    is_valid, create_user, create_time, seq
-  </sql>
-  <sql id="Blob_Column_List">
-    element_params
-  </sql>
-  <select id="selectByExampleWithBLOBs" parameterType="com.huawei.emergency.entity.EmergencyElementExample" resultMap="ResultMapWithBLOBs">
-    select
-    <if test="distinct">
-      distinct
-    </if>
-    'false' as QUERYID,
-    <include refid="Base_Column_List" />
-    ,
-    <include refid="Blob_Column_List" />
-    from emergency_element
-    <if test="_parameter != null">
-      <include refid="Example_Where_Clause" />
-    </if>
-    <if test="orderByClause != null">
-      order by ${orderByClause}
-    </if>
-  </select>
-  <select id="selectByExample" parameterType="com.huawei.emergency.entity.EmergencyElementExample" resultMap="BaseResultMap">
-    select
-    <if test="distinct">
-      distinct
-    </if>
-    'false' as QUERYID,
-    <include refid="Base_Column_List" />
-    from emergency_element
-    <if test="_parameter != null">
-      <include refid="Example_Where_Clause" />
-    </if>
-    <if test="orderByClause != null">
-      order by ${orderByClause}
-    </if>
-  </select>
-  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="ResultMapWithBLOBs">
-    select 
-    <include refid="Base_Column_List" />
-    ,
-    <include refid="Blob_Column_List" />
-    from emergency_element
-    where element_id = #{elementId,jdbcType=INTEGER}
-  </select>
-  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
-    delete from emergency_element
-    where element_id = #{elementId,jdbcType=INTEGER}
-  </delete>
-  <delete id="deleteByExample" parameterType="com.huawei.emergency.entity.EmergencyElementExample">
-    delete from emergency_element
-    <if test="_parameter != null">
-      <include refid="Example_Where_Clause" />
-    </if>
-  </delete>
-  <insert id="insert" parameterType="com.huawei.emergency.entity.EmergencyElement">
-    <selectKey keyProperty="elementId" order="AFTER" resultType="java.lang.Integer">
-      SELECT LAST_INSERT_ID()
-    </selectKey>
-    insert into emergency_element (element_no, element_title, element_type, 
-      parent_id, script_id, argus_path, 
-      is_valid, create_user, create_time, 
-      seq, element_params)
-    values (#{elementNo,jdbcType=VARCHAR}, #{elementTitle,jdbcType=VARCHAR}, #{elementType,jdbcType=VARCHAR}, 
-      #{parentId,jdbcType=INTEGER}, #{scriptId,jdbcType=INTEGER}, #{argusPath,jdbcType=VARCHAR}, 
-      #{isValid,jdbcType=VARCHAR}, #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
-      #{seq,jdbcType=INTEGER}, #{elementParams,jdbcType=LONGVARCHAR})
-  </insert>
-  <insert id="insertSelective" parameterType="com.huawei.emergency.entity.EmergencyElement">
-    <selectKey keyProperty="elementId" order="AFTER" resultType="java.lang.Integer">
-      SELECT LAST_INSERT_ID()
-    </selectKey>
-    insert into emergency_element
-    <trim prefix="(" suffix=")" suffixOverrides=",">
-      <if test="elementNo != null">
-        element_no,
-      </if>
-      <if test="elementTitle != null">
-        element_title,
-      </if>
-      <if test="elementType != null">
-        element_type,
-      </if>
-      <if test="parentId != null">
-        parent_id,
-      </if>
-      <if test="scriptId != null">
-        script_id,
-      </if>
-      <if test="argusPath != null">
-        argus_path,
-      </if>
-      <if test="isValid != null">
-        is_valid,
-      </if>
-      <if test="createUser != null">
-        create_user,
-      </if>
-      <if test="createTime != null">
-        create_time,
-      </if>
-      <if test="seq != null">
-        seq,
-      </if>
-      <if test="elementParams != null">
-        element_params,
-      </if>
-    </trim>
-    <trim prefix="values (" suffix=")" suffixOverrides=",">
-      <if test="elementNo != null">
-        #{elementNo,jdbcType=VARCHAR},
-      </if>
-      <if test="elementTitle != null">
-        #{elementTitle,jdbcType=VARCHAR},
-      </if>
-      <if test="elementType != null">
-        #{elementType,jdbcType=VARCHAR},
-      </if>
-      <if test="parentId != null">
-        #{parentId,jdbcType=INTEGER},
-      </if>
-      <if test="scriptId != null">
-        #{scriptId,jdbcType=INTEGER},
-      </if>
-      <if test="argusPath != null">
-        #{argusPath,jdbcType=VARCHAR},
-      </if>
-      <if test="isValid != null">
-        #{isValid,jdbcType=VARCHAR},
-      </if>
-      <if test="createUser != null">
-        #{createUser,jdbcType=VARCHAR},
-      </if>
-      <if test="createTime != null">
-        #{createTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="seq != null">
-        #{seq,jdbcType=INTEGER},
-      </if>
-      <if test="elementParams != null">
-        #{elementParams,jdbcType=LONGVARCHAR},
-      </if>
-    </trim>
-  </insert>
-  <select id="countByExample" parameterType="com.huawei.emergency.entity.EmergencyElementExample" resultType="java.lang.Long">
-    select count(*) from emergency_element
-    <if test="_parameter != null">
-      <include refid="Example_Where_Clause" />
-    </if>
-  </select>
-  <update id="updateByExampleSelective" parameterType="map">
-    update emergency_element
-    <set>
-      <if test="record.elementId != null">
-        element_id = #{record.elementId,jdbcType=INTEGER},
-      </if>
-      <if test="record.elementNo != null">
+        'false' as QUERYID,
+        <include refid="Base_Column_List"/>
+        from emergency_element
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause"/>
+        </if>
+        <if test="orderByClause != null">
+            order by ${orderByClause}
+        </if>
+    </select>
+    <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from emergency_element
+        where element_id = #{elementId,jdbcType=INTEGER}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+        delete
+        from emergency_element
+        where element_id = #{elementId,jdbcType=INTEGER}
+    </delete>
+    <delete id="deleteByExample" parameterType="com.huawei.emergency.entity.EmergencyElementExample">
+        delete from emergency_element
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause"/>
+        </if>
+    </delete>
+    <insert id="insert" parameterType="com.huawei.emergency.entity.EmergencyElement">
+        <selectKey keyProperty="elementId" order="AFTER" resultType="java.lang.Integer">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into emergency_element (element_no, element_title, element_type,
+        element_params, parent_id, script_id,
+        argus_path, is_valid, create_user,
+        create_time, seq)
+        values (#{elementNo,jdbcType=VARCHAR}, #{elementTitle,jdbcType=VARCHAR}, #{elementType,jdbcType=VARCHAR},
+        #{elementParams,jdbcType=VARCHAR}, #{parentId,jdbcType=INTEGER}, #{scriptId,jdbcType=INTEGER},
+        #{argusPath,jdbcType=VARCHAR}, #{isValid,jdbcType=VARCHAR}, #{createUser,jdbcType=VARCHAR},
+        #{createTime,jdbcType=TIMESTAMP}, #{seq,jdbcType=INTEGER})
+    </insert>
+    <insert id="insertSelective" parameterType="com.huawei.emergency.entity.EmergencyElement">
+        <selectKey keyProperty="elementId" order="AFTER" resultType="java.lang.Integer">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into emergency_element
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="elementNo != null">
+                element_no,
+            </if>
+            <if test="elementTitle != null">
+                element_title,
+            </if>
+            <if test="elementType != null">
+                element_type,
+            </if>
+            <if test="elementParams != null">
+                element_params,
+            </if>
+            <if test="parentId != null">
+                parent_id,
+            </if>
+            <if test="scriptId != null">
+                script_id,
+            </if>
+            <if test="argusPath != null">
+                argus_path,
+            </if>
+            <if test="isValid != null">
+                is_valid,
+            </if>
+            <if test="createUser != null">
+                create_user,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="seq != null">
+                seq,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="elementNo != null">
+                #{elementNo,jdbcType=VARCHAR},
+            </if>
+            <if test="elementTitle != null">
+                #{elementTitle,jdbcType=VARCHAR},
+            </if>
+            <if test="elementType != null">
+                #{elementType,jdbcType=VARCHAR},
+            </if>
+            <if test="elementParams != null">
+                #{elementParams,jdbcType=VARCHAR},
+            </if>
+            <if test="parentId != null">
+                #{parentId,jdbcType=INTEGER},
+            </if>
+            <if test="scriptId != null">
+                #{scriptId,jdbcType=INTEGER},
+            </if>
+            <if test="argusPath != null">
+                #{argusPath,jdbcType=VARCHAR},
+            </if>
+            <if test="isValid != null">
+                #{isValid,jdbcType=VARCHAR},
+            </if>
+            <if test="createUser != null">
+                #{createUser,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="seq != null">
+                #{seq,jdbcType=INTEGER},
+            </if>
+        </trim>
+    </insert>
+    <select id="countByExample" parameterType="com.huawei.emergency.entity.EmergencyElementExample"
+            resultType="java.lang.Long">
+        select count(*) from emergency_element
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause"/>
+        </if>
+    </select>
+    <update id="updateByExampleSelective" parameterType="map">
+        update emergency_element
+        <set>
+            <if test="record.elementId != null">
+                element_id = #{record.elementId,jdbcType=INTEGER},
+            </if>
+            <if test="record.elementNo != null">
+                element_no = #{record.elementNo,jdbcType=VARCHAR},
+            </if>
+            <if test="record.elementTitle != null">
+                element_title = #{record.elementTitle,jdbcType=VARCHAR},
+            </if>
+            <if test="record.elementType != null">
+                element_type = #{record.elementType,jdbcType=VARCHAR},
+            </if>
+            <if test="record.elementParams != null">
+                element_params = #{record.elementParams,jdbcType=VARCHAR},
+            </if>
+            <if test="record.parentId != null">
+                parent_id = #{record.parentId,jdbcType=INTEGER},
+            </if>
+            <if test="record.scriptId != null">
+                script_id = #{record.scriptId,jdbcType=INTEGER},
+            </if>
+            <if test="record.argusPath != null">
+                argus_path = #{record.argusPath,jdbcType=VARCHAR},
+            </if>
+            <if test="record.isValid != null">
+                is_valid = #{record.isValid,jdbcType=VARCHAR},
+            </if>
+            <if test="record.createUser != null">
+                create_user = #{record.createUser,jdbcType=VARCHAR},
+            </if>
+            <if test="record.createTime != null">
+                create_time = #{record.createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="record.seq != null">
+                seq = #{record.seq,jdbcType=INTEGER},
+            </if>
+        </set>
+        <if test="_parameter != null">
+            <include refid="Update_By_Example_Where_Clause"/>
+        </if>
+    </update>
+    <update id="updateByExample" parameterType="map">
+        update emergency_element
+        set element_id = #{record.elementId,jdbcType=INTEGER},
         element_no = #{record.elementNo,jdbcType=VARCHAR},
-      </if>
-      <if test="record.elementTitle != null">
         element_title = #{record.elementTitle,jdbcType=VARCHAR},
-      </if>
-      <if test="record.elementType != null">
         element_type = #{record.elementType,jdbcType=VARCHAR},
-      </if>
-      <if test="record.parentId != null">
+        element_params = #{record.elementParams,jdbcType=VARCHAR},
         parent_id = #{record.parentId,jdbcType=INTEGER},
-      </if>
-      <if test="record.scriptId != null">
         script_id = #{record.scriptId,jdbcType=INTEGER},
-      </if>
-      <if test="record.argusPath != null">
         argus_path = #{record.argusPath,jdbcType=VARCHAR},
-      </if>
-      <if test="record.isValid != null">
         is_valid = #{record.isValid,jdbcType=VARCHAR},
-      </if>
-      <if test="record.createUser != null">
         create_user = #{record.createUser,jdbcType=VARCHAR},
-      </if>
-      <if test="record.createTime != null">
         create_time = #{record.createTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="record.seq != null">
-        seq = #{record.seq,jdbcType=INTEGER},
-      </if>
-      <if test="record.elementParams != null">
-        element_params = #{record.elementParams,jdbcType=LONGVARCHAR},
-      </if>
-    </set>
-    <if test="_parameter != null">
-      <include refid="Update_By_Example_Where_Clause" />
-    </if>
-  </update>
-  <update id="updateByExampleWithBLOBs" parameterType="map">
-    update emergency_element
-    set element_id = #{record.elementId,jdbcType=INTEGER},
-      element_no = #{record.elementNo,jdbcType=VARCHAR},
-      element_title = #{record.elementTitle,jdbcType=VARCHAR},
-      element_type = #{record.elementType,jdbcType=VARCHAR},
-      parent_id = #{record.parentId,jdbcType=INTEGER},
-      script_id = #{record.scriptId,jdbcType=INTEGER},
-      argus_path = #{record.argusPath,jdbcType=VARCHAR},
-      is_valid = #{record.isValid,jdbcType=VARCHAR},
-      create_user = #{record.createUser,jdbcType=VARCHAR},
-      create_time = #{record.createTime,jdbcType=TIMESTAMP},
-      seq = #{record.seq,jdbcType=INTEGER},
-      element_params = #{record.elementParams,jdbcType=LONGVARCHAR}
-    <if test="_parameter != null">
-      <include refid="Update_By_Example_Where_Clause" />
-    </if>
-  </update>
-  <update id="updateByExample" parameterType="map">
-    update emergency_element
-    set element_id = #{record.elementId,jdbcType=INTEGER},
-      element_no = #{record.elementNo,jdbcType=VARCHAR},
-      element_title = #{record.elementTitle,jdbcType=VARCHAR},
-      element_type = #{record.elementType,jdbcType=VARCHAR},
-      parent_id = #{record.parentId,jdbcType=INTEGER},
-      script_id = #{record.scriptId,jdbcType=INTEGER},
-      argus_path = #{record.argusPath,jdbcType=VARCHAR},
-      is_valid = #{record.isValid,jdbcType=VARCHAR},
-      create_user = #{record.createUser,jdbcType=VARCHAR},
-      create_time = #{record.createTime,jdbcType=TIMESTAMP},
-      seq = #{record.seq,jdbcType=INTEGER}
-    <if test="_parameter != null">
-      <include refid="Update_By_Example_Where_Clause" />
-    </if>
-  </update>
-  <update id="updateByPrimaryKeySelective" parameterType="com.huawei.emergency.entity.EmergencyElement">
-    update emergency_element
-    <set>
-      <if test="elementNo != null">
-        element_no = #{elementNo,jdbcType=VARCHAR},
-      </if>
-      <if test="elementTitle != null">
-        element_title = #{elementTitle,jdbcType=VARCHAR},
-      </if>
-      <if test="elementType != null">
-        element_type = #{elementType,jdbcType=VARCHAR},
-      </if>
-      <if test="parentId != null">
-        parent_id = #{parentId,jdbcType=INTEGER},
-      </if>
-      <if test="scriptId != null">
-        script_id = #{scriptId,jdbcType=INTEGER},
-      </if>
-      <if test="argusPath != null">
-        argus_path = #{argusPath,jdbcType=VARCHAR},
-      </if>
-      <if test="isValid != null">
-        is_valid = #{isValid,jdbcType=VARCHAR},
-      </if>
-      <if test="createUser != null">
-        create_user = #{createUser,jdbcType=VARCHAR},
-      </if>
-      <if test="createTime != null">
-        create_time = #{createTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="seq != null">
-        seq = #{seq,jdbcType=INTEGER},
-      </if>
-      <if test="elementParams != null">
-        element_params = #{elementParams,jdbcType=LONGVARCHAR},
-      </if>
-    </set>
-    where element_id = #{elementId,jdbcType=INTEGER}
-  </update>
-  <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.huawei.emergency.entity.EmergencyElement">
-    update emergency_element
-    set element_no = #{elementNo,jdbcType=VARCHAR},
-      element_title = #{elementTitle,jdbcType=VARCHAR},
-      element_type = #{elementType,jdbcType=VARCHAR},
-      parent_id = #{parentId,jdbcType=INTEGER},
-      script_id = #{scriptId,jdbcType=INTEGER},
-      argus_path = #{argusPath,jdbcType=VARCHAR},
-      is_valid = #{isValid,jdbcType=VARCHAR},
-      create_user = #{createUser,jdbcType=VARCHAR},
-      create_time = #{createTime,jdbcType=TIMESTAMP},
-      seq = #{seq,jdbcType=INTEGER},
-      element_params = #{elementParams,jdbcType=LONGVARCHAR}
-    where element_id = #{elementId,jdbcType=INTEGER}
-  </update>
-  <update id="updateByPrimaryKey" parameterType="com.huawei.emergency.entity.EmergencyElement">
-    update emergency_element
-    set element_no = #{elementNo,jdbcType=VARCHAR},
-      element_title = #{elementTitle,jdbcType=VARCHAR},
-      element_type = #{elementType,jdbcType=VARCHAR},
-      parent_id = #{parentId,jdbcType=INTEGER},
-      script_id = #{scriptId,jdbcType=INTEGER},
-      argus_path = #{argusPath,jdbcType=VARCHAR},
-      is_valid = #{isValid,jdbcType=VARCHAR},
-      create_user = #{createUser,jdbcType=VARCHAR},
-      create_time = #{createTime,jdbcType=TIMESTAMP},
-      seq = #{seq,jdbcType=INTEGER}
-    where element_id = #{elementId,jdbcType=INTEGER}
-  </update>
+        seq = #{record.seq,jdbcType=INTEGER}
+        <if test="_parameter != null">
+            <include refid="Update_By_Example_Where_Clause"/>
+        </if>
+    </update>
+    <update id="updateByPrimaryKeySelective" parameterType="com.huawei.emergency.entity.EmergencyElement">
+        update emergency_element
+        <set>
+            <if test="elementNo != null">
+                element_no = #{elementNo,jdbcType=VARCHAR},
+            </if>
+            <if test="elementTitle != null">
+                element_title = #{elementTitle,jdbcType=VARCHAR},
+            </if>
+            <if test="elementType != null">
+                element_type = #{elementType,jdbcType=VARCHAR},
+            </if>
+            <if test="elementParams != null">
+                element_params = #{elementParams,jdbcType=VARCHAR},
+            </if>
+            <if test="parentId != null">
+                parent_id = #{parentId,jdbcType=INTEGER},
+            </if>
+            <if test="scriptId != null">
+                script_id = #{scriptId,jdbcType=INTEGER},
+            </if>
+            <if test="argusPath != null">
+                argus_path = #{argusPath,jdbcType=VARCHAR},
+            </if>
+            <if test="isValid != null">
+                is_valid = #{isValid,jdbcType=VARCHAR},
+            </if>
+            <if test="createUser != null">
+                create_user = #{createUser,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="seq != null">
+                seq = #{seq,jdbcType=INTEGER},
+            </if>
+        </set>
+        where element_id = #{elementId,jdbcType=INTEGER}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.huawei.emergency.entity.EmergencyElement">
+        update emergency_element
+        set element_no     = #{elementNo,jdbcType=VARCHAR},
+            element_title  = #{elementTitle,jdbcType=VARCHAR},
+            element_type   = #{elementType,jdbcType=VARCHAR},
+            element_params = #{elementParams,jdbcType=VARCHAR},
+            parent_id      = #{parentId,jdbcType=INTEGER},
+            script_id      = #{scriptId,jdbcType=INTEGER},
+            argus_path     = #{argusPath,jdbcType=VARCHAR},
+            is_valid       = #{isValid,jdbcType=VARCHAR},
+            create_user    = #{createUser,jdbcType=VARCHAR},
+            create_time    = #{createTime,jdbcType=TIMESTAMP},
+            seq            = #{seq,jdbcType=INTEGER}
+        where element_id = #{elementId,jdbcType=INTEGER}
+    </update>
 </mapper>

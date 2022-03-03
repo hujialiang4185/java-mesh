@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huawei.emergency.mapper.EmergencyExecRecordDetailMapper">
+    <resultMap id="BaseResultMap" type="com.huawei.emergency.entity.EmergencyExecRecordDetail">
+        <id column="detail_id" jdbcType="INTEGER" property="detailId"/>
+        <result column="exec_id" jdbcType="INTEGER" property="execId"/>
+        <result column="record_id" jdbcType="INTEGER" property="recordId"/>
+        <result column="status" jdbcType="VARCHAR" property="status"/>
+        <result column="server_id" jdbcType="INTEGER" property="serverId"/>
+        <result column="server_ip" jdbcType="VARCHAR" property="serverIp"/>
+        <result column="log" jdbcType="VARCHAR" property="log"/>
+        <result column="create_user" jdbcType="VARCHAR" property="createUser"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="start_time" jdbcType="TIMESTAMP" property="startTime"/>
+        <result column="end_time" jdbcType="TIMESTAMP" property="endTime"/>
+        <result column="ensure_user" jdbcType="VARCHAR" property="ensureUser"/>
+        <result column="ensure_time" jdbcType="TIMESTAMP" property="ensureTime"/>
+        <result column="is_valid" jdbcType="VARCHAR" property="isValid"/>
+        <result column="pid" jdbcType="INTEGER" property="pid"/>
+    </resultMap>
+    <sql id="Example_Where_Clause">
+        <where>
+            <foreach collection="oredCriteria" item="criteria" separator="or">
+                <if test="criteria.valid">
+                    <trim prefix="(" prefixOverrides="and" suffix=")">
+                        <foreach collection="criteria.criteria" item="criterion">
+                            <choose>
+                                <when test="criterion.noValue">
+                                    and ${criterion.condition}
+                                </when>
+                                <when test="criterion.singleValue">
+                                    and ${criterion.condition} #{criterion.value}
+                                </when>
+                                <when test="criterion.betweenValue">
+                                    and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                                </when>
+                                <when test="criterion.listValue">
+                                    and ${criterion.condition}
+                                    <foreach close=")" collection="criterion.value" item="listItem" open="("
+                                            separator=",">
+                                        #{listItem}
+                                    </foreach>
+                                </when>
+                            </choose>
+                        </foreach>
+                    </trim>
+                </if>
+            </foreach>
+        </where>
+    </sql>
+    <sql id="Update_By_Example_Where_Clause">
+        <where>
+            <foreach collection="example.oredCriteria" item="criteria" separator="or">
+                <if test="criteria.valid">
+                    <trim prefix="(" prefixOverrides="and" suffix=")">
+                        <foreach collection="criteria.criteria" item="criterion">
+                            <choose>
+                                <when test="criterion.noValue">
+                                    and ${criterion.condition}
+                                </when>
+                                <when test="criterion.singleValue">
+                                    and ${criterion.condition} #{criterion.value}
+                                </when>
+                                <when test="criterion.betweenValue">
+                                    and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                                </when>
+                                <when test="criterion.listValue">
+                                    and ${criterion.condition}
+                                    <foreach close=")" collection="criterion.value" item="listItem" open="("
+                                            separator=",">
+                                        #{listItem}
+                                    </foreach>
+                                </when>
+                            </choose>
+                        </foreach>
+                    </trim>
+                </if>
+            </foreach>
+        </where>
+    </sql>
+    <sql id="Base_Column_List">
+        detail_id
+        , exec_id, record_id, status, server_id, server_ip, log, create_user, create_time,
+    start_time, end_time, ensure_user, ensure_time, is_valid, pid
+    </sql>
+    <select id="selectByExample" parameterType="com.huawei.emergency.entity.EmergencyExecRecordDetailExample"
+            resultMap="BaseResultMap">
+        select
+        <if test="distinct">
+            distinct
+        </if>
+        'false' as QUERYID,
+        <include refid="Base_Column_List"/>
+        from emergency_exec_record_detail
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause"/>
+        </if>
+        <if test="orderByClause != null">
+            order by ${orderByClause}
+        </if>
+    </select>
+    <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from emergency_exec_record_detail
+        where detail_id = #{detailId,jdbcType=INTEGER}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+        delete
+        from emergency_exec_record_detail
+        where detail_id = #{detailId,jdbcType=INTEGER}
+    </delete>
+    <delete id="deleteByExample" parameterType="com.huawei.emergency.entity.EmergencyExecRecordDetailExample">
+        delete from emergency_exec_record_detail
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause"/>
+        </if>
+    </delete>
+    <insert id="insert" keyColumn="detail_id" keyProperty="detailId"
+            parameterType="com.huawei.emergency.entity.EmergencyExecRecordDetail" useGeneratedKeys="true">
+        insert into emergency_exec_record_detail (exec_id, record_id, status,
+                                                  server_id, server_ip, log,
+                                                  create_user, create_time, start_time,
+                                                  end_time, ensure_user, ensure_time,
+                                                  is_valid, pid)
+        values (#{execId,jdbcType=INTEGER}, #{recordId,jdbcType=INTEGER}, #{status,jdbcType=VARCHAR},
+                #{serverId,jdbcType=INTEGER}, #{serverIp,jdbcType=VARCHAR}, #{log,jdbcType=VARCHAR},
+                #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{startTime,jdbcType=TIMESTAMP},
+                #{endTime,jdbcType=TIMESTAMP}, #{ensureUser,jdbcType=VARCHAR}, #{ensureTime,jdbcType=TIMESTAMP},
+                #{isValid,jdbcType=VARCHAR}, #{pid,jdbcType=INTEGER})
+    </insert>
+    <insert id="insertSelective" keyColumn="detail_id" keyProperty="detailId"
+            parameterType="com.huawei.emergency.entity.EmergencyExecRecordDetail" useGeneratedKeys="true">
+        insert into emergency_exec_record_detail
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="execId != null">
+                exec_id,
+            </if>
+            <if test="recordId != null">
+                record_id,
+            </if>
+            <if test="status != null">
+                status,
+            </if>
+            <if test="serverId != null">
+                server_id,
+            </if>
+            <if test="serverIp != null">
+                server_ip,
+            </if>
+            <if test="log != null">
+                log,
+            </if>
+            <if test="createUser != null">
+                create_user,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="startTime != null">
+                start_time,
+            </if>
+            <if test="endTime != null">
+                end_time,
+            </if>
+            <if test="ensureUser != null">
+                ensure_user,
+            </if>
+            <if test="ensureTime != null">
+                ensure_time,
+            </if>
+            <if test="isValid != null">
+                is_valid,
+            </if>
+            <if test="pid != null">
+                pid,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="execId != null">
+                #{execId,jdbcType=INTEGER},
+            </if>
+            <if test="recordId != null">
+                #{recordId,jdbcType=INTEGER},
+            </if>
+            <if test="status != null">
+                #{status,jdbcType=VARCHAR},
+            </if>
+            <if test="serverId != null">
+                #{serverId,jdbcType=INTEGER},
+            </if>
+            <if test="serverIp != null">
+                #{serverIp,jdbcType=VARCHAR},
+            </if>
+            <if test="log != null">
+                #{log,jdbcType=VARCHAR},
+            </if>
+            <if test="createUser != null">
+                #{createUser,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="startTime != null">
+                #{startTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="endTime != null">
+                #{endTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="ensureUser != null">
+                #{ensureUser,jdbcType=VARCHAR},
+            </if>
+            <if test="ensureTime != null">
+                #{ensureTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="isValid != null">
+                #{isValid,jdbcType=VARCHAR},
+            </if>
+            <if test="pid != null">
+                #{pid,jdbcType=INTEGER},
+            </if>
+        </trim>
+    </insert>
+    <select id="countByExample" parameterType="com.huawei.emergency.entity.EmergencyExecRecordDetailExample"
+            resultType="java.lang.Long">
+        select count(*) from emergency_exec_record_detail
+        <if test="_parameter != null">
+            <include refid="Example_Where_Clause"/>
+        </if>
+    </select>
+    <update id="updateByExampleSelective" parameterType="map">
+        update emergency_exec_record_detail
+        <set>
+            <if test="record.detailId != null">
+                detail_id = #{record.detailId,jdbcType=INTEGER},
+            </if>
+            <if test="record.execId != null">
+                exec_id = #{record.execId,jdbcType=INTEGER},
+            </if>
+            <if test="record.recordId != null">
+                record_id = #{record.recordId,jdbcType=INTEGER},
+            </if>
+            <if test="record.status != null">
+                status = #{record.status,jdbcType=VARCHAR},
+            </if>
+            <if test="record.serverId != null">
+                server_id = #{record.serverId,jdbcType=INTEGER},
+            </if>
+            <if test="record.serverIp != null">
+                server_ip = #{record.serverIp,jdbcType=VARCHAR},
+            </if>
+            <if test="record.log != null">
+                log = #{record.log,jdbcType=VARCHAR},
+            </if>
+            <if test="record.createUser != null">
+                create_user = #{record.createUser,jdbcType=VARCHAR},
+            </if>
+            <if test="record.createTime != null">
+                create_time = #{record.createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="record.startTime != null">
+                start_time = #{record.startTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="record.endTime != null">
+                end_time = #{record.endTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="record.ensureUser != null">
+                ensure_user = #{record.ensureUser,jdbcType=VARCHAR},
+            </if>
+            <if test="record.ensureTime != null">
+                ensure_time = #{record.ensureTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="record.isValid != null">
+                is_valid = #{record.isValid,jdbcType=VARCHAR},
+            </if>
+            <if test="record.pid != null">
+                pid = #{record.pid,jdbcType=INTEGER},
+            </if>
+        </set>
+        <if test="_parameter != null">
+            <include refid="Update_By_Example_Where_Clause"/>
+        </if>
+    </update>
+    <update id="updateByExample" parameterType="map">
+        update emergency_exec_record_detail
+        set detail_id = #{record.detailId,jdbcType=INTEGER},
+        exec_id = #{record.execId,jdbcType=INTEGER},
+        record_id = #{record.recordId,jdbcType=INTEGER},
+        status = #{record.status,jdbcType=VARCHAR},
+        server_id = #{record.serverId,jdbcType=INTEGER},
+        server_ip = #{record.serverIp,jdbcType=VARCHAR},
+        log = #{record.log,jdbcType=VARCHAR},
+        create_user = #{record.createUser,jdbcType=VARCHAR},
+        create_time = #{record.createTime,jdbcType=TIMESTAMP},
+        start_time = #{record.startTime,jdbcType=TIMESTAMP},
+        end_time = #{record.endTime,jdbcType=TIMESTAMP},
+        ensure_user = #{record.ensureUser,jdbcType=VARCHAR},
+        ensure_time = #{record.ensureTime,jdbcType=TIMESTAMP},
+        is_valid = #{record.isValid,jdbcType=VARCHAR},
+        pid = #{record.pid,jdbcType=INTEGER}
+        <if test="_parameter != null">
+            <include refid="Update_By_Example_Where_Clause"/>
+        </if>
+    </update>
+    <update id="updateByPrimaryKeySelective" parameterType="com.huawei.emergency.entity.EmergencyExecRecordDetail">
+        update emergency_exec_record_detail
+        <set>
+            <if test="execId != null">
+                exec_id = #{execId,jdbcType=INTEGER},
+            </if>
+            <if test="recordId != null">
+                record_id = #{recordId,jdbcType=INTEGER},
+            </if>
+            <if test="status != null">
+                status = #{status,jdbcType=VARCHAR},
+            </if>
+            <if test="serverId != null">
+                server_id = #{serverId,jdbcType=INTEGER},
+            </if>
+            <if test="serverIp != null">
+                server_ip = #{serverIp,jdbcType=VARCHAR},
+            </if>
+            <if test="log != null">
+                log = #{log,jdbcType=VARCHAR},
+            </if>
+            <if test="createUser != null">
+                create_user = #{createUser,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="startTime != null">
+                start_time = #{startTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="endTime != null">
+                end_time = #{endTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="ensureUser != null">
+                ensure_user = #{ensureUser,jdbcType=VARCHAR},
+            </if>
+            <if test="ensureTime != null">
+                ensure_time = #{ensureTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="isValid != null">
+                is_valid = #{isValid,jdbcType=VARCHAR},
+            </if>
+            <if test="pid != null">
+                pid = #{pid,jdbcType=INTEGER},
+            </if>
+        </set>
+        where detail_id = #{detailId,jdbcType=INTEGER}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.huawei.emergency.entity.EmergencyExecRecordDetail">
+        update emergency_exec_record_detail
+        set exec_id     = #{execId,jdbcType=INTEGER},
+            record_id   = #{recordId,jdbcType=INTEGER},
+            status      = #{status,jdbcType=VARCHAR},
+            server_id   = #{serverId,jdbcType=INTEGER},
+            server_ip   = #{serverIp,jdbcType=VARCHAR},
+            log         = #{log,jdbcType=VARCHAR},
+            create_user = #{createUser,jdbcType=VARCHAR},
+            create_time = #{createTime,jdbcType=TIMESTAMP},
+            start_time  = #{startTime,jdbcType=TIMESTAMP},
+            end_time    = #{endTime,jdbcType=TIMESTAMP},
+            ensure_user = #{ensureUser,jdbcType=VARCHAR},
+            ensure_time = #{ensureTime,jdbcType=TIMESTAMP},
+            is_valid    = #{isValid,jdbcType=VARCHAR},
+            pid         = #{pid,jdbcType=INTEGER}
+        where detail_id = #{detailId,jdbcType=INTEGER}
+    </update>
+
+    <select id="selectAllServerDetail" resultType="com.huawei.emergency.entity.EmergencyExecRecordDetail">
+        select t1.detail_id,
+               NULLIF(t1.server_ip, 'local') server_ip,
+               (CASE
+                    WHEN t1.status = '0' THEN
+                        'wait'
+                    WHEN t1.status = '1' THEN
+                        'process'
+                    WHEN t1.status IN ('2', '5') THEN
+                        'finish'
+                    WHEN t1.status IN ('3', '4', '6') THEN
+                        'error'
+                    ELSE t1.status
+                   END
+                   )                         status
+        from emergency_exec_record_detail t1
+        where t1.record_id = #{recordId}
+          and is_valid = '1'
+    </select>
+    <update id="updateLogIfAbsent">
+        update emergency_exec_record_detail
+        set log = #{log}
+        where detail_id = #{detailId}
+          and log is null
+    </update>
+</mapper>

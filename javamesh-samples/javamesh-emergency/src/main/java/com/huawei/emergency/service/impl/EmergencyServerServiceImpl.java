@@ -4,8 +4,6 @@
 
 package com.huawei.emergency.service.impl;
 
-import com.github.pagehelper.Page;
-import com.github.pagehelper.PageHelper;
 import com.huawei.common.api.CommonPage;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.ValidEnum;
@@ -15,14 +13,17 @@ import com.huawei.emergency.entity.EmergencyServer;
 import com.huawei.emergency.entity.EmergencyServerExample;
 import com.huawei.emergency.mapper.EmergencyServerMapper;
 import com.huawei.emergency.service.EmergencyServerService;
-
 import com.huawei.script.exec.ExecResult;
 import com.huawei.script.exec.executor.RemoteScriptExecutor;
 import com.huawei.script.exec.session.ServerInfo;
 import com.huawei.script.exec.session.ServerSessionFactory;
+
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +42,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
+
 import javax.annotation.Resource;
 
 /**
@@ -144,7 +146,8 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
     @Override
     public CommonResult queryServerInfo(CommonPage<EmergencyServer> params, String keyword, int[] excludeServerIds) {
         Page<EmergencyServer> pageInfo = PageHelper
-            .startPage(params.getPageIndex(), params.getPageSize(), StringUtils.isEmpty(params.getSortType()) ? "" : params.getSortField() + System.lineSeparator() + params.getSortType())
+            .startPage(params.getPageIndex(), params.getPageSize(), StringUtils.isEmpty(params.getSortType()) ? ""
+                : params.getSortField() + System.lineSeparator() + params.getSortType())
             .doSelectPage(() -> {
                 serverMapper.selectByKeyword(params.getObject(), keyword, excludeServerIds);
             });
@@ -156,7 +159,8 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
     public CommonResult search(String serverName) {
         EmergencyServer server = new EmergencyServer();
         server.setServerName(serverName);
-        Object[] objects = serverMapper.selectByKeyword(server, null, null).stream().map(EmergencyServer::getServerName).toArray();
+        Object[] objects = serverMapper.selectByKeyword(server, null, null).stream().map(EmergencyServer::getServerName)
+            .toArray();
         return CommonResult.success(objects, objects.length);
     }
 
@@ -220,12 +224,12 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
             if (result.isSuccess()) {
                 LOGGER.info("success send agent to serverId={},ip={}", server.getServerId(), server.getServerIp());
             } else {
-                LOGGER.error("error to send agent to serverId={},ip={}.{}", server.getServerId(), server.getServerIp(), result.getMsg());
+                LOGGER.error("error to send agent to serverId={},ip={}.{}", server.getServerId(), server.getServerIp(),
+                    result.getMsg());
             }
         }));
         return CommonResult.success();
     }
-
 
     public CommonResult sendAgentToServer(EmergencyServer server) {
         if (server.getServerId() == null) {
@@ -254,7 +258,8 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
             }
             String remoteAgentFile = uploadPath + agentFile.getName();
             execResult = remoteExecutor.exec(session,
-                String.format(Locale.ROOT, "source /etc/profile && nohup java -jar %s >%s.log 2>&1 &", remoteAgentFile, remoteAgentFile),
+                String.format(Locale.ROOT, "source /etc/profile && nohup java -jar %s >%s.log 2>&1 &", remoteAgentFile,
+                    remoteAgentFile),
                 null, -1);
             if (!execResult.isSuccess()) {
                 LOGGER.error("启动agent失败。 {}", execResult.getMsg());

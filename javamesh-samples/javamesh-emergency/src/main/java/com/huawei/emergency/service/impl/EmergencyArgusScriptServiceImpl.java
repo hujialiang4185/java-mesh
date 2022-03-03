@@ -16,7 +16,6 @@
 
 package com.huawei.emergency.service.impl;
 
-import com.alibaba.fastjson.JSONObject;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.emergency.dto.ArgusScript;
@@ -31,7 +30,11 @@ import com.huawei.emergency.layout.TreeResponse;
 import com.huawei.emergency.layout.template.GroovyClassTemplate;
 import com.huawei.emergency.mapper.EmergencyElementMapper;
 import com.huawei.emergency.service.EmergencyArgusScriptService;
+
+import com.alibaba.fastjson.JSONObject;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,7 +46,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author y30010171
@@ -70,10 +72,10 @@ public class EmergencyArgusScriptServiceImpl implements EmergencyArgusScriptServ
         }
         EmergencyElementExample rootElementExample = new EmergencyElementExample();
         rootElementExample.createCriteria()
-                .andArgusPathEqualTo(path)
-                .andParentIdIsNull()
-                .andIsValidEqualTo(ValidEnum.VALID.getValue());
-        List<EmergencyElement> emergencyElements = elementMapper.selectByExampleWithBLOBs(rootElementExample);
+            .andArgusPathEqualTo(path)
+            .andParentIdIsNull()
+            .andIsValidEqualTo(ValidEnum.VALID.getValue());
+        List<EmergencyElement> emergencyElements = elementMapper.selectByExample(rootElementExample);
         if (emergencyElements.size() == 0) {
             rootElement = generateTemplate(path, userName);
         } else {
@@ -102,9 +104,9 @@ public class EmergencyArgusScriptServiceImpl implements EmergencyArgusScriptServ
         EmergencyElementExample elementExample = new EmergencyElementExample();
         elementExample.setOrderByClause("seq");
         elementExample.createCriteria()
-                .andParentIdEqualTo(parent.getElementId())
-                .andIsValidEqualTo(ValidEnum.VALID.getValue());
-        List<EmergencyElement> emergencyElements = elementMapper.selectByExampleWithBLOBs(elementExample);
+            .andParentIdEqualTo(parent.getElementId())
+            .andIsValidEqualTo(ValidEnum.VALID.getValue());
+        List<EmergencyElement> emergencyElements = elementMapper.selectByExample(elementExample);
         for (EmergencyElement emergencyElement : emergencyElements) {
             TreeNode node = new TreeNode();
             node.setElementId(emergencyElement.getElementId());
@@ -126,8 +128,8 @@ public class EmergencyArgusScriptServiceImpl implements EmergencyArgusScriptServ
         // 清除之前的编排关系
         EmergencyElementExample currentElementsExample = new EmergencyElementExample();
         currentElementsExample.createCriteria()
-                .andIsValidEqualTo(ValidEnum.VALID.getValue())
-                .andArgusPathEqualTo(treeResponse.getPath());
+            .andIsValidEqualTo(ValidEnum.VALID.getValue())
+            .andArgusPathEqualTo(treeResponse.getPath());
         EmergencyElement updateElement = new EmergencyElement();
         updateElement.setIsValid(ValidEnum.IN_VALID.getValue());
         elementMapper.updateByExampleSelective(updateElement, currentElementsExample);
@@ -165,7 +167,8 @@ public class EmergencyArgusScriptServiceImpl implements EmergencyArgusScriptServ
         }
     }
 
-    private void updateChildrenNode(String userName, String path, int parentId, TreeNode node, Map<String, Map> map, int seq) {
+    private void updateChildrenNode(String userName, String path, int parentId, TreeNode node, Map<String, Map> map,
+        int seq) {
         EmergencyElement element = new EmergencyElement();
         element.setElementParams(JSONObject.toJSONString(map.get(node.getKey())));
         element.setSeq(seq);
@@ -195,7 +198,7 @@ public class EmergencyArgusScriptServiceImpl implements EmergencyArgusScriptServ
     /**
      * 生成默认的编排模板
      *
-     * @param path     压测脚本路径
+     * @param path 压测脚本路径
      * @param userName 用户名
      */
     private EmergencyElement generateTemplate(String path, String userName) {

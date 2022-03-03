@@ -9,8 +9,9 @@ import com.huawei.common.api.CommonResult;
 import com.huawei.emergency.dto.PlanQueryParams;
 import com.huawei.emergency.dto.TaskNode;
 import com.huawei.emergency.entity.EmergencyPlan;
-import org.ngrinder.model.PerfTest;
 import com.huawei.emergency.entity.JwtUser;
+
+import org.ngrinder.model.PerfTest;
 
 import java.util.List;
 
@@ -24,7 +25,7 @@ public interface EmergencyPlanService extends EmergencyCommonService<EmergencyPl
     /**
      * 预案执行
      *
-     * @param planId   预案ID
+     * @param planId 预案ID
      * @param userName 操作人
      * @return {@link CommonResult}
      */
@@ -33,7 +34,7 @@ public interface EmergencyPlanService extends EmergencyCommonService<EmergencyPl
     /**
      * 预案启动
      *
-     * @param plan     预案信息
+     * @param plan 预案信息
      * @param userName 操作人
      * @return {@link CommonResult}
      */
@@ -42,7 +43,7 @@ public interface EmergencyPlanService extends EmergencyCommonService<EmergencyPl
     /**
      * 预案停止
      *
-     * @param planId   预案ID
+     * @param planId 预案ID
      * @param userName 操作人
      * @return {@link CommonResult}
      */
@@ -66,7 +67,7 @@ public interface EmergencyPlanService extends EmergencyCommonService<EmergencyPl
 
     CommonResult save(int planId, List<TaskNode> listNodes, String userName);
 
-    CommonResult submit(int planId,String approver);
+    CommonResult submit(int planId, String approver);
 
     CommonResult copy(EmergencyPlan emergencyPlan);
 

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huawei.emergency.mapper.UserMapper">
+    <select id="getAuthByRole" parameterType="String" resultType="String">
+        SELECT auth_name
+        FROM emergency_auth
+        WHERE role_name = #{role}
+    </select>
+
+    <select id="getRoleByUserName" parameterType="String" resultType="String">
+        SELECT role_name
+        FROM emergency_user_role
+        WHERE user_name = #{userName}
+    </select>
+
+    <select id="getUserStatus" parameterType="String" resultType="String">
+        SELECT enabled
+        FROM NUSER
+        WHERE user_id = #{userName}
+    </select>
+
+    <select id="getGroupByUser" parameterType="String" resultType="String">
+        SELECT group_name
+        FROM emergency_user_role
+        WHERE user_name = #{userName}
+    </select>
+
+    <select id="selectUserByName" parameterType="String" resultType="com.huawei.emergency.entity.UserEntity">
+        SELECT e.user_name, e.nick_name, e.password, e.role_name AS role, e.enabled, e.group_name as
+        group, n.id as userId
+        FROM emergency_user e, NUSER n
+        WHERE e.user_name = #{userName} and e.user_name = n.user_id
+    </select>
+</mapper>

@@ -16,13 +16,14 @@
 
 package com.huawei.emergency.service.impl;
 
+import static com.huawei.common.constant.PlanStatus.UN_PASSED_STATUS;
+
 import com.huawei.argus.restcontroller.RestPerfTestController;
 import com.huawei.common.api.CommonPage;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.PlanStatus;
 import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ScheduleType;
-import com.huawei.common.constant.ScriptLanguageEnum;
 import com.huawei.common.constant.TaskTypeEnum;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.common.filter.JwtAuthenticationTokenFilter;
@@ -31,7 +32,18 @@ import com.huawei.emergency.dto.PlanDetailQueryDto;
 import com.huawei.emergency.dto.PlanQueryDto;
 import com.huawei.emergency.dto.PlanQueryParams;
 import com.huawei.emergency.dto.TaskNode;
-import com.huawei.emergency.entity.*;
+import com.huawei.emergency.entity.EmergencyExec;
+import com.huawei.emergency.entity.EmergencyExecRecord;
+import com.huawei.emergency.entity.EmergencyExecRecordExample;
+import com.huawei.emergency.entity.EmergencyPlan;
+import com.huawei.emergency.entity.EmergencyPlanDetail;
+import com.huawei.emergency.entity.EmergencyPlanDetailExample;
+import com.huawei.emergency.entity.EmergencyPlanExample;
+import com.huawei.emergency.entity.EmergencyScript;
+import com.huawei.emergency.entity.EmergencyScriptExample;
+import com.huawei.emergency.entity.EmergencyServer;
+import com.huawei.emergency.entity.EmergencyTask;
+import com.huawei.emergency.entity.JwtUser;
 import com.huawei.emergency.mapper.EmergencyExecMapper;
 import com.huawei.emergency.mapper.EmergencyExecRecordDetailMapper;
 import com.huawei.emergency.mapper.EmergencyExecRecordMapper;
@@ -74,8 +86,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
-
-import static com.huawei.common.constant.PlanStatus.UN_PASSED_STATUS;
 
 /**
  * 预案管理接口的实现类
@@ -237,7 +247,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         emergencyExec.setHistoryId(emergencyExec.getExecId());
 
         // 获取所有的拓扑关系，添加详细的执行记录
-        List<EmergencyExecRecordWithBLOBs> allExecRecords = recordMapper.selectAllPlanDetail(planId);
+        List<EmergencyExecRecord> allExecRecords = recordMapper.selectAllPlanDetail(planId);
         allExecRecords.forEach(record -> {
             record.setCreateUser(userName);
             record.setExecId(emergencyExec.getExecId());
@@ -260,7 +270,8 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         allExecRecords.stream()
             .filter(record -> record.getTaskId() == null && record.getPreSceneId() == null)
             .forEach(record -> {
-                LOGGER.debug("Submit record_id={}. exec_id={}, task_id={}.", record.getRecordId(), record.getExecId(), record.getTaskId());
+                LOGGER.debug("Submit record_id={}. exec_id={}, task_id={}.", record.getRecordId(), record.getExecId(),
+                    record.getTaskId());
                 threadPoolExecutor.execute(handlerFactory.handle(record));
             });
         LOGGER.debug("threadPoolExecutor = {} ", threadPoolExecutor);
@@ -290,12 +301,13 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         return perfTest;
     }
 
-    public String generateSelectAgentIds(Integer[] serverIds) {
-        if (serverIds == null || serverIds.length == 0) {
+    public String generateSelectAgentIds(List<EmergencyServer> serverIds) {
+        if (serverIds == null || serverIds.size() == 0) {
             return null;
         }
-        List<String> allServerIds = Arrays.stream(serverIds)
-            .map(String::valueOf)
+        List<String> allServerIds = serverIds.stream()
+            .filter(server -> server.getServerId() != null)
+            .map(server -> server.getServerId().toString())
             .collect(Collectors.toList());
         List<Integer> agentIds = serverMapper.selectAgentIdsByServerIds(allServerIds);
         if (agentIds.size() > 0) {
@@ -531,9 +543,15 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         } else {
             task.setTaskName(taskNode.getTaskName());
             task.setScriptId(taskNode.getScriptId());
-            task.setScriptName(StringUtils.isNotEmpty(taskNode.getScriptName()) ? taskNode.getScriptName() : taskNode.getGuiScriptName());
+            task.setScriptName(StringUtils.isNotEmpty(taskNode.getScriptName()) ? taskNode.getScriptName()
+                : taskNode.getGuiScriptName());
             task.setChannelType(taskNode.getChannelType());
-            task.setServerId(StringUtils.join(taskNode.getServiceId(), ","));
+            if (taskNode.getServiceId() != null) {
+                task.setServerId(StringUtils.join(taskNode.getServiceId().stream()
+                    .filter(server -> server.getServerId() != null)
+                    .map(EmergencyServer::getServerId)
+                    .collect(Collectors.toList()), ","));
+            }
             task.setCreateUser(taskNode.getCreateUser());
             task.setTaskType(taskType.getValue());
             if (taskType == TaskTypeEnum.CUSTOM) { // 创建自定义脚本压测任务
@@ -551,7 +569,8 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
                 if (emergencyScripts.size() > 0) {
                     perfTest.setScriptName(scriptService.grinderPath(emergencyScripts.get(0)));
                 }
-                PerfTest insertPerfTest = perfTestController.saveOne(JwtAuthenticationTokenFilter.currentGrinderUser(), perfTest);
+                PerfTest insertPerfTest = perfTestController.saveOne(JwtAuthenticationTokenFilter.currentGrinderUser(),
+                    perfTest);
                 if (insertPerfTest == null || insertPerfTest.getId() == null) {
                     return CommonResult.failed("创建压测任务失败");
                 }
@@ -719,10 +738,10 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         updateTask.setTaskId(originTask.getTaskId());
         updateTask.setTaskName(taskNode.getTaskName());
         updateTask.setScriptId(taskNode.getScriptId());
-        updateTask.setScriptName(StringUtils.isNotEmpty(taskNode.getScriptName()) ? taskNode.getScriptName() : taskNode.getGuiScriptName());
+        updateTask.setScriptName(
+            StringUtils.isNotEmpty(taskNode.getScriptName()) ? taskNode.getScriptName() : taskNode.getGuiScriptName());
         updateTask.setChannelType(taskNode.getChannelType());
         updateTask.setServerId(StringUtils.join(taskNode.getServiceId(), ","));
-
         EmergencyScriptExample scriptExample = new EmergencyScriptExample();
         scriptExample.createCriteria().andScriptNameEqualTo(updateTask.getScriptName());
         List<EmergencyScript> emergencyScripts = scriptMapper.selectByExample(scriptExample);
@@ -773,13 +792,14 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     /**
      * 生成子任务
      *
-     * @param planDetail   父任务信息
+     * @param planDetail 父任务信息
      * @param childrenNode 子任务信息
-     * @param parentNo     父任务编号
-     * @param isSubTask    是否为子任务
+     * @param parentNo 父任务编号
+     * @param isSubTask 是否为子任务
      * @return
      */
-    private void handleChildren(EmergencyPlanDetail planDetail, List<TaskNode> childrenNode, String parentNo, boolean isSubTask) {
+    private void handleChildren(EmergencyPlanDetail planDetail, List<TaskNode> childrenNode, String parentNo,
+        boolean isSubTask) {
         Integer preTaskId = null;
         if (childrenNode == null) {
             return;
@@ -817,7 +837,6 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             handleChildren(insertTaskDetail, task.getChildren(), isSubTask ? parentNo : updateTask.getTaskNo(), true);
         }
     }
-
 
     /**
      * 迭代查找此任务的子任务
