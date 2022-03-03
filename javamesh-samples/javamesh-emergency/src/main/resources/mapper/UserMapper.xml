@@ -26,8 +26,16 @@
     </select>
 
     <select id="selectUserByName" parameterType="String" resultType="com.huawei.emergency.entity.UserEntity">
-        SELECT e.user_name, e.nick_name, e.password, e.role_name AS role,e.enabled, e.group_name as `group`, n.id as userId
-        FROM emergency_user e,nuser n
-        WHERE e.user_name = #{userName} and e.user_name = n.user_id
+        SELECT e.user_name,
+               e.nick_name,
+               e.password,
+               e.role_name  AS role,
+               e.enabled,
+               e.group_name as `group`,
+               n.id         as userId
+        FROM emergency_user e,
+             NUSER n
+        WHERE e.user_name = #{userName}
+          and e.user_name = n.user_id
     </select>
 </mapper>

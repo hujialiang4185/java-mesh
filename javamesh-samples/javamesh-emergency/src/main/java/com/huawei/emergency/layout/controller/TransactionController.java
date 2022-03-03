@@ -16,16 +16,16 @@
 
 package com.huawei.emergency.layout.controller;
 
-import com.huawei.emergency.layout.TestElement;
 import com.huawei.emergency.layout.ElementProcessContext;
+import com.huawei.emergency.layout.TestElement;
 import com.huawei.emergency.layout.template.GroovyClassTemplate;
 import com.huawei.emergency.layout.template.GroovyFieldTemplate;
 import com.huawei.emergency.layout.template.GroovyMethodTemplate;
+
 import lombok.Data;
+
 import org.apache.commons.lang.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 /**
@@ -41,7 +41,6 @@ public class TransactionController extends Controller {
     private GroovyMethodTemplate method;
     private GroovyFieldTemplate field;
 
-
     @Override
     public void handle(ElementProcessContext context) {
         if (StringUtils.isEmpty(getTitle())) {
@@ -54,9 +53,11 @@ public class TransactionController extends Controller {
         }
         template.addMethod(method);
         template.addFiled(fieldTemplate());
-        GroovyMethodTemplate beforeProcessMethod = template.getBeforeProcessMethod();
-        beforeProcessMethod.addContent(String.format(Locale.ROOT, "%s = new GTest(%s, \"%s\")", getTitle(), GroovyClassTemplate.TEST_NUMBER_METHOD.invokeStr(), getTitle()), 2);
-        beforeProcessMethod.addContent(String.format(Locale.ROOT, "%s.record(this, \"%s\")", getTitle(), getTitle()), 2);
+        template.getBeforeProcessMethod().addContent(
+            String.format(Locale.ROOT, "%s = new GTest(%s, \"%s\")", getTitle(),
+                GroovyClassTemplate.TEST_NUMBER_METHOD.invokeStr(), getTitle()), 2);
+        template.getBeforeThreadMethod()
+            .addContent(String.format(Locale.ROOT, "%s.record(this, \"%s\")", getTitle(), getTitle()), 2);
         for (TestElement testElement : nextElements()) {
             context.setCurrentMethod(method);
             testElement.handle(context);
@@ -83,7 +84,7 @@ public class TransactionController extends Controller {
         return field;
     }
 
-    public String invokeStr(){
-        return String.format(Locale.ROOT,"\"%s\"()", getTitle());
+    public String invokeStr() {
+        return String.format(Locale.ROOT, "\"%s\"()", getTitle());
     }
 }

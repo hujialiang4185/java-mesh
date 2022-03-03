@@ -8,7 +8,7 @@
         <result column="status" jdbcType="VARCHAR" property="status"/>
         <result column="server_id" jdbcType="INTEGER" property="serverId"/>
         <result column="server_ip" jdbcType="VARCHAR" property="serverIp"/>
-        <result column="log" jdbcType="TEXT" property="log"/>
+        <result column="log" jdbcType="VARCHAR" property="log"/>
         <result column="create_user" jdbcType="VARCHAR" property="createUser"/>
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
         <result column="start_time" jdbcType="TIMESTAMP" property="startTime"/>
@@ -126,7 +126,7 @@
         end_time, ensure_user, ensure_time,
         is_valid, pid)
         values (#{execId,jdbcType=INTEGER}, #{recordId,jdbcType=INTEGER}, #{status,jdbcType=VARCHAR},
-        #{serverId,jdbcType=INTEGER}, #{serverIp,jdbcType=VARCHAR}, #{log,jdbcType=TEXT},
+        #{serverId,jdbcType=INTEGER}, #{serverIp,jdbcType=VARCHAR}, #{log,jdbcType=VARCHAR},
         #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{startTime,jdbcType=TIMESTAMP},
         #{endTime,jdbcType=TIMESTAMP}, #{ensureUser,jdbcType=VARCHAR}, #{ensureTime,jdbcType=TIMESTAMP},
         #{isValid,jdbcType=VARCHAR}, #{pid,jdbcType=INTEGER})
@@ -197,7 +197,7 @@
                 #{serverIp,jdbcType=VARCHAR},
             </if>
             <if test="log != null">
-                #{log,jdbcType=TEXT},
+                #{log,jdbcType=VARCHAR},
             </if>
             <if test="createUser != null">
                 #{createUser,jdbcType=VARCHAR},
@@ -254,7 +254,7 @@
                 server_ip = #{record.serverIp,jdbcType=VARCHAR},
             </if>
             <if test="record.log != null">
-                log = #{record.log,jdbcType=TEXT},
+                log = #{record.log,jdbcType=VARCHAR},
             </if>
             <if test="record.createUser != null">
                 create_user = #{record.createUser,jdbcType=VARCHAR},
@@ -293,7 +293,7 @@
         status = #{record.status,jdbcType=VARCHAR},
         server_id = #{record.serverId,jdbcType=INTEGER},
         server_ip = #{record.serverIp,jdbcType=VARCHAR},
-        log = #{record.log,jdbcType=TEXT},
+        log = #{record.log,jdbcType=VARCHAR},
         create_user = #{record.createUser,jdbcType=VARCHAR},
         create_time = #{record.createTime,jdbcType=TIMESTAMP},
         start_time = #{record.startTime,jdbcType=TIMESTAMP},
@@ -325,7 +325,7 @@
                 server_ip = #{serverIp,jdbcType=VARCHAR},
             </if>
             <if test="log != null">
-                log = #{log,jdbcType=TEXT},
+                log = #{log,jdbcType=VARCHAR},
             </if>
             <if test="createUser != null">
                 create_user = #{createUser,jdbcType=VARCHAR},
@@ -361,7 +361,7 @@
             status      = #{status,jdbcType=VARCHAR},
             server_id   = #{serverId,jdbcType=INTEGER},
             server_ip   = #{serverIp,jdbcType=VARCHAR},
-            log         = #{log,jdbcType=TEXT},
+            log         = #{log,jdbcType=VARCHAR},
             create_user = #{createUser,jdbcType=VARCHAR},
             create_time = #{createTime,jdbcType=TIMESTAMP},
             start_time  = #{startTime,jdbcType=TIMESTAMP},
@@ -392,7 +392,6 @@
         where t1.record_id = #{recordId}
           and is_valid = '1'
     </select>
-
     <update id="updateLogIfAbsent">
         update emergency_exec_record_detail
         set log = #{log}

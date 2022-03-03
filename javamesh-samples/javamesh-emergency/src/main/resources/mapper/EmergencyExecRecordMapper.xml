@@ -14,7 +14,7 @@
         <result column="status" jdbcType="VARCHAR" property="status"/>
         <result column="script_id" jdbcType="INTEGER" property="scriptId"/>
         <result column="script_name" jdbcType="VARCHAR" property="scriptName"/>
-        <result column="script_content" jdbcType="TEXT" property="scriptContent"/>
+        <result column="script_content" jdbcType="VARCHAR" property="scriptContent"/>
         <result column="script_type" jdbcType="VARCHAR" property="scriptType"/>
         <result column="script_params" jdbcType="VARCHAR" property="scriptParams"/>
         <result column="server_id" jdbcType="VARCHAR" property="serverId"/>
@@ -23,7 +23,7 @@
         <result column="have_password" jdbcType="VARCHAR" property="havePassword"/>
         <result column="password_mode" jdbcType="VARCHAR" property="passwordMode"/>
         <result column="password" jdbcType="VARCHAR" property="password"/>
-        <result column="log" jdbcType="TEXT" property="log"/>
+        <result column="log" jdbcType="VARCHAR" property="log"/>
         <result column="create_user" jdbcType="VARCHAR" property="createUser"/>
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
         <result column="start_time" jdbcType="TIMESTAMP" property="startTime"/>
@@ -150,10 +150,10 @@
         values (#{execId,jdbcType=INTEGER}, #{planId,jdbcType=INTEGER}, #{planDetailId,jdbcType=INTEGER},
         #{sceneId,jdbcType=INTEGER}, #{taskId,jdbcType=INTEGER}, #{preSceneId,jdbcType=INTEGER},
         #{preTaskId,jdbcType=INTEGER}, #{parentTaskId,jdbcType=INTEGER}, #{status,jdbcType=VARCHAR},
-        #{scriptId,jdbcType=INTEGER}, #{scriptName,jdbcType=VARCHAR}, #{scriptContent,jdbcType=TEXT},
+        #{scriptId,jdbcType=INTEGER}, #{scriptName,jdbcType=VARCHAR}, #{scriptContent,jdbcType=VARCHAR},
         #{scriptType,jdbcType=VARCHAR}, #{scriptParams,jdbcType=VARCHAR}, #{serverId,jdbcType=VARCHAR},
         #{serverIp,jdbcType=VARCHAR}, #{serverUser,jdbcType=VARCHAR}, #{havePassword,jdbcType=VARCHAR},
-        #{passwordMode,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, #{log,jdbcType=TEXT},
+        #{passwordMode,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, #{log,jdbcType=VARCHAR},
         #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{startTime,jdbcType=TIMESTAMP},
         #{endTime,jdbcType=TIMESTAMP}, #{ensureUser,jdbcType=VARCHAR}, #{isValid,jdbcType=VARCHAR},
         #{sync,jdbcType=VARCHAR}, #{perfTestId,jdbcType=INTEGER})
@@ -287,7 +287,7 @@
                 #{scriptName,jdbcType=VARCHAR},
             </if>
             <if test="scriptContent != null">
-                #{scriptContent,jdbcType=TEXT},
+                #{scriptContent,jdbcType=VARCHAR},
             </if>
             <if test="scriptType != null">
                 #{scriptType,jdbcType=VARCHAR},
@@ -314,7 +314,7 @@
                 #{password,jdbcType=VARCHAR},
             </if>
             <if test="log != null">
-                #{log,jdbcType=TEXT},
+                #{log,jdbcType=VARCHAR},
             </if>
             <if test="createUser != null">
                 #{createUser,jdbcType=VARCHAR},
@@ -389,7 +389,7 @@
                 script_name = #{record.scriptName,jdbcType=VARCHAR},
             </if>
             <if test="record.scriptContent != null">
-                script_content = #{record.scriptContent,jdbcType=TEXT},
+                script_content = #{record.scriptContent,jdbcType=VARCHAR},
             </if>
             <if test="record.scriptType != null">
                 script_type = #{record.scriptType,jdbcType=VARCHAR},
@@ -416,7 +416,7 @@
                 password = #{record.password,jdbcType=VARCHAR},
             </if>
             <if test="record.log != null">
-                log = #{record.log,jdbcType=TEXT},
+                log = #{record.log,jdbcType=VARCHAR},
             </if>
             <if test="record.createUser != null">
                 create_user = #{record.createUser,jdbcType=VARCHAR},
@@ -461,7 +461,7 @@
         status = #{record.status,jdbcType=VARCHAR},
         script_id = #{record.scriptId,jdbcType=INTEGER},
         script_name = #{record.scriptName,jdbcType=VARCHAR},
-        script_content = #{record.scriptContent,jdbcType=TEXT},
+        script_content = #{record.scriptContent,jdbcType=VARCHAR},
         script_type = #{record.scriptType,jdbcType=VARCHAR},
         script_params = #{record.scriptParams,jdbcType=VARCHAR},
         server_id = #{record.serverId,jdbcType=VARCHAR},
@@ -470,7 +470,7 @@
         have_password = #{record.havePassword,jdbcType=VARCHAR},
         password_mode = #{record.passwordMode,jdbcType=VARCHAR},
         password = #{record.password,jdbcType=VARCHAR},
-        log = #{record.log,jdbcType=TEXT},
+        log = #{record.log,jdbcType=VARCHAR},
         create_user = #{record.createUser,jdbcType=VARCHAR},
         create_time = #{record.createTime,jdbcType=TIMESTAMP},
         start_time = #{record.startTime,jdbcType=TIMESTAMP},
@@ -520,7 +520,7 @@
                 script_name = #{scriptName,jdbcType=VARCHAR},
             </if>
             <if test="scriptContent != null">
-                script_content = #{scriptContent,jdbcType=TEXT},
+                script_content = #{scriptContent,jdbcType=VARCHAR},
             </if>
             <if test="scriptType != null">
                 script_type = #{scriptType,jdbcType=VARCHAR},
@@ -547,7 +547,7 @@
                 password = #{password,jdbcType=VARCHAR},
             </if>
             <if test="log != null">
-                log = #{log,jdbcType=TEXT},
+                log = #{log,jdbcType=VARCHAR},
             </if>
             <if test="createUser != null">
                 create_user = #{createUser,jdbcType=VARCHAR},
@@ -589,7 +589,7 @@
             status         = #{status,jdbcType=VARCHAR},
             script_id      = #{scriptId,jdbcType=INTEGER},
             script_name    = #{scriptName,jdbcType=VARCHAR},
-            script_content = #{scriptContent,jdbcType=TEXT},
+            script_content = #{scriptContent,jdbcType=VARCHAR},
             script_type    = #{scriptType,jdbcType=VARCHAR},
             script_params  = #{scriptParams,jdbcType=VARCHAR},
             server_id      = #{serverId,jdbcType=VARCHAR},
@@ -598,7 +598,7 @@
             have_password  = #{havePassword,jdbcType=VARCHAR},
             password_mode  = #{passwordMode,jdbcType=VARCHAR},
             password       = #{password,jdbcType=VARCHAR},
-            log            = #{log,jdbcType=TEXT},
+            log            = #{log,jdbcType=VARCHAR},
             create_user    = #{createUser,jdbcType=VARCHAR},
             create_time    = #{createTime,jdbcType=TIMESTAMP},
             start_time     = #{startTime,jdbcType=TIMESTAMP},
@@ -663,7 +663,6 @@
         WHERE plan.plan_id = #{planId,jdbcType=INTEGER}
           AND plan_detail.is_valid = '1'
     </select>
-
     <update id="tryUpdateStartTime">
         UPDATE emergency_exec_record t
         SET t.start_time = #{startTime}
@@ -671,7 +670,6 @@
           AND t.is_valid = '1'
           and t.start_time is null
     </update>
-
     <update id="tryUpdateEndTimeAndLog">
         UPDATE emergency_exec_record t
         SET t.end_time = #{endTime},
@@ -686,7 +684,6 @@
                   and is_valid = '1'
             )
     </update>
-
     <update id="tryUpdateStatus" parameterType="java.lang.Integer">
         UPDATE emergency_exec_record t
         SET t.`status` = parse_record_exec_status(record_id)

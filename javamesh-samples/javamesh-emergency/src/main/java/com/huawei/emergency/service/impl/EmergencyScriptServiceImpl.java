@@ -287,7 +287,8 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             return ResultCode.SCRIPT_NAME_EXISTS;
         }
         script.setScriptUser(user.getUserName());
-        script.setContent(FileUtil.streamToString(new ByteArrayInputStream(script.getContent().getBytes(StandardCharsets.UTF_8))));
+        script.setContent(
+            FileUtil.streamToString(new ByteArrayInputStream(script.getContent().getBytes(StandardCharsets.UTF_8))));
         script.setScriptGroup(user.getGroup());
         script.setIsPublic(PRIVATE.equals(script.getIsPublic()) ? TYPE_ZERO : TYPE_ONE);
         script.setHavePassword(HAVE_PASSWORD.equals(script.getHavePassword()) ? TYPE_ONE : TYPE_ZERO);
@@ -333,7 +334,8 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
                 .map(ScriptLanguageEnum::getValue)
                 .collect(Collectors.toList());
 
-        return mapper.searchScript(EscapeUtil.escapeChar(scriptName), userName, auth, status, scriptTypes, userEntity.getGroup());
+        return mapper.searchScript(EscapeUtil.escapeChar(scriptName), userName, auth, status, scriptTypes,
+            userEntity.getGroup());
     }
 
     @Override
@@ -369,7 +371,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     }
 
     @Override
-    public int approve(String userName,Map<String, Object> map) {
+    public int approve(String userName, Map<String, Object> map) {
         String approve = (String) map.get("approve");
         int scriptId = (int) map.get("script_id");
         EmergencyScript script = new EmergencyScript();
@@ -523,7 +525,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             return CommonResult.success();
         }
         List<String> resourceList = new ArrayList<>();
-        updateOrchestrate(userName,treeResponse.getScriptId(), -1, rootNode, treeResponse.getMap(), 1, resourceList);
+        updateOrchestrate(userName, treeResponse.getScriptId(), -1, rootNode, treeResponse.getMap(), 1, resourceList);
         resourceService.refreshResource(treeResponse.getScriptId(), resourceList);  // 清除资源文件
 
         // 生成代码
@@ -563,7 +565,8 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
      * @param map 参数集合
      * @param seq 顺序号
      */
-    private void updateOrchestrate(String userName,int scriptId, int parentId, TreeNode node, Map<String, Map> map, int seq, List<String> resourceList) {
+    private void updateOrchestrate(String userName, int scriptId, int parentId, TreeNode node, Map<String, Map> map,
+        int seq, List<String> resourceList) {
         EmergencyElement element = new EmergencyElement();
         Map elementParams = map.get(node.getKey());
         if (elementParams != null &&
@@ -597,7 +600,8 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             return;
         }
         for (int i = 0; i < node.getChildren().size(); i++) {
-            updateOrchestrate(userName,scriptId, element.getElementId(), node.getChildren().get(i), map, i + 1, resourceList);
+            updateOrchestrate(userName, scriptId, element.getElementId(), node.getChildren().get(i), map, i + 1,
+                resourceList);
         }
     }
 
@@ -651,7 +655,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     }
 
     @Override
-    public CommonResult createIdeScript(UserEntity user,ScriptManageDto scriptManageDto) {
+    public CommonResult createIdeScript(UserEntity user, ScriptManageDto scriptManageDto) {
         if (scriptManageDto == null || StringUtils.isEmpty(scriptManageDto.getScriptName())) {
             return CommonResult.failed("请输入脚本名称");
         }
@@ -675,7 +679,9 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         options.put("headers", JSONObject.toJSONString(scriptManageDto.getHeaders()));
         options.put("cookies", JSONObject.toJSONString(scriptManageDto.getCookies()));
         options.put("params", JSONObject.toJSONString(scriptManageDto.getParams()));*/
-        script.setContent(generateIdeScript(JwtAuthenticationTokenFilter.currentGrinderUser(), "", scriptManageDto.getForUrl(), script.getScriptName(), scriptLanguage.getLanguage(), scriptManageDto.isHasResource(), null));
+        script.setContent(
+            generateIdeScript(JwtAuthenticationTokenFilter.currentGrinderUser(), "", scriptManageDto.getForUrl(),
+                script.getScriptName(), scriptLanguage.getLanguage(), scriptManageDto.isHasResource(), null));
         script.setScriptUser(user.getUserName());
         script.setScriptStatus(TYPE_ZERO);
         script.setUpdateTime(Timestamp.from(Instant.now()));
