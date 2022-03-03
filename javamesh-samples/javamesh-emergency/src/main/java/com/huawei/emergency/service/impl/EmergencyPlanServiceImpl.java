@@ -41,6 +41,7 @@ import com.huawei.emergency.entity.EmergencyPlanDetailExample;
 import com.huawei.emergency.entity.EmergencyPlanExample;
 import com.huawei.emergency.entity.EmergencyScript;
 import com.huawei.emergency.entity.EmergencyScriptExample;
+import com.huawei.emergency.entity.EmergencyServer;
 import com.huawei.emergency.entity.EmergencyTask;
 import com.huawei.emergency.entity.User;
 import com.huawei.emergency.mapper.EmergencyExecMapper;
@@ -300,12 +301,13 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         return perfTest;
     }
 
-    public String generateSelectAgentIds(Integer[] serverIds) {
-        if (serverIds == null || serverIds.length == 0) {
+    public String generateSelectAgentIds(List<EmergencyServer> serverIds) {
+        if (serverIds == null || serverIds.size() == 0) {
             return null;
         }
-        List<String> allServerIds = Arrays.stream(serverIds)
-            .map(String::valueOf)
+        List<String> allServerIds = serverIds.stream()
+            .filter(server -> server.getServerId() != null)
+            .map(server -> server.getServerId().toString())
             .collect(Collectors.toList());
         List<Integer> agentIds = serverMapper.selectAgentIdsByServerIds(allServerIds);
         if (agentIds.size() > 0) {
@@ -544,7 +546,12 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             task.setScriptName(StringUtils.isNotEmpty(taskNode.getScriptName()) ? taskNode.getScriptName()
                 : taskNode.getGuiScriptName());
             task.setChannelType(taskNode.getChannelType());
-            task.setServerId(StringUtils.join(taskNode.getServiceId(), ","));
+            if (taskNode.getServiceId() != null) {
+                task.setServerId(StringUtils.join(taskNode.getServiceId().stream()
+                    .filter(server -> server.getServerId() != null)
+                    .map(EmergencyServer::getServerId)
+                    .collect(Collectors.toList()), ","));
+            }
             task.setCreateUser(taskNode.getCreateUser());
             task.setTaskType(taskType.getValue());
             if (taskType == TaskTypeEnum.CUSTOM) { // 创建自定义脚本压测任务

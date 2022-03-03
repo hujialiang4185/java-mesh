@@ -308,7 +308,7 @@
     </update>
 
     <select id="selectSceneNodeByPlanId" resultType="com.huawei.emergency.dto.TaskNode">
-        SELECT t1.scene_id  AS `key`,
+        SELECT t1.scene_id AS key,
                t1.plan_id,
                t1.scene_id,
                t1.task_id,
@@ -321,14 +321,15 @@
                t1.sync,
                t2.task_type
         FROM emergency_plan_detail t1
-                 LEFT JOIN emergency_task t2 ON t1.scene_id = t2.task_id
-                 LEFT JOIN emergency_script t3 ON t2.script_id = t3.script_id
+            LEFT JOIN emergency_task t2
+        ON t1.scene_id = t2.task_id
+            LEFT JOIN emergency_script t3 ON t2.script_id = t3.script_id
         WHERE t1.plan_id = #{planId}
           AND t1.is_valid = '1'
           AND t1.task_id IS NULL;
     </select>
     <select id="selectTaskNodeBySceneId" resultType="com.huawei.emergency.dto.TaskNode">
-        SELECT t1.task_id   AS `key`,
+        SELECT t1.task_id AS key,
                t1.plan_id,
                t1.scene_id,
                t1.task_id,
@@ -342,8 +343,9 @@
                t2.perf_test_id,
                t2.task_type
         FROM emergency_plan_detail t1
-                 LEFT JOIN emergency_task t2 ON t1.task_id = t2.task_id
-                 LEFT JOIN emergency_script t3 ON t2.script_id = t3.script_id
+            LEFT JOIN emergency_task t2
+        ON t1.task_id = t2.task_id
+            LEFT JOIN emergency_script t3 ON t2.script_id = t3.script_id
         WHERE t1.plan_id = #{planId}
           AND t1.scene_id = #{sceneId}
           AND t1.parent_task_id = #{sceneId}
@@ -351,7 +353,7 @@
           AND t1.task_id IS NOT NULL
     </select>
     <select id="selectTaskNodeByTaskId" resultType="com.huawei.emergency.dto.TaskNode">
-        SELECT t1.task_id   AS `key`,
+        SELECT t1.task_id AS key,
                t1.plan_id,
                t1.scene_id,
                t1.task_id,
@@ -365,8 +367,9 @@
                t2.perf_test_id,
                t2.task_type
         FROM emergency_plan_detail t1
-                 LEFT JOIN emergency_task t2 ON t1.task_id = t2.task_id
-                 LEFT JOIN emergency_script t3 ON t2.script_id = t3.script_id
+            LEFT JOIN emergency_task t2
+        ON t1.task_id = t2.task_id
+            LEFT JOIN emergency_script t3 ON t2.script_id = t3.script_id
         WHERE t1.plan_id = #{planId}
           AND t1.scene_id = #{sceneId}
           AND t1.parent_task_id = #{taskId}

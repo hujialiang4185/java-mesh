@@ -31,8 +31,9 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
             List<EmergencyServer> serverList = serverMapper.selectByExample(serverExample);
             if (serverList.size() == 0) {
                 EmergencyServer server = new EmergencyServer();
+                server.setServerName(ip + "-" + port);
                 server.setServerIp(ip);
-                server.setServerPort(Integer.valueOf(port));
+                server.setAgentPort(Integer.valueOf(port));
                 server.setServerUser("root");
                 server.setCreateUser("admin");
                 server.setHavePassword("0");
