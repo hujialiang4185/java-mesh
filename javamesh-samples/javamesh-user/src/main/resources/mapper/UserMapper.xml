@@ -100,20 +100,20 @@
 
     <select id="getGroupByUser" parameterType="String" resultType="String">
         SELECT group_name
-        FROM emergency_user_role
+        FROM emergency_user
         WHERE user_name = #{userName}
     </select>
 
     <select id="approverSearch" parameterType="String" resultType="String">
         SELECT user_name
-        FROM emergency_user_role
+        FROM emergency_user
         WHERE group_name = #{groupName}
           AND role_name = 'APPROVER'
     </select>
 
     <select id="adminApproverSearch" parameterType="String" resultType="String">
         SELECT user_name
-        FROM emergency_user_role
+        FROM emergency_user
         WHERE group_name = #{groupName}
           AND (role_name = 'APPROVER' OR role_name = 'ADMIN')
     </select>
