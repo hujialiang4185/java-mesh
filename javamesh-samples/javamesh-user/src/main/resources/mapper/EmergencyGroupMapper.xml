@@ -274,7 +274,7 @@
 
     <select id="getGroupByUser" parameterType="String" resultType="com.huawei.user.entity.EmergencyGroup">
         SELECT group_name
-        FROM emergency_user_role
+        FROM emergency_user
         WHERE user_name = #{userName}
     </select>
 

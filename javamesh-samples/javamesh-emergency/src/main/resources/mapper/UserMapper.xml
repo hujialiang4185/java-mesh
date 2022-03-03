@@ -9,7 +9,7 @@
 
     <select id="getRoleByUserName" parameterType="String" resultType="String">
         SELECT role_name
-        FROM emergency_user_role
+        FROM emergency_user
         WHERE user_name = #{userName}
     </select>
 
@@ -21,7 +21,7 @@
 
     <select id="getGroupByUser" parameterType="String" resultType="String">
         SELECT group_name
-        FROM emergency_user_role
+        FROM emergency_user
         WHERE user_name = #{userName}
     </select>
 
