@@ -7,6 +7,7 @@ import com.huawei.user.common.constant.FailedInfo;
 import com.huawei.user.common.util.EscapeUtil;
 import com.huawei.user.entity.EmergencyGroup;
 import com.huawei.user.entity.EmergencyGroupExample;
+import com.huawei.user.entity.JwtUser;
 import com.huawei.user.entity.UserEntity;
 import com.huawei.user.mapper.EmergencyGroupMapper;
 import com.huawei.user.service.GroupService;
@@ -39,15 +40,14 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public CommonResult addGroup(HttpServletRequest request, EmergencyGroup emergencyGroup) {
+    public CommonResult addGroup(JwtUser jwtUser, EmergencyGroup emergencyGroup) {
         EmergencyGroupExample example = new EmergencyGroupExample();
         example.createCriteria().andGroupNameEqualTo(emergencyGroup.getGroupName());
         long count = mapper.countByExample(example);
         if (count > 0) {
             return CommonResult.failed(FailedInfo.GROUP_NAME_EXISTS);
         }
-        UserEntity user = (UserEntity) request.getSession().getAttribute("userInfo");
-        emergencyGroup.setCreateUser(user.getUserName());
+        emergencyGroup.setCreateUser(jwtUser.getUsername());
         emergencyGroup.setCreateTime(getTimestamp());
         int insert = mapper.insert(emergencyGroup);
         if (insert > 0) {

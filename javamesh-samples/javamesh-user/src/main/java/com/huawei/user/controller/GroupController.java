@@ -29,8 +29,8 @@ public class GroupController {
     }
 
     @PostMapping("group")
-    public CommonResult addGroup(HttpServletRequest request, @RequestBody EmergencyGroup emergencyGroup) {
-        return service.addGroup(request, emergencyGroup);
+    public CommonResult addGroup(UsernamePasswordAuthenticationToken authentication, @RequestBody EmergencyGroup emergencyGroup) {
+        return service.addGroup((JwtUser) authentication.getPrincipal(), emergencyGroup);
     }
 
     @DeleteMapping("group")
