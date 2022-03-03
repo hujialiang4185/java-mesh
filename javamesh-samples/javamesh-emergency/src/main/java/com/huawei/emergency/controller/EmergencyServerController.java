@@ -20,12 +20,14 @@ import com.huawei.common.api.CommonPage;
 import com.huawei.common.api.CommonResult;
 import com.huawei.emergency.dto.ServerDto;
 import com.huawei.emergency.entity.EmergencyServer;
+import com.huawei.emergency.entity.JwtUser;
 import com.huawei.emergency.entity.UserEntity;
 import com.huawei.emergency.service.EmergencyServerService;
 import io.swagger.annotations.Api;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -55,12 +57,12 @@ public class EmergencyServerController {
     }
 
     @GetMapping("/search")
-    public CommonResult allServerName(@RequestParam(value = "value", required = false) String serverName) {
-        return serverService.search(serverName);
+    public CommonResult allServerName(UsernamePasswordAuthenticationToken authentication,@RequestParam(value = "value", required = false) String serverName) {
+        return serverService.search(((JwtUser) authentication.getPrincipal()).getGroupName(), serverName);
     }
 
     @PostMapping
-    public CommonResult createServer(HttpServletRequest request, @RequestBody EmergencyServer server) {
+    public CommonResult createServer(UsernamePasswordAuthenticationToken authentication, @RequestBody EmergencyServer server) {
         if ("有".equals(server.getHavePassword())) {
             server.setHavePassword("1");
             if ("平台".equals(server.getPasswordMode())) {
@@ -71,13 +73,15 @@ public class EmergencyServerController {
         } else if ("无".equals(server.getHavePassword())) {
             server.setHavePassword("0");
         }
-        server.setCreateUser(parseUserName(request));
+        JwtUser jwtUser = (JwtUser) authentication.getPrincipal();
+        server.setCreateUser(jwtUser.getUsername());
+        server.setGroupName(jwtUser.getGroupName());
         return serverService.add(server);
     }
 
     @DeleteMapping
-    public CommonResult deleteServer(HttpServletRequest request, @RequestParam(value = "server_id[]", required = false) String[] serverIds) {
-        return serverService.deleteServerList(serverIds, parseUserName(request));
+    public CommonResult deleteServer(UsernamePasswordAuthenticationToken authentication, @RequestParam(value = "server_id[]", required = false) String[] serverIds) {
+        return serverService.deleteServerList(serverIds, ((JwtUser) authentication.getPrincipal()).getUsername());
     }
 
     @PostMapping("/install")
@@ -94,7 +98,8 @@ public class EmergencyServerController {
     }
 
     @GetMapping
-    public CommonResult queryServerInfo(@RequestParam(value = "keywords", required = false) String keyword,
+    public CommonResult queryServerInfo(UsernamePasswordAuthenticationToken authentication,
+                                        @RequestParam(value = "keywords", required = false) String keyword,
                                         @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
                                         @RequestParam(value = "current", defaultValue = "1") int current,
                                         @RequestParam(value = "sorter", defaultValue = "create_time") String sorter,
@@ -113,19 +118,7 @@ public class EmergencyServerController {
         EmergencyServer server = new EmergencyServer();
         server.setServerName(serverName);
         params.setObject(server);
-        return serverService.queryServerInfo(params, keyword, excludeServerIds);
-    }
 
-    private String parseUserName(HttpServletRequest request) {
-        String userName = "";
-        try {
-            UserEntity userEntity = (UserEntity) request.getSession().getAttribute("userInfo");
-            if (userEntity != null) {
-                userName = userEntity.getNickName();
-            }
-        } catch (Exception e) {
-            LOGGER.error("get user info error.", e);
-        }
-        return userName;
+        return serverService.queryServerInfo(((JwtUser) authentication.getPrincipal()).getGroupName(),params, keyword, excludeServerIds);
     }
 }

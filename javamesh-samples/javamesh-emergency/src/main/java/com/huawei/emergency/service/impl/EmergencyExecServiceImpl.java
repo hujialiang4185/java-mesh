@@ -446,7 +446,7 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
     }
 
     @Override
-    public CommonResult allPlanExecRecords(CommonPage<EmergencyPlan> params, String[] filterPlanNames,
+    public CommonResult allPlanExecRecords(String historyGroup, CommonPage<EmergencyPlan> params, String[] filterPlanNames,
         String[] filterCreators) {
         Map<String, Object> filters = new HashMap<>();
         filters.put("planNames", filterPlanNames);
@@ -455,7 +455,7 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
             .startPage(params.getPageIndex(), params.getPageSize(), StringUtils.isEmpty(params.getSortType()) ? "" :
                 params.getSortField() + System.lineSeparator() + params.getSortType())
             .doSelectPage(() -> {
-                execMapper.allPlanRecords(params.getObject(), filters);
+                execMapper.allPlanRecords(params.getObject(), historyGroup, filters);
             });
         return CommonResult.success(pageInfo.getResult(), (int) pageInfo.getTotal());
     }

@@ -310,6 +310,9 @@
     <if test="param1.planName != null and param1.planName != ''">
       and locate(#{param1.planName},t2.plan_name) > 0
     </if>
+    <if test="historyGroup != null and historyGroup != ''">
+      and t2.plan_group = #{historyGroup}
+    </if>
     <if test="filters.planNames != null and filters.planNames.length > 0">
       and t2.plan_name in
       <foreach close=")" collection="filters.planNames" index="index" item="planName" open="(" separator=",">

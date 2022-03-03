@@ -46,7 +46,7 @@ public interface EmergencyExecMapper {
 
     int updateByPrimaryKey(EmergencyExec record);
 
-    List<PlanQueryDto> allPlanRecords(EmergencyPlan plan, Map<String, Object> filters);
+    List<PlanQueryDto> allPlanRecords(EmergencyPlan plan, String historyGroup,  Map<String, Object> filters);
 
     List<SceneExecDto> allSceneRecords(Integer execId);
 

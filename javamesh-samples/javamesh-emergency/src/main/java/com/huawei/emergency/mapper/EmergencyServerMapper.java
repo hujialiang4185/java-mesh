@@ -54,7 +54,8 @@ public interface EmergencyServerMapper {
 
     int updateByPrimaryKey(EmergencyServer record);
 
-    List<EmergencyServer> selectByKeyword(@Param("server") EmergencyServer server,
+    List<EmergencyServer> selectByKeyword(String groupName,
+                                          @Param("server") EmergencyServer server,
                                           @Param("keyword") String keyword,
                                           @Param("excludeServerIds") int[] excludeServerIds);
 

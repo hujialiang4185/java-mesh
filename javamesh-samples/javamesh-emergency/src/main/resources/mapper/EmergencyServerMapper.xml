@@ -152,6 +152,9 @@
             <if test="serverIp != null">
                 server_ip,
             </if>
+            <if test="groupName != null">
+                server_group,
+            </if>
             <if test="serverPort != null">
                 server_port,
             </if>
@@ -204,6 +207,9 @@
             </if>
             <if test="serverIp != null">
                 #{serverIp,jdbcType=VARCHAR},
+            </if>
+            <if test="groupName != null">
+                #{groupName,jdbcType=VARCHAR},
             </if>
             <if test="serverPort != null">
                 #{serverPort,jdbcType=INTEGER},
@@ -425,6 +431,7 @@
         server_ip,
         server_user,
         server_port,
+        server_group as group_name,
         case when have_password = '0' then '无' else '有' end have_password,
         case when password_mode = '0' then '本地' when password_mode = '1' then '平台' else password_mode end password_mode,
         `server_name`,
@@ -438,6 +445,9 @@
         case when licensed = '0' then 'false' when licensed = '1' then 'true' else licensed end licensed
         from emergency_server
         where is_valid = '1'
+        <if test="groupName != null and groupName != ''">
+            and server_group = #{groupName}
+        </if>
         <if test="keyword !=null and keyword != ''">
             and (locate(#{keyword},`server_name`) &gt; 0 or locate(#{keyword},`server_ip`) &gt; 0)
         </if>

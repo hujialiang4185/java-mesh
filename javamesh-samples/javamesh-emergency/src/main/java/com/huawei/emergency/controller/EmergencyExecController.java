@@ -102,7 +102,8 @@ public class EmergencyExecController {
      * @return {@link CommonResult}
      */
     @GetMapping()
-    public CommonResult allPlanExecRecords(@RequestParam(value = "keywords", required = false) String planName,
+    public CommonResult allPlanExecRecords(UsernamePasswordAuthenticationToken authentication,
+                                           @RequestParam(value = "keywords", required = false) String planName,
                                            @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
                                            @RequestParam(value = "current", defaultValue = "1") int current,
                                            @RequestParam(value = "sorter", defaultValue = "execute_time") String sorter,
@@ -121,7 +122,7 @@ public class EmergencyExecController {
         EmergencyPlan plan = new EmergencyPlan();
         plan.setPlanName(planName);
         params.setObject(plan);
-        return execService.allPlanExecRecords(params, planNames, creators);
+        return execService.allPlanExecRecords(((JwtUser) authentication.getPrincipal()).getGroupName(),params, planNames, creators);
     }
 
 

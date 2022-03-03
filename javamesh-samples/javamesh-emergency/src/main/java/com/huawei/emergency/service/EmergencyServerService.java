@@ -32,9 +32,9 @@ public interface EmergencyServerService extends EmergencyCommonService<Emergency
      * @param params
      * @return
      */
-    CommonResult queryServerInfo(CommonPage<EmergencyServer> params, String keyword, int[] excludeServerIds);
+    CommonResult queryServerInfo(String groupName,CommonPage<EmergencyServer> params, String keyword, int[] excludeServerIds);
 
-    CommonResult search(String serverName);
+    CommonResult search(String groupName, String serverName);
 
     CommonResult license(EmergencyServer server);
 

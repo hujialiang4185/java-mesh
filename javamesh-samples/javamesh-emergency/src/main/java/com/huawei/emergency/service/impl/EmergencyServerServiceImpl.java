@@ -100,6 +100,7 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
         }
         EmergencyServer insertServer = serverResult.getData();
         insertServer.setCreateUser(server.getCreateUser());
+        insertServer.setGroupName(server.getGroupName());
         insertServer.setCreateTime(new Date());
         insertServer.setUpdateUser(server.getCreateUser());
         insertServer.setUpdateTime(insertServer.getCreateTime());
@@ -144,22 +145,22 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
     }
 
     @Override
-    public CommonResult queryServerInfo(CommonPage<EmergencyServer> params, String keyword, int[] excludeServerIds) {
+    public CommonResult queryServerInfo(String groupName, CommonPage<EmergencyServer> params, String keyword, int[] excludeServerIds) {
         Page<EmergencyServer> pageInfo = PageHelper
             .startPage(params.getPageIndex(), params.getPageSize(), StringUtils.isEmpty(params.getSortType()) ? ""
                 : params.getSortField() + System.lineSeparator() + params.getSortType())
             .doSelectPage(() -> {
-                serverMapper.selectByKeyword(params.getObject(), keyword, excludeServerIds);
+                serverMapper.selectByKeyword(groupName, params.getObject(), keyword, excludeServerIds);
             });
         List<EmergencyServer> result = pageInfo.getResult();
         return CommonResult.success(result, (int) pageInfo.getTotal());
     }
 
     @Override
-    public CommonResult search(String serverName) {
+    public CommonResult search(String groupName, String serverName) {
         EmergencyServer server = new EmergencyServer();
         server.setServerName(serverName);
-        Object[] objects = serverMapper.selectByKeyword(server, null, null).stream().map(EmergencyServer::getServerName)
+        Object[] objects = serverMapper.selectByKeyword(groupName,server, null, null).stream().map(EmergencyServer::getServerName)
             .toArray();
         return CommonResult.success(objects, objects.length);
     }

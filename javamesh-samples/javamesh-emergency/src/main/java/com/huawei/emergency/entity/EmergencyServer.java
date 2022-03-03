@@ -41,6 +41,8 @@ public class EmergencyServer {
 
     private String statusLabel;
 
+    private String groupName;
+
     public Integer getServerId() {
         return serverId;
     }
@@ -191,5 +193,13 @@ public class EmergencyServer {
 
     public void setStatusLabel(String statusLabel) {
         this.statusLabel = statusLabel;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
 }
