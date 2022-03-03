@@ -42,7 +42,7 @@ import com.huawei.emergency.entity.EmergencyPlanExample;
 import com.huawei.emergency.entity.EmergencyScript;
 import com.huawei.emergency.entity.EmergencyScriptExample;
 import com.huawei.emergency.entity.EmergencyTask;
-import com.huawei.emergency.entity.User;
+import com.huawei.emergency.entity.JwtUser;
 import com.huawei.emergency.mapper.EmergencyExecMapper;
 import com.huawei.emergency.mapper.EmergencyExecRecordDetailMapper;
 import com.huawei.emergency.mapper.EmergencyExecRecordMapper;
@@ -162,7 +162,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         }
         EmergencyPlan insertPlan = new EmergencyPlan();
         insertPlan.setPlanName(emergencyPlan.getPlanName());
-        insertPlan.setCreateUser(UserFilter.currentUserName());
+        insertPlan.setCreateUser(emergencyPlan.getCreateUser());
         insertPlan.setPlanGroup(emergencyPlan.getPlanGroup());
         insertPlan.setUpdateTime(new Date());
         insertPlan.setStatus(PlanStatus.NEW.getValue());
@@ -549,7 +549,8 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
                 if (emergencyScripts.size() > 0) {
                     perfTest.setScriptName(scriptService.grinderPath(emergencyScripts.get(0)));
                 }
-                PerfTest insertPerfTest = perfTestController.saveOne(JwtAuthenticationTokenFilter.currentGrinderUser(), perfTest);
+                PerfTest insertPerfTest = perfTestController.saveOne(JwtAuthenticationTokenFilter.currentGrinderUser(),
+                    perfTest);
                 if (insertPerfTest == null || insertPerfTest.getId() == null) {
                     return CommonResult.failed("创建压测任务失败");
                 }

@@ -6,7 +6,7 @@
         <result column="element_no" jdbcType="VARCHAR" property="elementNo"/>
         <result column="element_title" jdbcType="VARCHAR" property="elementTitle"/>
         <result column="element_type" jdbcType="VARCHAR" property="elementType"/>
-        <result column="element_params" jdbcType="TEXT" property="elementParams"/>
+        <result column="element_params" jdbcType="VARCHAR" property="elementParams"/>
         <result column="parent_id" jdbcType="INTEGER" property="parentId"/>
         <result column="script_id" jdbcType="INTEGER" property="scriptId"/>
         <result column="argus_path" jdbcType="VARCHAR" property="argusPath"/>
@@ -122,7 +122,7 @@
         argus_path, is_valid, create_user,
         create_time, seq)
         values (#{elementNo,jdbcType=VARCHAR}, #{elementTitle,jdbcType=VARCHAR}, #{elementType,jdbcType=VARCHAR},
-        #{elementParams,jdbcType=TEXT}, #{parentId,jdbcType=INTEGER}, #{scriptId,jdbcType=INTEGER},
+        #{elementParams,jdbcType=VARCHAR}, #{parentId,jdbcType=INTEGER}, #{scriptId,jdbcType=INTEGER},
         #{argusPath,jdbcType=VARCHAR}, #{isValid,jdbcType=VARCHAR}, #{createUser,jdbcType=VARCHAR},
         #{createTime,jdbcType=TIMESTAMP}, #{seq,jdbcType=INTEGER})
     </insert>
@@ -177,7 +177,7 @@
                 #{elementType,jdbcType=VARCHAR},
             </if>
             <if test="elementParams != null">
-                #{elementParams,jdbcType=TEXT},
+                #{elementParams,jdbcType=VARCHAR},
             </if>
             <if test="parentId != null">
                 #{parentId,jdbcType=INTEGER},
@@ -225,7 +225,7 @@
                 element_type = #{record.elementType,jdbcType=VARCHAR},
             </if>
             <if test="record.elementParams != null">
-                element_params = #{record.elementParams,jdbcType=TEXT},
+                element_params = #{record.elementParams,jdbcType=VARCHAR},
             </if>
             <if test="record.parentId != null">
                 parent_id = #{record.parentId,jdbcType=INTEGER},
@@ -259,7 +259,7 @@
         element_no = #{record.elementNo,jdbcType=VARCHAR},
         element_title = #{record.elementTitle,jdbcType=VARCHAR},
         element_type = #{record.elementType,jdbcType=VARCHAR},
-        element_params = #{record.elementParams,jdbcType=TEXT},
+        element_params = #{record.elementParams,jdbcType=VARCHAR},
         parent_id = #{record.parentId,jdbcType=INTEGER},
         script_id = #{record.scriptId,jdbcType=INTEGER},
         argus_path = #{record.argusPath,jdbcType=VARCHAR},
@@ -284,7 +284,7 @@
                 element_type = #{elementType,jdbcType=VARCHAR},
             </if>
             <if test="elementParams != null">
-                element_params = #{elementParams,jdbcType=TEXT},
+                element_params = #{elementParams,jdbcType=VARCHAR},
             </if>
             <if test="parentId != null">
                 parent_id = #{parentId,jdbcType=INTEGER},
@@ -315,7 +315,7 @@
         set element_no     = #{elementNo,jdbcType=VARCHAR},
             element_title  = #{elementTitle,jdbcType=VARCHAR},
             element_type   = #{elementType,jdbcType=VARCHAR},
-            element_params = #{elementParams,jdbcType=TEXT},
+            element_params = #{elementParams,jdbcType=VARCHAR},
             parent_id      = #{parentId,jdbcType=INTEGER},
             script_id      = #{scriptId,jdbcType=INTEGER},
             argus_path     = #{argusPath,jdbcType=VARCHAR},

@@ -16,10 +16,8 @@
 
 package com.huawei.emergency.service.impl;
 
-import com.alibaba.fastjson.JSONObject;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.ValidEnum;
-import com.huawei.common.filter.UserFilter;
 import com.huawei.emergency.dto.ArgusScript;
 import com.huawei.emergency.entity.EmergencyElement;
 import com.huawei.emergency.entity.EmergencyElementExample;
@@ -32,7 +30,11 @@ import com.huawei.emergency.layout.TreeResponse;
 import com.huawei.emergency.layout.template.GroovyClassTemplate;
 import com.huawei.emergency.mapper.EmergencyElementMapper;
 import com.huawei.emergency.service.EmergencyArgusScriptService;
+
+import com.alibaba.fastjson.JSONObject;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,7 +46,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author y30010171
@@ -58,13 +59,13 @@ public class EmergencyArgusScriptServiceImpl implements EmergencyArgusScriptServ
     EmergencyElementMapper elementMapper;
 
     @Override
-    public CommonResult createArgusOrchestrate(ArgusScript script) {
-        generateTemplate(script.getPath(), UserFilter.currentUserName());
+    public CommonResult createArgusOrchestrate(String userName, ArgusScript script) {
+        generateTemplate(script.getPath(), userName);
         return CommonResult.success(script);
     }
 
     @Override
-    public CommonResult getArgusOrchestrate(String path) {
+    public CommonResult getArgusOrchestrate(String userName, String path) {
         EmergencyElement rootElement;
         if (StringUtils.isEmpty(path)) {
             return CommonResult.failed("请选择压测脚本");
@@ -74,9 +75,9 @@ public class EmergencyArgusScriptServiceImpl implements EmergencyArgusScriptServ
             .andArgusPathEqualTo(path)
             .andParentIdIsNull()
             .andIsValidEqualTo(ValidEnum.VALID.getValue());
-        List<EmergencyElement> emergencyElements = elementMapper.selectByExampleWithBLOBs(rootElementExample);
+        List<EmergencyElement> emergencyElements = elementMapper.selectByExample(rootElementExample);
         if (emergencyElements.size() == 0) {
-            rootElement = generateTemplate(path, UserFilter.currentUserName());
+            rootElement = generateTemplate(path, userName);
         } else {
             rootElement = emergencyElements.get(0);
         }
@@ -105,7 +106,7 @@ public class EmergencyArgusScriptServiceImpl implements EmergencyArgusScriptServ
         elementExample.createCriteria()
             .andParentIdEqualTo(parent.getElementId())
             .andIsValidEqualTo(ValidEnum.VALID.getValue());
-        List<EmergencyElement> emergencyElements = elementMapper.selectByExampleWithBLOBs(elementExample);
+        List<EmergencyElement> emergencyElements = elementMapper.selectByExample(elementExample);
         for (EmergencyElement emergencyElement : emergencyElements) {
             TreeNode node = new TreeNode();
             node.setElementId(emergencyElement.getElementId());
@@ -120,7 +121,7 @@ public class EmergencyArgusScriptServiceImpl implements EmergencyArgusScriptServ
     }
 
     @Override
-    public CommonResult updateArgusOrchestrate(HttpServletRequest request, TreeResponse treeResponse) {
+    public CommonResult updateArgusOrchestrate(String userName, TreeResponse treeResponse) {
         if (treeResponse.getPath() == null) {
             return CommonResult.failed("请选择脚本");
         }
@@ -138,7 +139,7 @@ public class EmergencyArgusScriptServiceImpl implements EmergencyArgusScriptServ
         }
 
         // 更新节点内容
-        updateChildrenNode(treeResponse.getPath(), -1, rootNode, treeResponse.getMap(), 1);
+        updateChildrenNode(userName, treeResponse.getPath(), -1, rootNode, treeResponse.getMap(), 1);
 
         // 生成代码
         TestPlanTestElement parse = TreeResponse.parse(treeResponse);
@@ -166,7 +167,8 @@ public class EmergencyArgusScriptServiceImpl implements EmergencyArgusScriptServ
         }
     }
 
-    private void updateChildrenNode(String path, int parentId, TreeNode node, Map<String, Map> map, int seq) {
+    private void updateChildrenNode(String userName, String path, int parentId, TreeNode node, Map<String, Map> map,
+        int seq) {
         EmergencyElement element = new EmergencyElement();
         element.setElementParams(JSONObject.toJSONString(map.get(node.getKey())));
         element.setSeq(seq);
@@ -178,7 +180,7 @@ public class EmergencyArgusScriptServiceImpl implements EmergencyArgusScriptServ
             if (parentId > 0) {
                 element.setParentId(parentId);
             }
-            element.setCreateUser(UserFilter.currentUserName());
+            element.setCreateUser(userName);
             elementMapper.insertSelective(element);
         } else {
             element.setElementId(node.getElementId());
@@ -189,7 +191,7 @@ public class EmergencyArgusScriptServiceImpl implements EmergencyArgusScriptServ
             return;
         }
         for (int i = 0; i < node.getChildren().size(); i++) {
-            updateChildrenNode(path, element.getElementId(), node.getChildren().get(i), map, i + 1);
+            updateChildrenNode(userName, path, element.getElementId(), node.getChildren().get(i), map, i + 1);
         }
     }
 
