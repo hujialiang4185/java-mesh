@@ -24,7 +24,6 @@ import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.PlanStatus;
 import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ScheduleType;
-import com.huawei.common.constant.ScriptLanguageEnum;
 import com.huawei.common.constant.TaskTypeEnum;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.common.filter.JwtAuthenticationTokenFilter;
@@ -43,17 +42,6 @@ import com.huawei.emergency.entity.EmergencyPlanExample;
 import com.huawei.emergency.entity.EmergencyScript;
 import com.huawei.emergency.entity.EmergencyScriptExample;
 import com.huawei.emergency.entity.EmergencyServer;
-import com.huawei.emergency.entity.EmergencyTask;
-import com.huawei.emergency.entity.User;
-import com.huawei.emergency.entity.EmergencyExec;
-import com.huawei.emergency.entity.EmergencyExecRecord;
-import com.huawei.emergency.entity.EmergencyExecRecordExample;
-import com.huawei.emergency.entity.EmergencyPlan;
-import com.huawei.emergency.entity.EmergencyPlanDetail;
-import com.huawei.emergency.entity.EmergencyPlanDetailExample;
-import com.huawei.emergency.entity.EmergencyPlanExample;
-import com.huawei.emergency.entity.EmergencyScript;
-import com.huawei.emergency.entity.EmergencyScriptExample;
 import com.huawei.emergency.entity.EmergencyTask;
 import com.huawei.emergency.entity.JwtUser;
 import com.huawei.emergency.mapper.EmergencyExecMapper;
@@ -735,7 +723,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
 
     @Override
     public CommonResult updateTask(TaskNode taskNode) {
-        if (taskNode == null || taskNode.getKey() == null ) {
+        if (taskNode == null || taskNode.getKey() == null) {
             return CommonResult.failed("请选择要操作的任务");
         }
         EmergencyTask originTask = taskMapper.selectByPrimaryKey(taskNode.getKey());
@@ -804,10 +792,10 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     /**
      * 生成子任务
      *
-     * @param planDetail   父任务信息
+     * @param planDetail 父任务信息
      * @param childrenNode 子任务信息
-     * @param parentNo     父任务编号
-     * @param isSubTask    是否为子任务
+     * @param parentNo 父任务编号
+     * @param isSubTask 是否为子任务
      * @return
      */
     private void handleChildren(EmergencyPlanDetail planDetail, List<TaskNode> childrenNode, String parentNo,
