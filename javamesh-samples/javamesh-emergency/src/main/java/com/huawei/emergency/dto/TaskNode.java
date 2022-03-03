@@ -4,9 +4,13 @@
 
 package com.huawei.emergency.dto;
 
+import com.huawei.emergency.entity.EmergencyServer;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import org.apache.commons.lang.StringUtils;
 import org.ngrinder.model.PerfTest;
 import org.ngrinder.model.RampUp;
@@ -31,7 +35,7 @@ public class TaskNode {
     private String channelType;
     private Integer scriptId;
     private String scriptName;
-    private Integer[] serviceId;
+    private List<EmergencyServer> serviceId;
     private String submitInfo;
     private String sync;
     private List<TaskNode> children;
@@ -84,8 +88,8 @@ public class TaskNode {
     public PerfTest parse() {
         PerfTest perfTest = new PerfTest();
         perfTest.setTestName(StringUtils.isEmpty(this.getTestName()) ? this.getTaskName() : this.getTestName());
-        perfTest.setAgentCount(this.getServiceId() == null ? 0 : this.getServiceId().length);
-        if (this.getVuser() != null ) {
+        perfTest.setAgentCount(this.getServiceId() == null ? 0 : this.getServiceId().size());
+        if (this.getVuser() != null) {
             perfTest.setProcesses(getProcessCount(this.getVuser()));
             perfTest.setThreads(this.getVuser() / perfTest.getProcesses());
             perfTest.setVuserPerAgent(this.getVuser());

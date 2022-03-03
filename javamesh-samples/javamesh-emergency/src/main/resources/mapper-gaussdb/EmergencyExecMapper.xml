@@ -387,7 +387,7 @@
                to_char(t1.start_time, 'yyyy-mm-dd hh24:mi:ss')                                      start_time,
                to_char(t1.end_time, 'yyyy-mm-dd hh24:mi:ss')                                        end_time,
                t1.sync,
-               NULLIF((select user_name from NUSER where user_id = t1.create_user), t1.create_user) operator,
+               NULLIF((select user_name from NUSER where user_id = t1.create_user), t1.create_user) "operator",
                t1.perf_test_id as                                                                   testId
         FROM emergency_exec_record t1
             LEFT JOIN emergency_task scene
