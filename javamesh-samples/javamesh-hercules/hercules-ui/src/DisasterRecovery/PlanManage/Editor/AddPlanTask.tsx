@@ -1,6 +1,6 @@
 import { Button, Checkbox, Collapse, Divider, Drawer, Form, Input, InputNumber, message, Radio, Switch } from "antd";
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import "./AddPlanTask.scss"
 import SearchSelect from "./SearchSelect";
 import TabelTransfer from "./TabelTransfer";
@@ -14,7 +14,8 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
   const [form] = Form.useForm();
   const types = ["自定义脚本压测", "引流压测", "命令行脚本"]
 
-  async function loadScript(name: string) {
+  async function loadScript(name?: string) {
+    if (!name) return
     try {
       const res = await axios.get("/argus-emergency/api/script/getByName", { params: { name, status: "approved" } })
       setScript(res.data.data)
@@ -22,11 +23,11 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
       message.error(error.message)
     }
   }
-  useEffect(function () {
-    loadScript(props.initialValues.script_name)
-  }, [props.initialValues.script_name])
   return <>
-    <Button type="link" size="small" onClick={function () { setIsModalVisible(true) }}>{props.children}</Button>
+    <Button type="link" size="small" onClick={function () { 
+      setIsModalVisible(true)
+      loadScript(props.initialValues.script_name)
+    }}>{props.children}</Button>
     <Drawer className="AddPlanTask" title={props.children} width={950} visible={isModalVisible} maskClosable={false} footer={null} onClose={function () {
       setIsModalVisible(false)
     }}>
