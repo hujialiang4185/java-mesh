@@ -2,7 +2,6 @@ import { Col, Divider, Form, Input, InputNumber, Radio, Row, Select } from "antd
 import Checkbox from "antd/lib/checkbox/Checkbox"
 import { PlusCircleOutlined, MinusCircleOutlined } from '@ant-design/icons'
 import React, { useEffect, useRef, useState } from "react"
-import "./FormItems.scss"
 import Editor from "@monaco-editor/react";
 import OSSUpload from "../OSSUpload"
 

@@ -816,6 +816,14 @@ app.get("/argus-emergency/api/history", function (req, res) {
         total: 11
     })
 })
+app.get("/argus-emergency/api/history/get", function(req, res) {
+    res.json({
+        data: {
+            plan_no: "CP001",
+            plan_name: "A机房XX",
+        }
+    })
+})
 app.get("/argus-emergency/api/history/scenario", function (req, res) {
     res.json({
         data: Array.from({ length: 4 }, function (_, index) {

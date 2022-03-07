@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react"
-import { Button, Divider, Form, message, Modal, Radio, Steps, Table } from "antd"
+import { Button, Descriptions, Divider, Form, message, Modal, Radio, Steps, Table } from "antd"
 import Breadcrumb from "../../../component/Breadcrumb"
 import Card from "../../../component/Card"
 import socket from "../../socket"
@@ -78,9 +78,24 @@ function Home() {
             socket.removeEventListener("message", handleSocket)
         }
     }, [history_id])
+    const [data, setData] = useState({ plan_no: "", plan_name: "" })
+    useEffect(function () {
+        (async function () {
+          try {
+            const res = await axios.get("/argus-emergency/api/history/get", { params: { history_id } })
+            setData(res.data.data)
+          } catch (error: any) {
+            message.error(error.message)
+          }
+        })()
+      }, [history_id])
     return <div className="RunningLogDetail">
         <Breadcrumb label="执行记录" sub={{ label: "详细信息", parentUrl: "/PerformanceTest/RunningLog" }} />
         <Card>
+            <Descriptions className="Desc">
+                <Descriptions.Item label="项目编号">{data.plan_no}</Descriptions.Item>
+                <Descriptions.Item label="项目名称">{data.plan_name}</Descriptions.Item>
+            </Descriptions>
             <Steps current={current} className="Steps" size="small" type="navigation" onChange={function (current) {
                 setCurrent(current)
                 scenaIdRef.current = scenaList[current]!.scena_id
@@ -151,7 +166,7 @@ function TaskConfirm(props: { record: Task, load: () => void }) {
         <Modal className="TaskConfirm" title="人工确认" width={400} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form  initialValues={{ confirm: "成功" }} onFinish={async function (values) {
+            <Form initialValues={{ confirm: "成功" }} onFinish={async function (values) {
                 if (submit) return
                 submit = true
                 try {
