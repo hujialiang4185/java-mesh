@@ -92,14 +92,14 @@ export default function App() {
             </div>
             <div className="Label">TPS图表</div>
             <Tabs type="card" size="small">
+                <Tabs.TabPane tab="业务性能指标" key="BusinessCharts">
+                    <BusinessCharts />
+                </Tabs.TabPane>
                 <Tabs.TabPane tab="硬件资源指标" key="ResourceCharts">
                     <ResourceCharts />
                 </Tabs.TabPane>
                 <Tabs.TabPane tab="JVM性能指标" key="JvmCharts">
                     <JvmCharts />
-                </Tabs.TabPane>
-                <Tabs.TabPane tab="业务性能指标" key="BusinessCharts">
-                    <BusinessCharts />
                 </Tabs.TabPane>
             </Tabs>
             <div className="Label">日志文件</div>
