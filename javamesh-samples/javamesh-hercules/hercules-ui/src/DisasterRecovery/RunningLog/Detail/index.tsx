@@ -79,7 +79,7 @@ function Home() {
         }
     }, [history_id])
     return <div className="RunningLogDetail">
-        <Breadcrumb label="执行记录" sub={{ label: "详细信息", parentUrl: "/DisasterRecovery/RunningLog" }} />
+        <Breadcrumb label="执行记录" sub={{ label: "详细信息", parentUrl: "/PerformanceTest/RunningLog" }} />
         <Card>
             <Steps current={current} className="Steps" size="small" type="navigation" onChange={function (current) {
                 setCurrent(current)

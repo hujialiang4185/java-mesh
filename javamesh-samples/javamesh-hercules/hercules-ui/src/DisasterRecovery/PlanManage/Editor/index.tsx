@@ -10,7 +10,7 @@ export default function App() {
   const urlSearchParams = new URLSearchParams(useLocation().search)
   const plan_id = urlSearchParams.get("plan_id") || ""
   return <div className="PlanEditor">
-    <Breadcrumb label="项目管理" sub={{ label: "编辑项目", parentUrl: "/DisasterRecovery/PlanManage" }} />
+    <Breadcrumb label="项目管理" sub={{ label: "编辑项目", parentUrl: "/PerformanceTest/PlanManage" }} />
     <Card>
       <PlanInfo plan_id={plan_id} />
       <TreeEditor plan_id={plan_id} />

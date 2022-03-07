@@ -13,7 +13,7 @@ export default function App() {
     const [saved, setSaved] = useState(true)
     const valuesRef = useRef<Values>()
     return <div className="ScriptOrchestrate">
-        <Breadcrumb label="脚本管理" sub={{ label: "编排", parentUrl: "/DisasterRecovery/ScriptManage" }} />
+        <Breadcrumb label="脚本管理" sub={{ label: "编排", parentUrl: "/PerformanceTest/ScriptManage" }} />
         <Card>
             <Button type="primary" disabled={saved} onClick={async function() {
                 if (submit) return

@@ -5,7 +5,7 @@ import axios from 'axios'
 // import PerformanceTest from './PerformanceTest'
 import Login from './Login';
 import AppHome from './AppHome'
-import DisasterRecovery from './DisasterRecovery'
+import PerformanceTest from './DisasterRecovery'
 import Logo from './Logo.png'
 import {
   HomeOutlined, 
@@ -44,7 +44,7 @@ export default function App() {
   const menuList = [
     { path: "/SystemConfig", label: "系统配置", comp: <SystemConfig />, icon: <SettingOutlined />, auth: "admin" },
     // { path: "/PerformanceTest", label: "性能测试(旧)", comp: <PerformanceTest />, icon: <AppstoreOutlined /> },
-    { path: "/DisasterRecovery", label: "性能测试", comp: <DisasterRecovery />, icon: <ThunderboltOutlined /> }
+    { path: "/PerformanceTest", label: "性能测试", comp: <PerformanceTest />, icon: <ThunderboltOutlined /> }
   ]
 
   return <Switch>

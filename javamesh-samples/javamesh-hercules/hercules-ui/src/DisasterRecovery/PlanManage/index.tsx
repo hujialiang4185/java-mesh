@@ -190,7 +190,7 @@ function Home() {
                                     submit = true
                                     try {
                                         const res = await axios.post("/argus-emergency/api/plan/run", { plan_id })
-                                        history.push("/DisasterRecovery/RunningLog/Detail?history_id=" + res.data.data.history_id)
+                                        history.push("/PerformanceTest/RunningLog/Detail?history_id=" + res.data.data.history_id)
                                     } catch (error: any) {
                                         message.error(error.message)
                                     }
@@ -208,7 +208,7 @@ function Home() {
                                 }}>
                                     <Button type="link" size="small">取消预约</Button>
                                 </Popconfirm>}
-                                {(record.status === "running" || record.status === "ran") && <Link to={"/DisasterRecovery/RunningLog/Detail?history_id=" + record.history_id}>
+                                {(record.status === "running" || record.status === "ran") && <Link to={"/PerformanceTest/RunningLog/Detail?history_id=" + record.history_id}>
                                     <Button type="link" size="small">日志</Button>
                                 </Link>}
                             </>

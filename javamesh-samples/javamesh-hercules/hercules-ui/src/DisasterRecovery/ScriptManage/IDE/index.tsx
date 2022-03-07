@@ -24,7 +24,7 @@ export default function App() {
         })()
     }, [form, script_id])
     return <div className="ScriptUpdate">
-        <Breadcrumb label="脚本管理" sub={{ label: "详情", parentUrl: "/DisasterRecovery/ScriptManage" }} />
+        <Breadcrumb label="脚本管理" sub={{ label: "详情", parentUrl: "/PerformanceTest/ScriptManage" }} />
         <Card>
             <Form form={form}  labelCol={{ span: 3 }} onFinish={async function (values) {
                 if (submit) return

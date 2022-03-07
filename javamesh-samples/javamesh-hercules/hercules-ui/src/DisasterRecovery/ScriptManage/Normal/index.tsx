@@ -37,7 +37,7 @@ export default function App() {
         })()
     }, [form, script_id])
     return <div className="ScriptUpdate">
-        <Breadcrumb label="脚本管理" sub={{ label: "详情", parentUrl: "/DisasterRecovery/ScriptManage" }} />
+        <Breadcrumb label="脚本管理" sub={{ label: "详情", parentUrl: "/PerformanceTest/ScriptManage" }} />
         <Card>
             <Form form={form}  labelCol={{ span: 3 }}
                 initialValues={{ language: "Shell", pwd_from: "本地", script_from: "手工录入", public: "私有", has_pwd: "无" }}

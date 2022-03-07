@@ -13,7 +13,7 @@ export default function App() {
     const state = useLocation().state as any
     const [form] = Form.useForm()
     return <div className="IDECreate">
-        <Breadcrumb label="脚本管理" sub={{ label: "详情", parentUrl: "/DisasterRecovery/ScriptManage" }} />
+        <Breadcrumb label="脚本管理" sub={{ label: "详情", parentUrl: "/PerformanceTest/ScriptManage" }} />
         <Card>
             <Form form={form} labelCol={{ span: 2 }} initialValues={{ language: "Jython", method: "GET", ...state }}  onFinish={async function (values) {
                 if (submit) return

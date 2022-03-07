@@ -17,7 +17,7 @@ export default function App() {
     const state = useLocation().state as any
     const [form] = Form.useForm()
     return <div className="ScriptCreate">
-        <Breadcrumb label="脚本管理" sub={{ label: "创建", parentUrl: "/DisasterRecovery/ScriptManage" }} />
+        <Breadcrumb label="脚本管理" sub={{ label: "创建", parentUrl: "/PerformanceTest/ScriptManage" }} />
         <Card>
             <Form form={form}  labelCol={{ span: 3 }}
                 initialValues={{ script_from: "手工录入", public: "私有", ...state }}
