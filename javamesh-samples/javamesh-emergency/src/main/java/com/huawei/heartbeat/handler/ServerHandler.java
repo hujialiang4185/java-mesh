@@ -28,7 +28,7 @@ public class ServerHandler extends SimpleChannelInboundHandler<Message.Heartbeat
         int type = msg.getMessageTypeValue();
         switch (type) {
             case Message.HeartbeatMessage.MessageType.HEARTBEAT_PING_VALUE:
-                log.info("Heartbeat data received from the client");
+                log.debug("Heartbeat data received from the client");
                 sendPongMsg(ctx, msg);
                 break;
             case Message.HeartbeatMessage.MessageType.REGISTER_VALUE:
