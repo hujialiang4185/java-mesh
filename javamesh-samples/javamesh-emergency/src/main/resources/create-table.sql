@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS `emergency_script`  (
      `server_ip` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '服务器IP',
      `content` text CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '脚本内容',
      `script_user` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '脚本创建人',
-     `script_group` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '脚本分组',
+     `script_group` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '脚本分组',
      `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后修改时间',
      `param` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '参数列表',
      `script_status` varchar(1) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '脚本状态 0:新增,1:待审核,2:已审核,3:被驳回',
@@ -169,7 +169,8 @@ CREATE TABLE IF NOT EXISTS `emergency_server`  (
                                      `update_time` timestamp NULL DEFAULT NULL COMMENT '修改时间',
                                      `update_user` varchar(40) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '修改人',
                                      `is_valid` varchar(1) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '1' COMMENT '是否生效',
-    `status` varchar(40) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT 'pending' COMMENT '状态 pending,running,success,fail',
+                                     `status` varchar(40) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT 'pending' COMMENT '状态 pending,running,success,fail',
+                                     `server_group` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '服务器分组',
                                      PRIMARY KEY (`server_id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;$$$
 
