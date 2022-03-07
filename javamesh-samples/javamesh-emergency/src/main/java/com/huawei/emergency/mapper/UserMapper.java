@@ -19,11 +19,5 @@ import java.util.List;
 public interface UserMapper {
     List<String> getAuthByRole(String role);
 
-    String getRoleByUserName(String userName);
-
-    String getUserStatus(String userName);
-
-    String getGroupByUser(String userName);
-
     UserEntity selectUserByName(String username);
 }
