@@ -10,7 +10,6 @@ import Editor from "./Editor"
 import CacheRoute, { CacheSwitch, useDidRecover } from "react-router-cache-route"
 import Context from "../../ContextProvider"
 import ServiceSelect from "../../component/ServiceSelect"
-import PageInfo from "../../component/PageInfo"
 import moment, { Moment } from "moment"
 import ApproveFormItems from "../ApproveFormItems"
 import { useForm } from "antd/lib/form/Form"
@@ -377,7 +376,6 @@ function RunPlan(props: { plan_id: string, load: () => {} }) {
                     message.error(e.message)
                 }
             }}>
-                <PageInfo>预约时间为空则立即执行</PageInfo>
                 <Form.Item name="start_time" label="预约启动时间" rules={[
                     { required: true },
                     {
