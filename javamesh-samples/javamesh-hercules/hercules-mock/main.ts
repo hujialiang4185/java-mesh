@@ -588,6 +588,10 @@ app.get('/argus-emergency/api/script/ide/get', function (req, res) {
     res.json({
         data: {
             script_name: "abc.sh",
+            content: "print('hello')",
+            param: "a,b",
+            has_resource: true,
+            libs: "001/.npmrc 002/xxx"
         }
     })
 })

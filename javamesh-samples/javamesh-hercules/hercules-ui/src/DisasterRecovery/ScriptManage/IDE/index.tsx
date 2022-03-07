@@ -1,5 +1,5 @@
 import { Button, Form, Input, message } from "antd"
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import Breadcrumb from "../../../component/Breadcrumb"
 import Card from "../../../component/Card"
 import { useHistory, useLocation } from "react-router-dom"
@@ -14,11 +14,13 @@ export default function App() {
     const urlSearchParams = new URLSearchParams(useLocation().search)
     const script_id = urlSearchParams.get("script_id")
     const [form] = Form.useForm()
+    const [hasResource, setHasResource] = useState(false)
     useEffect(function () {
         (async function () {
             try {
                 const res = await axios.get('/argus-emergency/api/script/ide/get', { params: { script_id } })
                 form.setFieldsValue(res.data.data)
+                setHasResource(res.data.data.has_resource)
             } catch (error: any) {
                 message.error(error.message)
             }
@@ -52,14 +54,14 @@ export default function App() {
                     <Input.TextArea className="Param" showCount maxLength={50} autoSize={{ minRows: 2, maxRows: 2 }}
                         placeholder="测试参数可以在脚本中通过System.getProperty('param')取得, 参数只能为数字、字母、下划线、逗号、圆点(.)或竖线(|)组成, 禁止输入空格, 长度在0-50之间。" />
                 </Form.Item>
-                <div className="Line">
+                {hasResource && <div className="Line">
                     <Form.Item className="Middle" label="库文件" name="libs">
                         <OSSUpload max={10} />
                     </Form.Item>
                     <Form.Item className="Middle" label="资源文件" name="resources">
                         <OSSUpload max={10} />
                     </Form.Item>
-                </div>
+                </div>}
                 <Form.Item className="Buttons">
                     <Button className="Save" htmlType="submit" type="primary">提交</Button>
                     <Button onClick={function () {
