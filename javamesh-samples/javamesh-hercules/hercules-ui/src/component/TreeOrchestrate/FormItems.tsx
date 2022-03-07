@@ -234,7 +234,7 @@ function HTTPCookie() {
                     <Form.Item name={[item.name, "value"]} rules={[{ max: 32 }]}><Input placeholder="值" /></Form.Item>
                     <Form.Item name={[item.name, "domain"]} rules={[{ max: 32 }]}><Input placeholder="域" /></Form.Item>
                     <Form.Item name={[item.name, "path"]} rules={[{ max: 32 }]}><Input placeholder="路径" /></Form.Item>
-                    <Form.Item name={[item.name, "safe"]} rules={[{ max: 32 }]}><Input placeholder="安全" /></Form.Item>
+                    <Form.Item label="Secure" name={[item.name, "safe"]} rules={[{ max: 32 }]} valuePropName="checked"><Checkbox /></Form.Item>
                     <PlusCircleOutlined onClick={function(){add()}} />
                     {item.key !== 0 && <MinusCircleOutlined onClick={function () { remove(item.name) }} />}
                 </div>
