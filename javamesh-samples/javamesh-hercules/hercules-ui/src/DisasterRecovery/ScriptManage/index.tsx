@@ -142,6 +142,11 @@ function Home() {
                         ellipsis: true
                     },
                     {
+                        title: "脚本类型",
+                        dataIndex: "type_label",
+                        ellipsis: true
+                    },
+                    {
                         title: "脚本用途",
                         dataIndex: "submit_info",
                         ellipsis: true
