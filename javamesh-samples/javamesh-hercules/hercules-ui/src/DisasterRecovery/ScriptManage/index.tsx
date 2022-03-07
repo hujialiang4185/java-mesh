@@ -142,19 +142,6 @@ function Home() {
                         ellipsis: true
                     },
                     {
-                        title: "脚本类型",
-                        dataIndex: "type",
-                        ellipsis: true,
-                        render(value) {
-                            switch (value) {
-                                case "GUI":
-                                    return "GUI脚本"
-                                case "IDE":
-                                    return "非GUI脚本"
-                            }
-                        }
-                    },
-                    {
                         title: "脚本用途",
                         dataIndex: "submit_info",
                         ellipsis: true
