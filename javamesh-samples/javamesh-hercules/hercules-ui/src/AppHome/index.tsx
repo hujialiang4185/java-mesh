@@ -10,8 +10,8 @@ import Oam from "./Oam.png"
 export default function App() {
     const { auth } = useContext(Context)
     const list = [
-        { title: "全链路压测", desc: "全链路压测, 性能测试！", img: Limiting, link: "/PerformanceTest" },
         { title: "系统管理", desc: "用户管理、权限管理、密码重置。", img: Oam, link: "/SystemConfig", auth: "admin" },
+        { title: "性能测试", desc: "全链路压测, 性能测试！", img: Limiting, link: "/PerformanceTest" },
     ]
     return <div className="AppHome">
         <img className="Banner" src={Banner} alt="" />
