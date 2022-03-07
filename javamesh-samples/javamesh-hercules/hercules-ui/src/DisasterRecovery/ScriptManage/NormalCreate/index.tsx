@@ -97,7 +97,7 @@ function Script({ form }: { form: FormInstance }) {
             </Form.Item>}
         </div>
         {scriptFrom !== "本地导入" && <>
-            <Form.Item label="脚本内容" className="Editor WithoutLabel" name="content" rules={[{ required: true, max: 5000 }]}>
+            <Form.Item label="脚本内容" className="Editor WithoutLabel" name="content" rules={[{ required: true }]}>
                 <ScriptEditor script={script} setScript={setScript} />
             </Form.Item>
             <DebugScript form={form} />

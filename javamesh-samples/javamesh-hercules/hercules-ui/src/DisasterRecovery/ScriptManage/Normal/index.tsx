@@ -64,7 +64,7 @@ export default function App() {
                         <Input disabled />
                     </Form.Item>
                 </div>
-                <Form.Item label="脚本内容" className="Editor WithoutLabel" name="content" rules={[{ required: true, max: 5000 }]}>
+                <Form.Item label="脚本内容" className="Editor WithoutLabel" name="content" rules={[{ required: true }]}>
                     <Editor className="MonacoEditor" language={language} height={200} />
                 </Form.Item>
                 <DebugScript form={form} />

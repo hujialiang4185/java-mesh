@@ -44,7 +44,7 @@ export default function App() {
                 <Form.Item labelCol={{ span: 1 }} name="script_name" label="脚本名">
                     <Input disabled />
                 </Form.Item>
-                <Form.Item label="脚本内容" className="Editor WithoutLabel" name="content" rules={[{ required: true, max: 5000 }]}>
+                <Form.Item label="脚本内容" className="Editor WithoutLabel" name="content" rules={[{ required: true }]}>
                     <Editor className="MonacoEditor" language="python" height={450} />
                 </Form.Item>
                 <Form.Item className="ScriptParam" labelCol={{ span: 1 }} name="param" label="脚本参数" rules={[{
