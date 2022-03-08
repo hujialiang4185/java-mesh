@@ -7,6 +7,7 @@ import axios from "axios"
 import "./index.scss"
 import Editor from "@monaco-editor/react";
 import OSSUpload from "../../../component/OSSUpload"
+import { InfoCircleOutlined } from '@ant-design/icons'
 
 export default function App() {
     let submit = false
@@ -14,13 +15,12 @@ export default function App() {
     const urlSearchParams = new URLSearchParams(useLocation().search)
     const script_id = urlSearchParams.get("script_id")
     const [form] = Form.useForm()
-    const [hasResource, setHasResource] = useState(false)
+    const [data, setData] = useState()
     useEffect(function () {
         (async function () {
             try {
                 const res = await axios.get('/argus-emergency/api/script/ide/get', { params: { script_id } })
-                form.setFieldsValue(res.data.data)
-                setHasResource(res.data.data.has_resource)
+                setData(res.data.data)
             } catch (error: any) {
                 message.error(error.message)
             }
@@ -29,7 +29,7 @@ export default function App() {
     return <div className="IDEScriptUpdate">
         <Breadcrumb label="脚本管理" sub={{ label: "详情", parentUrl: "/PerformanceTest/ScriptManage" }} />
         <Card>
-            <Form form={form} labelCol={{ span: 2 }} onFinish={async function (values) {
+            {data && <Form initialValues={data} labelCol={{ span: 2 }} onFinish={async function (values) {
                 if (submit) return
                 submit = true
                 try {
@@ -54,21 +54,25 @@ export default function App() {
                     <Input.TextArea className="Param" showCount maxLength={50} autoSize={{ minRows: 2, maxRows: 2 }}
                         placeholder="测试参数可以在脚本中通过System.getProperty('param')取得, 参数只能为数字、字母、下划线、逗号、圆点(.)或竖线(|)组成, 禁止输入空格, 长度在0-50之间。" />
                 </Form.Item>
-                {hasResource && <div className="Line">
+                <span className="Info">
+                    <InfoCircleOutlined />
+                    <span>您可以上传".class", ".py", ".jar" 类型的文件到lib目录, 或者其他任何资源到resources目录</span>
+                </span>
+                <div className="Line">
                     <Form.Item className="Middle" label="库文件" name="libs">
-                        <OSSUpload max={10} />
+                        <OSSUpload mark='&path=lib' max={10} />
                     </Form.Item>
                     <Form.Item className="Middle" label="资源文件" name="resources">
-                        <OSSUpload max={10} />
+                        <OSSUpload mark='&path=resource' max={10} />
                     </Form.Item>
-                </div>}
+                </div>
                 <Form.Item className="Buttons">
                     <Button className="Save" htmlType="submit" type="primary">提交</Button>
                     <Button onClick={function () {
                         history.goBack()
                     }}>取消</Button>
                 </Form.Item>
-            </Form>
+            </Form>}
         </Card>
     </div>
 }

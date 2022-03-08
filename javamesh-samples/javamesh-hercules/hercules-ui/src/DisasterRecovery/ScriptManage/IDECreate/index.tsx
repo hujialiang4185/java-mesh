@@ -1,6 +1,6 @@
-import { Button, Checkbox, Collapse, Form, Input, message, Select } from "antd"
+import { Button, Collapse, Form, Input, message, Select } from "antd"
 import React from "react"
-import { PlusCircleOutlined, MinusCircleOutlined, InfoCircleOutlined } from '@ant-design/icons'
+import { PlusCircleOutlined, MinusCircleOutlined } from '@ant-design/icons'
 import Breadcrumb from "../../../component/Breadcrumb"
 import Card from "../../../component/Card"
 import { useHistory, useLocation } from "react-router-dom"
@@ -15,11 +15,11 @@ export default function App() {
     return <div className="IDECreate">
         <Breadcrumb label="脚本管理" sub={{ label: "详情", parentUrl: "/PerformanceTest/ScriptManage" }} />
         <Card>
-            <Form form={form} labelCol={{ span: 2 }} initialValues={{ language: "Jython", method: "GET", ...state }}  onFinish={async function (values) {
+            <Form form={form} labelCol={{ span: 2 }} initialValues={{ language: "Jython", method: "GET", ...state }} onFinish={async function (values) {
                 if (submit) return
                 submit = true
                 try {
-                    await axios.post("/argus-emergency/api/script/ide", {...values, ...state})
+                    await axios.post("/argus-emergency/api/script/ide", { ...values, ...state })
                     history.goBack()
                 } catch (error: any) {
                     message.error(error.message)
@@ -71,13 +71,6 @@ export default function App() {
                     ]}>
                         <Input style={{ width: 525 }} />
                     </Form.Item>
-                </div>
-                <div className="Line">
-                    <div className="Label"></div>
-                    <Form.Item valuePropName="checked" name="has_resource">
-                        <Checkbox>创建资源和库目录</Checkbox>
-                    </Form.Item>
-                    <span className="Info"><InfoCircleOutlined />您可以上传".class", ".py", ".jar" 类型的文件到lib目录, 或者其他任何资源到resources目录</span>
                 </div>
                 <Collapse expandIconPosition="right" defaultActiveKey="0" expandIcon={function ({ isActive }) {
                     return <span className={`icon fa fa-angle-double-${isActive ? "down" : "right"}`}></span>

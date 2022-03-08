@@ -2,8 +2,8 @@ import React from "react"
 import { UploadOutlined } from '@ant-design/icons'
 import { Button, Upload } from "antd"
 
-export default function App(props: { max: number, value?: string, onChange?: (value: string) => void }) {
-    return <Upload action={'/argus-emergency/api/resource'+window.location.search}
+export default function App(props: { max: number, value?: string, onChange?: (value: string) => void, mark?: string }) {
+    return <Upload action={'/argus-emergency/api/resource'+window.location.search+props.mark}
         defaultFileList={props.value?.split(" ").map(function (item) {
             const index = item.lastIndexOf("/")
             const uid = item.slice(0, index)

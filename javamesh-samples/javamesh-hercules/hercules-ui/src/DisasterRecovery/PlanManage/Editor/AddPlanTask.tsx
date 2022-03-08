@@ -147,15 +147,15 @@ export function RootBasicScenario(props: FormItemLabelProps) {
     }}>
       <Radio value="by_time">测试时长</Radio>
       <div>
-        <Form.Item label="小时" className="WithoutLabel" initialValue="0" name="by_time_h" rules={[{ type: "integer" }]}>
+        <Form.Item label="小时" className="WithoutLabel" name="by_time_h" rules={[{ type: "integer" }]}>
           <InputNumber disabled={basic} className="Time" min={0} max={8759}/>
         </Form.Item>
         <span className="Sep">:</span>
-        <Form.Item label="分钟" className="WithoutLabel" initialValue="0" name="by_time_m" rules={[{ type: "integer" }]}>
+        <Form.Item label="分钟" className="WithoutLabel" name="by_time_m" rules={[{ type: "integer" }]}>
           <InputNumber disabled={basic} className="Time" min={0} max={60} />
         </Form.Item>
         <span className="Sep">:</span>
-        <Form.Item label="秒" className="WithoutLabel" initialValue="0" name="by_time_s" rules={[{ type: "integer" }]}>
+        <Form.Item label="秒" className="WithoutLabel" name="by_time_s" rules={[{ type: "integer" }]}>
           <InputNumber disabled={basic} className="Time" min={0} max={60} />
         </Form.Item>
         <span className="Format">HH:MM:SS</span>
