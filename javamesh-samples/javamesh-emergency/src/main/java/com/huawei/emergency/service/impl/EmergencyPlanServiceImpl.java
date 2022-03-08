@@ -88,7 +88,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 
 /**
- * 预案管理接口的实现类
+ * 项目管理接口的实现类
  *
  * @author y30010171
  * @since 2021-11-02
@@ -152,14 +152,14 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     @Override
     public CommonResult add(EmergencyPlan emergencyPlan) {
         if (StringUtils.isEmpty(emergencyPlan.getPlanName())) {
-            return CommonResult.failed("请填写预案名称");
+            return CommonResult.failed("请填写项目名称");
         }
         EmergencyPlanExample isPlanNameExist = new EmergencyPlanExample();
         isPlanNameExist.createCriteria()
             .andPlanNameEqualTo(emergencyPlan.getPlanName())
             .andIsValidEqualTo(ValidEnum.VALID.getValue());
         if (planMapper.countByExample(isPlanNameExist) > 0) {
-            return CommonResult.failed("已存在预案名称相同的预案");
+            return CommonResult.failed("已存在名称相同的项目");
         }
         EmergencyPlan insertPlan = new EmergencyPlan();
         insertPlan.setPlanName(emergencyPlan.getPlanName());
@@ -179,7 +179,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     @Override
     public CommonResult delete(EmergencyPlan emergencyPlan) {
         if (emergencyPlan.getPlanId() == null) {
-            return CommonResult.failed("请选择正确的预案");
+            return CommonResult.failed("请选择正确的项目");
         }
 
         if (havePass(emergencyPlan.getPlanId())) {
@@ -188,7 +188,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
 
         // 是否正在执行
         if (haveRunning(emergencyPlan.getPlanId())) {
-            return CommonResult.failed("当前预案正在执行中，无法删除。");
+            return CommonResult.failed("当前项目正在执行中，无法删除。");
         }
 
         EmergencyPlan updatePlan = new EmergencyPlan();
@@ -196,7 +196,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         updatePlan.setPlanId(emergencyPlan.getPlanId());
         updatePlan.setUpdateTime(new Date());
         if (planMapper.updateByPrimaryKeySelective(updatePlan) == 0) {
-            return CommonResult.failed("请选择正确的预案");
+            return CommonResult.failed("请选择正确的项目");
         }
 
         EmergencyPlanDetail updatePlanDetail = new EmergencyPlanDetail();
@@ -210,12 +210,12 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     @Override
     public CommonResult update(EmergencyPlan emergencyPlan) {
         if (emergencyPlan.getPlanId() == 0) {
-            return CommonResult.failed("请选择正确的预案");
+            return CommonResult.failed("请选择正确的项目");
         }
 
         // 是否审核通过
         if (havePass(emergencyPlan.getPlanId())) {
-            return CommonResult.failed("当前预案已经审核通过，无法修改。");
+            return CommonResult.failed("当前项目已经审核通过，无法修改。");
         }
 
         EmergencyPlan updatePlan = new EmergencyPlan();
@@ -223,7 +223,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         updatePlan.setPlanNo(emergencyPlan.getPlanNo());
         updatePlan.setPlanName(emergencyPlan.getPlanName());
         if (planMapper.updateByPrimaryKeySelective(updatePlan) == 0) {
-            return CommonResult.failed("请选择正确的预案");
+            return CommonResult.failed("请选择正确的项目");
         }
         return CommonResult.success();
     }
@@ -231,15 +231,15 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     @Override
     public CommonResult exec(int planId, String userName) {
         if (!havePass(planId)) {
-            return CommonResult.failed("当前预案未审核，无法执行。");
+            return CommonResult.failed("当前项目未审核，无法执行。");
         }
 
         // 是否正在执行
         if (haveRunning(planId)) {
-            return CommonResult.failed("当前预案正在执行中，请先完成之前的执行。");
+            return CommonResult.failed("当前项目正在执行中，请先完成之前的执行。");
         }
 
-        // 添加预案执行记录
+        // 添加项目执行记录
         EmergencyExec emergencyExec = new EmergencyExec();
         emergencyExec.setPlanId(planId);
         emergencyExec.setCreateUser(userName);
@@ -320,14 +320,14 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     @Override
     public CommonResult start(EmergencyPlan plan, String userName) {
         if (plan.getPlanId() == null || StringUtils.isEmpty(plan.getScheduleType())) {
-            return CommonResult.failed("请选择正确的预案");
+            return CommonResult.failed("请选择正确的项目");
         }
         EmergencyPlan planInfo = planMapper.selectByPrimaryKey(plan.getPlanId());
         if (planInfo == null || ValidEnum.IN_VALID.getValue().equals(planInfo.getIsValid())) {
-            return CommonResult.failed("请选择正确的预案");
+            return CommonResult.failed("请选择正确的项目");
         }
         if (UN_PASSED_STATUS.contains(planInfo.getStatus())) {
-            return CommonResult.failed("请选择已审核通过的预案");
+            return CommonResult.failed("请选择已审核通过的项目");
         }
         ScheduleType scheduleType = ScheduleType.match(plan.getScheduleType(), null);
         if (scheduleType == null) {
@@ -387,7 +387,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     public CommonResult stop(int planId, String userName) {
         EmergencyPlan plan = planMapper.selectByPrimaryKey(planId);
         if (plan == null || ValidEnum.IN_VALID.getValue().equals(plan.getIsValid())) {
-            return CommonResult.failed("请选择正确的预案");
+            return CommonResult.failed("请选择正确的项目");
         }
         EmergencyPlan updatePlan = new EmergencyPlan();
         updatePlan.setPlanId(planId);
@@ -411,16 +411,16 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     @Override
     public CommonResult approve(EmergencyPlan plan, String userName) {
         if (plan.getPlanId() == null) {
-            return CommonResult.failed("请选择正确的预案");
+            return CommonResult.failed("请选择正确的项目");
         }
         EmergencyPlan planInfo = planMapper.selectByPrimaryKey(plan.getPlanId());
         if (planInfo == null || !PlanStatus.APPROVING.getValue().equals(planInfo.getStatus())) {
-            return CommonResult.failed("请选择待审核的预案");
+            return CommonResult.failed("请选择待审核的项目");
         }
 
         // 是否正在执行
         if (haveRunning(plan.getPlanId())) {
-            return CommonResult.failed("当前预案正在执行中，无法修改审核结果。");
+            return CommonResult.failed("当前项目正在执行中，无法修改审核结果。");
         }
         if (StringUtils.isEmpty(plan.getStatus())) {
             return CommonResult.failed("审核结果不能为空");
@@ -455,6 +455,10 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
 
             //查找场景下的子任务
             children.forEach(task -> {
+                TaskTypeEnum subTaskTypeEnum = TaskTypeEnum.matchByValue(task.getTaskType());
+                if (subTaskTypeEnum != null) {
+                    task.setTaskType(subTaskTypeEnum.getDesc());
+                }
                 queryPerfTest(task);
                 // 查找子任务下的子任务
                 List<TaskNode> taskChildren = getChildren(task.getPlanId(), task.getSceneId(), task.getTaskId());
@@ -532,6 +536,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
 
     @Override
     public CommonResult addTask(TaskNode taskNode) {
+
         TaskTypeEnum taskType = TaskTypeEnum.matchByDesc(taskNode.getTaskType());
         if (taskType == TaskTypeEnum.FLOW_RECORD) {
             return CommonResult.failed("不支持的任务类型");
@@ -541,6 +546,9 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             task.setTaskName(taskNode.getTaskName());
             task.setTaskType(TaskTypeEnum.SCENE.getValue());
         } else {
+            if (StringUtils.isEmpty(taskNode.getScriptName())) {
+                return CommonResult.failed("请选择脚本");
+            }
             task.setTaskName(taskNode.getTaskName());
             task.setScriptId(taskNode.getScriptId());
             task.setScriptName(StringUtils.isNotEmpty(taskNode.getScriptName()) ? taskNode.getScriptName()
@@ -555,9 +563,6 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             task.setCreateUser(taskNode.getCreateUser());
             task.setTaskType(taskType.getValue());
             if (taskType == TaskTypeEnum.CUSTOM) { // 创建自定义脚本压测任务
-                if (StringUtils.isEmpty(task.getScriptName())) {
-                    return CommonResult.failed("请选择脚本");
-                }
                 PerfTest perfTest = taskNode.parse();
                 perfTest.setCreatedUser(JwtAuthenticationTokenFilter.currentGrinderUser());
                 perfTest.setCreatedDate(new Date());
@@ -663,11 +668,11 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             insertDetail.setPlanId(planId);
             insertDetail.setSceneId(scene.getKey());
             insertDetail.setCreateUser(userName);
-            if ("同步".equals(scene.getSync())) {
+            if ("异步".equals(scene.getSync())) {
+                insertDetail.setSync("异步");
+            } else {
                 insertDetail.setPreSceneId(preSceneId);
                 preSceneId = scene.getKey();
-            } else {
-                insertDetail.setSync("异步");
             }
             detailMapper.insertSelective(insertDetail);
             EmergencyTask updateScene = new EmergencyTask();
@@ -683,11 +688,11 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     public CommonResult submit(int planId, String approver) {
         EmergencyPlan plan = planMapper.selectByPrimaryKey(planId);
         if (plan == null || ValidEnum.IN_VALID.equals(plan.getIsValid())) {
-            return CommonResult.failed("预案不存在");
+            return CommonResult.failed("项目不存在");
         }
         if (!PlanStatus.NEW.getValue().equals(plan.getStatus())
             && !PlanStatus.REJECT.getValue().equals(plan.getStatus())) {
-            return CommonResult.failed("预案不为待提审或驳回状态");
+            return CommonResult.failed("项目不为待提审或驳回状态");
         }
 
         EmergencyPlan updatePlan = new EmergencyPlan();
@@ -703,7 +708,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     @Override
     public CommonResult copy(EmergencyPlan emergencyPlan) {
         if (emergencyPlan.getPlanId() == null) {
-            return CommonResult.failed("请选择要克隆的预案");
+            return CommonResult.failed("请选择要克隆的项目");
         }
         EmergencyPlan oldPlan = planMapper.selectByPrimaryKey(emergencyPlan.getPlanId());
         emergencyPlan.setPlanGroup(oldPlan.getPlanGroup());
@@ -713,7 +718,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         }
         EmergencyPlan plan = addResult.getData();
 
-        //复制之前预案下的拓扑关系，重新生成任务号
+        //复制之前项目下的拓扑关系，重新生成任务号
         CommonResult<List<TaskNode>> queryResult = query(emergencyPlan.getPlanId());
         List<TaskNode> allTasks = queryResult.getData();
         copyTaskNodes(allTasks, emergencyPlan.getCreateUser());
@@ -741,7 +746,14 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         updateTask.setScriptName(
             StringUtils.isNotEmpty(taskNode.getScriptName()) ? taskNode.getScriptName() : taskNode.getGuiScriptName());
         updateTask.setChannelType(taskNode.getChannelType());
-        updateTask.setServerId(StringUtils.join(taskNode.getServiceId(), ","));
+        if (taskNode.getServiceId() != null) {
+            updateTask.setServerId(StringUtils.join(taskNode.getServiceId().stream()
+                .filter(server -> server.getServerId() != null)
+                .map(EmergencyServer::getServerId)
+                .collect(Collectors.toList()), ","));
+        } else {
+            updateTask.setServerId("");
+        }
         EmergencyScriptExample scriptExample = new EmergencyScriptExample();
         scriptExample.createCriteria().andScriptNameEqualTo(updateTask.getScriptName());
         List<EmergencyScript> emergencyScripts = scriptMapper.selectByExample(scriptExample);
@@ -847,6 +859,10 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     public List<TaskNode> getChildren(int planId, int sceneId, int taskId) {
         List<TaskNode> result = detailMapper.selectTaskNodeByTaskId(planId, sceneId, taskId);
         result.forEach(detail -> {
+            TaskTypeEnum taskTypeEnum = TaskTypeEnum.matchByValue(detail.getTaskType());
+            if (taskTypeEnum != null) {
+                detail.setTaskType(taskTypeEnum.getDesc());
+            }
             queryPerfTest(detail);
             List<TaskNode> children = getChildren(detail.getPlanId(), detail.getSceneId(), detail.getTaskId());
             if (children.size() > 0) {
@@ -857,9 +873,9 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     }
 
     /**
-     * 预案是否正在运行
+     * 项目是否正在运行
      *
-     * @param planId 预案ID
+     * @param planId 项目ID
      * @return
      */
     private boolean haveRunning(int planId) {
@@ -872,9 +888,9 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     }
 
     /**
-     * 预案是否通过审核
+     * 项目是否通过审核
      *
-     * @param planId 预案ID
+     * @param planId 项目ID
      * @return
      */
     private boolean havePass(int planId) {

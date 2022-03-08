@@ -9,6 +9,7 @@ import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.PlanStatus;
 import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ValidEnum;
+import com.huawei.emergency.controller.EmergencyPlanController;
 import com.huawei.emergency.dto.PlanQueryDto;
 import com.huawei.emergency.dto.SceneExecDto;
 import com.huawei.emergency.entity.EmergencyExec;
@@ -103,6 +104,9 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
 
     @Autowired
     private EmergencyPlanService planService;
+
+    @Autowired
+    private EmergencyPlanController planController;
 
     @Override
     public CommonResult exec(EmergencyScript script) {
@@ -446,7 +450,8 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
     }
 
     @Override
-    public CommonResult allPlanExecRecords(String historyGroup, CommonPage<EmergencyPlan> params, String[] filterPlanNames,
+    public CommonResult allPlanExecRecords(String historyGroup, CommonPage<EmergencyPlan> params,
+        String[] filterPlanNames,
         String[] filterCreators) {
         Map<String, Object> filters = new HashMap<>();
         filters.put("planNames", filterPlanNames);
@@ -489,5 +494,17 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
         ExecResult finalResult = execResult;
         threadPoolExecutor.execute(() -> handlerFactory.complete(record, recordDetail, finalResult));
         return CommonResult.success();
+    }
+
+    @Override
+    public CommonResult getPlanInfo(Integer execId) {
+        if (execId == null) {
+            return CommonResult.success();
+        }
+        EmergencyExec exec = execMapper.selectByPrimaryKey(execId);
+        if (exec == null || exec.getPlanId() == null) {
+            return CommonResult.success();
+        }
+        return planController.get(exec.getPlanId());
     }
 }

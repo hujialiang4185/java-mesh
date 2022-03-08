@@ -395,7 +395,7 @@
         FROM emergency_exec_record t1
             LEFT JOIN emergency_task scene
         ON t1.scene_id = scene.task_id
-            LEFT JOIN emergency_task task ON t1.task_id = task.task_id
+            JOIN emergency_task task ON t1.task_id = task.task_id
         WHERE t1.exec_id = #{execId}
           AND t1.scene_id = #{sceneId}
           AND t1.is_valid = '1'

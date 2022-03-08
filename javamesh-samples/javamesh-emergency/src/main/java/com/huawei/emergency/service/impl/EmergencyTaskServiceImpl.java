@@ -7,6 +7,7 @@ package com.huawei.emergency.service.impl;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ValidEnum;
+import com.huawei.common.filter.JwtAuthenticationTokenFilter;
 import com.huawei.emergency.dto.TaskCommonReport;
 import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyExecRecordExample;
@@ -29,8 +30,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -46,7 +45,6 @@ import javax.annotation.Resource;
 @Transactional(rollbackFor = Exception.class)
 public class EmergencyTaskServiceImpl implements EmergencyTaskService {
     private static final Logger LOGGER = LoggerFactory.getLogger(EmergencyTaskServiceImpl.class);
-
 
     @Resource(name = "scriptExecThreadPool")
     private ThreadPoolExecutor threadPoolExecutor;
@@ -71,7 +69,8 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
 
     @Override
     public void onComplete(EmergencyExecRecord record) {
-        LOGGER.debug("Task exec_id={},plan_id={},scene_id={},task_id={} is finished.", record.getExecId(), record.getPlanId(), record.getSceneId(), record.getTaskId());
+        LOGGER.debug("Task exec_id={},plan_id={},scene_id={},task_id={} is finished.", record.getExecId(),
+            record.getPlanId(), record.getSceneId(), record.getTaskId());
         if (sceneService.isSceneFinished(record.getExecId(), record.getSceneId())) {
             sceneService.onComplete(record);
             return;
@@ -86,7 +85,8 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
                 .andStatusEqualTo(RecordStatus.PENDING.getValue());
             List<EmergencyExecRecord> needExecTasks = execRecordMapper.selectByExample(needExecTaskCondition);
             needExecTasks.forEach(execRecord -> {
-                LOGGER.debug("Submit record_id={}. exec_id={}, task_id={}.", execRecord.getRecordId(), execRecord.getExecId(), execRecord.getTaskId());
+                LOGGER.debug("Submit record_id={}. exec_id={}, task_id={}.", execRecord.getRecordId(),
+                    execRecord.getExecId(), execRecord.getTaskId());
                 threadPoolExecutor.execute(handlerFactory.handle(execRecord));
             });
             if (needExecTasks.size() == 0) {
@@ -120,7 +120,8 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
                 .andParentTaskIdEqualTo(record.getTaskId());
             List<EmergencyExecRecord> emergencyExecRecords = execRecordMapper.selectByExample(subTask);
             emergencyExecRecords.forEach(execRecord -> {
-                LOGGER.debug("Submit record_id={}. exec_id={}, task_id={}, task_detail_id={}.", execRecord.getRecordId(), execRecord.getExecId(), execRecord.getTaskId());
+                LOGGER.debug("Submit record_id={}. exec_id={}, task_id={}, task_detail_id={}.",
+                    execRecord.getRecordId(), execRecord.getExecId(), execRecord.getTaskId());
                 threadPoolExecutor.execute(handlerFactory.handle(execRecord));
             });
         }
@@ -166,7 +167,7 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
         insertTask.setServerId(emergencyTask.getServerId());
         insertTask.setTaskName(emergencyTask.getTaskName());
         insertTask.setChannelType(emergencyTask.getChannelType());
-        insertTask.setCreateUser(emergencyTask.getCreateUser());
+        insertTask.setCreateUser(JwtAuthenticationTokenFilter.currentGrinderUser().getUserId());
         insertTask.setPerfTestId(emergencyTask.getPerfTestId());
         insertTask.setTaskType(emergencyTask.getTaskType());
         if (emergencyTask.getScriptId() != null) {

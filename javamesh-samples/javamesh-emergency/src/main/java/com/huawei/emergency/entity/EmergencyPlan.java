@@ -7,7 +7,7 @@ package com.huawei.emergency.entity;
 import java.util.Date;
 
 /**
- * 预案
+ * 项目
  *
  * @author y30010171
  * @since 2021-11-15

@@ -39,11 +39,14 @@ public interface EmergencyExecService {
 
     LogResponse logOneServer(int detailId, int line);
 
-    CommonResult allPlanExecRecords(String historyGroup, CommonPage<EmergencyPlan> params, String[] filterPlanNames, String[] filterCreators);
+    CommonResult allPlanExecRecords(String historyGroup, CommonPage<EmergencyPlan> params, String[] filterPlanNames,
+        String[] filterCreators);
 
     CommonResult allSceneExecRecords(CommonPage<EmergencyExecRecord> params);
 
     CommonResult allTaskExecRecords(CommonPage<EmergencyExecRecord> params);
 
     CommonResult execComplete(ExecResult execResult);
+
+    CommonResult getPlanInfo(Integer execId);
 }

@@ -17,8 +17,8 @@ import com.huawei.script.exec.log.LogResponse;
 
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
-
 import io.swagger.annotations.Api;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +61,7 @@ public class EmergencyExecController {
      * @return {@link CommonResult}
      */
     @PostMapping("/scenario/task/runAgain")
-    public CommonResult reExec(UsernamePasswordAuthenticationToken authentication,@RequestBody PlanQueryDto params) {
+    public CommonResult reExec(UsernamePasswordAuthenticationToken authentication, @RequestBody PlanQueryDto params) {
         if (params.getKey() == null) {
             return CommonResult.failed("请选择正确的执行记录");
         }
@@ -75,7 +75,7 @@ public class EmergencyExecController {
      * @return {@link CommonResult}
      */
     @PostMapping("/scenario/task/ensure")
-    public CommonResult success(UsernamePasswordAuthenticationToken authentication,@RequestBody PlanQueryDto params) {
+    public CommonResult success(UsernamePasswordAuthenticationToken authentication, @RequestBody PlanQueryDto params) {
         if (params.getKey() == null) {
             return CommonResult.failed("请选择正确的执行记录");
         }
@@ -88,28 +88,27 @@ public class EmergencyExecController {
         return CommonResult.failed("请选择确认成功或者失败");
     }
 
-
     /**
      * 查询预案的执行记录
      *
-     * @param planName  预案名称
-     * @param pageSize  分页大小
-     * @param current   页码
-     * @param sorter    排序字段
-     * @param order     排序方式
-     * @param creators  用于过滤的创建人
+     * @param planName 预案名称
+     * @param pageSize 分页大小
+     * @param current 页码
+     * @param sorter 排序字段
+     * @param order 排序方式
+     * @param creators 用于过滤的创建人
      * @param planNames 用于过滤的预案编号
      * @return {@link CommonResult}
      */
     @GetMapping()
     public CommonResult allPlanExecRecords(UsernamePasswordAuthenticationToken authentication,
-                                           @RequestParam(value = "keywords", required = false) String planName,
-                                           @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
-                                           @RequestParam(value = "current", defaultValue = "1") int current,
-                                           @RequestParam(value = "sorter", defaultValue = "execute_time") String sorter,
-                                           @RequestParam(value = "order", defaultValue = "") String order,
-                                           @RequestParam(value = "creator[]", required = false) String[] creators,
-                                           @RequestParam(value = "plan_name[]", required = false) String[] planNames) {
+        @RequestParam(value = "keywords", required = false) String planName,
+        @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
+        @RequestParam(value = "current", defaultValue = "1") int current,
+        @RequestParam(value = "sorter", defaultValue = "execute_time") String sorter,
+        @RequestParam(value = "order", defaultValue = "") String order,
+        @RequestParam(value = "creator[]", required = false) String[] creators,
+        @RequestParam(value = "plan_name[]", required = false) String[] planNames) {
         CommonPage<EmergencyPlan> params = new CommonPage<>();
         params.setPageSize(pageSize);
         params.setPageIndex(current);
@@ -122,9 +121,9 @@ public class EmergencyExecController {
         EmergencyPlan plan = new EmergencyPlan();
         plan.setPlanName(planName);
         params.setObject(plan);
-        return execService.allPlanExecRecords(((JwtUser) authentication.getPrincipal()).getGroupName(),params, planNames, creators);
+        return execService.allPlanExecRecords(((JwtUser) authentication.getPrincipal()).getGroupName(), params,
+            planNames, creators);
     }
-
 
     /**
      * 查询某条预案执行记录下的场景执行记录
@@ -144,13 +143,13 @@ public class EmergencyExecController {
     /**
      * 查询某条场景执行明细下的任务执行明细
      *
-     * @param execId  执行ID
+     * @param execId 执行ID
      * @param sceneId 场景ID
      * @return {@link CommonResult}
      */
     @GetMapping("/scenario/task")
     public CommonResult allTaskExecRecords(@RequestParam("history_id") int execId,
-                                           @RequestParam("scena_id") int sceneId) {
+        @RequestParam("scena_id") int sceneId) {
         CommonPage<EmergencyExecRecord> params = new CommonPage<>();
         EmergencyExecRecord record = new EmergencyExecRecord();
         record.setExecId(execId);
@@ -163,12 +162,12 @@ public class EmergencyExecController {
      * 查询某条执行记录的日志
      *
      * @param recordId 记录ID
-     * @param lineNum  日志行号
+     * @param lineNum 日志行号
      * @return {@link LogResponse}
      */
     @GetMapping("/scenario/task/log")
     public LogResponse getLog(@RequestParam("key") int recordId,
-                              @RequestParam(value = "line", defaultValue = "1") int lineNum) {
+        @RequestParam(value = "line", defaultValue = "1") int lineNum) {
         int lineIndex = lineNum;
         if (lineIndex <= 0) {
             lineIndex = 1;
@@ -204,25 +203,31 @@ public class EmergencyExecController {
     }
 
     @PostMapping("/stop")
-    public CommonResult stopOneServer(UsernamePasswordAuthenticationToken authentication,@RequestBody EmergencyExecRecordDetail detail) {
+    public CommonResult stopOneServer(UsernamePasswordAuthenticationToken authentication,
+        @RequestBody EmergencyExecRecordDetail detail) {
         return execService.stopOneServer(detail.getDetailId(), ((JwtUser) authentication.getPrincipal()).getUsername());
     }
 
     @PostMapping("/start")
-    public CommonResult startOneServer(UsernamePasswordAuthenticationToken authentication,@RequestBody EmergencyExecRecordDetail detail) {
-        return execService.startOneServer(detail.getDetailId(), ((JwtUser) authentication.getPrincipal()).getUsername());
+    public CommonResult startOneServer(UsernamePasswordAuthenticationToken authentication,
+        @RequestBody EmergencyExecRecordDetail detail) {
+        return execService.startOneServer(detail.getDetailId(),
+            ((JwtUser) authentication.getPrincipal()).getUsername());
     }
 
     @PostMapping("/ensure")
-    public CommonResult ensureOneServer(UsernamePasswordAuthenticationToken authentication,@RequestBody EmergencyExecRecordDetail detail) {
+    public CommonResult ensureOneServer(UsernamePasswordAuthenticationToken authentication,
+        @RequestBody EmergencyExecRecordDetail detail) {
         if (detail.getDetailId() == null) {
             return CommonResult.failed("请选择正确的执行记录");
         }
         if ("成功".equals(detail.getStatus())) {
-            return execService.ensure(detail.getDetailId(), "5", ((JwtUser) authentication.getPrincipal()).getUsername());
+            return execService.ensure(detail.getDetailId(), "5",
+                ((JwtUser) authentication.getPrincipal()).getUsername());
         }
         if ("失败".equals(detail.getStatus())) {
-            return execService.ensure(detail.getDetailId(), "6", ((JwtUser) authentication.getPrincipal()).getUsername());
+            return execService.ensure(detail.getDetailId(), "6",
+                ((JwtUser) authentication.getPrincipal()).getUsername());
         }
         return CommonResult.failed("请选择确认成功或者失败");
     }
@@ -236,11 +241,16 @@ public class EmergencyExecController {
      */
     @GetMapping("/log")
     public LogResponse logOneServer(@RequestParam("key") int detailId,
-                                    @RequestParam(value = "line", defaultValue = "1") int lineNum) {
+        @RequestParam(value = "line", defaultValue = "1") int lineNum) {
         int lineIndex = lineNum;
         if (lineIndex <= 0) {
             lineIndex = 1;
         }
         return execService.logOneServer(detailId, lineIndex);
+    }
+
+    @GetMapping("/get")
+    public CommonResult getPlanInfo(@RequestParam(value = "history_id") Integer execId) {
+        return execService.getPlanInfo(execId);
     }
 }

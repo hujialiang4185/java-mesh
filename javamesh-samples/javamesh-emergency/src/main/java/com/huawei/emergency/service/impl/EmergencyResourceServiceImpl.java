@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.servlet.ServletOutputStream;
 
 /**
@@ -59,19 +60,20 @@ public class EmergencyResourceServiceImpl implements EmergencyResourceService {
     private String uploadPath;
 
     @Override
-    public CommonResult upload(String userName,int scriptId, String originalFilename, InputStream inputStream) {
+    public CommonResult upload(String userName, int scriptId, String originalFilename, InputStream inputStream) {
         File resourceDirectory = new File(uploadPath + File.separatorChar + scriptId);
         if (!resourceDirectory.exists()) {
             resourceDirectory.mkdirs();
         }
-        try (FileOutputStream outputStream = new FileOutputStream(resourceDirectory.getPath() + File.separatorChar + originalFilename)) {
+        try (FileOutputStream outputStream = new FileOutputStream(
+            resourceDirectory.getPath() + File.separatorChar + originalFilename)) {
             IOUtils.copy(inputStream, outputStream);
             outputStream.flush();
         } catch (FileNotFoundException e) {
-            LOGGER.error("can't found upload file. scriptId={},fileName={}", scriptId, originalFilename);
+            LOGGER.error("Can't found upload file. scriptId={},fileName={}", scriptId, originalFilename);
             return CommonResult.failed("无法找到上传文件");
         } catch (IOException e) {
-            LOGGER.error("can't upload file. scriptId={},fileName={}. {}", scriptId, originalFilename, e.getMessage());
+            LOGGER.error("Can't upload file. scriptId={},fileName={}. {}", scriptId, originalFilename, e.getMessage());
             return CommonResult.failed("上传文件失败");
         }
         EmergencyResourceExample sameResource = new EmergencyResourceExample();
@@ -128,13 +130,17 @@ public class EmergencyResourceServiceImpl implements EmergencyResourceService {
         if (resource == null || resource.getScriptId() == null || !resourceName.equals(resource.getResourceName())) {
             return CommonResult.failed("请选择正确的资源");
         }
-        try (InputStream resourceIn = new FileInputStream(uploadPath + File.separatorChar + resource.getScriptId() + File.separatorChar + resource.getResourceName())) {
+        try (InputStream resourceIn = new FileInputStream(
+            uploadPath + File.separatorChar + resource.getScriptId() + File.separatorChar
+                + resource.getResourceName())) {
             IOUtils.copy(resourceIn, outputStream);
         } catch (FileNotFoundException e) {
-            LOGGER.error("can't found resource. resourceId={}, scriptId={}, resourceName={}", resourceId, resource.getScriptId(), resourceName);
+            LOGGER.error("can't found resource. resourceId={}, scriptId={}, resourceName={}", resourceId,
+                resource.getScriptId(), resourceName);
             return CommonResult.failed("资源不存在");
         } catch (IOException e) {
-            LOGGER.error("can't download resource. resourceId={}, scriptId={}, resourceName={}. {}", resourceId, resource.getScriptId(), resourceName, e.getMessage());
+            LOGGER.error("can't download resource. resourceId={}, scriptId={}, resourceName={}. {}", resourceId,
+                resource.getScriptId(), resourceName, e.getMessage());
             return CommonResult.failed("资源下载错误");
         }
         return CommonResult.success();
@@ -159,9 +165,11 @@ public class EmergencyResourceServiceImpl implements EmergencyResourceService {
      * @param resource
      */
     public void deleteResource(EmergencyResource resource) {
-        File resourceFile = new File(uploadPath + File.separatorChar + resource.getScriptId() + File.separatorChar + resource.getResourceName());
+        File resourceFile = new File(
+            uploadPath + File.separatorChar + resource.getScriptId() + File.separatorChar + resource.getResourceName());
         resourceFile.delete();
-        LOGGER.info("delete resource file, scriptId={}, resourceId={}, resourceName={}.", resource.getScriptId(), resource.getResourceId(), resource.getResourceName());
+        LOGGER.info("delete resource file, scriptId={}, resourceId={}, resourceName={}.", resource.getScriptId(),
+            resource.getResourceId(), resource.getResourceName());
         EmergencyResource updateResource = new EmergencyResource();
         updateResource.setResourceId(resource.getResourceId());
         updateResource.setIsValid(ValidEnum.IN_VALID.getValue());
