@@ -10,6 +10,18 @@
             padding-right: 10px;
         }
     }
+    .Info{
+        line-height: 32px;
+        color: #41C170;
+        font-size: 14px;
+        .anticon {
+            font-size: 18px;
+            line-height: 32px;
+            margin-right: 10px;
+            margin-left: 20px;
+            vertical-align: middle;
+        }
+    }
     .ant-form-item-label {
         min-width: 70px;
     }
