@@ -19,6 +19,12 @@ function defaultFieldsValues(type: string) {
             return {
                 language: "shell"
             }
+        case "CSVDataSetConfig":
+            return {
+                variable_names: ",",
+                recycle: true,
+                share_mode: "ALL_THREADS"
+            }
         default:
             return {}
     }
@@ -157,7 +163,7 @@ export default function App(props: { type: String }) {
                 <Form.Item label="文件编码" name="file_encoding">
                     <Select options={[{ value: "UTF-8" }, { value: "UTF-16" }, { value: "ISO-8859-15" }, { value: "US-ASCII" }]} />
                 </Form.Item>
-                <Form.Item label="变量名称(西文逗号间隔)" name="variable_names">
+                <Form.Item label="分割符(西文逗号间隔)" name="variable_names">
                     <Input />
                 </Form.Item>
                 <Form.Item label="忽略首行(只在设置了变量名称才生效)" name="ignore_first_line" valuePropName="checked">
