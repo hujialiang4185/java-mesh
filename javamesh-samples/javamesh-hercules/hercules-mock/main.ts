@@ -13,16 +13,6 @@ app.get('/argus-emergency/ws/:message', function (req, res) {
     client1.send(req.params.message)
     res.json()
 })
-
-const wss2 = new ws.WebSocketServer({ port: 8080 });
-let client2: ws
-wss2.on('connection', function connection(ws) {
-    client2 = ws
-});
-app.get('/argus/ws/:message', function (req, res) {
-    client2.send(req.params.message)
-    res.json()
-})
 // 其他
 app.post('/argus-emergency/api/resource', function (req, res) {
     res.json({
