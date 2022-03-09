@@ -24,7 +24,7 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
     }
   }
   return <>
-    <Button type="link" size="small" onClick={function () { 
+    <Button type="link" size="small" onClick={function () {
       setIsModalVisible(true)
       loadScript(props.initialValues.script_name)
     }}>{props.children}</Button>
@@ -82,13 +82,13 @@ type Script = {
 }
 function CmdFormItems(props: { script: Script, loadScript: (name: string) => void }) {
   return <>
-    <Collapse expandIconPosition="right" defaultActiveKey="0" expandIcon={function ({ isActive }) {
+    <Form.Item className="ScriptName" label="脚本名称" name="script_name" rules={[{ required: true }]}>
+      <SearchSelect onChange={props.loadScript} />
+    </Form.Item>
+    <Collapse expandIconPosition="right" expandIcon={function ({ isActive }) {
       return <span className={`icon fa fa-angle-double-${isActive ? "down" : "right"}`}></span>
     }}>
       <Collapse.Panel header="脚本配置" key="0">
-        <Form.Item className="ScriptName" label="脚本名称" name="script_name" rules={[{ required: true }]}>
-          <SearchSelect onChange={props.loadScript} />
-        </Form.Item>
         <Form.Item label="脚本用途">
           <Input.TextArea value={props.script.submit_info} disabled />
         </Form.Item>
@@ -102,13 +102,13 @@ function CmdFormItems(props: { script: Script, loadScript: (name: string) => voi
 
 function TaskFormItems(props: { script: Script, loadScript: (name: string) => void }) {
   return <>
-    <Collapse expandIconPosition="right" defaultActiveKey="0" expandIcon={function ({ isActive }) {
+    <Form.Item className="ScriptName" label="脚本名称" name="script_name" rules={[{ required: true }]}>
+      <SearchSelect type="gui" onChange={props.loadScript} />
+    </Form.Item>
+    <Collapse expandIconPosition="right" expandIcon={function ({ isActive }) {
       return <span className={`icon fa fa-angle-double-${isActive ? "down" : "right"}`}></span>
     }}>
       <Collapse.Panel header="脚本配置" key="0">
-        <Form.Item className="ScriptName" label="脚本名称" name="script_name" rules={[{ required: true }]}>
-          <SearchSelect type="gui" onChange={props.loadScript} />
-        </Form.Item>
         <Form.Item label="脚本用途">
           <Input.TextArea value={props.script.submit_info} disabled />
         </Form.Item>
@@ -119,14 +119,14 @@ function TaskFormItems(props: { script: Script, loadScript: (name: string) => vo
     </Collapse>
     <Divider orientation="left">压测配置</Divider>
     <Form.Item name="vuser" label="虚拟用户数" labelCol={{ span: 3 }} labelAlign="left" rules={[{ type: "integer", required: true }]}>
-      <InputNumber min={1} placeholder="请输入该测试所期望的虚拟用户数"/>
+      <InputNumber min={1} placeholder="请输入该测试所期望的虚拟用户数" />
     </Form.Item>
     <RootBasicScenario labelCol={{ span: 3 }} labelAlign="left" label="基础场景" />
     <Form.Item labelCol={{ span: 3 }} labelAlign="left" label="采样间隔" name="sampling_interval" rules={[{ type: "integer" }]}>
       <InputNumber className="InputNumber" min={0} addonAfter="MS" />
     </Form.Item>
     <Form.Item labelCol={{ span: 3 }} labelAlign="left" label="忽略采样数量" name="sampling_ignore" rules={[{ type: "integer" }]}>
-      <InputNumber className="InputNumber" min={0} placeholder="请输入要忽略的采样个数。实际忽略的采样时间是 忽略的个数 * 采样间隔。"/>
+      <InputNumber className="InputNumber" min={0} placeholder="请输入要忽略的采样个数。实际忽略的采样时间是 忽略的个数 * 采样间隔。" />
     </Form.Item>
     <Form.Item labelCol={{ span: 3 }} labelAlign="left" name="test_param" label="测试参数" rules={[{
       pattern: /^[\w,.|]+$/,
@@ -148,7 +148,7 @@ export function RootBasicScenario(props: FormItemLabelProps) {
       <Radio value="by_time">测试时长</Radio>
       <div>
         <Form.Item label="小时" className="WithoutLabel" name="by_time_h" rules={[{ type: "integer" }]}>
-          <InputNumber disabled={basic} className="Time" min={0} max={8759}/>
+          <InputNumber disabled={basic} className="Time" min={0} max={8759} />
         </Form.Item>
         <span className="Sep">:</span>
         <Form.Item label="分钟" className="WithoutLabel" name="by_time_m" rules={[{ type: "integer" }]}>
@@ -163,8 +163,8 @@ export function RootBasicScenario(props: FormItemLabelProps) {
       <Radio value="by_count">测试次数</Radio>
       <div>
         <Form.Item label="次数" className="WithoutLabel" name="by_count" rules={[{ type: "integer" }]}>
-          <InputNumber disabled={!basic} className="Count" min={0} max={10000} 
-          addonAfter="最大值: 10000" placeholder="每个线程运行测试数量"/>
+          <InputNumber disabled={!basic} className="Count" min={0} max={10000}
+            addonAfter="最大值: 10000" placeholder="每个线程运行测试数量" />
         </Form.Item>
       </div>
     </Radio.Group>
