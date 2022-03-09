@@ -42,7 +42,6 @@ import com.github.pagehelper.PageHelper;
 import lombok.Setter;
 
 import org.apache.commons.lang.StringUtils;
-import org.ngrinder.model.PerfTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -310,10 +309,6 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
         oldRecord.setRecordId(null);
         oldRecord.setLog(null);
         oldRecord.setStatus(RecordStatus.PENDING.getValue());
-        if (oldRecord.getPerfTestId() != null) {
-            PerfTest perfTest = planService.copyPerfTestByTestId(oldRecord.getPerfTestId()); // 更新压测任务
-            oldRecord.setPerfTestId(perfTest.getId().intValue());
-        }
         recordMapper.insertSelective(oldRecord);
         threadPoolExecutor.execute(handlerFactory.handle(oldRecord));
         return CommonResult.success(oldRecord);

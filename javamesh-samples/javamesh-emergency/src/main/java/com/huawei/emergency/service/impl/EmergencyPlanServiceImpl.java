@@ -26,7 +26,6 @@ import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ScheduleType;
 import com.huawei.common.constant.TaskTypeEnum;
 import com.huawei.common.constant.ValidEnum;
-import com.huawei.common.filter.JwtAuthenticationTokenFilter;
 import com.huawei.common.ws.WebSocketServer;
 import com.huawei.emergency.dto.PlanDetailQueryDto;
 import com.huawei.emergency.dto.PlanQueryDto;
@@ -65,8 +64,10 @@ import org.ngrinder.model.MonitoringHost;
 import org.ngrinder.model.PerfTest;
 import org.ngrinder.model.RampUp;
 import org.ngrinder.model.Status;
+import org.ngrinder.model.User;
 import org.ngrinder.perftest.repository.PerfTestRepository;
 import org.ngrinder.perftest.service.PerfTestService;
+import org.ngrinder.user.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -81,6 +82,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
@@ -136,6 +138,9 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
 
     @Autowired
     private PerfTestRepository perfTestRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     private static final String AUTH_ADMIN = "admin";
     private static final String AUTH_APPROVER = "approver";
@@ -251,10 +256,10 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         allExecRecords.forEach(record -> {
             record.setCreateUser(userName);
             record.setExecId(emergencyExec.getExecId());
-            if (record.getPerfTestId() != null) { // 如果是自定义脚本压测，根据此压测模板生成压测任务
+            /*if (record.getPerfTestId() != null) { // 如果是自定义脚本压测，根据此压测模板生成压测任务
                 PerfTest perfTest = copyPerfTestByTestId(record.getPerfTestId());
                 record.setPerfTestId(perfTest.getId().intValue());
-            }
+            }*/
             recordMapper.insertSelective(record);
         });
         EmergencyPlan updatePlan = new EmergencyPlan();
@@ -294,11 +299,21 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         }
         newTest.setId(null);
         newTest.setCreatedDate(new Date());
-        newTest.setCreatedUser(JwtAuthenticationTokenFilter.currentGrinderUser());
+        newTest.setCreatedUser(testTemplate.getCreatedUser());
         newTest.setStatus(Status.READY);
-        PerfTest perfTest = perfTestController.saveOne(JwtAuthenticationTokenFilter.currentGrinderUser(), newTest);
+        PerfTest perfTest = perfTestController.saveOne(testTemplate.getCreatedUser(), newTest);
         LOGGER.info("create perfTest {}", perfTest.getId());
         return perfTest;
+    }
+
+    @Override
+    public User findNgrinderUserByUserId(String userId) {
+        return userRepository.findOneByUserId(userId);
+    }
+
+    @Override
+    public Optional<User> findNgrinderUserById(Long id) {
+        return userRepository.findById(id);
     }
 
     public String generateSelectAgentIds(List<EmergencyServer> serverIds) {
@@ -536,7 +551,6 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
 
     @Override
     public CommonResult addTask(TaskNode taskNode) {
-
         TaskTypeEnum taskType = TaskTypeEnum.matchByDesc(taskNode.getTaskType());
         if (taskType == TaskTypeEnum.FLOW_RECORD) {
             return CommonResult.failed("不支持的任务类型");
@@ -564,18 +578,19 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             task.setTaskType(taskType.getValue());
             if (taskType == TaskTypeEnum.CUSTOM) { // 创建自定义脚本压测任务
                 PerfTest perfTest = taskNode.parse();
-                perfTest.setCreatedUser(JwtAuthenticationTokenFilter.currentGrinderUser());
-                perfTest.setCreatedDate(new Date());
-                perfTest.setAgentIds(generateSelectAgentIds(taskNode.getServiceId()));
+                //perfTest.setAgentIds(generateSelectAgentIds(taskNode.getServiceId()));
                 perfTest.setScriptName(task.getScriptName());
                 EmergencyScriptExample scriptExample = new EmergencyScriptExample();
                 scriptExample.createCriteria().andScriptNameEqualTo(task.getScriptName());
                 final List<EmergencyScript> emergencyScripts = scriptMapper.selectByExample(scriptExample);
-                if (emergencyScripts.size() > 0) {
-                    perfTest.setScriptName(scriptService.grinderPath(emergencyScripts.get(0)));
+                if (emergencyScripts.size() == 0) {
+                    return CommonResult.failed("请选择正确的脚本");
                 }
-                PerfTest insertPerfTest = perfTestController.saveOne(JwtAuthenticationTokenFilter.currentGrinderUser(),
-                    perfTest);
+                User ngrinderUser = findNgrinderUserByUserId(emergencyScripts.get(0).getScriptUser());
+                perfTest.setCreatedUser(ngrinderUser);
+                perfTest.setCreatedDate(new Date());
+                perfTest.setScriptName(scriptService.grinderPath(emergencyScripts.get(0)));
+                PerfTest insertPerfTest = perfTestController.saveOne(ngrinderUser, perfTest);
                 if (insertPerfTest == null || insertPerfTest.getId() == null) {
                     return CommonResult.failed("创建压测任务失败");
                 }

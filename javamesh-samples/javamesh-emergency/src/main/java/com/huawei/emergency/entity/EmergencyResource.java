@@ -15,6 +15,8 @@ public class EmergencyResource {
 
     private Date createTime;
 
+    private String resourcePath;
+
     public Integer getResourceId() {
         return resourceId;
     }
@@ -61,5 +63,13 @@ public class EmergencyResource {
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
+    }
+
+    public String getResourcePath() {
+        return resourcePath;
+    }
+
+    public void setResourcePath(String resourcePath) {
+        this.resourcePath = resourcePath == null ? null : resourcePath.trim();
     }
 }

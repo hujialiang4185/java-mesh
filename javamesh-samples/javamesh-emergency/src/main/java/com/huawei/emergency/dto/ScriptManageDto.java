@@ -16,8 +16,10 @@
 
 package com.huawei.emergency.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.huawei.emergency.entity.EmergencyScript;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -65,6 +67,10 @@ public class ScriptManageDto extends EmergencyScript {
      * 编排类型
      */
     private String orchestrateType;
+
+    private String libs;
+    
+    private String resources;
 
     /**
      * CookiesDTO

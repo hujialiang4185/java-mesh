@@ -22,6 +22,7 @@ import com.huawei.emergency.mapper.EmergencyExecRecordDetailMapper;
 import com.huawei.emergency.mapper.EmergencyExecRecordMapper;
 import com.huawei.emergency.mapper.EmergencyServerMapper;
 import com.huawei.emergency.mapper.EmergencyTaskMapper;
+import com.huawei.emergency.service.EmergencyPlanService;
 import com.huawei.emergency.service.EmergencySceneService;
 import com.huawei.emergency.service.EmergencyTaskService;
 import com.huawei.script.exec.ExecResult;
@@ -106,6 +107,9 @@ public class ExecRecordHandlerFactory {
 
     @Autowired
     private PerfTestService perfTestService;
+
+    @Autowired
+    private EmergencyPlanService planService;
 
     /**
      * 获取一个执行器实例
@@ -299,13 +303,18 @@ public class ExecRecordHandlerFactory {
      * @param record
      * @param result
      */
-    public void completePerfTest(EmergencyExecRecord record, ExecResult result) {
+    public void completePerfTest(EmergencyExecRecord record, EmergencyExecRecordDetail detail, ExecResult result) {
+        Date endTime = new Date();
+        try {
+            Thread.sleep(3000); // 子任务可能出现与任务选择同一个agent，但是agent状态还处于busy未刷新
+        } catch (InterruptedException e) {
+            LOGGER.error("while waiting agent status refresh.", e);
+        }
         try {
             // 更新record,detail为执行完成，结束时间
-            Date endTime = new Date();
             EmergencyExecRecordDetailExample whenRunning = new EmergencyExecRecordDetailExample();
             whenRunning.createCriteria()
-                .andRecordIdEqualTo(record.getRecordId())
+                .andRecordIdEqualTo(detail.getRecordId())
                 .andIsValidEqualTo(ValidEnum.VALID.getValue())
                 .andStatusEqualTo(RecordStatus.RUNNING.getValue());
             EmergencyExecRecordDetail updateRecordDetail = new EmergencyExecRecordDetail();
@@ -317,10 +326,10 @@ public class ExecRecordHandlerFactory {
             EmergencyExecRecord updateRecord = new EmergencyExecRecord();
             updateRecord.setEndTime(endTime);
             updateRecord.setLog(result.getMsg());
-            updateRecord.setRecordId(record.getRecordId());
+            updateRecord.setRecordId(detail.getRecordId());
             recordMapper.updateByPrimaryKeySelective(updateRecord); // 更新record的信息
-            recordMapper.tryUpdateStatus(record.getRecordId()); // 执行成功 并且 当前record下所有的recordDetail都处于 执行成功 或者人工确认状态
-            if (result.isSuccess() && isRecordFinished(record.getRecordId())) {
+            recordMapper.tryUpdateStatus(detail.getRecordId()); // 执行成功 并且 当前record下所有的recordDetail都处于 执行成功 或者人工确认状态
+            if (result.isSuccess() && isRecordFinished(detail.getRecordId())) {
                 if (record.getTaskId() != null) {
                     taskService.onComplete(record);
                 } else {
@@ -328,9 +337,9 @@ public class ExecRecordHandlerFactory {
                 }
             }
             // 清除实时日志的在内存中的日志残留
-            LogMemoryStore.removeLog(record.getRecordId());
+            LogMemoryStore.removeLog(detail.getRecordId());
         } finally {
-            notifySceneRefresh(record.getExecId(), record.getSceneId());
+            notifySceneRefresh(detail.getExecId(), record.getSceneId());
         }
     }
 
@@ -364,7 +373,7 @@ public class ExecRecordHandlerFactory {
                 execInfo.setRemoteServerInfo(serverInfo);
             }
         }
-        execInfo.setPerfTestId(record.getPerfTestId());
+        execInfo.setPerfTestId(recordDetail.getPerfTestId());
         execInfo.setParam(record.getScriptParams());
         execInfo.setContent(execInfo.getScriptContent());
         return execInfo;
@@ -402,6 +411,17 @@ public class ExecRecordHandlerFactory {
                     recordDetail.setStatus(RecordStatus.PENDING.getValue());
                     recordDetail.setServerId(server.getServerId());
                     recordDetail.setServerIp(server.getServerIp());
+                    if (record.getPerfTestId() != null) { // 如果是自定义脚本压测，根据此压测模板生成压测任务
+                        PerfTest perfTest = planService.copyPerfTestByTestId(record.getPerfTestId());
+                        perfTest.setAgentCount(1);
+                        List<Integer> agentIds = serverMapper.selectAgentIdsByServerIds(
+                            Arrays.asList(server.getServerId().toString()));
+                        if (agentIds.size() > 0) {
+                            perfTest.setAgentIds(agentIds.get(0).toString());
+                        }
+                        perfTestService.save(perfTest.getCreatedUser(), perfTest);
+                        recordDetail.setPerfTestId(perfTest.getId().intValue());
+                    }
                     recordDetailMapper.insertSelective(recordDetail);
                     result.add(recordDetail);
                 }

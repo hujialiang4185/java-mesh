@@ -4,6 +4,7 @@
 
 package com.huawei.emergency.mapper;
 
+import com.huawei.emergency.dto.ScriptManageDto;
 import com.huawei.emergency.entity.EmergencyScript;
 import com.huawei.emergency.entity.EmergencyScriptExample;
 
@@ -47,7 +48,7 @@ public interface EmergencyScriptMapper {
     List<EmergencyScript> listScript(String userName, String auth, String scriptName, String scriptUser, String status,
         String group);
 
-    EmergencyScript getScriptInfo(int scriptId);
+    ScriptManageDto getScriptInfo(int scriptId);
 
     @Select("select script_name from emergency_script where script_id = #{scriptId}")
     String selectScriptNameById(int scriptId);

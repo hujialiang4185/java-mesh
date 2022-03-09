@@ -473,7 +473,7 @@
         </where>
     </select>
 
-    <select id="getScriptInfo" parameterType="Integer" resultType="com.huawei.emergency.entity.EmergencyScript">
+    <select id="getScriptInfo" parameterType="Integer" resultType="com.huawei.emergency.dto.ScriptManageDto">
         SELECT script_id,
                script_name,
                CASE

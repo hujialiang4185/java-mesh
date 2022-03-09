@@ -91,7 +91,15 @@ public interface EmergencyScriptService {
      * 获取脚本路径
      *
      * @param script {@link EmergencyScript} 脚本信息
-     * @return 脚本路径
+     * @return 脚本全路径
      */
     String grinderPath(EmergencyScript script);
+
+    /**
+     * 获取脚本在ngrinder的文件夹
+     *
+     * @param script {@link EmergencyScript} 脚本信息
+     * @return 脚本的文件夹
+     */
+    String grinderDirPath(EmergencyScript script);
 }

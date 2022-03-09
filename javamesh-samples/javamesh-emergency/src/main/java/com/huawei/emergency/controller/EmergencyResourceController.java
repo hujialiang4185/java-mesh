@@ -17,12 +17,12 @@
 package com.huawei.emergency.controller;
 
 import com.huawei.common.api.CommonResult;
-import com.huawei.emergency.entity.EmergencyResource;
 import com.huawei.emergency.entity.JwtUser;
-import com.huawei.emergency.layout.TestElementFactory;
 import com.huawei.emergency.service.EmergencyResourceService;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +39,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.net.URLEncoder;
+
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
@@ -61,17 +62,17 @@ public class EmergencyResourceController {
      * 上传依赖资源
      *
      * @param scriptId 编排脚本的ID
-     * @param path     压测脚本路径 暂时不用
-     * @param file     资源文件
+     * @param path 压测脚本路径 暂时不用
+     * @param file 资源文件
      * @param response 请求响应
      * @return {@link CommonResult
      */
     @ApiOperation(value = "上传资源文件", notes = "用于上传脚本运行相关依赖")
     @PostMapping
     public CommonResult upload(UsernamePasswordAuthenticationToken authentication,
-                               @RequestParam(value = "script_id", required = false) Integer scriptId,
-                               @RequestParam(value = "path", required = false) String path,
-                               @RequestParam(value = "file") MultipartFile file, HttpServletResponse response) throws IOException {
+        @RequestParam(value = "script_id", required = false) Integer scriptId,
+        @RequestParam(value = "path", defaultValue = "lib") String path,
+        @RequestParam(value = "file") MultipartFile file, HttpServletResponse response) throws IOException {
         if (file == null || StringUtils.isEmpty(file.getOriginalFilename())) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return CommonResult.failed("请选择要上传的文件");
@@ -83,7 +84,8 @@ public class EmergencyResourceController {
         CommonResult upload;
         if (scriptId != null) {
             try {
-                upload = resourceService.upload(((JwtUser) authentication.getPrincipal()).getUsername(),scriptId, file.getOriginalFilename(), file.getInputStream());
+                upload = resourceService.upload(((JwtUser) authentication.getPrincipal()).getUsername(), scriptId, path,
+                    file.getOriginalFilename(), file.getInputStream());
             } catch (IOException e) {
                 LOGGER.error("can't upload resource.", e);
                 upload = CommonResult.failed(e.getMessage());
@@ -109,8 +111,8 @@ public class EmergencyResourceController {
     @ApiOperation(value = "下载资源文件", notes = "用于下载上传后的脚本依赖资源")
     @GetMapping("/{pathOrId}/{filename}")
     public void downloadResource(@PathVariable(value = "pathOrId") String pathOrId,
-                         @PathVariable(value = "filename") String fileName,
-                         HttpServletResponse response) {
+        @PathVariable(value = "filename") String fileName,
+        HttpServletResponse response) {
         try (ServletOutputStream outputStream = response.getOutputStream()) {
             int resourceId = Integer.valueOf(pathOrId);
             response.setCharacterEncoding("UTF-8");
@@ -135,7 +137,7 @@ public class EmergencyResourceController {
     @ApiOperation(value = "删除资源文件", notes = "用于删除上传后的脚本相关依赖")
     @DeleteMapping("/{pathOrId}/{filename}")
     public CommonResult deleteResource(@PathVariable(value = "pathOrId") String pathOrId,
-                               @PathVariable(value = "filename") String fileName) {
+        @PathVariable(value = "filename") String fileName) {
         try {
             int resourceId = Integer.valueOf(pathOrId);
             return resourceService.deleteResourceByIdAndName(resourceId, fileName);

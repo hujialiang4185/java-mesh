@@ -494,6 +494,76 @@ public class EmergencyResourceExample {
             addCriterion("create_time not between", value1, value2, "createTime");
             return (Criteria) this;
         }
+
+        public Criteria andResourcePathIsNull() {
+            addCriterion("resource_path is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andResourcePathIsNotNull() {
+            addCriterion("resource_path is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andResourcePathEqualTo(String value) {
+            addCriterion("resource_path =", value, "resourcePath");
+            return (Criteria) this;
+        }
+
+        public Criteria andResourcePathNotEqualTo(String value) {
+            addCriterion("resource_path <>", value, "resourcePath");
+            return (Criteria) this;
+        }
+
+        public Criteria andResourcePathGreaterThan(String value) {
+            addCriterion("resource_path >", value, "resourcePath");
+            return (Criteria) this;
+        }
+
+        public Criteria andResourcePathGreaterThanOrEqualTo(String value) {
+            addCriterion("resource_path >=", value, "resourcePath");
+            return (Criteria) this;
+        }
+
+        public Criteria andResourcePathLessThan(String value) {
+            addCriterion("resource_path <", value, "resourcePath");
+            return (Criteria) this;
+        }
+
+        public Criteria andResourcePathLessThanOrEqualTo(String value) {
+            addCriterion("resource_path <=", value, "resourcePath");
+            return (Criteria) this;
+        }
+
+        public Criteria andResourcePathLike(String value) {
+            addCriterion("resource_path like", value, "resourcePath");
+            return (Criteria) this;
+        }
+
+        public Criteria andResourcePathNotLike(String value) {
+            addCriterion("resource_path not like", value, "resourcePath");
+            return (Criteria) this;
+        }
+
+        public Criteria andResourcePathIn(List<String> values) {
+            addCriterion("resource_path in", values, "resourcePath");
+            return (Criteria) this;
+        }
+
+        public Criteria andResourcePathNotIn(List<String> values) {
+            addCriterion("resource_path not in", values, "resourcePath");
+            return (Criteria) this;
+        }
+
+        public Criteria andResourcePathBetween(String value1, String value2) {
+            addCriterion("resource_path between", value1, value2, "resourcePath");
+            return (Criteria) this;
+        }
+
+        public Criteria andResourcePathNotBetween(String value1, String value2) {
+            addCriterion("resource_path not between", value1, value2, "resourcePath");
+            return (Criteria) this;
+        }
     }
 
     public static class Criteria extends GeneratedCriteria {

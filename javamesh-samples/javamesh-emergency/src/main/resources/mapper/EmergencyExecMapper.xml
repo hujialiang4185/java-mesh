@@ -374,7 +374,7 @@
                t1.scene_id,
                scene.task_no                                                                        scene_no,
                scene.task_name                                                                      scene_name,
-               t1.scene_id     as                                                                   scena_id,
+               t1.scene_id            as                                                            scena_id,
                scene.task_no                                                                        scena_no,
                scene.task_name                                                                      scena_name,
                task.task_no,
@@ -396,7 +396,10 @@
                DATE_FORMAT(t1.end_time, '%Y-%m-%d %H:%i:%s')                                        end_time,
                t1.sync,
                IFNULL((select user_name from NUSER where user_id = t1.create_user), t1.create_user) operator,
-               t1.perf_test_id as                                                                   testId
+               (select max(perf_test_id)
+                from emergency_exec_record_detail
+                where record_id = t1.record_id
+                  and is_valid = '1') as                                                            testId
         FROM emergency_exec_record t1
                  LEFT JOIN emergency_task scene ON t1.scene_id = scene.task_id
                  JOIN emergency_task task ON t1.task_id = task.task_id

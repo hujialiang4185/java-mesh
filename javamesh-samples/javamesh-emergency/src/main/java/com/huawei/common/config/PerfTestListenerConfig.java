@@ -19,7 +19,8 @@ package com.huawei.common.config;
 import com.huawei.argus.listener.ITestLifeCycleListener;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.emergency.entity.EmergencyExecRecord;
-import com.huawei.emergency.entity.EmergencyExecRecordExample;
+import com.huawei.emergency.entity.EmergencyExecRecordDetail;
+import com.huawei.emergency.entity.EmergencyExecRecordDetailExample;
 import com.huawei.emergency.mapper.EmergencyExecRecordDetailMapper;
 import com.huawei.emergency.mapper.EmergencyExecRecordMapper;
 import com.huawei.emergency.service.impl.ExecRecordHandlerFactory;
@@ -77,13 +78,13 @@ public class PerfTestListenerConfig implements ITestLifeCycleListener {
     public void finish(PerfTest perfTest, String stopReason, IPerfTestService iPerfTestService, String version) {
         LOGGER.info("perf_test {} is end. {} . {}", perfTest.getId(), stopReason, version);
         try {
-            EmergencyExecRecordExample recordExample = new EmergencyExecRecordExample();
-            recordExample.createCriteria()
+            EmergencyExecRecordDetailExample detailExample = new EmergencyExecRecordDetailExample();
+            detailExample.createCriteria()
                 .andPerfTestIdEqualTo(perfTest.getId().intValue())
                 .andIsValidEqualTo(ValidEnum.VALID.getValue());
-            List<EmergencyExecRecord> records =
-                recordMapper.selectByExample(recordExample);
-            if (records.size() == 0) {
+            List<EmergencyExecRecordDetail> details =
+                recordDetailMapper.selectByExample(detailExample);
+            if (details.size() == 0) {
                 return;
             }
             ExecResult result;
@@ -93,7 +94,8 @@ public class PerfTestListenerConfig implements ITestLifeCycleListener {
             } else {
                 result = ExecResult.success(perfTest.getProgressMessage() + perfTest.getLastProgressMessage());
             }
-            poolExecutor.execute(() -> handlerFactory.completePerfTest(records.get(0), result));
+            EmergencyExecRecord record = recordMapper.selectByPrimaryKey(details.get(0).getRecordId());
+            poolExecutor.execute(() -> handlerFactory.completePerfTest(record, details.get(0), result));
         } catch (Exception e) {
             LOGGER.info("perf_test {} finish callback error.{}.{}", perfTest.getId(), stopReason, e.getMessage());
         }

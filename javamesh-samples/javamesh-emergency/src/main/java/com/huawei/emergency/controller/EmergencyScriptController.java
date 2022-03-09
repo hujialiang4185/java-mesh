@@ -29,15 +29,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
@@ -306,11 +299,7 @@ public class EmergencyScriptController {
      */
     @PutMapping("/ide")
     public CommonResult updateIdeScript(@RequestBody ScriptManageDto scriptManageDto) {
-        EmergencyScript script = new EmergencyScript();
-        script.setScriptId(scriptManageDto.getScriptId());
-        script.setScriptName(scriptManageDto.getScriptName());
-        script.setContent(scriptManageDto.getContent());
-        return updateScript(script);
+        return updateScript(scriptManageDto);
     }
 
     /**
