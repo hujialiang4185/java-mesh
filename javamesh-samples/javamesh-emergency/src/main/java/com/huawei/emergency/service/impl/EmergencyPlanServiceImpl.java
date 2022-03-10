@@ -71,6 +71,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.support.CronSequenceGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -97,6 +98,8 @@ import javax.annotation.Resource;
 @Transactional(rollbackFor = Exception.class)
 public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     private static final Logger LOGGER = LoggerFactory.getLogger(EmergencyPlanServiceImpl.class);
+    private static final String MODE_TEST = "test";
+    private static final String MODE_DEV = "dev";
 
     @Resource(name = "scriptExecThreadPool")
     private ThreadPoolExecutor threadPoolExecutor;
@@ -149,6 +152,9 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     @Autowired
     private EmergencyScriptService scriptService;
 
+    @Value("${mode}")
+    private String mode;
+
     @Override
     public CommonResult add(EmergencyPlan emergencyPlan) {
         if (StringUtils.isEmpty(emergencyPlan.getPlanName())) {
@@ -166,7 +172,13 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         insertPlan.setCreateUser(emergencyPlan.getCreateUser());
         insertPlan.setPlanGroup(emergencyPlan.getPlanGroup());
         insertPlan.setUpdateTime(new Date());
-        insertPlan.setStatus(PlanStatus.NEW.getValue());
+
+        // 如果是dev或test则不需要提审审核脚本
+        if (MODE_DEV.equals(mode) || MODE_TEST.equals(mode)) {
+            insertPlan.setStatus(PlanStatus.APPROVED.getValue());
+        } else {
+            insertPlan.setStatus(PlanStatus.NEW.getValue());
+        }
         planMapper.insertSelective(insertPlan);
         EmergencyPlan updatePlanNo = new EmergencyPlan();
         updatePlanNo.setPlanId(insertPlan.getPlanId());
@@ -640,7 +652,13 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
 
         EmergencyPlan updatePlan = new EmergencyPlan();
         updatePlan.setPlanId(planId);
-        updatePlan.setStatus(PlanStatus.NEW.getValue());
+
+        // 如果是dev或test则不需要提审审核脚本
+        if (MODE_DEV.equals(mode) || MODE_TEST.equals(mode)) {
+            updatePlan.setStatus(PlanStatus.APPROVED.getValue());
+        } else {
+            updatePlan.setStatus(PlanStatus.NEW.getValue());
+        }
         updatePlan.setUpdateTime(new Date());
         planMapper.updateByPrimaryKeySelective(updatePlan);
         taskMapper.tryClearTaskNo(planId);
