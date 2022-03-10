@@ -119,7 +119,7 @@ function TaskFormItems(props: { script: Script, loadScript: (name: string) => vo
     </Collapse>
     <Divider orientation="left">压测配置</Divider>
     <Form.Item name="vuser" label="虚拟用户数" labelCol={{ span: 3 }} labelAlign="left" rules={[{ type: "integer", required: true }]}>
-      <InputNumber min={1} placeholder="请输入该测试所期望的虚拟用户数" />
+      <InputNumber min={1} max={10000} placeholder="请输入该测试所期望的虚拟用户数" addonAfter="最大10000"/>
     </Form.Item>
     <RootBasicScenario labelCol={{ span: 3 }} labelAlign="left" label="基础场景" />
     <Form.Item labelCol={{ span: 3 }} labelAlign="left" label="采样间隔" name="sampling_interval" rules={[{ type: "integer" }]}>
