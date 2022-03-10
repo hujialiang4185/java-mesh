@@ -32,7 +32,7 @@ function defaultFieldsValues(type: string) {
 
 export { defaultFieldsValues }
 
-export default function App(props: { type: String }) {
+export default function App(props: { type: String, onChange: () => void }) {
     switch (props.type) {
         case "TransactionController":
             return <>
@@ -91,7 +91,7 @@ export default function App(props: { type: String }) {
                     <Editor className="MonacoEditor" height={400} language="java" />
                 </Form.Item>
                 <Form.Item label="JAR文件" name="filenames">
-                    <OSSUpload max={10} />
+                    <OSSUpload max={10} mark='&path=lib' onChange={props.onChange}/>
                 </Form.Item>
             </>
         case "WhileController":
@@ -158,7 +158,7 @@ export default function App(props: { type: String }) {
         case "CSVDataSetConfig":
             return <>
                 <Form.Item label="文件名" name="filenames">
-                    <OSSUpload max={1} />
+                    <OSSUpload max={1} mark='&path=resource' onChange={props.onChange}/>
                 </Form.Item>
                 <Form.Item label="文件编码" name="file_encoding">
                     <Select options={[{ value: "UTF-8" }, { value: "UTF-16" }, { value: "ISO-8859-15" }, { value: "US-ASCII" }]} />
