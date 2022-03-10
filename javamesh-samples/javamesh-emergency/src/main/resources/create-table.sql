@@ -655,6 +655,10 @@ CREATE TABLE IF NOT EXISTS `emergency_resource`
 (
     255
 ) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '资源名称',
+    `resource_path` varchar
+(
+    255
+) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '资源路径',
     `script_id` int
 (
     11

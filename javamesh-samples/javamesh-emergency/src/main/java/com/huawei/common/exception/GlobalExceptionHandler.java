@@ -54,4 +54,16 @@ public class GlobalExceptionHandler {
         }
         return CommonResult.validateFailed(message);
     }
+
+    @ResponseBody
+    @ExceptionHandler(value = IllegalArgumentException.class)
+    public CommonResult handleIllegalArgumentException(IllegalArgumentException e) {
+        return CommonResult.failed(e.getMessage());
+    }
+
+    @ResponseBody
+    @ExceptionHandler(value = Exception.class)
+    public CommonResult handleException(Exception e) {
+        return CommonResult.failed("请求异常，请稍后重试");
+    }
 }
