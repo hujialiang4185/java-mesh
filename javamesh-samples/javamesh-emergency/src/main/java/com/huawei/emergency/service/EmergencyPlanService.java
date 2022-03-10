@@ -12,8 +12,10 @@ import com.huawei.emergency.entity.EmergencyPlan;
 import com.huawei.emergency.entity.JwtUser;
 
 import org.ngrinder.model.PerfTest;
+import org.ngrinder.model.User;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 预案管理接口
@@ -74,4 +76,8 @@ public interface EmergencyPlanService extends EmergencyCommonService<EmergencyPl
     CommonResult updateTask(TaskNode taskNode);
 
     PerfTest copyPerfTestByTestId(Integer perfTestId);
+
+    User findNgrinderUserByUserId(String userId);
+
+    Optional<User> findNgrinderUserById(Long id);
 }

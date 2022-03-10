@@ -391,11 +391,14 @@
                to_char(t1.end_time, 'yyyy-mm-dd hh24:mi:ss')                                        end_time,
                t1.sync,
                NULLIF((select user_name from NUSER where user_id = t1.create_user), t1.create_user) operator,
-               t1.perf_test_id as                                                                   testId
+               (select max(perf_test_id)
+                from emergency_exec_record_detail
+                where record_id = t1.record_id
+                  and is_valid = '1') as                                                            testId
         FROM emergency_exec_record t1
             LEFT JOIN emergency_task scene
         ON t1.scene_id = scene.task_id
-            LEFT JOIN emergency_task task ON t1.task_id = task.task_id
+            JOIN emergency_task task ON t1.task_id = task.task_id
         WHERE t1.exec_id = #{execId}
           AND t1.scene_id = #{sceneId}
           AND t1.is_valid = '1'

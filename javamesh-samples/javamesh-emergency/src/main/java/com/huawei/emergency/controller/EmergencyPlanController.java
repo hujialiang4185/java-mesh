@@ -18,6 +18,7 @@ import com.huawei.emergency.entity.UserEntity;
 import com.huawei.emergency.service.EmergencyPlanService;
 
 import io.swagger.annotations.Api;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,12 +39,12 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 /**
- * 预案管理controller
+ * 项目管理controller
  *
  * @author y30010171
  * @since 2021-11-02
  **/
-@Api(tags = "预案管理")
+@Api(tags = "项目管理")
 @RestController
 @RequestMapping("/api")
 public class EmergencyPlanController {
@@ -52,42 +53,42 @@ public class EmergencyPlanController {
     @Autowired
     private EmergencyPlanService planService;
 
-
     /**
-     * 修改预案下的拓扑任务信息
+     * 修改项目下的拓扑任务信息
      *
      * @param params {@link PlanSaveParams}
      * @return {@link CommonResult}
      */
     @PutMapping("/plan")
     public CommonResult save(UsernamePasswordAuthenticationToken authentication, @RequestBody PlanSaveParams params) {
-        return planService.save(params.getPlanId(), params.getExpand(), ((JwtUser) authentication.getPrincipal()).getUsername());
+        return planService.save(params.getPlanId(), params.getExpand(),
+            ((JwtUser) authentication.getPrincipal()).getUsername());
     }
 
     /**
-     * 预案执行
+     * 项目执行
      *
-     * @param plan {@link EmergencyPlan#getPlanId()} 预案ID
+     * @param plan {@link EmergencyPlan#getPlanId()} 项目ID
      * @return {@link CommonResult}
      */
     @PostMapping("/plan/run")
     public CommonResult run(UsernamePasswordAuthenticationToken authentication, @RequestBody EmergencyPlan plan) {
         if (plan.getPlanId() == null) {
-            return CommonResult.failed("请选择需要运行的预案");
+            return CommonResult.failed("请选择需要运行的项目");
         }
         return planService.exec(plan.getPlanId(), ((JwtUser) authentication.getPrincipal()).getUsername());
     }
 
     /**
-     * 预案启动,开始调度
+     * 项目启动,开始调度
      *
-     * @param param {@link PlanQueryDto#getPlanId()} 预案ID {@link PlanQueryDto#getStartTime()} ()} 执行时间
+     * @param param {@link PlanQueryDto#getPlanId()} 项目ID {@link PlanQueryDto#getStartTime()} ()} 执行时间
      * @return {@link CommonResult}
      */
     @PostMapping("/plan/schedule")
     public CommonResult start(UsernamePasswordAuthenticationToken authentication, @RequestBody PlanQueryDto param) {
         if (param.getPlanId() == null) {
-            return CommonResult.failed("请选择需要启动的预案");
+            return CommonResult.failed("请选择需要启动的项目");
         }
         EmergencyPlan plan = new EmergencyPlan();
         plan.setPlanId(param.getPlanId());
@@ -106,23 +107,23 @@ public class EmergencyPlanController {
     }
 
     /**
-     * 预案停止,停止调度
+     * 项目停止,停止调度
      *
-     * @param plan {@link EmergencyPlan#getPlanId()} 预案ID
+     * @param plan {@link EmergencyPlan#getPlanId()} 项目ID
      * @return {@link CommonResult}
      */
     @PostMapping("/plan/cancel")
     public CommonResult stop(UsernamePasswordAuthenticationToken authentication, @RequestBody EmergencyPlan plan) {
         if (plan.getPlanId() == null) {
-            return CommonResult.failed("请选择需要停止的预案");
+            return CommonResult.failed("请选择需要停止的项目");
         }
         return planService.stop(plan.getPlanId(), ((JwtUser) authentication.getPrincipal()).getUsername());
     }
 
     /**
-     * 查询预案的编号与名称
+     * 查询项目的编号与名称
      *
-     * @param planId 预案ID
+     * @param planId 项目ID
      * @return {@link CommonResult}
      */
     @GetMapping("/plan/get")
@@ -139,30 +140,30 @@ public class EmergencyPlanController {
     }
 
     /**
-     * 查询预案以及预案下的任务信息
+     * 查询项目以及项目下的任务信息
      *
-     * @param planName    预案名称或编号
-     * @param sceneName   场景名称或编号
-     * @param taskName    任务名称或编号
-     * @param scriptName  脚本名称
-     * @param statusLabel 预案状态
-     * @param pageSize    分页大小
-     * @param current     当前页码
-     * @param sorter      排序字段
-     * @param order       排序方式
+     * @param planName 项目名称或编号
+     * @param sceneName 场景名称或编号
+     * @param taskName 任务名称或编号
+     * @param scriptName 脚本名称
+     * @param statusLabel 项目状态
+     * @param pageSize 分页大小
+     * @param current 当前页码
+     * @param sorter 排序字段
+     * @param order 排序方式
      * @return {@link CommonResult}
      */
     @GetMapping("/plan")
     public CommonResult queryPlan(UsernamePasswordAuthenticationToken authentication,
-                                  @RequestParam(value = "plan_name_no", required = false) String planName,
-                                  @RequestParam(value = "scena_name_no", required = false) String sceneName,
-                                  @RequestParam(value = "task_name_no", required = false) String taskName,
-                                  @RequestParam(value = "script_name", required = false) String scriptName,
-                                  @RequestParam(value = "status_label", required = false) String statusLabel,
-                                  @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
-                                  @RequestParam(value = "current", defaultValue = "1") int current,
-                                  @RequestParam(value = "sorter", defaultValue = "create_time") String sorter,
-                                  @RequestParam(value = "order", defaultValue = "DESC") String order) {
+        @RequestParam(value = "plan_name_no", required = false) String planName,
+        @RequestParam(value = "scena_name_no", required = false) String sceneName,
+        @RequestParam(value = "task_name_no", required = false) String taskName,
+        @RequestParam(value = "script_name", required = false) String scriptName,
+        @RequestParam(value = "status_label", required = false) String statusLabel,
+        @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
+        @RequestParam(value = "current", defaultValue = "1") int current,
+        @RequestParam(value = "sorter", defaultValue = "create_time") String sorter,
+        @RequestParam(value = "order", defaultValue = "DESC") String order) {
         CommonPage<PlanQueryParams> params = new CommonPage<>();
         params.setPageSize(pageSize);
         params.setPageIndex(current);
@@ -183,13 +184,13 @@ public class EmergencyPlanController {
             planParams.setStatus(PlanStatus.matchByLabel(statusLabel, PlanStatus.NEW).getValue());
         }
         params.setObject(planParams);
-        return planService.plan(params,jwtUser);
+        return planService.plan(params, jwtUser);
     }
 
     /**
-     * 获取预案下的拓扑任务信息
+     * 获取项目下的拓扑任务信息
      *
-     * @param planId 预案ID
+     * @param planId 项目ID
      * @return {@link CommonResult}
      */
     @GetMapping("/plan/task")
@@ -215,19 +216,20 @@ public class EmergencyPlanController {
      * @return {@link CommonResult}
      */
     @PutMapping("/plan/task")
-    public CommonResult updateTask(UsernamePasswordAuthenticationToken authentication,@RequestBody TaskNode taskNode) {
+    public CommonResult updateTask(UsernamePasswordAuthenticationToken authentication, @RequestBody TaskNode taskNode) {
         taskNode.setCreateUser(((JwtUser) authentication.getPrincipal()).getUsername());
         return planService.updateTask(taskNode);
     }
 
     /**
-     * 新增一个预案
+     * 新增一个项目
      *
-     * @param emergencyPlan {@link EmergencyPlan#getPlanName()} 预案名称
+     * @param emergencyPlan {@link EmergencyPlan#getPlanName()} 项目名称
      * @return {@link CommonResult}
      */
     @PostMapping("/plan")
-    public CommonResult addPlan(UsernamePasswordAuthenticationToken authentication, @RequestBody EmergencyPlan emergencyPlan) {
+    public CommonResult addPlan(UsernamePasswordAuthenticationToken authentication,
+        @RequestBody EmergencyPlan emergencyPlan) {
         UserEntity userEntity = ((JwtUser) authentication.getPrincipal()).getUserEntity();
         emergencyPlan.setPlanGroup(userEntity.getGroup());
         emergencyPlan.setCreateUser(userEntity.getUserName());
@@ -235,9 +237,9 @@ public class EmergencyPlanController {
     }
 
     /**
-     * 删除一个预案
+     * 删除一个项目
      *
-     * @param planId 预案ID
+     * @param planId 项目ID
      * @return {@link CommonResult}
      */
     @DeleteMapping("/plan")
@@ -248,9 +250,9 @@ public class EmergencyPlanController {
     }
 
     /**
-     * 预案提交审核
+     * 项目提交审核
      *
-     * @param emergencyPlan {@link EmergencyPlan#getPlanId()} 预案ID
+     * @param emergencyPlan {@link EmergencyPlan#getPlanId()} 项目ID
      * @return {@link CommonResult}
      */
     @PostMapping("plan/submitReview")
@@ -259,15 +261,15 @@ public class EmergencyPlanController {
     }
 
     /**
-     * 预案审核
+     * 项目审核
      *
-     * @param planQueryDto {@link PlanQueryDto#getPlanId()} 预案ID，
-     *                     {@link PlanQueryDto#getCheckResult()} 审核结果，
-     *                     {@link PlanQueryDto#getCheckResult()} 审核意见
+     * @param planQueryDto {@link PlanQueryDto#getPlanId()} 项目ID， {@link PlanQueryDto#getCheckResult()} 审核结果， {@link
+     * PlanQueryDto#getCheckResult()} 审核意见
      * @return {@link CommonResult}
      */
     @PostMapping("/plan/approve")
-    public CommonResult approve(UsernamePasswordAuthenticationToken authentication,@RequestBody PlanQueryDto planQueryDto) {
+    public CommonResult approve(UsernamePasswordAuthenticationToken authentication,
+        @RequestBody PlanQueryDto planQueryDto) {
         EmergencyPlan plan = new EmergencyPlan();
         plan.setPlanId(planQueryDto.getPlanId());
         plan.setStatus(parseCheckResult(planQueryDto.getApprove()));
@@ -288,14 +290,15 @@ public class EmergencyPlanController {
     @GetMapping("/plan/search/status_label")
     public CommonResult planStatus() {
         return CommonResult.success(
-                Arrays.stream(PlanStatus.values())
-                        .map(PlanStatus::getStatusLabel)
-                        .collect(Collectors.toList()).toArray()
+            Arrays.stream(PlanStatus.values())
+                .map(PlanStatus::getStatusLabel)
+                .collect(Collectors.toList()).toArray()
         );
     }
 
     @PostMapping("/plan/copy")
-    public CommonResult copyPlan(UsernamePasswordAuthenticationToken authentication, @RequestBody EmergencyPlan emergencyPlan) {
+    public CommonResult copyPlan(UsernamePasswordAuthenticationToken authentication,
+        @RequestBody EmergencyPlan emergencyPlan) {
         emergencyPlan.setCreateUser(((JwtUser) authentication.getPrincipal()).getUsername());
         return planService.copy(emergencyPlan);
     }

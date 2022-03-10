@@ -32,8 +32,12 @@ import com.huawei.common.util.FileUtil;
 import com.huawei.common.util.PasswordUtil;
 import com.huawei.emergency.dto.ArgusScript;
 import com.huawei.emergency.dto.ScriptManageDto;
-import com.huawei.emergency.entity.*;
-import com.huawei.common.util.*;
+import com.huawei.emergency.entity.EmergencyElement;
+import com.huawei.emergency.entity.EmergencyElementExample;
+import com.huawei.emergency.entity.EmergencyResource;
+import com.huawei.emergency.entity.EmergencyScript;
+import com.huawei.emergency.entity.EmergencyScriptExample;
+import com.huawei.emergency.entity.JwtUser;
 import com.huawei.emergency.entity.UserEntity;
 import com.huawei.emergency.layout.DefaultElementProcessContext;
 import com.huawei.emergency.layout.ElementProcessContext;
@@ -88,7 +92,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -146,7 +149,8 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     private String mode;
 
     @Override
-    public CommonResult<List<EmergencyScript>> listScript(JwtUser jwtUser, String scriptName, String scriptUser, int pageSize, int current, String sorter, String order, String status) {
+    public CommonResult<List<EmergencyScript>> listScript(JwtUser jwtUser, String scriptName, String scriptUser,
+        int pageSize, int current, String sorter, String order, String status) {
         UserEntity userEntity = jwtUser.getUserEntity();
         String auth;
         List<String> userAuth = jwtUser.getAuthList();
@@ -270,10 +274,26 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
 
     @Override
     public EmergencyScript selectScript(int scriptId) {
-        EmergencyScript scriptInfo = mapper.getScriptInfo(scriptId);
+        ScriptManageDto scriptInfo = mapper.getScriptInfo(scriptId);
         try {
             if (scriptInfo.getHavePassword().equals("有") && scriptInfo.getPasswordMode().equals("本地")) {
                 scriptInfo.setPassword(passwordUtil.decodePassword(scriptInfo.getPassword()));
+            }
+            List<EmergencyResource> allResources = resourceService.queryResourceByScriptId(scriptInfo.getScriptId());
+            String libs = allResources.stream()
+                .filter(resource -> resource.getResourcePath() != null && resource.getResourcePath().contains("lib"))
+                .map(resource -> resource.getResourceId() + "/" + resource.getResourceName())
+                .collect(Collectors.joining(" "));
+            String resources = allResources.stream()
+                .filter(
+                    resource -> resource.getResourcePath() != null && resource.getResourcePath().contains("resource"))
+                .map(resource -> resource.getResourceId() + "/" + resource.getResourceName())
+                .collect(Collectors.joining(" "));
+            if (StringUtils.isNotEmpty(libs)) {
+                scriptInfo.setLibs(libs);
+            }
+            if (StringUtils.isNotEmpty(resources)) {
+                scriptInfo.setResources(resources);
             }
         } catch (UnsupportedEncodingException e) {
             throw new ApiException("Failed to decode password. ", e);
@@ -338,6 +358,17 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             updateScript.setScriptStatus(TYPE_ZERO);
         }
         updateScript.setUpdateTime(Timestamp.from(Instant.now()));
+        if (script instanceof ScriptManageDto) {
+            ScriptManageDto scriptManageDto = (ScriptManageDto) script;
+            List<String> resourceList = new ArrayList<>();
+            if (StringUtils.isNotEmpty(scriptManageDto.getLibs())) {
+                resourceList.addAll(Arrays.asList(scriptManageDto.getLibs().split(" ")));
+            }
+            if (StringUtils.isNotEmpty(scriptManageDto.getResources())) {
+                resourceList.addAll(Arrays.asList(scriptManageDto.getResources().split(" ")));
+            }
+            resourceService.refreshResource(script.getScriptId(), resourceList);
+        }
         return mapper.updateByPrimaryKeySelective(updateScript);
     }
 
@@ -731,7 +762,12 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     @Override
     public String grinderPath(EmergencyScript script) {
         ScriptLanguageEnum scriptLanguageEnum = ScriptLanguageEnum.matchByValue(script.getScriptType());
-        return script.getScriptName() + File.separator + script.getScriptName() + "." + scriptLanguageEnum.getSuffix();
+        return grinderDirPath(script) + File.separator + script.getScriptName() + "." + scriptLanguageEnum.getSuffix();
+    }
+
+    @Override
+    public String grinderDirPath(EmergencyScript script) {
+        return script.getScriptName();
     }
 
     private String generateIdeScript(org.ngrinder.model.User user, String path, String url, String fileName,

@@ -18,14 +18,20 @@ package com.huawei.emergency.service.impl;
 
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.ValidEnum;
+import com.huawei.common.filter.JwtAuthenticationTokenFilter;
 import com.huawei.emergency.dto.ResourceDto;
 import com.huawei.emergency.entity.EmergencyResource;
 import com.huawei.emergency.entity.EmergencyResourceExample;
+import com.huawei.emergency.entity.EmergencyScript;
 import com.huawei.emergency.mapper.EmergencyResourceMapper;
+import com.huawei.emergency.mapper.EmergencyScriptMapper;
 import com.huawei.emergency.service.EmergencyResourceService;
+import com.huawei.emergency.service.EmergencyScriptService;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.ngrinder.script.model.FileEntry;
+import org.ngrinder.script.service.NfsFileEntryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,14 +39,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
 import javax.servlet.ServletOutputStream;
 
 /**
@@ -55,33 +64,60 @@ public class EmergencyResourceServiceImpl implements EmergencyResourceService {
     @Autowired
     EmergencyResourceMapper resourceMapper;
 
+    @Autowired
+    EmergencyScriptMapper scriptMapper;
+
+    @Autowired
+    EmergencyScriptService scriptService;
+
     @Value("${script.resource.uploadPath}")
     private String uploadPath;
 
+    @Autowired
+    private NfsFileEntryService fileEntryService;
+
     @Override
-    public CommonResult upload(String userName,int scriptId, String originalFilename, InputStream inputStream) {
-        File resourceDirectory = new File(uploadPath + File.separatorChar + scriptId);
+    public CommonResult upload(String userName, int scriptId, String path, String originalFilename,
+        InputStream inputStream) {
+        /*File resourceDirectory = new File(uploadPath + File.separatorChar + scriptId);
         if (!resourceDirectory.exists()) {
             resourceDirectory.mkdirs();
         }
-        try (FileOutputStream outputStream = new FileOutputStream(resourceDirectory.getPath() + File.separatorChar + originalFilename)) {
+        try (FileOutputStream outputStream = new FileOutputStream(
+            resourceDirectory.getPath() + File.separatorChar + originalFilename)) {
             IOUtils.copy(inputStream, outputStream);
             outputStream.flush();
         } catch (FileNotFoundException e) {
-            LOGGER.error("can't found upload file. scriptId={},fileName={}", scriptId, originalFilename);
+            LOGGER.error("Can't found upload file. scriptId={},fileName={}", scriptId, originalFilename);
             return CommonResult.failed("无法找到上传文件");
         } catch (IOException e) {
-            LOGGER.error("can't upload file. scriptId={},fileName={}. {}", scriptId, originalFilename, e.getMessage());
+            LOGGER.error("Can't upload file. scriptId={},fileName={}. {}", scriptId, originalFilename, e.getMessage());
+            return CommonResult.failed("上传文件失败");
+        }*/
+        EmergencyScript script = scriptMapper.selectByPrimaryKey(scriptId);
+        if (script == null) {
+            return CommonResult.failed("请选择正确的脚本");
+        }
+        String resourcePath = scriptService.grinderDirPath(script);
+        if ("lib".equals(path)) {
+            resourcePath += File.separator + "lib";
+        } else if ("resource".equals(path)) {
+            resourcePath += File.separator + "resource";
+        } else {
+            return CommonResult.failed("请选择正确的路径");
+        }
+        if (!uploadNgrinderPath(resourcePath + File.separator + originalFilename, inputStream)) {
             return CommonResult.failed("上传文件失败");
         }
         EmergencyResourceExample sameResource = new EmergencyResourceExample();
         sameResource.createCriteria()
-            .andScriptIdEqualTo(scriptId).andResourceNameEqualTo(originalFilename);
+            .andScriptIdEqualTo(scriptId)
+            .andResourceNameEqualTo(originalFilename);
         EmergencyResource updateInvalid = new EmergencyResource();
         updateInvalid.setIsValid(ValidEnum.IN_VALID.getValue());
         resourceMapper.updateByExampleSelective(updateInvalid, sameResource); // 将资源名称相同的记录删除
-
         EmergencyResource resource = new EmergencyResource();
+        resource.setResourcePath(resourcePath);
         resource.setResourceName(originalFilename);
         resource.setScriptId(scriptId);
         resource.setCreateUser(userName);
@@ -89,6 +125,27 @@ public class EmergencyResourceServiceImpl implements EmergencyResourceService {
         ResourceDto dto = new ResourceDto();
         dto.setUid(resource.getResourceId());
         return CommonResult.success(dto);
+    }
+
+    /**
+     * 将文件上传至ngrinder的脚本路径下
+     *
+     * @param fileFullPath
+     * @param inputStream
+     * @return
+     */
+    public boolean uploadNgrinderPath(String fileFullPath, InputStream inputStream) {
+        FileEntry fileEntry = new FileEntry();
+        try {
+            fileEntry.setCreatedUser(JwtAuthenticationTokenFilter.currentGrinderUser());
+            fileEntry.setContentBytes(IOUtils.toByteArray(new InputStreamReader(inputStream), StandardCharsets.UTF_8));
+            fileEntry.setPath(fileFullPath);
+            fileEntryService.saveFile(JwtAuthenticationTokenFilter.currentGrinderUser(), fileEntry);
+        } catch (IOException e) {
+            LOGGER.error("update resource {} error. {}", fileFullPath, e.getMessage());
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -128,14 +185,29 @@ public class EmergencyResourceServiceImpl implements EmergencyResourceService {
         if (resource == null || resource.getScriptId() == null || !resourceName.equals(resource.getResourceName())) {
             return CommonResult.failed("请选择正确的资源");
         }
-        try (InputStream resourceIn = new FileInputStream(uploadPath + File.separatorChar + resource.getScriptId() + File.separatorChar + resource.getResourceName())) {
-            IOUtils.copy(resourceIn, outputStream);
+        InputStream inputStream = null;
+        try {
+            FileEntry fileEntry = fileEntryService.getSpecifyScript(
+                JwtAuthenticationTokenFilter.currentGrinderUser(),
+                resource.getResourcePath() + File.separator + resource.getResourceName());
+            inputStream = new ByteArrayInputStream(fileEntry.getContentBytes());
+            IOUtils.copy(inputStream, outputStream);
         } catch (FileNotFoundException e) {
-            LOGGER.error("can't found resource. resourceId={}, scriptId={}, resourceName={}", resourceId, resource.getScriptId(), resourceName);
+            LOGGER.error("can't found resource. resourceId={}, scriptId={}, resourceName={}", resourceId,
+                resource.getScriptId(), resourceName);
             return CommonResult.failed("资源不存在");
         } catch (IOException e) {
-            LOGGER.error("can't download resource. resourceId={}, scriptId={}, resourceName={}. {}", resourceId, resource.getScriptId(), resourceName, e.getMessage());
+            LOGGER.error("can't download resource. resourceId={}, scriptId={}, resourceName={}. {}", resourceId,
+                resource.getScriptId(), resourceName, e.getMessage());
             return CommonResult.failed("资源下载错误");
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    LOGGER.error("close stream error.", e);
+                }
+            }
         }
         return CommonResult.success();
     }
@@ -149,8 +221,19 @@ public class EmergencyResourceServiceImpl implements EmergencyResourceService {
         if (StringUtils.isEmpty(fileName) || !fileName.equals(resource.getResourceName())) {
             return CommonResult.failed("资源名不一致");
         }
-        deleteResource(resource);
-        return CommonResult.success();
+        return deleteResource(resource);
+    }
+
+    @Override
+    public List<EmergencyResource> queryResourceByScriptId(Integer scriptId) {
+        if (scriptId == null) {
+            return Collections.EMPTY_LIST;
+        }
+        EmergencyResourceExample resourceExample = new EmergencyResourceExample();
+        resourceExample.createCriteria()
+            .andScriptIdEqualTo(scriptId)
+            .andIsValidEqualTo(ValidEnum.VALID.getValue());
+        return resourceMapper.selectByExample(resourceExample);
     }
 
     /**
@@ -158,13 +241,22 @@ public class EmergencyResourceServiceImpl implements EmergencyResourceService {
      *
      * @param resource
      */
-    public void deleteResource(EmergencyResource resource) {
-        File resourceFile = new File(uploadPath + File.separatorChar + resource.getScriptId() + File.separatorChar + resource.getResourceName());
-        resourceFile.delete();
-        LOGGER.info("delete resource file, scriptId={}, resourceId={}, resourceName={}.", resource.getScriptId(), resource.getResourceId(), resource.getResourceName());
+    public CommonResult deleteResource(EmergencyResource resource) {
+        try {
+            fileEntryService.deleteFile(JwtAuthenticationTokenFilter.currentGrinderUser(),
+                resource.getResourcePath() + File.separator + resource.getResourceName());
+        } catch (IOException e) {
+            LOGGER.error("can't delete resource. resourceId={}, scriptId={}, resourceName={}. {}",
+                resource.getResourceId(),
+                resource.getScriptId(), resource.getResourceName(), e.getMessage());
+            return CommonResult.failed("无法删除文件");
+        }
+        LOGGER.info("delete resource file, scriptId={}, resourceId={}, resourceName={}.", resource.getScriptId(),
+            resource.getResourceId(), resource.getResourceName());
         EmergencyResource updateResource = new EmergencyResource();
         updateResource.setResourceId(resource.getResourceId());
         updateResource.setIsValid(ValidEnum.IN_VALID.getValue());
         resourceMapper.updateByPrimaryKeySelective(updateResource);
+        return CommonResult.success();
     }
 }

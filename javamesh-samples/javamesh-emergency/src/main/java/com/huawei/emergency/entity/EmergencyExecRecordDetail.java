@@ -15,6 +15,8 @@ public class EmergencyExecRecordDetail {
 
     private String serverIp;
 
+    private Integer perfTestId;
+
     private String log;
 
     private String createUser;
@@ -65,12 +67,36 @@ public class EmergencyExecRecordDetail {
         this.status = status == null ? null : status.trim();
     }
 
+    public Integer getServerId() {
+        return serverId;
+    }
+
+    public void setServerId(Integer serverId) {
+        this.serverId = serverId;
+    }
+
     public String getServerIp() {
         return serverIp;
     }
 
     public void setServerIp(String serverIp) {
         this.serverIp = serverIp == null ? null : serverIp.trim();
+    }
+
+    public Integer getPerfTestId() {
+        return perfTestId;
+    }
+
+    public void setPerfTestId(Integer perfTestId) {
+        this.perfTestId = perfTestId;
+    }
+
+    public String getLog() {
+        return log;
+    }
+
+    public void setLog(String log) {
+        this.log = log == null ? null : log.trim();
     }
 
     public String getCreateUser() {
@@ -135,21 +161,5 @@ public class EmergencyExecRecordDetail {
 
     public void setPid(Integer pid) {
         this.pid = pid;
-    }
-
-    public Integer getServerId() {
-        return serverId;
-    }
-
-    public void setServerId(Integer serverId) {
-        this.serverId = serverId;
-    }
-
-    public String getLog() {
-        return log;
-    }
-
-    public void setLog(String log) {
-        this.log = log == null ? null : log.trim();
     }
 }

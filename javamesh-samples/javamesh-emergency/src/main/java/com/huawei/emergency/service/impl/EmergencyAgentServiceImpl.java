@@ -27,12 +27,14 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
         try {
             EmergencyServerExample serverExample = new EmergencyServerExample();
             serverExample.createCriteria()
+                .andIsValidEqualTo(ValidEnum.VALID.getValue())
                 .andServerIpEqualTo(ip);
             List<EmergencyServer> serverList = serverMapper.selectByExample(serverExample);
             if (serverList.size() == 0) {
                 EmergencyServer server = new EmergencyServer();
                 server.setServerIp(ip);
-                server.setServerPort(Integer.valueOf(port));
+                server.setServerName(ip);
+                server.setAgentPort(Integer.valueOf(port));
                 server.setServerUser("root");
                 server.setCreateUser("admin");
                 server.setHavePassword("0");
@@ -40,7 +42,6 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
                 serverMapper.insertSelective(server);
             }
             serverList.forEach(server -> {
-                server.setIsValid(ValidEnum.VALID.getValue());
                 server.setAgentPort(Integer.valueOf(port));
                 serverMapper.updateByPrimaryKeySelective(server);
             });

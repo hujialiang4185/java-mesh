@@ -304,11 +304,7 @@ public class EmergencyScriptController {
      */
     @PutMapping("/ide")
     public CommonResult updateIdeScript(@RequestBody ScriptManageDto scriptManageDto) {
-        EmergencyScript script = new EmergencyScript();
-        script.setScriptId(scriptManageDto.getScriptId());
-        script.setScriptName(scriptManageDto.getScriptName());
-        script.setContent(scriptManageDto.getContent());
-        return updateScript(script);
+        return updateScript(scriptManageDto);
     }
 
     /**

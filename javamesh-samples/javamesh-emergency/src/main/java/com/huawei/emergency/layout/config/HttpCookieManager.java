@@ -18,6 +18,7 @@ package com.huawei.emergency.layout.config;
 
 import com.huawei.emergency.layout.ElementProcessContext;
 import com.huawei.emergency.layout.template.GroovyMethodTemplate;
+
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -37,11 +38,12 @@ public class HttpCookieManager extends Config {
     @Override
     public void handle(ElementProcessContext context) {
         GroovyMethodTemplate beforeProcessMethod = context.getTemplate().getBeforeProcessMethod();
-        cookies.forEach( cookie -> {
+        cookies.forEach(cookie -> {
             beforeProcessMethod.addContent(
                 String.format(Locale.ROOT,
                     "cookies.add(new Cookie(\"%s\", \"%s\", \"%s\", \"%s\",expireDate, %s));",
-                    cookie.getName(), cookie.getValue(), cookie.getDomain(), cookie.getPath(), Boolean.parseBoolean(cookie.getSecure())
+                    cookie.getName(), cookie.getValue(), cookie.getDomain(), cookie.getPath(),
+                    Boolean.parseBoolean(cookie.getSafe())
                 ), 2);
         });
     }
@@ -52,6 +54,6 @@ public class HttpCookieManager extends Config {
         private String value;
         private String domain;
         private String path;
-        private String secure;
+        private String safe;
     }
 }

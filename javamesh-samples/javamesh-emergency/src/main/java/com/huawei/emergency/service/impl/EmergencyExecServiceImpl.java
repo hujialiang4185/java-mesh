@@ -9,6 +9,7 @@ import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.PlanStatus;
 import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ValidEnum;
+import com.huawei.emergency.controller.EmergencyPlanController;
 import com.huawei.emergency.dto.PlanQueryDto;
 import com.huawei.emergency.dto.SceneExecDto;
 import com.huawei.emergency.entity.EmergencyExec;
@@ -41,7 +42,6 @@ import com.github.pagehelper.PageHelper;
 import lombok.Setter;
 
 import org.apache.commons.lang.StringUtils;
-import org.ngrinder.model.PerfTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,6 +103,9 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
 
     @Autowired
     private EmergencyPlanService planService;
+
+    @Autowired
+    private EmergencyPlanController planController;
 
     @Override
     public CommonResult exec(EmergencyScript script) {
@@ -306,10 +309,6 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
         oldRecord.setRecordId(null);
         oldRecord.setLog(null);
         oldRecord.setStatus(RecordStatus.PENDING.getValue());
-        if (oldRecord.getPerfTestId() != null) {
-            PerfTest perfTest = planService.copyPerfTestByTestId(oldRecord.getPerfTestId()); // 更新压测任务
-            oldRecord.setPerfTestId(perfTest.getId().intValue());
-        }
         recordMapper.insertSelective(oldRecord);
         threadPoolExecutor.execute(handlerFactory.handle(oldRecord));
         return CommonResult.success(oldRecord);
@@ -446,7 +445,8 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
     }
 
     @Override
-    public CommonResult allPlanExecRecords(String historyGroup, CommonPage<EmergencyPlan> params, String[] filterPlanNames,
+    public CommonResult allPlanExecRecords(String historyGroup, CommonPage<EmergencyPlan> params,
+        String[] filterPlanNames,
         String[] filterCreators) {
         Map<String, Object> filters = new HashMap<>();
         filters.put("planNames", filterPlanNames);
@@ -489,5 +489,17 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
         ExecResult finalResult = execResult;
         threadPoolExecutor.execute(() -> handlerFactory.complete(record, recordDetail, finalResult));
         return CommonResult.success();
+    }
+
+    @Override
+    public CommonResult getPlanInfo(Integer execId) {
+        if (execId == null) {
+            return CommonResult.success();
+        }
+        EmergencyExec exec = execMapper.selectByPrimaryKey(execId);
+        if (exec == null || exec.getPlanId() == null) {
+            return CommonResult.success();
+        }
+        return planController.get(exec.getPlanId());
     }
 }
