@@ -26,7 +26,7 @@ export default function App() {
     </CacheSwitch>
 }
 
-type Data = { plan_id: string, expand: { key: string, scena_no: string, task_no: string, test_id: string }[], status_label: string, status: string, history_id: string, auditable: boolean, group_id: string }
+type Data = { plan_id: string, expand: { key: string, scena_no: string, task_no: string, test_id: string, scena_name: string }[], status_label: string, status: string, history_id: string, auditable: boolean, group_id: string }
 function Home() {
     const { path } = useRouteMatch()
     const { auth } = useContext(Context)
@@ -111,49 +111,14 @@ function Home() {
                 expandable={{
                     defaultExpandedRowKeys: data.data.slice(0, 1).map(function (item) { return item.plan_id }),
                     expandedRowRender(record) {
-                        const scenaRowSpans: Map<string, number> = new Map()
-                        const taskRowSpans: Map<string, number> = new Map()
-                        if (record.expand.length > 0) {
-                            scenaRowSpans.set(record.expand[0].key, 1)
-                            record.expand.reduce(function (prev, curr) {
-                                if (curr.scena_no && curr.scena_no === prev.scena_no) {
-                                    scenaRowSpans.set(prev.key, (scenaRowSpans.get(prev.key) || 0) + 1)
-                                    scenaRowSpans.set(curr.key, 0)
-                                    return prev
-                                }
-                                scenaRowSpans.set(curr.key, 1)
-                                return curr
-                            })
-                            taskRowSpans.set(record.expand[0].key, 1)
-                            record.expand.reduce(function (prev, curr) {
-                                if (curr.task_no && curr.task_no === prev.task_no) {
-                                    taskRowSpans.set(prev.key, (taskRowSpans.get(prev.key) || 0) + 1)
-                                    taskRowSpans.set(curr.key, 0)
-                                    return prev
-                                }
-                                taskRowSpans.set(curr.key, 1)
-                                return curr
-                            })
-                        }
                         return <Table size="small" className="TreeTable" rowKey="key" pagination={false} dataSource={record.expand}
                             columns={[
                                 {
-                                    title: "场景名称", dataIndex: "scena_name", ellipsis: true,
-                                    render(value, row) {
-                                        return { children: !row.test_id ? value : <Link to={path + "/Report?test_id=" + row.test_id}>{value}</Link>, props: { rowSpan: scenaRowSpans.get(row.key) }, }
-                                    }
-                                },
-                                {
-                                    title: "任务名称", dataIndex: "task_name", ellipsis: true,
-                                    render(value, row) {
-                                        return { children: !row.test_id ? value : <Link to={path + "/Report?test_id=" + row.test_id}>{value}</Link>, props: { rowSpan: taskRowSpans.get(row.key) }, }
-                                    }
-                                },
-                                {
-                                    title: "子任务名称", dataIndex: "subtask_name", ellipsis: true, render(value, row) {
+                                    title: "任务名称", width: 300, dataIndex: "task_name", ellipsis: true, render(value, row) {
                                         return !row.test_id ? value : <Link to={path + "/Report?test_id=" + row.test_id}>{value}</Link>
                                     }
                                 },
+                                { title: "场景名称", dataIndex: "scena_name", ellipsis: true,  },
                                 { title: "通道类型", dataIndex: "channel_type", ellipsis: true },
                                 { title: "脚本名称", dataIndex: "script_name", ellipsis: true },
                                 { title: "脚本用途", dataIndex: "submit_info", ellipsis: true },
@@ -225,7 +190,7 @@ function SubmitReview(props: { load: () => void, plan_id: string, group_id: stri
     return <>
         <Button type="link" size="small" onClick={function () { setIsModalVisible(true) }}>提审</Button>
         <Modal className="SubmitPlanReview" title="提交审核" visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () { setIsModalVisible(false) }}>
-            <Form form={form}  labelCol={{ span: 4 }} onFinish={async function (values) {
+            <Form form={form} labelCol={{ span: 4 }} onFinish={async function (values) {
                 try {
                     await axios.post('/argus-emergency/api/plan/submitReview', { ...values, plan_id: props.plan_id })
                     message.success("提交成功")
@@ -262,7 +227,7 @@ function AddPlan() {
         <Modal className="AddPlan" title="添加项目" width={700} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form form={form} labelCol={{ span: 3 }}  onFinish={async function (values) {
+            <Form form={form} labelCol={{ span: 3 }} onFinish={async function (values) {
                 if (submit) return
                 submit = true
                 try {
@@ -300,7 +265,7 @@ function CopyPlan({ plan_id }: { plan_id: string }) {
         <Modal className="CopyPlan" title="克隆" width={700} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form  onFinish={async function (values) {
+            <Form onFinish={async function (values) {
                 if (submit) return
                 submit = true
                 try {
@@ -331,7 +296,7 @@ function ApprovePlan(props: { plan_id: string, load: () => {} }) {
         <Modal className="ApprovePlan" title="审核项目" width={400} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form className="Form"  onFinish={async function (values) {
+            <Form className="Form" onFinish={async function (values) {
                 try {
                     await axios.post("/argus-emergency/api/plan/approve", { ...values, plan_id: props.plan_id })
                     setIsModalVisible(false)
@@ -362,7 +327,7 @@ function RunPlan(props: { plan_id: string, load: () => {} }) {
         <Modal className="RunPlan" title="预约执行" width={500} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form labelCol={{ span: 6 }}  onFinish={async function (values) {
+            <Form labelCol={{ span: 6 }} onFinish={async function (values) {
                 const start_time = values.start_time
                 const plan_id = props.plan_id
                 try {

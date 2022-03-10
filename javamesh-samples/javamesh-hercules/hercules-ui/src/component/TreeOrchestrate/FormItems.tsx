@@ -236,7 +236,7 @@ function HTTPCookie() {
                 return <div key={item.name} className="FormList">
                     <Form.Item name={[item.name, "name"]} rules={[{ max: 32 }]}><Input placeholder="名称" /></Form.Item>
                     <span className="Equal">=</span>
-                    <Form.Item name={[item.name, "value"]} rules={[{ max: 32 }]}><Input placeholder="值" /></Form.Item>
+                    <Form.Item name={[item.name, "value"]} rules={[{ max: 256 }]}><Input placeholder="值" /></Form.Item>
                     <Form.Item name={[item.name, "domain"]} rules={[{ max: 32 }]}><Input placeholder="域" /></Form.Item>
                     <Form.Item name={[item.name, "path"]} rules={[{ max: 32 }]}><Input placeholder="路径" /></Form.Item>
                     <Form.Item label="Secure" name={[item.name, "safe"]} valuePropName="checked"><Checkbox /></Form.Item>
