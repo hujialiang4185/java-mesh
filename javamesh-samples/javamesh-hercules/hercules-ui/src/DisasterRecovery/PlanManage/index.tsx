@@ -10,22 +10,23 @@ import Editor from "./Editor"
 import CacheRoute, { CacheSwitch, useDidRecover } from "react-router-cache-route"
 import Context from "../../ContextProvider"
 import ServiceSelect from "../../component/ServiceSelect"
-import PageInfo from "../../component/PageInfo"
 import moment, { Moment } from "moment"
 import ApproveFormItems from "../ApproveFormItems"
 import { useForm } from "antd/lib/form/Form"
 import socket from "../socket"
 import { debounce } from "lodash"
+import TaskView from "../../component/TaskView"
 
 export default function App() {
     const { path } = useRouteMatch();
     return <CacheSwitch>
         <CacheRoute exact path={path} component={Home} />
         <Route exact path={path + '/Editor'}><Editor /></Route>
+        <Route exact path={path + '/Report'}><TaskView /></Route>
     </CacheSwitch>
 }
 
-type Data = { plan_id: string, expand: { key: string, scena_no: string, task_no: string }[], status_label: string, status: string, history_id: string, auditable: boolean, group_id: string }
+type Data = { plan_id: string, expand: { key: string, scena_no: string, task_no: string, test_id: string, scena_name: string }[], status_label: string, status: string, history_id: string, auditable: boolean, group_id: string }
 function Home() {
     const { path } = useRouteMatch()
     const { auth } = useContext(Context)
@@ -84,13 +85,13 @@ function Home() {
                     load()
                 }}>
                     <Form.Item className="Input" name="plan_name_no">
-                        <Input placeholder="项目名称、编号" />
+                        <Input placeholder="项目名称" />
                     </Form.Item>
                     <Form.Item className="Input" name="scena_name_no">
-                        <Input placeholder="场景名称、编号" />
+                        <Input placeholder="场景名称" />
                     </Form.Item>
                     <Form.Item className="Input" name="task_name_no">
-                        <Input placeholder="任务名称、编号" />
+                        <Input placeholder="任务名称" />
                     </Form.Item>
                     <Form.Item className="Input" name="script_name">
                         <Input placeholder="脚本名称" />
@@ -110,45 +111,14 @@ function Home() {
                 expandable={{
                     defaultExpandedRowKeys: data.data.slice(0, 1).map(function (item) { return item.plan_id }),
                     expandedRowRender(record) {
-                        const scenaRowSpans: Map<string, number> = new Map()
-                        const taskRowSpans: Map<string, number> = new Map()
-                        if (record.expand.length > 0) {
-                            scenaRowSpans.set(record.expand[0].key, 1)
-                            record.expand.reduce(function (prev, curr) {
-                                if (curr.scena_no && curr.scena_no === prev.scena_no) {
-                                    scenaRowSpans.set(prev.key, (scenaRowSpans.get(prev.key) || 0) + 1)
-                                    scenaRowSpans.set(curr.key, 0)
-                                    return prev
-                                }
-                                scenaRowSpans.set(curr.key, 1)
-                                return curr
-                            })
-                            taskRowSpans.set(record.expand[0].key, 1)
-                            record.expand.reduce(function (prev, curr) {
-                                if (curr.task_no && curr.task_no === prev.task_no) {
-                                    taskRowSpans.set(prev.key, (taskRowSpans.get(prev.key) || 0) + 1)
-                                    taskRowSpans.set(curr.key, 0)
-                                    return prev
-                                }
-                                taskRowSpans.set(curr.key, 1)
-                                return curr
-                            })
-                        }
                         return <Table size="small" className="TreeTable" rowKey="key" pagination={false} dataSource={record.expand}
                             columns={[
                                 {
-                                    title: "场景名称", dataIndex: "scena_name", ellipsis: true,
-                                    render(value, row) {
-                                        return { children: value, props: { rowSpan: scenaRowSpans.get(row.key) }, }
+                                    title: "任务名称", width: 300, dataIndex: "task_name", ellipsis: true, render(value, row) {
+                                        return !row.test_id ? value : <Link to={path + "/Report?test_id=" + row.test_id}>{value}</Link>
                                     }
                                 },
-                                {
-                                    title: "任务名称", dataIndex: "task_name", ellipsis: true,
-                                    render(value, row) {
-                                        return { children: value, props: { rowSpan: taskRowSpans.get(row.key) }, }
-                                    }
-                                },
-                                { title: "子任务名称", dataIndex: "subtask_name", ellipsis: true },
+                                { title: "场景名称", dataIndex: "scena_name", ellipsis: true,  },
                                 { title: "通道类型", dataIndex: "channel_type", ellipsis: true },
                                 { title: "脚本名称", dataIndex: "script_name", ellipsis: true },
                                 { title: "脚本用途", dataIndex: "submit_info", ellipsis: true },
@@ -157,7 +127,7 @@ function Home() {
                                 { title: "开始时间", dataIndex: "start_time", ellipsis: true },
                                 { title: "持续阈值", dataIndex: "duration", ellipsis: true },
                                 { title: "TPS", dataIndex: "tps", ellipsis: true },
-                                { title: "MIT出错率", dataIndex: "mean_test_time", ellipsis: true },
+                                { title: "MIT出错率(%)", dataIndex: "mean_test_time", ellipsis: true },
                             ]}
                         />
                     }
@@ -178,13 +148,13 @@ function Home() {
                                     <Button type="link" size="small">修改</Button>
                                 </Link>}
                                 {record.auditable && <ApprovePlan plan_id={plan_id} load={load} />}
-                                {record.status === "unapproved" && auth.includes("operator") && <SubmitReview load={load} group_id={record.group_id} plan_id={plan_id}/>}
+                                {record.status === "unapproved" && auth.includes("operator") && <SubmitReview load={load} group_id={record.group_id} plan_id={plan_id} />}
                                 {(record.status === "approved" || record.status === "ran") && auth.includes("operator") && <Button type="link" size="small" onClick={async function () {
                                     if (submit) return
                                     submit = true
                                     try {
                                         const res = await axios.post("/argus-emergency/api/plan/run", { plan_id })
-                                        history.push("/DisasterRecovery/RunningLog/Detail?history_id=" + res.data.data.history_id)
+                                        history.push("/PerformanceTest/RunningLog/Detail?history_id=" + res.data.data.history_id)
                                     } catch (error: any) {
                                         message.error(error.message)
                                     }
@@ -202,7 +172,7 @@ function Home() {
                                 }}>
                                     <Button type="link" size="small">取消预约</Button>
                                 </Popconfirm>}
-                                {(record.status === "running" || record.status === "ran") && <Link to={"/DisasterRecovery/RunningLog/Detail?history_id=" + record.history_id}>
+                                {(record.status === "running" || record.status === "ran") && <Link to={"/PerformanceTest/RunningLog/Detail?history_id=" + record.history_id}>
                                     <Button type="link" size="small">日志</Button>
                                 </Link>}
                             </>
@@ -220,7 +190,7 @@ function SubmitReview(props: { load: () => void, plan_id: string, group_id: stri
     return <>
         <Button type="link" size="small" onClick={function () { setIsModalVisible(true) }}>提审</Button>
         <Modal className="SubmitPlanReview" title="提交审核" visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () { setIsModalVisible(false) }}>
-            <Form form={form} requiredMark={false} labelCol={{ span: 4 }} onFinish={async function (values) {
+            <Form form={form} labelCol={{ span: 4 }} onFinish={async function (values) {
                 try {
                     await axios.post('/argus-emergency/api/plan/submitReview', { ...values, plan_id: props.plan_id })
                     message.success("提交成功")
@@ -257,7 +227,7 @@ function AddPlan() {
         <Modal className="AddPlan" title="添加项目" width={700} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form form={form} labelCol={{span: 3}} requiredMark={false} onFinish={async function (values) {
+            <Form form={form} labelCol={{ span: 3 }} onFinish={async function (values) {
                 if (submit) return
                 submit = true
                 try {
@@ -295,7 +265,7 @@ function CopyPlan({ plan_id }: { plan_id: string }) {
         <Modal className="CopyPlan" title="克隆" width={700} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form requiredMark={false} onFinish={async function (values) {
+            <Form onFinish={async function (values) {
                 if (submit) return
                 submit = true
                 try {
@@ -326,7 +296,7 @@ function ApprovePlan(props: { plan_id: string, load: () => {} }) {
         <Modal className="ApprovePlan" title="审核项目" width={400} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form className="Form" requiredMark={false} onFinish={async function (values) {
+            <Form className="Form" onFinish={async function (values) {
                 try {
                     await axios.post("/argus-emergency/api/plan/approve", { ...values, plan_id: props.plan_id })
                     setIsModalVisible(false)
@@ -357,7 +327,7 @@ function RunPlan(props: { plan_id: string, load: () => {} }) {
         <Modal className="RunPlan" title="预约执行" width={500} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form labelCol={{ span: 6 }} requiredMark={false} onFinish={async function (values) {
+            <Form labelCol={{ span: 6 }} onFinish={async function (values) {
                 const start_time = values.start_time
                 const plan_id = props.plan_id
                 try {
@@ -371,7 +341,6 @@ function RunPlan(props: { plan_id: string, load: () => {} }) {
                     message.error(e.message)
                 }
             }}>
-                <PageInfo>预约时间为空则立即执行</PageInfo>
                 <Form.Item name="start_time" label="预约启动时间" rules={[
                     { required: true },
                     {

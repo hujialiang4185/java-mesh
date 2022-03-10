@@ -1,7 +1,7 @@
 import { Button, message } from "antd"
 import axios from "axios"
 import React, { useRef, useState } from "react"
-import { Prompt, useLocation } from "react-router-dom"
+import { Prompt, useHistory, useLocation } from "react-router-dom"
 import Breadcrumb from "../../../component/Breadcrumb"
 import Card from "../../../component/Card"
 import "./index.scss"
@@ -12,8 +12,9 @@ export default function App() {
     const script_id = new URLSearchParams(useLocation().search).get("script_id") || ""
     const [saved, setSaved] = useState(true)
     const valuesRef = useRef<Values>()
+    const history = useHistory()
     return <div className="ScriptOrchestrate">
-        <Breadcrumb label="脚本管理" sub={{ label: "编排", parentUrl: "/DisasterRecovery/ScriptManage" }} />
+        <Breadcrumb label="脚本管理" sub={{ label: "编排", parentUrl: "/PerformanceTest/ScriptManage" }} />
         <Card>
             <Button type="primary" disabled={saved} onClick={async function() {
                 if (submit) return
@@ -26,6 +27,7 @@ export default function App() {
                     await axios.put("/argus-emergency/api/script/orchestrate", { tree: valuesRef.current?.tree, map, script_id })
                     setSaved(true)
                     message.success("保存成功")
+                    history.goBack();
                 } catch (error: any) {
                     message.error(error.message)
                 }

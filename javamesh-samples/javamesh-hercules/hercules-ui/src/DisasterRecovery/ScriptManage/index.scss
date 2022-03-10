@@ -6,8 +6,8 @@
         display: flex;
         margin-top: 5px;
         margin-bottom: 15px;
-        .Add {
-            margin-right: 10px;
+        button+button {
+            margin-left: 10px;
         }
         .Space {
             flex-grow: 1;

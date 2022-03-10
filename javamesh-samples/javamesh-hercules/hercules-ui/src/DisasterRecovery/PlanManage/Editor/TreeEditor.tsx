@@ -72,7 +72,6 @@ export default class App extends React.Component<{ plan_id: string }> {
             const dragRoot = data.find(function (item) {
               return dragKey === item.key;
             }) !== undefined
-            console.log(dragRoot, dropRoot, info.dropToGap)
             if (!dragRoot && dropRoot && info.dropToGap) return
             if (dragRoot && !info.dropToGap) return
 
@@ -148,7 +147,7 @@ export default class App extends React.Component<{ plan_id: string }> {
             }} >加场景</AddScenaTask>,
             width: 170, align: "left", dataIndex: "key", render: (key, record) => {
               return <>
-                <AddPlanTask initialValues={{ channel_type: "SSH", task_type: "自定义脚本压测" }} onFinish={async values => {
+                <AddPlanTask initialValues={{ channel_type: "SSH", task_type: "自定义脚本压测", sampling_interval: 2, sampling_ignore: 0, vuser: 5 }} onFinish={async values => {
                   values.sync === false ? values.sync = "异步" : values.sync = "同步"
                   values.title = values.task_name
                   // 获取key
@@ -208,7 +207,7 @@ function AddScenaTask(props: { onFinish: (values: any) => Promise<void>, initial
     <Modal className="AddScenaTask" title={props.children} width={950} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
       setIsModalVisible(false)
     }}>
-      <Form form={form} requiredMark={false} labelCol={{ span: 4 }} initialValues={props.initialValues} onFinish={async (values) => {
+      <Form form={form}  labelCol={{ span: 4 }} initialValues={props.initialValues} onFinish={async (values) => {
         try {
           await props.onFinish(values)
           form.resetFields()

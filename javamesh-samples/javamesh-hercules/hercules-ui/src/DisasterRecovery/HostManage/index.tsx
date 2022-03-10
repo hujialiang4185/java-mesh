@@ -195,7 +195,7 @@ function AddHost(props: { load: () => void }) {
     return <>
         <Button type="primary" icon={<PlusOutlined />} onClick={function () { setIsModalVisible(true) }}>添加引擎</Button>
         <Modal className="AddHost" title="添加引擎" visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () { setIsModalVisible(false) }}>
-            <Form form={form} requiredMark={false} labelCol={{ span: 4 }}
+            <Form form={form}  labelCol={{ span: 4 }}
                 initialValues={{ have_password: "无", password_mode: "本地", server_port: 22 }}
                 onFinish={async function (values) {
                     try {

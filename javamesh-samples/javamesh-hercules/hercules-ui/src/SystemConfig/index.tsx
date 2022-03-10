@@ -227,7 +227,7 @@ function AddUser(props: { load: () => void }) {
         <Modal className="AddUser" title="添加账号" width={400} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form form={form} requiredMark={false} onFinish={async function (values) {
+            <Form form={form}  onFinish={async function (values) {
                 try {
                     const res = await axios.post("/argus-user/api/user", values)
                     form.resetFields()
@@ -276,7 +276,7 @@ function UpdateUser(props: { data: Data, load: () => {} }) {
         <Modal className="UpdateUser" title="修改" width={400} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form form={form} initialValues={props.data} requiredMark={false} onFinish={async function (values) {
+            <Form form={form} initialValues={props.data}  onFinish={async function (values) {
                 try {
                     await axios.put("/argus-user/api/user", values)
                     message.success("用户修改成功")

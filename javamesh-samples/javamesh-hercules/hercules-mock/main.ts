@@ -13,16 +13,6 @@ app.get('/argus-emergency/ws/:message', function (req, res) {
     client1.send(req.params.message)
     res.json()
 })
-
-const wss2 = new ws.WebSocketServer({ port: 8080 });
-let client2: ws
-wss2.on('connection', function connection(ws) {
-    client2 = ws
-});
-app.get('/argus/ws/:message', function (req, res) {
-    client2.send(req.params.message)
-    res.json()
-})
 // 其他
 app.post('/argus-emergency/api/resource', function (req, res) {
     res.json({
@@ -588,6 +578,10 @@ app.get('/argus-emergency/api/script/ide/get', function (req, res) {
     res.json({
         data: {
             script_name: "abc.sh",
+            content: "print('hello')",
+            param: "a,b",
+            has_resource: true,
+            libs: "001/.npmrc 002/xxx"
         }
     })
 })
@@ -674,9 +668,20 @@ app.get("/argus-emergency/api/plan", function (req, res) {
                 group_name: "分组1",
                 auditable: index === 1,
                 expand: [
-                    { key: 1, scena_no: "C01", scena_name: "场景一", channel_type: "SSH", script_name: "C01.sh", submit_info: "提交信息" },
-                    { key: 2, scena_no: "C01", scena_name: "场景一", task_no: "C01T01", task_name: "任务一", channel_type: "SSH", script_name: "C01T01.sh", submit_info: "提交信息" },
-                    { key: 3, scena_no: "C01", scena_name: "场景一", task_no: "C01T01", task_name: "任务一", subtask_no: "C01T01S01", subtask_name: "子任务一", channel_type: "SSH", script_name: "C01T01S01.sh", submit_info: "提交信息" },
+                    {
+                        key: 2, scena_name: "场景一", task_name: "任务一", channel_type: "SSH",
+                        script_name: "C01T01.sh", submit_info: "提交信息", test_id: 1
+                    },
+                    {
+                        key: 3, scena_name: "场景一", task_name: "任务一",
+                        channel_type: "SSH", script_name: "C01T01S01.sh", submit_info: "提交信息", test_id: 1,
+                        user_id: "Username", tag_string: "test, group", start_time: "2017-02-01 10:12:13", duration: 800, tps: 10, mean_test_time: 12.1,
+                        children: [{
+                            key: 4, scena_name: "场景一", task_name: "任务一",
+                            channel_type: "SSH", script_name: "C01T01S01.sh", submit_info: "提交信息", test_id: 1,
+                            user_id: "Username", tag_string: "test, group", start_time: "2017-02-01 10:12:13", duration: 800, tps: 10, mean_test_time: 12.1,
+                        }]
+                    },
                 ]
             }
         }),
@@ -731,7 +736,7 @@ app.post("/argus-emergency/api/plan/run", function (req, res) {
 app.put("/argus-emergency/api/plan/task", function (req, res) {
     res.json()
 })
-app.post("/argus-emergency/api/plan/submitReview", function (req, res){
+app.post("/argus-emergency/api/plan/submitReview", function (req, res) {
     res.json()
 })
 app.post("/argus-emergency/api/plan/cancel", function (req, res) {
@@ -752,28 +757,31 @@ app.get("/argus-emergency/api/plan/task", function (req, res) {
                 title: "任务2",
                 task_no: 2,
                 task_name: "任务2",
-                task_type: "自定义脚本压测",
-                script_name: "a.sh",
+                task_type: "命令行脚本",
+                script_name: "1.sh",
                 submit_info: "xxx",
                 sync: "同步",
+                service_id: [{ server_id: 0, server_name: "服务名称0", server_ip: "192.168.0.1" }],
                 children: [{
                     key: 3,
                     title: "任务3",
                     task_no: 3,
                     task_name: "任务3",
                     task_type: "自定义脚本压测",
-                    script_name: "a.sh",
+                    script_name: "1.sh",
                     submit_info: "xxx",
-                    sync: "同步",
-                },
-                {
-                    key: 4,
-                    title: "任务4, 长文本长文本长文本长文本长文本长文本",
-                    task_no: 4,
-                    task_name: "任务4",
-                    task_type: "自定义脚本压测",
-                    script_name: "a.sh",
-                    submit_info: "xxx",
+                    vuser: 5,
+                    basic: "by_count",
+                    by_count: 100,
+                    growth_interval: 4,
+                    increment: 2,
+                    init_value: 1,
+                    init_wait: 3,
+                    is_increased: true,
+                    sampling_ignore: 10,
+                    sampling_interval: 100,
+                    test_param: "param",
+                    service_id: [{ server_id: "1", server_name: "服务名称0", server_ip: "192.168.0.1" }],
                     sync: "同步",
                 }]
             }]
@@ -800,6 +808,14 @@ app.get("/argus-emergency/api/history", function (req, res) {
             }
         }),
         total: 11
+    })
+})
+app.get("/argus-emergency/api/history/get", function (req, res) {
+    res.json({
+        data: {
+            plan_no: "CP001",
+            plan_name: "A机房XX",
+        }
     })
 })
 app.get("/argus-emergency/api/history/scenario", function (req, res) {

@@ -15,7 +15,7 @@ ReactDOM.render(<BrowserRouter>
     <ConfigProvider locale={zhCN} form={{
       validateMessages: {
         types: {
-          integer: "${label}不是一个有效的整数"
+          integer: "${label}为整数"
         }
       }
     }}><ContextProvider>

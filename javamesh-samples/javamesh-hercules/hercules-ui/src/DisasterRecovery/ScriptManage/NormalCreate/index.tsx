@@ -17,9 +17,9 @@ export default function App() {
     const state = useLocation().state as any
     const [form] = Form.useForm()
     return <div className="ScriptCreate">
-        <Breadcrumb label="脚本管理" sub={{ label: "创建", parentUrl: "/DisasterRecovery/ScriptManage" }} />
+        <Breadcrumb label="脚本管理" sub={{ label: "创建", parentUrl: "/PerformanceTest/ScriptManage" }} />
         <Card>
-            <Form form={form} requiredMark={false} labelCol={{ span: 3 }}
+            <Form form={form}  labelCol={{ span: 3 }}
                 initialValues={{ script_from: "手工录入", public: "私有", ...state }}
                 onFinish={async function (forms) {
                     const values = {...forms, ...state}
@@ -97,7 +97,7 @@ function Script({ form }: { form: FormInstance }) {
             </Form.Item>}
         </div>
         {scriptFrom !== "本地导入" && <>
-            <Form.Item label="脚本内容" className="Editor WithoutLabel" name="content" rules={[{ required: true, max: 5000 }]}>
+            <Form.Item label="脚本内容" className="Editor WithoutLabel" name="content" rules={[{ required: true }]}>
                 <ScriptEditor script={script} setScript={setScript} />
             </Form.Item>
             <DebugScript form={form} />

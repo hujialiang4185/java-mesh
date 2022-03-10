@@ -5,7 +5,7 @@ import axios from 'axios'
 // import PerformanceTest from './PerformanceTest'
 import Login from './Login';
 import AppHome from './AppHome'
-import DisasterRecovery from './DisasterRecovery'
+import PerformanceTest from './DisasterRecovery'
 import Logo from './Logo.png'
 import {
   HomeOutlined, 
@@ -44,7 +44,7 @@ export default function App() {
   const menuList = [
     { path: "/SystemConfig", label: "系统配置", comp: <SystemConfig />, icon: <SettingOutlined />, auth: "admin" },
     // { path: "/PerformanceTest", label: "性能测试(旧)", comp: <PerformanceTest />, icon: <AppstoreOutlined /> },
-    { path: "/DisasterRecovery", label: "性能测试", comp: <DisasterRecovery />, icon: <ThunderboltOutlined /> }
+    { path: "/PerformanceTest", label: "性能测试", comp: <PerformanceTest />, icon: <ThunderboltOutlined /> }
   ]
 
   return <Switch>
@@ -127,7 +127,7 @@ function ChangePwd({ username }: { username: string }) {
     <Modal className="ChangePwd" title="修改密码" width={400} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
       setIsModalVisible(false)
     }}>
-      <Form form={form} initialValues={{ username }} labelCol={{ span: 4 }} requiredMark={false} onFinish={async function (values) {
+      <Form form={form} initialValues={{ username }} labelCol={{ span: 4 }}  onFinish={async function (values) {
         try {
           await axios.post("/argus-user/api/user/chagnePwd", values)
           form.resetFields()

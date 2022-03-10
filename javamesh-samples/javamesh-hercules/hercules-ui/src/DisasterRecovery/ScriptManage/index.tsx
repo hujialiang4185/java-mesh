@@ -143,18 +143,8 @@ function Home() {
                     },
                     {
                         title: "脚本类型",
-                        dataIndex: "type",
-                        ellipsis: true,
-                        render(value) {
-                            switch (value) {
-                                case "GUI":
-                                    return "GUI脚本"
-                                case "IDE":
-                                    return "非GUI脚本"
-                                case "NORMAL":
-                                    return "非压测脚本"
-                            }
-                        }
+                        dataIndex: "type_label",
+                        ellipsis: true
                     },
                     {
                         title: "脚本用途",
@@ -189,14 +179,11 @@ function Home() {
                     },
                     {
                         title: "操作",
-                        width: 200,
+                        width: 160,
                         dataIndex: "script_id",
                         render(script_id, record) {
                             return <>
                                 <ViewScript data={record} />
-                                {auth.includes("operator") && <Button type="link" size="small" onClick={function () {
-                                    batchDelete([script_id])
-                                }}>删除</Button>}
                                 {auth.includes("operator") && <Link to={
                                     path + "/" + record.type + "?script_id=" + script_id
                                 }>
@@ -218,7 +205,7 @@ function SubmitReview(props: { load: () => void, script_id: string, group_id: st
     return <>
         <Button type="link" size="small" onClick={function () { setIsModalVisible(true) }}>提审</Button>
         <Modal className="SubmitScriptReview" title="提交审核" visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () { setIsModalVisible(false) }}>
-            <Form form={form} requiredMark={false} labelCol={{ span: 4 }} onFinish={async function (values) {
+            <Form form={form}  labelCol={{ span: 4 }} onFinish={async function (values) {
                 try {
                     await axios.post('/argus-emergency/api/script/submitReview', { ...values, script_id: props.script_id })
                     message.success("提交成功")
@@ -263,7 +250,7 @@ function ApproveScript(props: { data: Data, load: () => {} }) {
             setIsModalVisible(false)
         }}>
             {isModalVisible && <ScriptDetail data={props.data} />}
-            <Form className="Form" requiredMark={false} onFinish={async function (values) {
+            <Form className="Form"  onFinish={async function (values) {
                 try {
                     await axios.post("/argus-emergency/api/script/approve", { ...values, script_id: props.data.script_id })
                     props.load()
@@ -309,7 +296,7 @@ function AddScript() {
         <Modal className="AddScript" title="添加脚本" width={950} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form form={form} requiredMark={false} labelCol={{ span: 2 }} initialValues={{ public: "私有", type: normal ? "非压测脚本" : "压测脚本", orchestrate_type: "GUI", language: "Shell" }} onFinish={async function (values) {
+            <Form form={form}  labelCol={{ span: 2 }} initialValues={{ public: "私有", type: normal ? "非压测脚本" : "压测脚本", orchestrate_type: "GUI", language: "Shell" }} onFinish={async function (values) {
                 if (submit) return
                 submit = true
                 try {
