@@ -19,22 +19,28 @@ package com.huawei.emergency.layout;
 import com.huawei.emergency.layout.controller.TransactionController;
 import com.huawei.emergency.layout.custom.CustomMethodTestElement;
 import com.huawei.emergency.layout.custom.DefaultTestElement;
-import com.huawei.emergency.layout.template.GroovyClassTemplate;
 import com.huawei.emergency.layout.template.GroovyMethodTemplate;
+
 import lombok.Data;
 
-import java.util.ArrayList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
 /**
+ * 测试元件-根节点
+ *
  * @author y30010171
  * @since 2021-12-17
  **/
 @Data
 public class TestPlanTestElement extends ParentTestElement {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TestPlanTestElement.class);
+    private static final int ONE_HUNDRED = 100;
 
     private String agent; // 代理数
     private String vuser; // 虚拟用户数
@@ -66,46 +72,28 @@ public class TestPlanTestElement extends ParentTestElement {
         int rateTotal = allTransactional.stream()
             .mapToInt(TransactionController::getPresure)
             .sum();
-        if (rateTotal == 100 * allTransactional.size()) {
-            // todo 顺序执行
-            /*for (TransactionController controller : allTransactional) {
-                testMethod.addContent(String.format(Locale.ROOT, " this.%s;", controller.invokeStr()), 2);
-            }*/
-        } else if (rateTotal == 100) {
+        if (rateTotal == ONE_HUNDRED * allTransactional.size()) {
+            LOGGER.info("all pressure equals {}*{}", ONE_HUNDRED, allTransactional.size());
+        } else if (rateTotal == ONE_HUNDRED) {
             generateScheduleCode(allTransactional);
         } else {
             throw new RuntimeException("事务控制器压力分配不能超过100");
         }
         nextElements().stream()
-            .filter(testElement -> testElement instanceof DefaultTestElement || testElement instanceof CustomMethodTestElement || testElement instanceof TransactionController)
+            .filter(testElement -> testElement instanceof DefaultTestElement
+                || testElement instanceof CustomMethodTestElement || testElement instanceof TransactionController)
             .forEach(handler -> handler.handle(context));
     }
 
     private void generateScheduleCode(List<TransactionController> allTransactional) {
-        /*testMethod.addContent("int vusers = getVusers();", 2);
-        testMethod.addContent("int runThreadNum = getRunThreadNum();", 2);
-        testMethod.addContent("int preRate = 0;", 2);
-        List<String> runNums = new ArrayList<>();
-        for (int i = 0; i < allTransactional.size(); i++) {
-            String variableName = "runNum" + i;
-            testMethod.addContent(String.format(Locale.ROOT, "preRate += %s;int %s = vusers / 100 * preRate;", allTransactional.get(i).getRate(), variableName), 2);
-            runNums.add(variableName);
-        }
-        for (int i = 0; i < runNums.size(); i++) {
-            if (i == 0) {
-                testMethod.addContent(String.format(Locale.ROOT, "if (runThreadNum > 0 && runThreadNum <= %s)", runNums.get(i)), 2);
-                testMethod.addContent(String.format(Locale.ROOT, "this.%s;", allTransactional.get(i).invokeStr()), 3);
-            } else {
-                testMethod.addContent(String.format(Locale.ROOT, "else if (runThreadNum > %s && runThreadNum <= %s)", runNums.get(i - 1), runNums.get(i)), 2);
-                testMethod.addContent(String.format(Locale.ROOT, "this.%s;", allTransactional.get(i).invokeStr()), 3);
-            }
-        }*/
         int preRate = 0;
         for (TransactionController controller : allTransactional) {
-            GroovyMethodTemplate method = controller.getMethod();
+            GroovyMethodTemplate method = controller.methodTemplate();
             method.addContent("int vusers = getVusers();", 2);
             method.addContent("int runThreadNum = getRunThreadNum();", 2);
-            method.addContent(String.format(Locale.ROOT, "int preRunNum = vusers / 100 * %s;int runNum = vusers / 100 * (%s + %s);", preRate, preRate, controller.getPresure()), 2);
+            method.addContent(
+                String.format(Locale.ROOT, "int preRunNum = vusers / 100 * %s;int runNum = vusers / 100 * (%s + %s);",
+                    preRate, preRate, controller.getPresure()), 2);
             method.addContent("if (runThreadNum <= preRunNum || runThreadNum > runNum) ", 2);
             method.addContent("return;", 3);
             preRate += controller.getPresure();
