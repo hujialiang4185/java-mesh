@@ -1,19 +1,19 @@
 package com.huawei.user.service.impl;
 
-import com.alibaba.fastjson.JSONObject;
-import com.github.pagehelper.Page;
-import com.github.pagehelper.PageHelper;
 import com.huawei.user.common.api.CommonResult;
 import com.huawei.user.common.constant.FailedInfo;
 import com.huawei.user.common.util.EscapeUtil;
 import com.huawei.user.common.util.JwtTokenUtil;
-import com.huawei.user.common.util.UserFeignClient;
 import com.huawei.user.entity.JwtUser;
 import com.huawei.user.entity.UserEntity;
 import com.huawei.user.mapper.UserMapper;
 import com.huawei.user.service.UserService;
-import feign.FeignException;
+
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,16 +26,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 
 @Slf4j
 @Service
@@ -79,7 +78,8 @@ public class UserServiceImpl implements UserService {
             if (!userDetails.isEnabled()) {
                 return CommonResult.failed("账号已被禁用");
             }
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails,
+                null, userDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String token = jwtTokenUtil.generateToken(userDetails);
             if (token == null) {
@@ -177,7 +177,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public CommonResult listUser(String nickName, String userName, String role, String status, int pageSize, int current, String sorter, String order) {
+    public CommonResult listUser(String nickName, String userName, String role, String status, int pageSize,
+        int current, String sorter, String order) {
         UserEntity user = new UserEntity();
         user.setNickName(EscapeUtil.escapeChar(nickName));
         user.setUserName(EscapeUtil.escapeChar(userName));
