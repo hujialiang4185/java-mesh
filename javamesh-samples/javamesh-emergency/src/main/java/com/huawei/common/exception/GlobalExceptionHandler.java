@@ -6,6 +6,8 @@ package com.huawei.common.exception;
 
 import com.huawei.common.api.CommonResult;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -21,9 +23,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     @ResponseBody
     @ExceptionHandler(value = ApiException.class)
     public CommonResult handle(ApiException e) {
+        LOGGER.error("request error.", e);
         return CommonResult.failed(e.getMessage());
     }
 
@@ -58,12 +63,14 @@ public class GlobalExceptionHandler {
     @ResponseBody
     @ExceptionHandler(value = IllegalArgumentException.class)
     public CommonResult handleIllegalArgumentException(IllegalArgumentException e) {
+        LOGGER.error("request argument error.", e);
         return CommonResult.failed(e.getMessage());
     }
 
     @ResponseBody
     @ExceptionHandler(value = Exception.class)
     public CommonResult handleException(Exception e) {
+        LOGGER.error("request error.", e);
         return CommonResult.failed("请求异常，请稍后重试");
     }
 }
