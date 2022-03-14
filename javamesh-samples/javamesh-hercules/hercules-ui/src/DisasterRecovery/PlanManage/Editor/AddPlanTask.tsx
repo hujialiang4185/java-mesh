@@ -36,7 +36,6 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
         onFinish={async (values) => {
           try {
             await props.onFinish(values)
-            form.resetFields()
             setIsModalVisible(false)
           } catch (error: any) {
             message.error(error.message)
@@ -119,7 +118,7 @@ function TaskFormItems(props: { script: Script, loadScript: (name: string) => vo
     </Collapse>
     <Divider orientation="left">压测配置</Divider>
     <Form.Item name="vuser" label="虚拟用户数" labelCol={{ span: 3 }} labelAlign="left" rules={[{ type: "integer", required: true }]}>
-      <InputNumber min={1} max={10000} placeholder="请输入该测试所期望的虚拟用户数" addonAfter="最大10000"/>
+      <InputNumber min={1} max={10000} placeholder="请输入该测试所期望的虚拟用户数" addonAfter="最大10000" />
     </Form.Item>
     <RootBasicScenario labelCol={{ span: 3 }} labelAlign="left" label="基础场景" />
     <Form.Item labelCol={{ span: 3 }} labelAlign="left" label="采样间隔" name="sampling_interval" rules={[{ type: "integer" }]}>
@@ -141,7 +140,7 @@ function TaskFormItems(props: { script: Script, loadScript: (name: string) => vo
 
 export function RootBasicScenario(props: FormItemLabelProps) {
   const [basic, setBasic] = useState(false)
-  return <Form.Item {...props} className="RootBasicScenario" initialValue="by_time" name="basic" rules={[{required: true}]} >
+  return <Form.Item {...props} className="RootBasicScenario" initialValue="by_time" name="basic" rules={[{ required: true }]} >
     <Radio.Group onChange={function (e) {
       setBasic(e.target.value === "by_count")
     }}>

@@ -127,7 +127,8 @@ function Home() {
                                 { title: "开始时间", dataIndex: "start_time", ellipsis: true },
                                 { title: "持续阈值", dataIndex: "duration", ellipsis: true },
                                 { title: "TPS", dataIndex: "tps", ellipsis: true },
-                                { title: "MIT出错率(%)", dataIndex: "mean_test_time", ellipsis: true },
+                                { title: "MTT", dataIndex: "mean_test_time", ellipsis: true },
+                                { title: "出错率(%)", dataIndex: "error_rate", ellipsis: true}
                             ]}
                         />
                     }

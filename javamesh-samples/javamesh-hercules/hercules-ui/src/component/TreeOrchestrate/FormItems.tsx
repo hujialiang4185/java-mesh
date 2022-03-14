@@ -88,7 +88,7 @@ export default function App(props: { type: String, onChange: () => void }) {
             return <>
                 <Divider orientation="left">Import代码块</Divider>
                 <Form.Item name="content">
-                    <Editor className="MonacoEditor" height={400} language="java" />
+                    <Editor className="MonacoEditor" height={400} language="java" onChange={props.onChange}/>
                 </Form.Item>
                 <Form.Item label="JAR文件" name="filenames">
                     <OSSUpload max={10} mark='&path=lib' onChange={props.onChange}/>
@@ -112,7 +112,7 @@ export default function App(props: { type: String, onChange: () => void }) {
         case "JSR223PreProcessor":
         case "JSR223PostProcessor":
         case "JSR223Assertion":
-            return <ScriptEditor />
+            return <ScriptEditor onChange={props.onChange}/>
         case "ResponseAssertion":
             return <>
                 <Divider orientation="left">测试字段</Divider>
@@ -134,7 +134,7 @@ export default function App(props: { type: String, onChange: () => void }) {
                 </Form.Item>
                 <Divider orientation="left">方法内容</Divider>
                 <Form.Item name="script">
-                    <Editor className="MonacoEditor" height={400} language="python" />
+                    <Editor className="MonacoEditor" height={400} language="python" onChange={props.onChange}/>
                 </Form.Item>
             </>
         case "Counter":
@@ -199,7 +199,7 @@ export default function App(props: { type: String, onChange: () => void }) {
     return null
 }
 
-function ScriptEditor() {
+function ScriptEditor(props: { onChange: () => void }) {
     const [language, setLanguage] = useState("")
     const radioRef = useRef<HTMLDivElement>(null)
     useEffect(function () {
@@ -213,7 +213,7 @@ function ScriptEditor() {
             }} />
         </Form.Item>
         <Form.Item name="script">
-            <Editor className="MonacoEditor" height={400} language={language} />
+            <Editor className="MonacoEditor" height={400} language={language} onChange={props.onChange}/>
         </Form.Item>
     </>
 }
