@@ -16,9 +16,6 @@
 
 package com.huawei.emergency.layout;
 
-import com.alibaba.fastjson.JSONObject;
-import com.google.common.base.CaseFormat;
-import com.google.common.collect.Sets;
 import com.huawei.emergency.layout.assertion.Jsr223Assertion;
 import com.huawei.emergency.layout.assertion.ResponseAssertion;
 import com.huawei.emergency.layout.config.Counter;
@@ -32,11 +29,11 @@ import com.huawei.emergency.layout.config.KeystoreConfiguration;
 import com.huawei.emergency.layout.controller.LoopController;
 import com.huawei.emergency.layout.controller.TransactionController;
 import com.huawei.emergency.layout.controller.WhileController;
-import com.huawei.emergency.layout.custom.AfterTestElement;
 import com.huawei.emergency.layout.custom.AfterProcessTestElement;
+import com.huawei.emergency.layout.custom.AfterTestElement;
 import com.huawei.emergency.layout.custom.AfterThreadTestElement;
-import com.huawei.emergency.layout.custom.BeforeTestElement;
 import com.huawei.emergency.layout.custom.BeforeProcessTestElement;
+import com.huawei.emergency.layout.custom.BeforeTestElement;
 import com.huawei.emergency.layout.custom.BeforeThreadTestElement;
 import com.huawei.emergency.layout.custom.CustomCodeTestElement;
 import com.huawei.emergency.layout.custom.CustomMethodTestElement;
@@ -48,9 +45,15 @@ import com.huawei.emergency.layout.processor.RegularPostProcessor;
 import com.huawei.emergency.layout.sampler.HttpSampler;
 import com.huawei.emergency.layout.sampler.Jsr223Sampler;
 import com.huawei.emergency.layout.time.ConstantTimer;
+
+import com.alibaba.fastjson.JSONObject;
+import com.google.common.base.CaseFormat;
+import com.google.common.collect.Sets;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -63,16 +66,19 @@ import java.util.Map;
  * @author y30010171
  * @since 2021-12-17
  **/
+@Component
 public class TestElementFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TestElementFactory.class);
     private static final Collection<Class<?>> GENERAL_CLASS_TYPE;
     private static final String SET_METHOD_PREFIX = "set";
     private static final Map<String, String> allHandlerClassName = new HashMap<>();
-    private static final List<String> DEFAULT_HANDLER = Arrays.asList("BeforeProcess", "BeforeThread", "Before", "TransactionController", "After", "AfterThread", "AfterProcess");
+    private static final List<String> DEFAULT_HANDLER = Arrays.asList("BeforeProcess", "BeforeThread", "Before",
+        "TransactionController", "After", "AfterThread", "AfterProcess");
 
     static {
-        GENERAL_CLASS_TYPE = Sets.newHashSet(boolean.class, Boolean.class, int.class, Integer.class, long.class, Long.class, String.class, List.class, Map.class);
+        GENERAL_CLASS_TYPE = Sets.newHashSet(boolean.class, Boolean.class, int.class, Integer.class, long.class,
+            Long.class, String.class, List.class, Map.class);
         allHandlerClassName.put("Root", TestPlanTestElement.class.getName());
         allHandlerClassName.put("ConstantTimer", ConstantTimer.class.getName());
         allHandlerClassName.put("HTTPRequest", HttpSampler.class.getName());
@@ -117,7 +123,8 @@ public class TestElementFactory {
                 TestElement testElement = (TestElement) Class.forName(className).newInstance();
                 for (Map.Entry<String, Object> entry : stringStringMap.entrySet()) {
                     if (StringUtils.isNotEmpty(entry.getKey())) {
-                        callSetterMethod(testElement, getSetterMethodName(entry.getKey()), entry.getValue() == null ? null : entry.getValue());
+                        callSetterMethod(testElement, getSetterMethodName(entry.getKey()),
+                            entry.getValue() == null ? null : entry.getValue());
                     }
                 }
                 return testElement;
@@ -149,7 +156,8 @@ public class TestElementFactory {
         return SET_METHOD_PREFIX + String.valueOf(propertyName.charAt(0)).toUpperCase() + propertyName.substring(1);
     }
 
-    private static void callSetterMethod(final TestElement testElement, final String methodName, final Object setterValue) {
+    private static void callSetterMethod(final TestElement testElement, final String methodName,
+        final Object setterValue) {
         for (Class<?> each : GENERAL_CLASS_TYPE) {
             try {
                 Method method = testElement.getClass().getMethod(methodName, each);

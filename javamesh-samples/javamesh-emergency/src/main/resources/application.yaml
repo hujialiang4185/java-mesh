@@ -118,3 +118,4 @@ ngrinder:
   auto:
     execute:
       test: false
+mode: test

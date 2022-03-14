@@ -63,11 +63,13 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang.StringUtils;
 import org.ngrinder.common.util.UrlUtils;
+import org.ngrinder.script.handler.GroovyMavenProjectScriptHandler;
 import org.ngrinder.script.handler.ProjectHandler;
 import org.ngrinder.script.handler.ScriptHandler;
 import org.ngrinder.script.model.FileEntry;
 import org.ngrinder.script.service.NfsFileEntryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -120,6 +122,9 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     private static final String AUTH_ADMIN = "admin";
     private static final String AUTH_APPROVER = "approver";
     private static final String APPROVING_STATUS = "1";
+    private static final String MODE_TEST = "test";
+    private static final String MODE_DEV = "dev";
+    private static final String BLANK_SPACE = " ";
 
     @Autowired
     PasswordUtil passwordUtil;
@@ -141,6 +146,9 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
 
     @Autowired
     private Configuration freemarkerConfig;
+
+    @Value("${mode}")
+    private String mode;
 
     @Override
     public CommonResult<List<EmergencyScript>> listScript(JwtUser jwtUser, String scriptName, String scriptUser,
@@ -277,12 +285,12 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             String libs = allResources.stream()
                 .filter(resource -> resource.getResourcePath() != null && resource.getResourcePath().contains("lib"))
                 .map(resource -> resource.getResourceId() + "/" + resource.getResourceName())
-                .collect(Collectors.joining(" "));
+                .collect(Collectors.joining(BLANK_SPACE));
             String resources = allResources.stream()
                 .filter(
                     resource -> resource.getResourcePath() != null && resource.getResourcePath().contains("resource"))
                 .map(resource -> resource.getResourceId() + "/" + resource.getResourceName())
-                .collect(Collectors.joining(" "));
+                .collect(Collectors.joining(BLANK_SPACE));
             if (StringUtils.isNotEmpty(libs)) {
                 scriptInfo.setLibs(libs);
             }
@@ -317,7 +325,13 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             throw new ApiException("请选择正确的脚本语言");
         }
         script.setScriptType(scriptType.getValue());
-        script.setScriptStatus(TYPE_ZERO);
+
+        // 如果是dev或test则不需要提审审核脚本
+        if (MODE_DEV.equals(mode) || MODE_TEST.equals(mode)) {
+            script.setScriptStatus(TYPE_TWO);
+        } else {
+            script.setScriptStatus(TYPE_ZERO);
+        }
         if (StringUtils.isEmpty(script.getSubmitInfo())) {
             script.setSubmitInfo("");
         }
@@ -338,16 +352,22 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         updateScript.setScriptId(script.getScriptId());
         updateScript.setContent(script.getContent());
         updateScript.setParam(script.getParam());
-        updateScript.setScriptStatus(TYPE_ZERO); // 变为待提审
+
+        // 如果是dev或test则不需要提审审核脚本
+        if (MODE_DEV.equals(mode) || MODE_TEST.equals(mode)) {
+            updateScript.setScriptStatus(TYPE_TWO);
+        } else {
+            updateScript.setScriptStatus(TYPE_ZERO);
+        }
         updateScript.setUpdateTime(Timestamp.from(Instant.now()));
         if (script instanceof ScriptManageDto) {
             ScriptManageDto scriptManageDto = (ScriptManageDto) script;
             List<String> resourceList = new ArrayList<>();
             if (StringUtils.isNotEmpty(scriptManageDto.getLibs())) {
-                resourceList.addAll(Arrays.asList(scriptManageDto.getLibs().split(" ")));
+                resourceList.addAll(Arrays.asList(scriptManageDto.getLibs().split(BLANK_SPACE)));
             }
             if (StringUtils.isNotEmpty(scriptManageDto.getResources())) {
-                resourceList.addAll(Arrays.asList(scriptManageDto.getResources().split(" ")));
+                resourceList.addAll(Arrays.asList(scriptManageDto.getResources().split(BLANK_SPACE)));
             }
             resourceService.refreshResource(script.getScriptId(), resourceList);
         }
@@ -408,7 +428,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         EmergencyScript script = new EmergencyScript();
         script.setScriptId(scriptId);
         script.setApprover(userName);
-        if (approve.equals("通过")) {
+        if ("通过".equals(approve)) {
             script.setScriptStatus(TYPE_TWO);
             freshGrinderScript(scriptId);
         } else {
@@ -557,7 +577,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         }
         List<String> resourceList = new ArrayList<>();
         updateOrchestrate(userName, treeResponse.getScriptId(), -1, rootNode, treeResponse.getMap(), 1, resourceList);
-        resourceService.refreshResource(treeResponse.getScriptId(), resourceList);  // 清除资源文件
+        resourceService.refreshResource(treeResponse.getScriptId(), resourceList); // 清除资源文件
 
         // 生成代码
         TestPlanTestElement parse = TreeResponse.parse(treeResponse);
@@ -600,14 +620,14 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         int seq, List<String> resourceList) {
         EmergencyElement element = new EmergencyElement();
         Map elementParams = map.get(node.getKey());
-        if (elementParams != null &&
-            ("JARImport".equals(node.getType()) || "CSVDataSetConfig".equals(node.getType()))
+        if (elementParams != null
+            && ("JARImport".equals(node.getType()) || "CSVDataSetConfig".equals(node.getType()))
         ) {
             String filenames = elementParams.getOrDefault("filenames", "").toString();
             if (StringUtils.isEmpty(filenames)) {
                 elementParams.remove("filenames"); // 前端会多显示一个空行
             } else {
-                resourceList.addAll(Arrays.asList(filenames.split(" ")));
+                resourceList.addAll(Arrays.asList(filenames.split(BLANK_SPACE)));
             }
         }
         element.setElementParams(JSONObject.toJSONString(elementParams));
@@ -705,14 +725,10 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         script.setSubmitInfo(
             StringUtils.isEmpty(scriptManageDto.getSubmitInfo()) ? "" : scriptManageDto.getSubmitInfo());
         script.setHavePassword(TYPE_ZERO);
-        /*JSONObject options = new JSONObject();
-        options.put("method", scriptManageDto.getMethod());
-        options.put("headers", JSONObject.toJSONString(scriptManageDto.getHeaders()));
-        options.put("cookies", JSONObject.toJSONString(scriptManageDto.getCookies()));
-        options.put("params", JSONObject.toJSONString(scriptManageDto.getParams()));*/
         script.setContent(
             generateIdeScript(JwtAuthenticationTokenFilter.currentGrinderUser(), "", scriptManageDto.getForUrl(),
-                script.getScriptName(), scriptLanguage.getLanguage(), scriptManageDto.isHasResource(), null));
+                script.getScriptName(), scriptLanguage.getLanguage(), scriptManageDto.isHasResource(),
+                JSONObject.toJSONString(scriptManageDto)));
         script.setScriptUser(user.getUserName());
         script.setScriptStatus(TYPE_ZERO);
         script.setUpdateTime(Timestamp.from(Instant.now()));
@@ -769,7 +785,11 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         map.put("name", hostIp);
         map.put("options", options);
         if (scriptHandler instanceof ProjectHandler) {
-            String scriptContent = getScriptTemplate(map, scriptHandler.getExtension());
+            String extension = scriptHandler.getExtension();
+            if (scriptHandler instanceof GroovyMavenProjectScriptHandler) {
+                extension = "groovy";
+            }
+            String scriptContent = getScriptTemplate(map, extension);
             scriptHandler.prepareScriptEnv(user, path, StringUtils.trimToEmpty(fileName), hostIp, testUrl,
                 createLibAndResources, scriptContent);
             return scriptContent;

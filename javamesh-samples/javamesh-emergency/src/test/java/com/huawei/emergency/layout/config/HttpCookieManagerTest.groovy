@@ -24,7 +24,7 @@ class HttpCookieManagerTest extends GroovyTestCase {
 
     void "test when normal"() {
         ElementProcessContext context = new DefaultElementProcessContext(template: GroovyClassTemplate.template());
-        HttpCookieManager cookieManager = new HttpCookieManager(cookies: [ new HttpCookieManager.CookieValue(name: "sessionId", value: "123456789", domain: "127.0.0.1", path: "/", secure: true)]);
+        HttpCookieManager cookieManager = new HttpCookieManager(cookies: [new HttpCookieManager.CookieValue(name: "sessionId", value: "123456789", domain: "127.0.0.1", path: "/", setSafe: true)]);
         cookieManager.handle(context);
         context.getTemplate().print(System.out)
     }

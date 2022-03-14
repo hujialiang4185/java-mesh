@@ -70,6 +70,9 @@ class GroovyTemplate {
 
     @Before
     public void before() {
+        def threadContext = HTTPPluginControl.getThreadHTTPClientContext();
+        CookieModule.listAllCookies(threadContext).each { CookieModule.removeCookie(it, threadContext)}
+        cookies.each {CookieModule.addCookie(it, threadContext)}
     }
 
     @After

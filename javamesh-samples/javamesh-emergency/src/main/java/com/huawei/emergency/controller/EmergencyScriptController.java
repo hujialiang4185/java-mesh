@@ -14,6 +14,8 @@ import com.huawei.emergency.entity.JwtUser;
 import com.huawei.emergency.layout.TreeResponse;
 import com.huawei.emergency.service.EmergencyExecService;
 import com.huawei.emergency.service.EmergencyScriptService;
+import com.huawei.logaudit.aop.WebOperationLog;
+import com.huawei.logaudit.constant.OperationTypeEnum;
 import com.huawei.script.exec.ExecResult;
 import com.huawei.script.exec.log.LogResponse;
 
@@ -29,12 +31,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
+
 
 /**
  * 脚本管理controller
@@ -55,6 +59,7 @@ public class EmergencyScriptController {
     private EmergencyExecService execService;
 
     @GetMapping
+    @WebOperationLog(resourceType = "脚本列表",operationType = OperationTypeEnum.SELECT,operationDetails = "查询脚本列表")
     public CommonResult<List<EmergencyScript>> listScript(
         UsernamePasswordAuthenticationToken authentication,
         @RequestParam(value = "script_name", required = false) String scriptName,
