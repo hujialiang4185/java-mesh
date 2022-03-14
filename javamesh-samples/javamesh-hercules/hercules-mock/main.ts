@@ -471,6 +471,7 @@ app.get('/argus-emergency/api/script', function (req, res) {
                 status: ["approved", "approving", "unapproved", "unapproved"][index % 4],
                 status_label: ["已审核", "待审核", "新增", "拒绝"][index % 4],
                 type: ["GUI", "IDE", "NORMAL"][index % 3],
+                type_label: ["GUI", "IDE", "NORMAL"][index % 3],
                 owner: "张三",
                 submit_info: "xxx",
                 create_time: "2021-01-01 00:00:00",
