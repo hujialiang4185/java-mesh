@@ -631,7 +631,10 @@ const orchestrate = {
             "9639388182808-AfterThread": { title: "@AfterThread" },
             "9639388182811-Before": { title: "@Before" },
             "9639388182812-After": { title: "@After" },
-            "9639388182812-CSVDataSetConfig": { title: "CSV数据文件设置", filenames: "001/.npmrc 002/xxx" }
+            "9639388182812-CSVDataSetConfig": {
+                title: "CSV数据文件设置", filenames: "001/.npmrc 002/xxx", variable_names: ",",
+                recycle: true, share_mode: "ALL_THREADS"
+            }
         }
     }
 }

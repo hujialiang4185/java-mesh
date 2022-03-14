@@ -61,7 +61,7 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
             <Switch checkedChildren="同步" unCheckedChildren="异步" defaultChecked />
           </Form.Item>
         </div>
-        <Form.Item label="执行主机" name="service_id">
+        <Form.Item label="执行主机" name="service_id" rules={[{ required: true }]}>
           <TabelTransfer />
         </Form.Item>
         {isCmd ? <CmdFormItems script={script} loadScript={loadScript} /> : <TaskFormItems script={script} loadScript={loadScript} />}
@@ -141,22 +141,22 @@ function TaskFormItems(props: { script: Script, loadScript: (name: string) => vo
 
 export function RootBasicScenario(props: FormItemLabelProps) {
   const [basic, setBasic] = useState(false)
-  return <Form.Item {...props} className="RootBasicScenario" initialValue="by_time" name="basic">
+  return <Form.Item {...props} className="RootBasicScenario" initialValue="by_time" name="basic" rules={[{required: true}]} >
     <Radio.Group onChange={function (e) {
       setBasic(e.target.value === "by_count")
     }}>
       <Radio value="by_time">测试时长</Radio>
       <div>
         <Form.Item label="小时" className="WithoutLabel" name="by_time_h" rules={[{ type: "integer" }]}>
-          <InputNumber disabled={basic} className="Time" min={0} max={8759} />
+          <InputNumber disabled={basic} className="Time" min={-1} max={8759} />
         </Form.Item>
         <span className="Sep">:</span>
         <Form.Item label="分钟" className="WithoutLabel" name="by_time_m" rules={[{ type: "integer" }]}>
-          <InputNumber disabled={basic} className="Time" min={0} max={60} />
+          <InputNumber disabled={basic} className="Time" min={-1} max={60} />
         </Form.Item>
         <span className="Sep">:</span>
         <Form.Item label="秒" className="WithoutLabel" name="by_time_s" rules={[{ type: "integer" }]}>
-          <InputNumber disabled={basic} className="Time" min={0} max={60} />
+          <InputNumber disabled={basic} className="Time" min={-1} max={60} />
         </Form.Item>
         <span className="Format">HH:MM:SS</span>
       </div>

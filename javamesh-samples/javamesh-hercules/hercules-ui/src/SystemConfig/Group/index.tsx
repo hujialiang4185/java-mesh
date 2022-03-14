@@ -76,7 +76,7 @@ function AddGroup(props: { load: () => void }) {
     const [form] = Form.useForm();
     return <>
         <Button type="primary" icon={<PlusOutlined />} onClick={function () { setIsModalVisible(true) }}>添加分组</Button>
-        <Modal className="AddGroup" title="添加分组" width={400} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
+        <Modal className="AddGroup" title="添加分组" width={500} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
             <Form form={form}  onFinish={async function (values) {

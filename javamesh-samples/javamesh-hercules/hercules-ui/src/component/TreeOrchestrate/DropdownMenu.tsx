@@ -62,14 +62,14 @@ const ConfigElement: MenuConfig = {
     ]
 }
 
-const common = [Sampler, LogicController, Timer, Assertion, ConfigElement]
+const common = [Sampler, Timer, Assertion, ConfigElement]
 const before = [...common, PreProcessor]
 const after = [...common, PostProcessor]
 
 const menuGroup = new Map<String, MenuConfig[]>([
     ["Root", [LogicController, TestGroup]],
-    ["BeforeProcess", [SamplerB, LogicController, Timer, Assertion, ConfigElement, PreProcessor]],
-    ["BeforeThread", [SamplerB, LogicController, Timer, Assertion, ConfigElement, PostProcessor]],
+    ["BeforeProcess", [SamplerB, Timer, Assertion, ConfigElement, PreProcessor]],
+    ["BeforeThread", [SamplerB, Timer, Assertion, ConfigElement, PostProcessor]],
     ["AfterProcess", after],
     ["AfterThread", after],
     ["Before", before],

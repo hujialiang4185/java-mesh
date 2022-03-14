@@ -224,10 +224,10 @@ function AddUser(props: { load: () => void }) {
     const [form] = Form.useForm();
     return <>
         <Button type="primary" icon={<PlusOutlined />} onClick={function () { setIsModalVisible(true) }}>添加账号</Button>
-        <Modal className="AddUser" title="添加账号" width={400} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
+        <Modal className="AddUser" title="添加账号" width={500} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form form={form}  onFinish={async function (values) {
+            <Form form={form} labelCol={{span: 4}} onFinish={async function (values) {
                 try {
                     const res = await axios.post("/argus-user/api/user", values)
                     form.resetFields()
@@ -273,10 +273,10 @@ function UpdateUser(props: { data: Data, load: () => {} }) {
     const [form] = Form.useForm();
     return <>
         <Button disabled={props.data.username === "admin"} type="link" size="small" onClick={function () { setIsModalVisible(true) }}>修改</Button>
-        <Modal className="UpdateUser" title="修改" width={400} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
+        <Modal className="UpdateUser" title="修改" width={500} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form form={form} initialValues={props.data}  onFinish={async function (values) {
+            <Form form={form} labelCol={{span: 4}} initialValues={props.data}  onFinish={async function (values) {
                 try {
                     await axios.put("/argus-user/api/user", values)
                     message.success("用户修改成功")
