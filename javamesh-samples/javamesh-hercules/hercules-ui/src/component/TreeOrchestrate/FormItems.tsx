@@ -163,16 +163,22 @@ export default function App(props: { type: String, onChange: () => void }) {
                 <Form.Item label="文件编码" name="file_encoding">
                     <Select options={[{ value: "UTF-8" }, { value: "UTF-16" }, { value: "ISO-8859-15" }, { value: "US-ASCII" }]} />
                 </Form.Item>
-                <Form.Item label="分割符(西文逗号间隔)" name="variable_names">
+                <Form.Item label="变量名称(西文逗号间隔)" name="variable_names">
                     <Input />
                 </Form.Item>
                 <Form.Item label="忽略首行(只在设置了变量名称才生效)" name="ignore_first_line" valuePropName="checked">
                     <Checkbox />
                 </Form.Item>
+                <Form.Item label="分割符(用'\t'代表制表符)" name="delimiter">
+                    <Input />
+                </Form.Item>
                 <Form.Item label="是否允许带引号" name="quoted_data" valuePropName="checked">
                     <Checkbox />
                 </Form.Item>
                 <Form.Item label="遇到文件结束符再次循环?" name="recycle" valuePropName="checked">
+                    <Checkbox />
+                </Form.Item>
+                <Form.Item label="遇到文件结束符停止线程?" name="stop_on_eof" valuePropName="checked">
                     <Checkbox />
                 </Form.Item>
                 <Form.Item label="线程共享模式" name="share_mode">
