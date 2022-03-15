@@ -97,7 +97,7 @@ function Home() {
         <Card>
             <div className="ToolBar">
                 <AddScript />
-                <Button icon={<CloseOutlined />} onClick={function () {
+                <Button disabled={!auth.includes("operator")} icon={<CloseOutlined />} onClick={function () {
                     if (selectedRowKeys.length === 0) {
                         return
                     }

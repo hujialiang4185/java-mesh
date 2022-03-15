@@ -28,7 +28,11 @@ const user = {
     role: "管理员",
     group_name: "群组1",
     update_time: "2021-01-01 00:00:00",
-    auth: ["admin", "approver", "operator"] // admin, approver, operator
+    auth: [
+        "admin", 
+        "approver", 
+        "operator"
+    ]
 }
 app.get('/argus-user/api/user/me', function (req, res) {
     res.json({
