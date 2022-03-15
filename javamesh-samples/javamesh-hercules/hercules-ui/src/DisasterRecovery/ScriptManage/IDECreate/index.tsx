@@ -7,6 +7,9 @@ import { useHistory, useLocation } from "react-router-dom"
 import "./index.scss"
 import axios from "axios"
 
+function filterEmpty(arr: {}[]){
+    return arr.filter(function(item: {}){return Object.keys(item).length > 0})
+}
 export default function App() {
     let submit = false
     const history = useHistory()
@@ -19,6 +22,9 @@ export default function App() {
                 if (submit) return
                 submit = true
                 try {
+                    values.headers = filterEmpty(values.headers)
+                    values.cookies = filterEmpty(values.cookies)
+                    values.params = filterEmpty(values.params)
                     await axios.post("/argus-emergency/api/script/ide", { ...values, ...state })
                     history.goBack()
                 } catch (error: any) {
