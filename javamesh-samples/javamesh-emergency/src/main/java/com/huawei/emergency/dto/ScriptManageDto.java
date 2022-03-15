@@ -69,7 +69,7 @@ public class ScriptManageDto extends EmergencyScript {
     private String orchestrateType;
 
     private String libs;
-    
+
     private String resources;
 
     /**
@@ -86,17 +86,17 @@ public class ScriptManageDto extends EmergencyScript {
         /**
          * value
          */
-        private String value;
+        private String value = "";
         /**
          * domain
          */
         @JsonProperty("value_a")
-        private String domain;
+        private String domain = "";
         /**
          * path
          */
         @JsonProperty("value_b")
-        private String path;
+        private String path = "";
     }
 
     /**

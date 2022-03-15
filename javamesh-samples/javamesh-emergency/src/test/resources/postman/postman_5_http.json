@@ -1,0 +1,256 @@
+{
+  "info": {
+    "_postman_id": "fb885c5b-7b29-4437-9adf-dc3cbd86b519",
+    "name": "411-Test",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "75 Neutron",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Cookie",
+            "value": "JSESSIONID=123456789"
+          },
+          {
+            "key": "X-Auth-Token",
+            "value": "MIIDhQYJKoZIhvcNAQcCoIIDdjCCA3ICAQExDTALBglghkgBZQMEAgEwggHTBgkqhkiG9w0BBwGgggHEBIIBwHsidG9rZW4iOnsibWV0aG9kcyI6WyJwYXNzd29yZCJdLCJyb2xlcyI6W3siaWQiOiIyZThhZWVjMDBmM2Q0NGE3YmU5YmEzYTk0NzkwZWQxMSIsIm5hbWUiOiJhZG1pbiJ9XSwiZXhwaXJlc19hdCI6IjIwMTgtMDktMjhUMTM6NTk6MzQuMDAwMDAwWiIsInByb2plY3QiOnsiZG9tYWluIjp7ImlkIjoiZGVmYXVsdCIsIm5hbWUiOiJEZWZhdWx0In0sImlkIjoiODEyOGVkN2ZlYmNlNDhmNjk0MjM3MDRhNzM4YWM4NjMiLCJuYW1lIjoiYWRtaW4ifSwidXNlciI6eyJkb21haW4iOnsiaWQiOiJkZWZhdWx0IiwibmFtZSI6IkRlZmF1bHQifSwiaWQiOiI2ZmMxMGVkODc0NmQ0ZDFkYjZjOTFiZWJjY2VhODZlYSIsIm5hbWUiOiJjbG91ZF9hZG1pbiJ9LCJhdWRpdF9pZHMiOlsiVUJwMzNNZTRSaGU5SjlkeUtjN3JyUSJdLCJpc3N1ZWRfYXQiOiIyMDE4LTA5LTI4VDA3OjU5OjM0LjAwMDAwMFoifX0xggGFMIIBgQIBATBcMFcxCzAJBgNVBAYTAlVTMQ4wDAYDVQQIDAVVbnNldDEOMAwGA1UEBwwFVW5zZXQxDjAMBgNVBAoMBVVuc2V0MRgwFgYDVQQDDA93d3cuZXhhbXBsZS5jb20CAQEwCwYJYIZIAWUDBAIBMA0GCSqGSIb3DQEBAQUABIIBABDI+4QD9u5MY1vG-XQumz1ePAe6U7yLZenF-zeAuDDYXXqRMrbTIAbewi8Wn5hmpdN8egFfvftEOMF+Lw0R6f7Ouz27e1E9Wdkqi28fFlIDP6c7+BZN7Wgy40ThtR5tzdMjenMMmEEvP8kafVCVteOSJPPq8uUqLPu1nyYwcJ9ok9dnYyra3hoRHF8SfxdnAdsm+SJvJjtZN+iDbPQHMo3ZELjjoWOUaTi+Y8U+04ngacwpNfspB5fMx41FFxm3hW2G0dgq8AZ8tV32M4tZuC5TW-4q6HGNYej-xvAUdMfKx8vEzYEfRehNdWoBWByahbu0HikqIBJcqoUM3y-2aM8="
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"size\":10}"
+        },
+        "url": {
+          "raw": "https://100.114.237.75:9696/v2.0/ext/eip-bandwidths/04189375-fadc-406e-b880-9668cd196c84/tags/f1bd5043-965e-47f3-b3c2-e70d89f0eff9=",
+          "protocol": "https",
+          "host": [
+            "100",
+            "114",
+            "237",
+            "75"
+          ],
+          "port": "9696",
+          "path": [
+            "v2.0",
+            "ext",
+            "eip-bandwidths",
+            "04189375-fadc-406e-b880-9668cd196c84",
+            "tags",
+            "f1bd5043-965e-47f3-b3c2-e70d89f0eff9="
+          ],
+          "query": [
+            {
+              "key": "path",
+              "value": "/",
+              "equals": true
+            },
+            {
+              "key": "folderName",
+              "value": "test33/test44",
+              "equals": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "411 Neutron",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-Auth-Token",
+            "value": "MIIDhQYJKoZIhvcNAQcCoIIDdjCCA3ICAQExDTALBglghkgBZQMEAgEwggHTBgkqhkiG9w0BBwGgggHEBIIBwHsidG9rZW4iOnsibWV0aG9kcyI6WyJwYXNzd29yZCJdLCJyb2xlcyI6W3siaWQiOiIyZThhZWVjMDBmM2Q0NGE3YmU5YmEzYTk0NzkwZWQxMSIsIm5hbWUiOiJhZG1pbiJ9XSwiZXhwaXJlc19hdCI6IjIwMTgtMTAtMTVUMTc6MDc6MDYuMDAwMDAwWiIsInByb2plY3QiOnsiZG9tYWluIjp7ImlkIjoiZGVmYXVsdCIsIm5hbWUiOiJEZWZhdWx0In0sImlkIjoiODEyOGVkN2ZlYmNlNDhmNjk0MjM3MDRhNzM4YWM4NjMiLCJuYW1lIjoiYWRtaW4ifSwidXNlciI6eyJkb21haW4iOnsiaWQiOiJkZWZhdWx0IiwibmFtZSI6IkRlZmF1bHQifSwiaWQiOiI2ZmMxMGVkODc0NmQ0ZDFkYjZjOTFiZWJjY2VhODZlYSIsIm5hbWUiOiJjbG91ZF9hZG1pbiJ9LCJhdWRpdF9pZHMiOlsiVmg1VjZxLUFTM0tzNFYxNS1UY3Y1ZyJdLCJpc3N1ZWRfYXQiOiIyMDE4LTEwLTE1VDExOjA3OjA2LjAwMDAwMFoifX0xggGFMIIBgQIBATBcMFcxCzAJBgNVBAYTAlVTMQ4wDAYDVQQIDAVVbnNldDEOMAwGA1UEBwwFVW5zZXQxDjAMBgNVBAoMBVVuc2V0MRgwFgYDVQQDDA93d3cuZXhhbXBsZS5jb20CAQEwCwYJYIZIAWUDBAIBMA0GCSqGSIb3DQEBAQUABIIBAHdkl1iVkECQQokSpMLcWEd1NvPvbaibcbU5FVyAV0qcPrWN4OrueRnOTSVYntdXgUcfMp5TbbKCFGIlEqrotcvcEiju+l1k-t5UjhnHWKAYsKH9pxQe0oxLpRYKoyMm1DVpB95RgMaDASaPOjmWnzbdC5qLZZZRJRDty-tmd9I9v0S-wSfqDw3+wDdePzMuj-gpYxf9wBKQ1C9giLYRdLK0Kl1AIzmpN0qVRPNUHNsTtZZDJuXodNm4GLPG9PcVbmQ9miYf0iObz75dAnkzI2EoTrFlWQOzNC5WL02SIyTq84nzzwSdRnODuBwKJ-vyPePj9mcBAvfSSctPmWIp5BU="
+          }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "111",
+              "value": "2222",
+              "description": "3333",
+              "type": "text"
+            },
+            {
+              "key": "",
+              "value": "",
+              "description": "4444",
+              "type": "file"
+            }
+          ]
+        },
+        "url": {
+          "raw": "https://100.114.238.86:9696/v2.0/subnets?limit=10",
+          "protocol": "https",
+          "host": [
+            "100",
+            "114",
+            "238",
+            "86"
+          ],
+          "port": "9696",
+          "path": [
+            "v2.0",
+            "subnets"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "10"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "411 IAM Admin Token",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Host",
+            "value": "identity.az0.dc0.domainname.com"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "111",
+              "value": "222",
+              "description": "3333",
+              "type": "text"
+            },
+            {
+              "key": "4444",
+              "value": "555",
+              "description": "666",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "https://100.114.238.86:9443/identity-admin/v3/auth/tokens",
+          "protocol": "https",
+          "host": [
+            "100",
+            "114",
+            "238",
+            "86"
+          ],
+          "port": "9443",
+          "path": [
+            "identity-admin",
+            "v3",
+            "auth",
+            "tokens"
+          ],
+          "query": [
+            {
+              "key": "path",
+              "value": "/",
+              "equals": true
+            },
+            {
+              "key": "folderName",
+              "value": "test33/test44",
+              "equals": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "IAM 白虎环境Tenant Token",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "file",
+          "file": {
+            "src": ""
+          }
+        },
+        "url": {
+          "raw": "https://172.30.48.180:31943/v3/auth/tokens",
+          "protocol": "https",
+          "host": [
+            "172",
+            "30",
+            "48",
+            "180"
+          ],
+          "port": "31943",
+          "path": [
+            "v3",
+            "auth",
+            "tokens"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "IAM 类生环境Tenant Token",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Host",
+            "value": "identity.az0.dc0.domainname.com",
+            "disabled": true
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"auth\": {\r\n        \"identity\": {\r\n            \"password\": {\r\n                \"user\": {\r\n                    \"password\": \"cnp200@HW\",\r\n                    \"domain\": {\r\n                        \"id\": \"0b0672beac204648a9b60d1b482ba445\"\r\n                    },\r\n                    \"name\": \"cwx290878_quark\"\r\n                }\r\n            },\r\n            \"methods\": [\r\n                \"password\"\r\n            ]\r\n        },\r\n        \"scope\": {\r\n            \"project\":{\r\n                \"id\":\"2905b5af66c74bb1ace8a8c585935116\"\r\n            },\r\n            \"domain\":{\r\n            \t\"id\":\"0b0672beac204648a9b60d1b482ba445\"\r\n            }\r\n        }\r\n    }\r\n}"
+        },
+        "url": {
+          "raw": "https://10.175.48.125:31943/v3/auth/tokens",
+          "protocol": "https",
+          "host": [
+            "10",
+            "175",
+            "48",
+            "125"
+          ],
+          "port": "31943",
+          "path": [
+            "v3",
+            "auth",
+            "tokens"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

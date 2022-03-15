@@ -35,6 +35,7 @@ public class PlanDetailQueryDto {
     private Long duration; // 压测持续时间
     private Double tps; // 压测TPS
     private Double meanTestTime; // 压测mtt
+    private Double errorRate; // 出错率
     private String tagString; // 压测任务标签
     private String status; // 压测任务状态
 }

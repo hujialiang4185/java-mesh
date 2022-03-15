@@ -649,10 +649,18 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
                     planDetail.setTestId(perfTest.getId());
                     planDetail.setStartTime(perfTest.getStartTime());
                     planDetail.setDuration(perfTest.getDuration());
-                    planDetail.setUserId(perfTest.getUserId());
                     planDetail.setTagString(perfTest.getTagString());
                     planDetail.setTps(perfTest.getTps());
                     planDetail.setMeanTestTime(perfTest.getMeanTestTime());
+                    long testCount =
+                        (perfTest.getTests() == null ? 0L : perfTest.getTests()) + (perfTest.getErrors() == null ? 0L
+                            : perfTest.getErrors());
+                    if (testCount == 0) {
+                        planDetail.setErrorRate(0D);
+                    } else {
+                        planDetail.setErrorRate(
+                            (perfTest.getErrors() == null ? 0D : perfTest.getErrors().doubleValue()) / testCount);
+                    }
                     planDetail.setStatus(perfTest.getStatus().getIconName());
                 }
             });
