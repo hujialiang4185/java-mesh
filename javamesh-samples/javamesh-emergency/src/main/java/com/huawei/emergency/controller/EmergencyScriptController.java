@@ -15,7 +15,9 @@ import com.huawei.emergency.layout.TreeResponse;
 import com.huawei.emergency.service.EmergencyExecService;
 import com.huawei.emergency.service.EmergencyScriptService;
 import com.huawei.logaudit.aop.WebOperationLog;
+import com.huawei.logaudit.constant.OperationDetails;
 import com.huawei.logaudit.constant.OperationTypeEnum;
+import com.huawei.logaudit.constant.ResourceType;
 import com.huawei.script.exec.ExecResult;
 import com.huawei.script.exec.log.LogResponse;
 
@@ -59,7 +61,9 @@ public class EmergencyScriptController {
     private EmergencyExecService execService;
 
     @GetMapping
-    @WebOperationLog(resourceType = "脚本列表",operationType = OperationTypeEnum.SELECT,operationDetails = "查询脚本列表")
+    @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
+            operationType = OperationTypeEnum.SELECT,
+            operationDetails = OperationDetails.QUERY_SCRIPT_LIST)
     public CommonResult<List<EmergencyScript>> listScript(
         UsernamePasswordAuthenticationToken authentication,
         @RequestParam(value = "script_name", required = false) String scriptName,
@@ -80,6 +84,9 @@ public class EmergencyScriptController {
      * @return {@link CommonResult}
      */
     @DeleteMapping
+    @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
+            operationType = OperationTypeEnum.DELETE,
+            operationDetails = OperationDetails.DELETE_SCRIPT)
     public CommonResult deleteScript(@RequestParam(value = "script_id") int[] scriptId) {
         int size = scriptId.length;
         int count = service.deleteScripts(scriptId);
@@ -99,6 +106,9 @@ public class EmergencyScriptController {
      * @param response
      */
     @GetMapping("/download")
+    @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
+            operationType = OperationTypeEnum.DOWNLOAD,
+            operationDetails = OperationDetails.DOWNLOAD_SCRIPT)
     public void downloadScript(@RequestParam(value = "script_id") int scriptId, HttpServletResponse response) {
         service.downloadScript(scriptId, response);
     }
@@ -110,6 +120,9 @@ public class EmergencyScriptController {
      * @return {@link CommonResult} 上传结果
      */
     @PostMapping("/upload")
+    @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
+            operationType = OperationTypeEnum.UPLOAD,
+            operationDetails = OperationDetails.UPLOAD_SCRIPT)
     public CommonResult uploadScript(UsernamePasswordAuthenticationToken authentication,
         @RequestParam(value = "script_name") String scriptName,
         @RequestParam(value = "submit_info") String submitInfo,
@@ -152,6 +165,9 @@ public class EmergencyScriptController {
      * @return CommonResult 脚本信息
      */
     @GetMapping("/get")
+    @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
+            operationType = OperationTypeEnum.SELECT,
+            operationDetails = OperationDetails.QUERYING_SCRIPT_INSTANCES)
     public CommonResult<EmergencyScript> selectScript(@RequestParam(value = "script_id") int scriptId) {
         EmergencyScript script = service.selectScript(scriptId);
         if (script == null) {
@@ -161,6 +177,9 @@ public class EmergencyScriptController {
     }
 
     @PostMapping
+    @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
+            operationType = OperationTypeEnum.CREATE,
+            operationDetails = OperationDetails.INSERT_SCRIPT)
     public CommonResult insertScript(UsernamePasswordAuthenticationToken authentication,
         @RequestBody EmergencyScript script) {
         int result = service.insertScript(((JwtUser) authentication.getPrincipal()).getUserEntity(), script);
@@ -176,6 +195,9 @@ public class EmergencyScriptController {
     }
 
     @PutMapping
+    @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
+            operationType = OperationTypeEnum.UPDATE,
+            operationDetails = OperationDetails.UPDATE_SCRIPT)
     public CommonResult updateScript(@RequestBody EmergencyScript script) {
         int count = service.updateScript(script);
         if (count == 1) {
@@ -183,11 +205,14 @@ public class EmergencyScriptController {
         } else if (count == ResultCode.SCRIPT_NAME_EXISTS) {
             return CommonResult.failed(FailedInfo.SCRIPT_NAME_EXISTS);
         } else {
-            return CommonResult.failed("文件修改失败");
+            return CommonResult.failed(FailedInfo.UPDATE_SCRIPT_FAIL);
         }
     }
 
     @GetMapping("/search")
+    @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
+            operationType = OperationTypeEnum.SELECT,
+            operationDetails = OperationDetails.SEARCH_SCRIPT)
     public CommonResult searchScript(UsernamePasswordAuthenticationToken authentication,
         @RequestParam(value = "value", required = false) String scriptName,
         @RequestParam(value = "status", required = false) String status,
@@ -198,12 +223,18 @@ public class EmergencyScriptController {
     }
 
     @GetMapping("/getByName")
+    @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
+            operationType = OperationTypeEnum.SELECT,
+            operationDetails = OperationDetails.QUERYING_SCRIPT_INSTANCES_BY_NAME)
     public CommonResult getScriptEntityByName(@RequestParam(value = "name") String scriptName) {
         EmergencyScript script = service.getScriptByName(scriptName);
         return CommonResult.success(script);
     }
 
     @PostMapping("/submitReview")
+    @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
+            operationType = OperationTypeEnum.SUBMIT_REVIEW,
+            operationDetails = OperationDetails.SUBMIT_SCRIPT_REVIEW)
     public CommonResult submitReview(UsernamePasswordAuthenticationToken authentication,
         @RequestBody EmergencyScript script) {
         String result = service.submitReview((JwtUser) authentication.getPrincipal(), script);
@@ -215,6 +246,9 @@ public class EmergencyScriptController {
     }
 
     @PostMapping("/approve")
+    @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
+            operationType = OperationTypeEnum.AUDIT,
+            operationDetails = OperationDetails.AUDIT_SCRIPT)
     public CommonResult approve(UsernamePasswordAuthenticationToken authentication,
         @RequestBody Map<String, Object> map) {
         int count = service.approve(((JwtUser) authentication.getPrincipal()).getUsername(), map);
@@ -230,16 +264,25 @@ public class EmergencyScriptController {
     }
 
     @PostMapping("/debug")
+    @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
+            operationType = OperationTypeEnum.DEBUG,
+            operationDetails = OperationDetails.DEBUG_SCRIPT)
     public CommonResult debugScriptBeforeSave(@RequestBody Map<String, String> param) {
         return service.debugScriptBeforeSave(param.get("content"), param.get("server_name"));
     }
 
     @PostMapping("/debugStop")
+    @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
+            operationType = OperationTypeEnum.DEBUG_STOP,
+            operationDetails = OperationDetails.STOP_DEBUG_SCRIPT)
     public CommonResult debugStop(@RequestBody EmergencyExecRecord param) {
         return service.debugScriptStop(param.getDebugId());
     }
 
     @GetMapping("/debugLog")
+    @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
+            operationType = OperationTypeEnum.DEBUG_LOG,
+            operationDetails = OperationDetails.DEBUG_SCRIPT_LOG)
     public LogResponse debugLog(@RequestParam(value = "debug_id") int id,
         @RequestParam(value = "line", defaultValue = "1") int lineNum) {
         int lineIndex = lineNum;
@@ -256,6 +299,9 @@ public class EmergencyScriptController {
      * @return
      */
     @PostMapping("/orchestrate")
+    @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
+            operationType = OperationTypeEnum.CREATE,
+            operationDetails = OperationDetails.INSERT_GUI_SCRIPT)
     public CommonResult createGuiScript(UsernamePasswordAuthenticationToken authentication,
         @RequestBody EmergencyScript script) {
         return service.createGuiScript(((JwtUser) authentication.getPrincipal()).getUserEntity(), script);
@@ -268,6 +314,9 @@ public class EmergencyScriptController {
      * @return {@link CommonResult}
      */
     @PutMapping("/orchestrate")
+    @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
+            operationType = OperationTypeEnum.UPDATE,
+            operationDetails = OperationDetails.UPDATE_GUI_SCRIPT)
     public CommonResult updateGuiScript(UsernamePasswordAuthenticationToken authentication,
         @RequestBody TreeResponse treeResponse) {
         return service.updateGuiScript(((JwtUser) authentication.getPrincipal()).getUsername(), treeResponse);
@@ -280,6 +329,9 @@ public class EmergencyScriptController {
      * @return {@link CommonResult}
      */
     @GetMapping("/orchestrate/get")
+    @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
+            operationType = OperationTypeEnum.SELECT,
+            operationDetails = OperationDetails.QUERY_GUI_SCRIPT)
     public CommonResult queryGuiScript(@RequestParam("script_id") int scriptId) {
         return service.queryGuiScript(scriptId);
     }
@@ -291,6 +343,9 @@ public class EmergencyScriptController {
      * @return
      */
     @PostMapping("/ide")
+    @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
+            operationType = OperationTypeEnum.CREATE,
+            operationDetails = OperationDetails.CREATE_IDE_SCRIPT)
     public CommonResult createIdeScript(UsernamePasswordAuthenticationToken authentication,
         @RequestBody ScriptManageDto scriptManageDto) {
         return service.createIdeScript(((JwtUser) authentication.getPrincipal()).getUserEntity(), scriptManageDto);
@@ -303,6 +358,9 @@ public class EmergencyScriptController {
      * @return
      */
     @PutMapping("/ide")
+    @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
+            operationType = OperationTypeEnum.UPDATE,
+            operationDetails = OperationDetails.UPDATE_IDE_SCRIPT)
     public CommonResult updateIdeScript(@RequestBody ScriptManageDto scriptManageDto) {
         return updateScript(scriptManageDto);
     }
@@ -314,6 +372,9 @@ public class EmergencyScriptController {
      * @return
      */
     @GetMapping("/ide/get")
+    @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
+            operationType = OperationTypeEnum.SELECT,
+            operationDetails = OperationDetails.GET_IDE_SCRIPT)
     public CommonResult createIdeScript(@RequestParam("script_id") Integer scriptId) {
         return selectScript(scriptId);
     }
