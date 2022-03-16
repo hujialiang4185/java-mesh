@@ -2,6 +2,7 @@ package com.huawei.logaudit.aop;
 
 import com.huawei.common.api.CommonResult;
 import com.huawei.emergency.entity.JwtUser;
+import com.huawei.emergency.mapper.EmergencyLogAuditMapper;
 import com.huawei.logaudit.entity.LogAuditEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
@@ -10,6 +11,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -68,6 +70,9 @@ public class LogAspect {
      * 响应失败的字符串
      */
     private static final String FAILED_STRING = "failed";
+
+    @Autowired
+    private EmergencyLogAuditMapper mapper;
 
     /**
      * 切入点
@@ -128,6 +133,10 @@ public class LogAspect {
 
             // 反射的时候未匹配到自定义的注解类
             return;
+        }
+        int count = mapper.addLogAudit(logAuditEntity);
+        if (count != 1) {
+            log.error("add log audit failed. ");
         }
         THREAD_LOCAL.remove();
     }

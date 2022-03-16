@@ -677,3 +677,17 @@ CREATE TABLE IF NOT EXISTS `emergency_resource`
     `resource_id`
 ) USING BTREE
     ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;
+$$$
+
+CREATE TABLE `emergency_log_audit`  (
+    `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `resource_type` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '资源类型(模块名称)',
+    `operation_type` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '操作类型(增删改查)',
+    `level` int(2) NULL DEFAULT NULL COMMENT '级别，0-提示、1-一般、2-警告、3-危险、4-高危',
+    `operation_results` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '操作结果',
+    `operation_people` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '操作人',
+    `ip_address` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT 'ip地址',
+    `operation_details` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '操作详情(具体接口名称)',
+    `operation_date` timestamp NULL DEFAULT NULL COMMENT '操作时间戳',
+    PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;
