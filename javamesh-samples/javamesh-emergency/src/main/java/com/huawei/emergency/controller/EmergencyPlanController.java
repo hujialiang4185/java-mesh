@@ -17,6 +17,10 @@ import com.huawei.emergency.entity.JwtUser;
 import com.huawei.emergency.entity.UserEntity;
 import com.huawei.emergency.service.EmergencyPlanService;
 
+import com.huawei.logaudit.aop.WebOperationLog;
+import com.huawei.logaudit.constant.OperationDetails;
+import com.huawei.logaudit.constant.OperationTypeEnum;
+import com.huawei.logaudit.constant.ResourceType;
 import io.swagger.annotations.Api;
 
 import org.apache.commons.lang.StringUtils;
@@ -60,6 +64,9 @@ public class EmergencyPlanController {
      * @return {@link CommonResult}
      */
     @PutMapping("/plan")
+    @WebOperationLog(resourceType = ResourceType.PLAN_MANAGEMENT,
+            operationType = OperationTypeEnum.UPDATE,
+            operationDetails = OperationDetails.PLAN_SAVE)
     public CommonResult save(UsernamePasswordAuthenticationToken authentication, @RequestBody PlanSaveParams params) {
         return planService.save(params.getPlanId(), params.getExpand(),
             ((JwtUser) authentication.getPrincipal()).getUsername());
@@ -72,6 +79,9 @@ public class EmergencyPlanController {
      * @return {@link CommonResult}
      */
     @PostMapping("/plan/run")
+    @WebOperationLog(resourceType = ResourceType.PLAN_MANAGEMENT,
+            operationType = OperationTypeEnum.EXECUTE,
+            operationDetails = OperationDetails.PLAN_EXECUTE)
     public CommonResult run(UsernamePasswordAuthenticationToken authentication, @RequestBody EmergencyPlan plan) {
         if (plan.getPlanId() == null) {
             return CommonResult.failed("请选择需要运行的项目");
@@ -86,6 +96,9 @@ public class EmergencyPlanController {
      * @return {@link CommonResult}
      */
     @PostMapping("/plan/schedule")
+    @WebOperationLog(resourceType = ResourceType.PLAN_MANAGEMENT,
+            operationType = OperationTypeEnum.EXECUTE,
+            operationDetails = OperationDetails.PLAN_START)
     public CommonResult start(UsernamePasswordAuthenticationToken authentication, @RequestBody PlanQueryDto param) {
         if (param.getPlanId() == null) {
             return CommonResult.failed("请选择需要启动的项目");
@@ -113,6 +126,9 @@ public class EmergencyPlanController {
      * @return {@link CommonResult}
      */
     @PostMapping("/plan/cancel")
+    @WebOperationLog(resourceType = ResourceType.PLAN_MANAGEMENT,
+            operationType = OperationTypeEnum.DISCONTINUE,
+            operationDetails = OperationDetails.PLAN_STOP)
     public CommonResult stop(UsernamePasswordAuthenticationToken authentication, @RequestBody EmergencyPlan plan) {
         if (plan.getPlanId() == null) {
             return CommonResult.failed("请选择需要停止的项目");
@@ -127,6 +143,9 @@ public class EmergencyPlanController {
      * @return {@link CommonResult}
      */
     @GetMapping("/plan/get")
+    @WebOperationLog(resourceType = ResourceType.PLAN_MANAGEMENT,
+            operationType = OperationTypeEnum.SELECT,
+            operationDetails = OperationDetails.GET_PLAN_INFO)
     public CommonResult get(@RequestParam("plan_id") int planId) {
         CommonResult<EmergencyPlan> queryData = planService.get(planId);
         EmergencyPlan plan = queryData.getData();
@@ -154,6 +173,9 @@ public class EmergencyPlanController {
      * @return {@link CommonResult}
      */
     @GetMapping("/plan")
+    @WebOperationLog(resourceType = ResourceType.PLAN_MANAGEMENT,
+            operationType = OperationTypeEnum.SELECT,
+            operationDetails = OperationDetails.QUERY_PLAN_LIST)
     public CommonResult queryPlan(UsernamePasswordAuthenticationToken authentication,
         @RequestParam(value = "plan_name_no", required = false) String planName,
         @RequestParam(value = "scena_name_no", required = false) String sceneName,
@@ -194,6 +216,9 @@ public class EmergencyPlanController {
      * @return {@link CommonResult}
      */
     @GetMapping("/plan/task")
+    @WebOperationLog(resourceType = ResourceType.PLAN_MANAGEMENT,
+            operationType = OperationTypeEnum.SELECT,
+            operationDetails = OperationDetails.QUERY_PLAN_TASK_INFO)
     public CommonResult query(@RequestParam("plan_id") int planId) {
         return planService.query(planId);
     }
@@ -205,6 +230,9 @@ public class EmergencyPlanController {
      * @return {@link CommonResult}
      */
     @PostMapping("/plan/task")
+    @WebOperationLog(resourceType = ResourceType.PLAN_MANAGEMENT,
+            operationType = OperationTypeEnum.CREATE,
+            operationDetails = OperationDetails.ADD_TASK)
     public CommonResult addTask(@RequestBody TaskNode taskNode) {
         return planService.addTask(taskNode);
     }
@@ -216,6 +244,9 @@ public class EmergencyPlanController {
      * @return {@link CommonResult}
      */
     @PutMapping("/plan/task")
+    @WebOperationLog(resourceType = ResourceType.PLAN_MANAGEMENT,
+            operationType = OperationTypeEnum.UPDATE,
+            operationDetails = OperationDetails.UPDATE_TASK)
     public CommonResult updateTask(UsernamePasswordAuthenticationToken authentication, @RequestBody TaskNode taskNode) {
         taskNode.setCreateUser(((JwtUser) authentication.getPrincipal()).getUsername());
         return planService.updateTask(taskNode);
@@ -228,6 +259,9 @@ public class EmergencyPlanController {
      * @return {@link CommonResult}
      */
     @PostMapping("/plan")
+    @WebOperationLog(resourceType = ResourceType.PLAN_MANAGEMENT,
+            operationType = OperationTypeEnum.CREATE,
+            operationDetails = OperationDetails.ADD_PLAN)
     public CommonResult addPlan(UsernamePasswordAuthenticationToken authentication,
         @RequestBody EmergencyPlan emergencyPlan) {
         UserEntity userEntity = ((JwtUser) authentication.getPrincipal()).getUserEntity();
@@ -243,6 +277,9 @@ public class EmergencyPlanController {
      * @return {@link CommonResult}
      */
     @DeleteMapping("/plan")
+    @WebOperationLog(resourceType = ResourceType.PLAN_MANAGEMENT,
+            operationType = OperationTypeEnum.DELETE,
+            operationDetails = OperationDetails.DELETE_PLAN)
     public CommonResult deletePlan(@RequestParam("plan_id") int planId) {
         EmergencyPlan plan = new EmergencyPlan();
         plan.setPlanId(planId);
@@ -256,6 +293,9 @@ public class EmergencyPlanController {
      * @return {@link CommonResult}
      */
     @PostMapping("plan/submitReview")
+    @WebOperationLog(resourceType = ResourceType.PLAN_MANAGEMENT,
+            operationType = OperationTypeEnum.SUBMIT_REVIEW,
+            operationDetails = OperationDetails.SUBMIT_PLAN_REVIEW)
     public CommonResult submitReview(@RequestBody EmergencyPlan emergencyPlan) {
         return planService.submit(emergencyPlan.getPlanId(), emergencyPlan.getApprover());
     }
@@ -268,6 +308,9 @@ public class EmergencyPlanController {
      * @return {@link CommonResult}
      */
     @PostMapping("/plan/approve")
+    @WebOperationLog(resourceType = ResourceType.PLAN_MANAGEMENT,
+            operationType = OperationTypeEnum.AUDIT,
+            operationDetails = OperationDetails.AUDIT_PLAN)
     public CommonResult approve(UsernamePasswordAuthenticationToken authentication,
         @RequestBody PlanQueryDto planQueryDto) {
         EmergencyPlan plan = new EmergencyPlan();
@@ -297,6 +340,9 @@ public class EmergencyPlanController {
     }
 
     @PostMapping("/plan/copy")
+    @WebOperationLog(resourceType = ResourceType.PLAN_MANAGEMENT,
+            operationType = OperationTypeEnum.CREATE,
+            operationDetails = OperationDetails.COPY_PLAN)
     public CommonResult copyPlan(UsernamePasswordAuthenticationToken authentication,
         @RequestBody EmergencyPlan emergencyPlan) {
         emergencyPlan.setCreateUser(((JwtUser) authentication.getPrincipal()).getUsername());

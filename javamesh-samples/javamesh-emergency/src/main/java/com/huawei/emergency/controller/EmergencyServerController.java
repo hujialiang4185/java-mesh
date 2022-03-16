@@ -23,6 +23,10 @@ import com.huawei.emergency.entity.EmergencyServer;
 import com.huawei.emergency.entity.JwtUser;
 import com.huawei.emergency.entity.UserEntity;
 import com.huawei.emergency.service.EmergencyServerService;
+import com.huawei.logaudit.aop.WebOperationLog;
+import com.huawei.logaudit.constant.OperationDetails;
+import com.huawei.logaudit.constant.OperationTypeEnum;
+import com.huawei.logaudit.constant.ResourceType;
 import io.swagger.annotations.Api;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +66,9 @@ public class EmergencyServerController {
     }
 
     @PostMapping
+    @WebOperationLog(resourceType = ResourceType.SERVER_MANAGEMENT,
+            operationType = OperationTypeEnum.CREATE,
+            operationDetails = OperationDetails.CREATE_SERVER)
     public CommonResult createServer(UsernamePasswordAuthenticationToken authentication, @RequestBody EmergencyServer server) {
         if ("有".equals(server.getHavePassword())) {
             server.setHavePassword("1");
@@ -80,6 +87,9 @@ public class EmergencyServerController {
     }
 
     @DeleteMapping
+    @WebOperationLog(resourceType = ResourceType.SERVER_MANAGEMENT,
+            operationType = OperationTypeEnum.DELETE,
+            operationDetails = OperationDetails.DELETE_SERVER)
     public CommonResult deleteServer(UsernamePasswordAuthenticationToken authentication, @RequestParam(value = "server_id[]", required = false) String[] serverIds) {
         return serverService.deleteServerList(serverIds, ((JwtUser) authentication.getPrincipal()).getUsername());
     }
@@ -98,6 +108,9 @@ public class EmergencyServerController {
     }
 
     @GetMapping
+    @WebOperationLog(resourceType = ResourceType.SERVER_MANAGEMENT,
+            operationType = OperationTypeEnum.SELECT,
+            operationDetails = OperationDetails.QUERY_SERVER_INFO)
     public CommonResult queryServerInfo(UsernamePasswordAuthenticationToken authentication,
                                         @RequestParam(value = "keywords", required = false) String keyword,
                                         @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,

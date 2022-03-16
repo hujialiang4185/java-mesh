@@ -265,7 +265,7 @@ public class EmergencyScriptController {
 
     @PostMapping("/debug")
     @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
-            operationType = OperationTypeEnum.DEBUG,
+            operationType = OperationTypeEnum.EXECUTE,
             operationDetails = OperationDetails.DEBUG_SCRIPT)
     public CommonResult debugScriptBeforeSave(@RequestBody Map<String, String> param) {
         return service.debugScriptBeforeSave(param.get("content"), param.get("server_name"));
@@ -273,7 +273,7 @@ public class EmergencyScriptController {
 
     @PostMapping("/debugStop")
     @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
-            operationType = OperationTypeEnum.DEBUG_STOP,
+            operationType = OperationTypeEnum.DISCONTINUE,
             operationDetails = OperationDetails.STOP_DEBUG_SCRIPT)
     public CommonResult debugStop(@RequestBody EmergencyExecRecord param) {
         return service.debugScriptStop(param.getDebugId());
@@ -281,7 +281,7 @@ public class EmergencyScriptController {
 
     @GetMapping("/debugLog")
     @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
-            operationType = OperationTypeEnum.DEBUG_LOG,
+            operationType = OperationTypeEnum.EXECUTION_LOG,
             operationDetails = OperationDetails.DEBUG_SCRIPT_LOG)
     public LogResponse debugLog(@RequestParam(value = "debug_id") int id,
         @RequestParam(value = "line", defaultValue = "1") int lineNum) {

@@ -13,6 +13,10 @@ import com.huawei.emergency.entity.EmergencyPlan;
 import com.huawei.emergency.entity.JwtUser;
 import com.huawei.emergency.mapper.EmergencyExecMapper;
 import com.huawei.emergency.service.EmergencyExecService;
+import com.huawei.logaudit.aop.WebOperationLog;
+import com.huawei.logaudit.constant.OperationDetails;
+import com.huawei.logaudit.constant.OperationTypeEnum;
+import com.huawei.logaudit.constant.ResourceType;
 import com.huawei.script.exec.log.LogResponse;
 
 import cn.hutool.poi.excel.ExcelUtil;
@@ -61,6 +65,9 @@ public class EmergencyExecController {
      * @return {@link CommonResult}
      */
     @PostMapping("/scenario/task/runAgain")
+    @WebOperationLog(resourceType = ResourceType.EXECUTION_RECORD,
+            operationType = OperationTypeEnum.EXECUTE,
+            operationDetails = OperationDetails.RE_EXECUTE)
     public CommonResult reExec(UsernamePasswordAuthenticationToken authentication, @RequestBody PlanQueryDto params) {
         if (params.getKey() == null) {
             return CommonResult.failed("请选择正确的执行记录");
@@ -75,6 +82,9 @@ public class EmergencyExecController {
      * @return {@link CommonResult}
      */
     @PostMapping("/scenario/task/ensure")
+    @WebOperationLog(resourceType = ResourceType.EXECUTION_RECORD,
+            operationType = OperationTypeEnum.MANUAL_CONFIRMATION,
+            operationDetails = OperationDetails.MANUAL_CONFIRMATION)
     public CommonResult success(UsernamePasswordAuthenticationToken authentication, @RequestBody PlanQueryDto params) {
         if (params.getKey() == null) {
             return CommonResult.failed("请选择正确的执行记录");
@@ -101,6 +111,9 @@ public class EmergencyExecController {
      * @return {@link CommonResult}
      */
     @GetMapping()
+    @WebOperationLog(resourceType = ResourceType.EXECUTION_RECORD,
+            operationType = OperationTypeEnum.SELECT,
+            operationDetails = OperationDetails.QUERY_EXEC_LIST)
     public CommonResult allPlanExecRecords(UsernamePasswordAuthenticationToken authentication,
         @RequestParam(value = "keywords", required = false) String planName,
         @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
@@ -132,6 +145,9 @@ public class EmergencyExecController {
      * @return {@link CommonResult}
      */
     @GetMapping("/scenario")
+    @WebOperationLog(resourceType = ResourceType.EXECUTION_RECORD,
+            operationType = OperationTypeEnum.SELECT,
+            operationDetails = OperationDetails.QUERY_SCENARIO_EXEC_LIST)
     public CommonResult allSceneExecRecords(@RequestParam("history_id") int execId) {
         CommonPage<EmergencyExecRecord> params = new CommonPage<>();
         EmergencyExecRecord record = new EmergencyExecRecord();
@@ -148,6 +164,9 @@ public class EmergencyExecController {
      * @return {@link CommonResult}
      */
     @GetMapping("/scenario/task")
+    @WebOperationLog(resourceType = ResourceType.EXECUTION_RECORD,
+            operationType = OperationTypeEnum.SELECT,
+            operationDetails = OperationDetails.QUERY_TASK_EXEC_LIST)
     public CommonResult allTaskExecRecords(@RequestParam("history_id") int execId,
         @RequestParam("scena_id") int sceneId) {
         CommonPage<EmergencyExecRecord> params = new CommonPage<>();
@@ -166,6 +185,9 @@ public class EmergencyExecController {
      * @return {@link LogResponse}
      */
     @GetMapping("/scenario/task/log")
+    @WebOperationLog(resourceType = ResourceType.EXECUTION_RECORD,
+            operationType = OperationTypeEnum.SELECT,
+            operationDetails = OperationDetails.EXECUTE_LOG)
     public LogResponse getLog(@RequestParam("key") int recordId,
         @RequestParam(value = "line", defaultValue = "1") int lineNum) {
         int lineIndex = lineNum;
@@ -181,6 +203,9 @@ public class EmergencyExecController {
      * @param response 请求响应
      */
     @GetMapping("/download")
+    @WebOperationLog(resourceType = ResourceType.EXECUTION_RECORD,
+            operationType = OperationTypeEnum.DOWNLOAD,
+            operationDetails = OperationDetails.DOWNLOAD_EXECUTION)
     public void download(HttpServletResponse response) {
         ExcelWriter excelWriter = null;
         try {
@@ -240,6 +265,9 @@ public class EmergencyExecController {
      * @return
      */
     @GetMapping("/log")
+    @WebOperationLog(resourceType = ResourceType.EXECUTION_RECORD,
+            operationType = OperationTypeEnum.SELECT,
+            operationDetails = OperationDetails.EXECUTE_LOG)
     public LogResponse logOneServer(@RequestParam("key") int detailId,
         @RequestParam(value = "line", defaultValue = "1") int lineNum) {
         int lineIndex = lineNum;
