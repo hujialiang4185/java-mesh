@@ -29,8 +29,8 @@ const user = {
     group_name: "群组1",
     update_time: "2021-01-01 00:00:00",
     auth: [
-        "admin", 
-        "approver", 
+        "admin",
+        "approver",
         "operator"
     ]
 }
@@ -852,6 +852,28 @@ app.get('/argus-emergency/api/history/scenario/task', function (req, res) {
                 end_time: "2021-01-01 00:00:00",
                 sync: "同步",
                 status: ['error', 'process', 'finish', 'wait'][index % 4],
+                status_label: ["失败", "运行中", "成功", "待执行"][index % 4],
+                test_id: index === 0 ? 1 : null
+            }
+        })
+    })
+})
+app.get('/argus-emergency/api/history/scenario/task/report', function (req, res) {
+    res.json({
+        data: Array.from({ length: 6 }, function (_, index) {
+            return {
+                server_id: index, // 主键，数组内唯一，否则控制台报错
+                task_name: "A主机测试",
+                server_name: "A主机",
+                server_ip: "127.0.0.1",
+                duration: 100,
+                vuser: 120,
+                tps: 123,
+                tps_peak: 250,
+                avg_time: 12,
+                test_count: 210,
+                success_count: 100,
+                fail_count: 10,
                 status_label: ["失败", "运行中", "成功", "待执行"][index % 4],
                 test_id: index === 0 ? 1 : null
             }
