@@ -679,7 +679,7 @@ CREATE TABLE IF NOT EXISTS `emergency_resource`
     ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Compact;
 $$$
 
-CREATE TABLE `emergency_log_audit`  (
+CREATE TABLE IF NOT EXISTS `emergency_log_audit`  (
     `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `resource_type` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '资源类型(模块名称)',
     `operation_type` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '操作类型(增删改查)',
