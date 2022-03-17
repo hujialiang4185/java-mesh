@@ -963,7 +963,26 @@ app.get("/argus-user/api/group", function (req, res) {
                 created_by: "zengfan",
                 created_time: "2017-01-01 00:00:00"
             }
-        })
+        }),
+        total: 11
+    })
+})
+app.get("/argus-user/api/logAudit", function (req, res) {
+    res.json({
+        data: Array.from({ length: 10 }, function (_, index) {
+            return {
+                log_id: index,
+                "resource_type": "任务",
+                "operation_type": "新增",
+                "level_label": "提示",
+                "operation_results": "成功",
+                "operation_people": "admin",
+                "ip_address": "192.168.0.1",
+                "peration_details": "/api/test",
+                "operation_date": "2017-01-01",
+            }
+        }),
+        total: 11
     })
 })
 app.post("/argus-user/api/group", function (req, res) {
