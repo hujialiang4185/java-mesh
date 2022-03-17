@@ -858,7 +858,7 @@ app.get('/argus-emergency/api/history/scenario/task', function (req, res) {
         })
     })
 })
-app.get('/argus-emergency/api/history/scenario/task/report', function (req, res) {
+app.get('/argus-emergency/api/task/scenario/report', function (req, res) {
     res.json({
         data: Array.from({ length: 6 }, function (_, index) {
             return {
