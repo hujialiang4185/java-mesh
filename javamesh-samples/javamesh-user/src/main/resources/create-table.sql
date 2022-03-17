@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS `emergency_group`(
 CREATE TABLE IF NOT EXISTS `emergency_user`(
     `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `created_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '创建时间',
-    `last_modified_date` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '最后修改时间',
+    `last_modified_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '最后修改时间',
     `enabled` char(1) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '是否启用',
     `role_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '角色名',
     `password` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '密码',
@@ -44,7 +44,43 @@ FROM DUAL
 WHERE NOT EXISTS(SELECT user_name, role_name
                  FROM `emergency_user`
                  WHERE user_name = 'admin');
-
+INSERT INTO `NUSER` (
+    `created_date`,
+    `last_modified_date`,
+    `authentication_provider_class`,
+    `description`,
+    `email`,
+    `enabled`,
+    `is_external`,
+    `mobile_phone`,
+    `password`,
+    `role_name`,
+    `timeZone`,
+    `user_id`,
+    `user_language`,
+    `user_name`,
+    `created_user`,
+    `last_modified_user`
+) SELECT CURRENT_TIMESTAMP,
+         CURRENT_TIMESTAMP,
+         NULL,
+         NULL,
+         'admin@nhn.com',
+         'T',
+         'T',
+         NULL,
+         'a40546cc4fd6a12572828bb803380888ad1bfdab',
+         'ADMIN',
+         'Asia/Shanghai',
+         'admin',
+         'cn',
+         'admin',
+         NULL,
+         NULL
+FROM
+    DUAL
+WHERE
+    NOT EXISTS ( SELECT user_name FROM `NUSER` WHERE user_id = 'admin' );
 insert into `emergency_auth` (role_name, auth_name)
 select 'ADMIN', 'admin'
 FROM DUAL
