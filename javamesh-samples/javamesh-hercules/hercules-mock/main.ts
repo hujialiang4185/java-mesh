@@ -863,7 +863,7 @@ app.get('/argus-emergency/api/task/scenario/report', function (req, res) {
         data: Array.from({ length: 6 }, function (_, index) {
             return {
                 server_id: index, // 主键，数组内唯一，否则控制台报错
-                task_name: "A主机测试",
+                test_name: "A主机测试",
                 server_name: "A主机",
                 server_ip: "127.0.0.1",
                 duration: 100,

@@ -170,7 +170,7 @@ function TaskReport(props: { uid: string }) {
         }}>报告</Button>
         <Modal className="TaskReport" title="报告列表" width={1200} visible={data.length > 0} maskClosable={false} footer={null} onCancel={function () { setData([]) }}>
             <Table size="small" rowKey="server_id" dataSource={data} columns={[
-                { title: "测试名称", dataIndex: "task_name", ellipsis: true },
+                { title: "测试名称", dataIndex: "test_name", ellipsis: true },
                 { title: "状态", dataIndex: "status_label", ellipsis: true },
                 { title: "主机名称", dataIndex: "server_name", ellipsis: true },
                 { title: "服务器IP", dataIndex: "server_ip", ellipsis: true },
