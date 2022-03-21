@@ -30,8 +30,6 @@ import com.huawei.script.exec.executor.ScriptExecInfo;
 import com.huawei.script.exec.log.LogMemoryStore;
 import com.huawei.script.exec.session.ServerInfo;
 
-import com.alibaba.fastjson.JSONObject;
-
 import org.apache.commons.lang.StringUtils;
 import org.ngrinder.common.constant.WebConstants;
 import org.ngrinder.model.PerfTest;
@@ -41,7 +39,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
@@ -57,7 +54,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * 工厂类,用于提供脚本运行记录处理器
@@ -83,9 +79,6 @@ public class ExecRecordHandlerFactory {
 
     @Autowired
     EmergencyServerMapper serverMapper;
-
-    @Value("${argus.url}")
-    private String argusUrl;
 
     @Resource(name = "passwordRestTemplate")
     private RestTemplate restTemplate;
@@ -503,28 +496,6 @@ public class ExecRecordHandlerFactory {
         }
     }
 
-    public int createArgusTest(int recordId, JSONObject testParams) {
-        try {
-            ResponseEntity<JSONObject> response =
-                restTemplate.postForEntity(argusUrl + "/api/task", testParams, JSONObject.class);
-            if (response.getStatusCodeValue() != HttpServletResponse.SC_OK) {
-                LOGGER.error("failed to create grinder test {}. {}", recordId, response);
-                return -1;
-            }
-            JSONObject jsonObject = response.getBody();
-            if (Boolean.parseBoolean(jsonObject.getOrDefault("success", "true").toString())) {
-                LOGGER.info("create grinder test. {}", jsonObject);
-                return Integer.valueOf(jsonObject.getOrDefault("id", "-1").toString());
-            } else {
-                LOGGER.error("failed to create grinder test {}. {}", recordId, jsonObject);
-                return -1;
-            }
-        } catch (RestClientException e) {
-            LOGGER.error("failed to create grinder test {}. {}", recordId, e.getMessage());
-            return -1;
-        }
-    }
-
     public boolean startPerfTest(Integer perfTestId) {
         if (perfTestId == null) {
             return false;
@@ -538,30 +509,5 @@ public class ExecRecordHandlerFactory {
         Map<String, Object> resultMap =
             perfTestController.startOne(user, perfTestId.longValue());
         return Boolean.parseBoolean(resultMap.getOrDefault(WebConstants.JSON_SUCCESS, "false").toString());
-    }
-
-    @Deprecated
-    public boolean startArgusTest(int testId) {
-        String url = argusUrl + "/api/task/start";
-        JSONObject params = new JSONObject();
-        params.put("test_id", testId);
-        try {
-            ResponseEntity<JSONObject> response = restTemplate.postForEntity(url, params, JSONObject.class);
-            if (response.getStatusCodeValue() != HttpServletResponse.SC_OK) {
-                LOGGER.error("failed to start grinder task {}. {}", testId, response);
-                return false;
-            }
-            JSONObject jsonObject = response.getBody();
-            if (Boolean.parseBoolean(jsonObject.getOrDefault("success", "").toString())) {
-                LOGGER.info("start nrinder test={}. {}", testId, jsonObject);
-                return true;
-            } else {
-                LOGGER.error("failed to start grinder task {}. {}", testId, jsonObject);
-                return false;
-            }
-        } catch (RestClientException e) {
-            LOGGER.error("failed to start grinder task {}. {}", testId, e.getMessage());
-            return false;
-        }
     }
 }

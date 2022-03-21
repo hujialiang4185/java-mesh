@@ -25,6 +25,7 @@ import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 
 import org.apache.commons.lang.StringUtils;
+import org.ngrinder.agent.service.AgentPackageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,9 +60,6 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
     @Value("${agent.uploadPath}")
     private String uploadPath;
 
-    @Value("${agent.name}")
-    private String agentName;
-
     @Autowired
     private PasswordUtil passwordUtil;
 
@@ -76,6 +74,9 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
 
     @Resource(name = "sendAgentThreadPool")
     ThreadPoolExecutor executor;
+
+    @Autowired
+    private AgentPackageService packageService;
 
     @Override
     public CommonResult<EmergencyServer> add(EmergencyServer server) {
@@ -145,7 +146,8 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
     }
 
     @Override
-    public CommonResult queryServerInfo(String groupName, CommonPage<EmergencyServer> params, String keyword, int[] excludeServerIds) {
+    public CommonResult queryServerInfo(String groupName, CommonPage<EmergencyServer> params, String keyword,
+        int[] excludeServerIds) {
         Page<EmergencyServer> pageInfo = PageHelper
             .startPage(params.getPageIndex(), params.getPageSize(), StringUtils.isEmpty(params.getSortType()) ? ""
                 : params.getSortField() + System.lineSeparator() + params.getSortType())
@@ -160,7 +162,8 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
     public CommonResult search(String groupName, String serverName) {
         EmergencyServer server = new EmergencyServer();
         server.setServerName(serverName);
-        Object[] objects = serverMapper.selectByKeyword(groupName,server, null, null).stream().map(EmergencyServer::getServerName)
+        Object[] objects = serverMapper.selectByKeyword(groupName, server, null, null).stream()
+            .map(EmergencyServer::getServerName)
             .toArray();
         return CommonResult.success(objects, objects.length);
     }
@@ -249,15 +252,21 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
                 return CommonResult.failed("获取服务器信息失败");
             }
         }
+        File agentPackage = packageService.createAgentPackage();
         Session session = null;
         try {
             session = sessionFactory.getSession(serverInfo);
-            File agentFile = new File(agentName);
-            ExecResult execResult = remoteExecutor.uploadFile(session, uploadPath, agentFile);
+            ExecResult execResult = remoteExecutor.uploadFile(session, uploadPath, agentPackage);
             if (!execResult.isSuccess()) {
                 return CommonResult.failed("上传agent失败");
             }
-            String remoteAgentFile = uploadPath + agentFile.getName();
+            String tarCommand = String.format(Locale.ROOT, "cd %s && tar -xf %s", uploadPath, agentPackage.getName());
+            execResult = remoteExecutor.exec(session, tarCommand, null, -1);
+            if (!execResult.isSuccess()) {
+                LOGGER.error("解压agent失败。 {}", execResult.getMsg());
+                return CommonResult.failed("解压agent失败");
+            }
+            /*String remoteAgentFile = uploadPath + agentFile.getName();
             execResult = remoteExecutor.exec(session,
                 String.format(Locale.ROOT, "source /etc/profile && nohup java -jar %s >%s.log 2>&1 &", remoteAgentFile,
                     remoteAgentFile),
@@ -265,7 +274,7 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
             if (!execResult.isSuccess()) {
                 LOGGER.error("启动agent失败。 {}", execResult.getMsg());
                 return CommonResult.failed("启动agent失败");
-            }
+            }*/
         } catch (JSchException e) {
             LOGGER.error("Failed to connect  ip={}, {}", serverInfo.getServerIp(), e.getMessage());
             return CommonResult.failed("连接服务器失败");

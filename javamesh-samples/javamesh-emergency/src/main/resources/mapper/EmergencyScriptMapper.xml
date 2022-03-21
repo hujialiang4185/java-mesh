@@ -425,6 +425,7 @@
         SELECT
         s.script_id,
         s.script_name,
+        s.script_type,
         u.nick_name as script_user,
         s.script_group,
         s.approver,
@@ -437,12 +438,6 @@
         case when s.script_type in ('0','1','2') then 'NORMAL'
         when s.script_type = '3' then 'GUI'
         else 'IDE' end as type,
-        CASE s.script_type
-        WHEN '0' THEN 'shell'
-        WHEN '1' THEN 'python'
-        WHEN '2' THEN 'groovy'
-        WHEN '3' THEN 'orchestrate'
-        END AS script_type,
         CASE s.have_password
         WHEN '0' THEN '否'
         WHEN '1' THEN '是'

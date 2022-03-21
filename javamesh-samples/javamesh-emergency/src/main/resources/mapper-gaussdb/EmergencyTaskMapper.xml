@@ -402,21 +402,21 @@
           and is_valid = '1'
     </select>
     <select id="getTaskReportByRecordId" resultType="com.huawei.emergency.dto.TaskCommonReport">
-        SELECT t1.server_id                                         server_id,
-               t2.`name`                                            test_name,
+        SELECT t1.server_id                                       server_id,
+               t2.name                                            test_name,
                t3.server_ip,
                t3.server_name,
-               TIMESTAMPDIFF(SECOND, t2.start_time, t2.finish_time) duration,
-               t2.vuser_per_agent                                   vuser,
+               timestamp_diff('s', t2.start_time, t2.finish_time) duration,
+               t2.vuser_per_agent                                 vuser,
                t2.tps,
-               t2.peak_tps                                          tps_peak,
-               t2.mean_test_time                                    avg_time,
-               t2.tests + t2.`errors`                               test_count,
-               t2.tests                                             success_count,
-               t2.`errors`                                          fail_count,
-               t2.`status`,
-               t2.`status`                                          status_label,
-               t2.id                                                test_id
+               t2.peak_tps                                        tps_peak,
+               t2.mean_test_time                                  avg_time,
+               t2.tests + t2.errors                               test_count,
+               t2.tests                                           success_count,
+               t2.errors                                          fail_count,
+               t2.status,
+               t2.status                                          status_label,
+               t2.id                                              test_id
         FROM emergency_exec_record_detail t1
                  JOIN PERF_TEST t2 ON t1.perf_test_id = t2.id
                  LEFT JOIN emergency_server t3 ON t1.server_id = t3.server_id

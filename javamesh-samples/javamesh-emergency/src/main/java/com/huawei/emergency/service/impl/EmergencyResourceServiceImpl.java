@@ -30,6 +30,7 @@ import com.huawei.emergency.service.EmergencyScriptService;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.ngrinder.model.User;
 import org.ngrinder.script.model.FileEntry;
 import org.ngrinder.script.service.NfsFileEntryService;
 import org.slf4j.Logger;
@@ -136,11 +137,15 @@ public class EmergencyResourceServiceImpl implements EmergencyResourceService {
     public boolean uploadNgrinderPath(String fileFullPath, InputStream inputStream) {
         File resourceFile = new File(
             fileEntryService.getUserScriptsDir(JwtAuthenticationTokenFilter.currentGrinderUser()), fileFullPath);
+        File resourceDir = resourceFile.getParentFile();
+        if (!resourceDir.exists()) {
+            resourceDir.mkdirs();
+        }
         try (FileOutputStream outputStream = new FileOutputStream(resourceFile)) {
             IOUtils.copy(inputStream, outputStream);
             outputStream.flush();
         } catch (IOException e) {
-            LOGGER.error("update resource {} error. {}", fileFullPath, e.getMessage());
+            LOGGER.error("upload resource {} error. {}", fileFullPath, e.getMessage());
             return false;
         }
         return true;
@@ -241,8 +246,16 @@ public class EmergencyResourceServiceImpl implements EmergencyResourceService {
      */
     public CommonResult deleteResource(EmergencyResource resource) {
         try {
-            fileEntryService.deleteFile(JwtAuthenticationTokenFilter.currentGrinderUser(),
-                resource.getResourcePath() + File.separator + resource.getResourceName());
+            if (resource.getScriptId() == null) {
+                return CommonResult.success();
+            }
+            EmergencyScript script = scriptMapper.selectByPrimaryKey(resource.getScriptId());
+            if (script == null) {
+                return CommonResult.success();
+            }
+            User user = new User();
+            user.setUserId(script.getScriptUser());
+            fileEntryService.deleteFile(user, resource.getResourcePath() + File.separator + resource.getResourceName());
         } catch (IOException e) {
             LOGGER.error("can't delete resource. resourceId={}, scriptId={}, resourceName={}. {}",
                 resource.getResourceId(),

@@ -63,6 +63,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang.StringUtils;
 import org.ngrinder.common.util.UrlUtils;
+import org.ngrinder.model.User;
 import org.ngrinder.script.handler.GroovyMavenProjectScriptHandler;
 import org.ngrinder.script.handler.ProjectHandler;
 import org.ngrinder.script.handler.ScriptHandler;
@@ -204,6 +205,10 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
                     script.setScriptStatus("unapproved");
                     script.setStatusLabel(UNAPPROVED);
             }
+            ScriptLanguageEnum scriptType = ScriptLanguageEnum.matchByValue(script.getScriptType());
+            if (scriptType != null) {
+                script.setTypeLabel(scriptType.getView());
+            }
         }
         return CommonResult.success(emergencyScripts, (int) pageInfo.getTotal());
     }
@@ -212,6 +217,8 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     public int deleteScripts(int[] scriptIds) {
         int count = 0;
         for (int scriptId : scriptIds) {
+            resourceService.refreshResource(scriptId, new ArrayList<>());
+            deleteGrinderScript(scriptId);
             count += mapper.deleteByPrimaryKey(scriptId);
         }
         return count;
@@ -438,6 +445,24 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             script.setComment(comment);
         }
         return mapper.updateByPrimaryKeySelective(script);
+    }
+
+    public void deleteGrinderScript(int scriptId) {
+        EmergencyScript script = mapper.selectByPrimaryKey(scriptId);
+        if (script == null) {
+            return;
+        }
+        ScriptLanguageEnum scriptType = ScriptLanguageEnum.matchByValue(script.getScriptType());
+        if (scriptType == null || scriptType.getScriptType() == ScriptTypeEnum.NORMAL) {
+            return;
+        }
+        User user = new User();
+        user.setUserId(script.getScriptUser());
+        try {
+            fileEntryService.deleteFile(user, grinderDirPath(script));
+        } catch (IOException e) {
+            log.error("delete script {} error.", scriptId, e.getMessage());
+        }
     }
 
     public void freshGrinderScript(int scriptId) {
