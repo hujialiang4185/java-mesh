@@ -52,7 +52,18 @@ public class EmergencyTaskController {
     private EmergencyTaskService taskService;
 
     /**
-     * 获取任务执行的基本信息
+     * 获取任务下发各agent执行的基本信息
+     *
+     * @param recordId 测试id
+     * @return {@link CommonResult}
+     */
+    @GetMapping("/scenario/report")
+    public CommonResult<TaskCommonReport[]> getTaskReport(@RequestParam("key") Integer recordId) {
+        return taskService.getTaskReport(recordId);
+    }
+
+    /**
+     * 获取压测任务执行的基本信息
      *
      * @param perfTestId 测试id
      * @return {@link CommonResult}

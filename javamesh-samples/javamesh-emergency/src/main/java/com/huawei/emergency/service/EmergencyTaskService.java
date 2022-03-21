@@ -5,6 +5,7 @@
 package com.huawei.emergency.service;
 
 import com.huawei.common.api.CommonResult;
+import com.huawei.emergency.dto.TaskCommonReport;
 import com.huawei.emergency.entity.EmergencyTask;
 
 /**
@@ -17,4 +18,12 @@ public interface EmergencyTaskService extends EmergencyCommonService<EmergencyTa
     boolean isTaskExist(int taskId);
 
     CommonResult getCommonReport(Long perfTestId);
+
+    /**
+     * 获取任务下各agent的压测报告
+     *
+     * @param recordId
+     * @return {@link CommonResult} 压测报告集合
+     */
+    CommonResult getTaskReport(Integer recordId);
 }

@@ -239,4 +239,13 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
         commonReport.setPlugins(perfTestService.getAvailableReportPlugins(perfTestId));
         return CommonResult.success(commonReport);
     }
+
+    @Override
+    public CommonResult getTaskReport(Integer recordId) {
+        if (recordId == null) {
+            return CommonResult.success();
+        }
+        List<TaskCommonReport> commonReportList = taskMapper.getTaskReportByRecordId(recordId);
+        return CommonResult.success(commonReportList.toArray());
+    }
 }

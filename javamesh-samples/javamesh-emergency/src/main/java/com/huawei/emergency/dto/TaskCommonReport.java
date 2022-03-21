@@ -106,6 +106,14 @@ public class TaskCommonReport {
      */
     private List plugins;
 
+    private Integer serverId;
+
+    private String serverName;
+
+    private String serverIp;
+
+    private Integer testId;
+
     public static TaskCommonReport parse(PerfTest perfTest) {
         TaskCommonReport commonReport = new TaskCommonReport();
         commonReport.setTestName(perfTest.getTestName() == null ? "null" : perfTest.getTestName());

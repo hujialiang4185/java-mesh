@@ -108,6 +108,10 @@ public class LogAspect {
         LogAuditEntity logAuditEntity = new LogAuditEntity();
         logAuditEntity.setOperationDate(getTimestamp());
 
+        if (!(response instanceof CommonResult)) {
+            return;
+        }
+
         // 获取响应的结果
         CommonResult<Object> result = (CommonResult<Object>) response;
 

@@ -1,5 +1,6 @@
 package com.huawei.emergency.mapper;
 
+import com.huawei.emergency.dto.TaskCommonReport;
 import com.huawei.emergency.entity.EmergencyTask;
 import com.huawei.emergency.entity.EmergencyTaskExample;
 import java.util.List;
@@ -36,4 +37,6 @@ public interface EmergencyTaskMapper {
     int tryClearTaskNo(Integer planId);
 
     int selectMaxSubTaskNo(String preTaskNo);
+
+    List<TaskCommonReport> getTaskReportByRecordId(Integer recordId);
 }
