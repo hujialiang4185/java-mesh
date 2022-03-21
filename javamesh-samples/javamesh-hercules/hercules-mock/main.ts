@@ -29,8 +29,8 @@ const user = {
     group_name: "群组1",
     update_time: "2021-01-01 00:00:00",
     auth: [
-        "admin", 
-        "approver", 
+        "admin",
+        "approver",
         "operator"
     ]
 }
@@ -858,6 +858,28 @@ app.get('/argus-emergency/api/history/scenario/task', function (req, res) {
         })
     })
 })
+app.get('/argus-emergency/api/task/scenario/report', function (req, res) {
+    res.json({
+        data: Array.from({ length: 6 }, function (_, index) {
+            return {
+                server_id: index, // 主键，数组内唯一，否则控制台报错
+                test_name: "A主机测试",
+                server_name: "A主机",
+                server_ip: "127.0.0.1",
+                duration: 100,
+                vuser: 120,
+                tps: 123,
+                tps_peak: 250,
+                avg_time: 12,
+                test_count: 210,
+                success_count: 100,
+                fail_count: 10,
+                status_label: ["失败", "运行中", "成功", "待执行"][index % 4],
+                test_id: index === 0 ? 1 : null
+            }
+        })
+    })
+})
 app.post("/argus-emergency/api/history/scenario/task/runAgain", function (req, res) {
     res.json()
 })
@@ -941,7 +963,26 @@ app.get("/argus-user/api/group", function (req, res) {
                 created_by: "zengfan",
                 created_time: "2017-01-01 00:00:00"
             }
-        })
+        }),
+        total: 11
+    })
+})
+app.get("/argus-user/api/logAudit", function (req, res) {
+    res.json({
+        data: Array.from({ length: 10 }, function (_, index) {
+            return {
+                log_id: index,
+                "resource_type": "任务",
+                "operation_type": "新增",
+                "level_label": "提示",
+                "operation_results": "成功",
+                "operation_people": "admin",
+                "ip_address": "192.168.0.1",
+                "peration_details": "/api/test",
+                "operation_date": "2017-01-01",
+            }
+        }),
+        total: 11
     })
 })
 app.post("/argus-user/api/group", function (req, res) {
