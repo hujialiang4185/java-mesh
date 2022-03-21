@@ -82,7 +82,7 @@ public class ScriptManageDto extends EmergencyScript {
          * name
          */
         @JsonProperty("key")
-        private String name;
+        private String name = "";
         /**
          * value
          */
@@ -109,10 +109,10 @@ public class ScriptManageDto extends EmergencyScript {
          * key
          */
         @JsonProperty("key")
-        private String name;
+        private String name = "";
         /**
          * value
          */
-        private String value;
+        private String value = "";
     }
 }

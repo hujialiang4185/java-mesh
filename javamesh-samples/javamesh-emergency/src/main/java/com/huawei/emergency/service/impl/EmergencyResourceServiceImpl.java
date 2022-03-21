@@ -42,10 +42,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -135,12 +134,11 @@ public class EmergencyResourceServiceImpl implements EmergencyResourceService {
      * @return
      */
     public boolean uploadNgrinderPath(String fileFullPath, InputStream inputStream) {
-        FileEntry fileEntry = new FileEntry();
-        try {
-            fileEntry.setCreatedUser(JwtAuthenticationTokenFilter.currentGrinderUser());
-            fileEntry.setContentBytes(IOUtils.toByteArray(new InputStreamReader(inputStream), StandardCharsets.UTF_8));
-            fileEntry.setPath(fileFullPath);
-            fileEntryService.saveFile(JwtAuthenticationTokenFilter.currentGrinderUser(), fileEntry);
+        File resourceFile = new File(
+            fileEntryService.getUserScriptsDir(JwtAuthenticationTokenFilter.currentGrinderUser()), fileFullPath);
+        try (FileOutputStream outputStream = new FileOutputStream(resourceFile)) {
+            IOUtils.copy(inputStream, outputStream);
+            outputStream.flush();
         } catch (IOException e) {
             LOGGER.error("update resource {} error. {}", fileFullPath, e.getMessage());
             return false;

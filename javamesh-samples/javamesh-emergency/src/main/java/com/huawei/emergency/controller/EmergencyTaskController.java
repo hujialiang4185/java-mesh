@@ -22,6 +22,7 @@ import com.huawei.emergency.dto.TaskJvmReport;
 import com.huawei.emergency.dto.TaskResourceReport;
 import com.huawei.emergency.dto.TaskServiceReport;
 import com.huawei.emergency.service.EmergencyTaskService;
+
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -92,7 +93,8 @@ public class EmergencyTaskController {
      * @return {@link CommonResult}
      */
     @GetMapping("/resource")
-    public CommonResult<TaskResourceReport> getResourceReport(@RequestParam("test_id") Integer testId, @RequestParam(value = "ip", required = false) String ip) {
+    public CommonResult<TaskResourceReport> getResourceReport(@RequestParam("test_id") Integer testId,
+        @RequestParam(value = "ip", required = false) String ip) {
         return CommonResult.success(mockResource(ip));
     }
 
@@ -103,7 +105,8 @@ public class EmergencyTaskController {
      * @return {@link CommonResult}
      */
     @GetMapping("/jvm")
-    public CommonResult<TaskJvmReport> getJvmReport(@RequestParam("test_id") Integer testId, @RequestParam(value = "ip", required = false) String ip) {
+    public CommonResult<TaskJvmReport> getJvmReport(@RequestParam("test_id") Integer testId,
+        @RequestParam(value = "ip", required = false) String ip) {
         return CommonResult.success(mockJvm(ip));
     }
 

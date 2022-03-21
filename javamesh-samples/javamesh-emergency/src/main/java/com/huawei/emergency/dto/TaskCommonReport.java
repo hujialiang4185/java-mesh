@@ -18,10 +18,10 @@ package com.huawei.emergency.dto;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import org.ngrinder.model.PerfTest;
 import org.ngrinder.model.Tag;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @Data
 public class TaskCommonReport {
-
+    private static final long ONE_THOUSAND = 1000L;
     /**
      * 测试名称
      */
@@ -114,6 +114,11 @@ public class TaskCommonReport {
 
     private Integer testId;
 
+    /**
+     * 压测明细
+     */
+    private List<TaskCommonReport> taskDetails;
+
     public static TaskCommonReport parse(PerfTest perfTest) {
         TaskCommonReport commonReport = new TaskCommonReport();
         commonReport.setTestName(perfTest.getTestName() == null ? "null" : perfTest.getTestName());
@@ -123,6 +128,10 @@ public class TaskCommonReport {
             == null ? null : perfTest.getTags().stream().map(Tag::getTagValue).collect(Collectors.toList()));
         commonReport.setDesc(perfTest.getDescription());
         commonReport.setDuration(perfTest.getDuration());
+        if (perfTest.getFinishTime() != null && perfTest.getStartTime() != null) {
+            commonReport.setDuration(
+                (perfTest.getFinishTime().getTime() - perfTest.getStartTime().getTime()) / ONE_THOUSAND);
+        }
         commonReport.setVuser(perfTest.getVuserPerAgent());
         commonReport.setTps(perfTest.getTps());
         commonReport.setTpsPeak(perfTest.getPeakTps());
@@ -133,7 +142,8 @@ public class TaskCommonReport {
         commonReport.setFailCount(perfTest.getErrors());
         commonReport.setTestComment(perfTest.getTestComment());
         commonReport.setProgressMessage(perfTest.getProgressMessage()
-            == null ? null : Arrays.stream(perfTest.getProgressMessage().split(System.lineSeparator())).collect(Collectors.toList()));
+            == null ? null
+            : Arrays.stream(perfTest.getProgressMessage().split(System.lineSeparator())).collect(Collectors.toList()));
         return commonReport;
     }
 }

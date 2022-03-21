@@ -340,6 +340,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         if (count != 1) {
             return ResultCode.FAIL;
         }
+        freshGrinderScript(script.getScriptId());
         return script.getScriptId();
     }
 
@@ -371,6 +372,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             }
             resourceService.refreshResource(script.getScriptId(), resourceList);
         }
+        freshGrinderScript(script.getScriptId());
         return mapper.updateByPrimaryKeySelective(updateScript);
     }
 
@@ -430,7 +432,6 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         script.setApprover(userName);
         if ("通过".equals(approve)) {
             script.setScriptStatus(TYPE_TWO);
-            freshGrinderScript(scriptId);
         } else {
             script.setScriptStatus(TYPE_THREE);
             String comment = (String) map.get("comment");
@@ -521,6 +522,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         newScript.setUpdateTime(Timestamp.from(Instant.now()));
         mapper.insertSelective(newScript);
         generateTemplate(newScript); // 生成编排模板
+        freshGrinderScript(newScript.getScriptId());
         return CommonResult.success(newScript);
     }
 
@@ -597,6 +599,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             script.setScriptStatus(TYPE_ZERO);
             script.setUpdateTime(Timestamp.from(Instant.now()));
             mapper.updateByPrimaryKeySelective(script);
+            freshGrinderScript(script.getScriptId()); // 更新ngrinder
             ArgusScript argusScript = new ArgusScript();
             argusScript.setPath(treeResponse.getPath());
             argusScript.setScript(scriptContent);
@@ -734,6 +737,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         script.setUpdateTime(Timestamp.from(Instant.now()));
         script.setScriptGroup(user.getGroup());
         mapper.insertSelective(script);
+        freshGrinderScript(script.getScriptId());
         return CommonResult.success(script);
     }
 
