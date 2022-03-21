@@ -234,7 +234,7 @@ function ViewScript(props: { data: Data }) {
     const [isModalVisible, setIsModalVisible] = useState(false);
     return <>
         <Button type="link" size="small" onClick={function () { setIsModalVisible(true) }}>查看</Button>
-        <Modal title="查看脚本" width={950} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
+        <Modal title="查看脚本" width={1200} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
             {isModalVisible && <ScriptDetail data={props.data} />}
@@ -278,7 +278,7 @@ function ScriptDetail(props: { data: Data }) {
             <Descriptions.Item label="脚本用途">{props.data.submit_info}</Descriptions.Item>
         </Descriptions>
         <div className="Editor">
-            <Editor height={300} language="shell" options={{ readOnly: true }} value={props.data.content} />
+            <Editor height={600} language="shell" options={{ readOnly: true }} value={props.data.content} />
         </div>
     </div>
 }
