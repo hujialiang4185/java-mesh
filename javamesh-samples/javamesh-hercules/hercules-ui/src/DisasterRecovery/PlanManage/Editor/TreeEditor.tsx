@@ -136,7 +136,7 @@ export default class App extends React.Component<{ plan_id: string }> {
           { title: "脚本用途", dataIndex: "submit_info", ellipsis: true },
           { title: "执行方式", dataIndex: "sync", ellipsis: true },
           {
-            title: <AddScenaTask initialValues={{}} onFinish={async values => {
+            title: <AddScenaTask create initialValues={{}} onFinish={async values => {
               values.sync === false ? values.sync = "异步" : values.sync = "同步"
               values.title = values.task_name
               // 获取key
@@ -145,10 +145,10 @@ export default class App extends React.Component<{ plan_id: string }> {
               data.push({ ...res.data.data, ...values });
               // 保存
               this.save(data)
-            }} >加场景</AddScenaTask>,
+            }} />,
             width: 170, align: "left", dataIndex: "key", render: (key, record) => {
               return <>
-                <AddPlanTask initialValues={{ channel_type: "SSH", task_type: "自定义脚本压测", sampling_interval: 2, sampling_ignore: 0, vuser: 5, by_time_h: 0, by_time_m: 0, by_time_s: 0 }} onFinish={async values => {
+                <AddPlanTask initialValues={{ channel_type: "SSH", task_type: "自定义脚本压测", sampling_interval: 2, sampling_ignore: 0, vuser: 5, basic: "by_time", by_time_h: 0, by_time_m: 0, by_time_s: 0 }} onFinish={async values => {
                   values.sync === false ? values.sync = "异步" : values.sync = "同步"
                   values.title = values.task_name
                   // 获取key
@@ -160,7 +160,7 @@ export default class App extends React.Component<{ plan_id: string }> {
                   });
                   // 保存
                   this.save(data)
-                }} >加任务</AddPlanTask>
+                }} create/>
                 {this.state.gData.find(function (item) {
                   return key === item.key;
                 }) ? <AddScenaTask initialValues={record} onFinish={async values => {
@@ -172,7 +172,7 @@ export default class App extends React.Component<{ plan_id: string }> {
                   data[index] = { ...data[index], ...values };
                   // 保存
                   setTimeout(() => { this.save(data) })
-                }}>修改</AddScenaTask> : <AddPlanTask initialValues={{ ...record, sync: record.sync === "同步" }} onFinish={async values => {
+                }}/> : <AddPlanTask initialValues={{ ...record, sync: record.sync === "同步" }} onFinish={async values => {
                   values.title = values.task_name
                   values.sync === false ? values.sync = "异步" : values.sync = "同步"
                   await axios.put("/argus-emergency/api/plan/task", { key, ...values })
@@ -182,7 +182,7 @@ export default class App extends React.Component<{ plan_id: string }> {
                   });
                   // 保存
                   setTimeout(() => { this.save(data) })
-                }} >修改</AddPlanTask>}
+                }} />}
                 <Popconfirm title="是否删除?" onConfirm={() => {
                   const data = [...this.state.gData];
                   loop(data, key, (item, index, arr) => {
@@ -201,18 +201,21 @@ export default class App extends React.Component<{ plan_id: string }> {
   }
 }
 
-function AddScenaTask(props: { onFinish: (values: any) => Promise<void>, initialValues: any, children: React.ReactNode }) {
+function AddScenaTask(props: { onFinish: (values: any) => Promise<void>, initialValues: any, create?: boolean }) {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
   return <>
-    <Button type="link" size="small" onClick={function () { setIsModalVisible(true) }}>{props.children}</Button>
-    <Modal className="AddScenaTask" title={props.children} width={950} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
+    <Button type="link" size="small" onClick={function () { setIsModalVisible(true) }}>{props.create ? "加场景" : "修改"}</Button>
+    <Modal className="AddScenaTask" title={props.create ? "加场景" : "修改"} width={950} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
       setIsModalVisible(false)
     }}>
       <Form form={form} labelCol={{ span: 2 }} initialValues={props.initialValues} onFinish={async (values) => {
         try {
           await props.onFinish(values)
           setIsModalVisible(false)
+          if (props.create) {
+            form.resetFields()
+          }
         } catch (error: any) {
           message.error(error.message)
         }

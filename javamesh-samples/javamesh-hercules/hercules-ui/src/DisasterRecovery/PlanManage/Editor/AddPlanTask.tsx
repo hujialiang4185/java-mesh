@@ -6,7 +6,7 @@ import SearchSelect from "./SearchSelect";
 import TabelTransfer from "./TabelTransfer";
 import Editor from "@monaco-editor/react";
 
-export default function App(props: { onFinish: (values: any) => Promise<void>, initialValues: any, children: React.ReactNode }) {
+export default function App(props: { onFinish: (values: any) => Promise<void>, initialValues: any, create?: boolean }) {
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [isCmd, setIsCmd] = useState(props.initialValues.task_type === "命令行脚本")
   const [script, setScript] = useState({ submit_info: "", content: "" })
@@ -28,8 +28,8 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
     <Button type="link" size="small" onClick={function () {
       setIsModalVisible(true)
       loadScript(props.initialValues.script_name)
-    }}>{props.children}</Button>
-    <Drawer className="AddPlanTask" title={props.children} width={950} visible={isModalVisible} maskClosable={false} footer={null} onClose={function () {
+    }}>{props.create ? "加任务" : "修改"}</Button>
+    <Drawer className="AddPlanTask" title={props.create ? "加任务" : "修改"} width={950} visible={isModalVisible} maskClosable={false} footer={null} onClose={function () {
       setIsModalVisible(false)
     }}>
       <Form form={form} labelCol={{ span: 2 }}
@@ -38,6 +38,9 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
           try {
             await props.onFinish(values)
             setIsModalVisible(false)
+            if (props.create) {
+              form.resetFields()
+            }
           } catch (error: any) {
             message.error(error.message)
           }
