@@ -237,7 +237,7 @@ function ViewScript(props: { data: Data }) {
         <Modal title="查看脚本" width={1200} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            {isModalVisible && <ScriptDetail data={props.data} />}
+            <ScriptDetail data={props.data} height={600}/>
         </Modal>
     </>
 }
@@ -246,10 +246,10 @@ function ApproveScript(props: { data: Data, load: () => {} }) {
     const [isModalVisible, setIsModalVisible] = useState(false);
     return <>
         <Button type="link" size="small" onClick={function () { setIsModalVisible(true) }}>审核</Button>
-        <Modal className="ApproveScript" title="审核脚本" width={950} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
+        <Modal className="ApproveScript" title="审核脚本" width={1200} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            {isModalVisible && <ScriptDetail data={props.data} />}
+            <ScriptDetail data={props.data} height={450}/>
             <Form className="Form"  onFinish={async function (values) {
                 try {
                     await axios.post("/argus-emergency/api/script/approve", { ...values, script_id: props.data.script_id })
@@ -270,7 +270,7 @@ function ApproveScript(props: { data: Data, load: () => {} }) {
     </>
 }
 
-function ScriptDetail(props: { data: Data }) {
+function ScriptDetail(props: { data: Data, height: number }) {
     return <div className="ScriptDetail">
         <Descriptions className="Desc">
             <Descriptions.Item label="脚本名称">{props.data.script_name}</Descriptions.Item>
@@ -278,7 +278,7 @@ function ScriptDetail(props: { data: Data }) {
             <Descriptions.Item label="脚本用途">{props.data.submit_info}</Descriptions.Item>
         </Descriptions>
         <div className="Editor">
-            <Editor height={600} language="shell" options={{ readOnly: true }} value={props.data.content} />
+            <Editor height={props.height} language="shell" options={{ readOnly: true }} value={props.data.content} />
         </div>
     </div>
 }
