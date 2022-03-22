@@ -760,6 +760,7 @@ app.get("/argus-emergency/api/plan/task", function (req, res) {
             title: "场景1",
             task_no: 1,
             task_name: "场景1",
+            sync: "同步",
             children: [{
                 key: 2,
                 title: "任务2",
@@ -797,6 +798,7 @@ app.get("/argus-emergency/api/plan/task", function (req, res) {
         {
             key: 5,
             title: "场景5",
+            sync: "同步",
             task_no: 5,
             task_name: "场景5",
         }]
