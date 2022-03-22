@@ -1,5 +1,5 @@
 import React, { Key, useState } from 'react'
-import { Button, Table, Tree, Modal, Popconfirm, message, Form, Input } from 'antd';
+import { Button, Table, Tree, Modal, Popconfirm, message, Form, Input, Switch } from 'antd';
 import "./TreeEditor.scss"
 import axios from 'axios';
 import AddPlanTask from "./AddPlanTask"
@@ -137,6 +137,7 @@ export default class App extends React.Component<{ plan_id: string }> {
           { title: "执行方式", dataIndex: "sync", ellipsis: true },
           {
             title: <AddScenaTask initialValues={{}} onFinish={async values => {
+              values.sync === false ? values.sync = "异步" : values.sync = "同步"
               values.title = values.task_name
               // 获取key
               const res = await axios.post("/argus-emergency/api/plan/task", values)
@@ -163,6 +164,7 @@ export default class App extends React.Component<{ plan_id: string }> {
                 {this.state.gData.find(function (item) {
                   return key === item.key;
                 }) ? <AddScenaTask initialValues={record} onFinish={async values => {
+                  values.sync === false ? values.sync = "异步" : values.sync = "同步"
                   values.title = values.task_name
                   await axios.put("/argus-emergency/api/plan/task", { key, ...values })
                   const data = [...this.state.gData];
@@ -207,20 +209,22 @@ function AddScenaTask(props: { onFinish: (values: any) => Promise<void>, initial
     <Modal className="AddScenaTask" title={props.children} width={950} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
       setIsModalVisible(false)
     }}>
-      <Form form={form}  labelCol={{ span: 4 }} initialValues={props.initialValues} onFinish={async (values) => {
+      <Form form={form} labelCol={{ span: 2 }} initialValues={props.initialValues} onFinish={async (values) => {
         try {
           await props.onFinish(values)
-          form.resetFields()
           setIsModalVisible(false)
         } catch (error: any) {
           message.error(error.message)
         }
       }}>
-        <Form.Item labelCol={{ span: 2 }} label="场景名称" name="task_name" rules={[{ required: true, max: 64 }]}>
+        <Form.Item label="场景名称" name="task_name" rules={[{ required: true, max: 64 }]}>
           <Input />
         </Form.Item>
-        <Form.Item labelCol={{ span: 2 }} label="场景描述" name="scena_desc">
+        <Form.Item label="场景描述" name="scena_desc">
           <Input.TextArea showCount maxLength={50} autoSize={{ minRows: 2, maxRows: 2 }} />
+        </Form.Item>
+        <Form.Item className="Middle" label="执行方式" name="sync" valuePropName="checked">
+          <Switch checkedChildren="同步" unCheckedChildren="异步" defaultChecked />
         </Form.Item>
         <Form.Item className="Buttons">
           <Button type="primary" htmlType="submit">提交</Button>
