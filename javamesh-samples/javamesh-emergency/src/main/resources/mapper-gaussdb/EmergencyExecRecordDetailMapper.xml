@@ -117,27 +117,21 @@
             <include refid="Example_Where_Clause"/>
         </if>
     </delete>
-    <insert id="insert" parameterType="com.huawei.emergency.entity.EmergencyExecRecordDetail">
-        <selectKey keyProperty="detailId" order="AFTER" resultType="java.lang.Integer">
-            SELECT LAST_INSERT_ID()
-        </selectKey>
+    <insert id="insert" keyColumn="detail_id" keyProperty="detailId"
+            parameterType="com.huawei.emergency.entity.EmergencyExecRecordDetail" useGeneratedKeys="true">
         insert into emergency_exec_record_detail (exec_id, record_id, status,
-        server_id, server_ip, log,
-        create_user, create_time, start_time,
-        end_time, ensure_user, ensure_time,
-        is_valid, pid, perf_test_id
-        )
+                                                  server_id, server_ip, log,
+                                                  create_user, create_time, start_time,
+                                                  end_time, ensure_user, ensure_time,
+                                                  is_valid, pid, perf_test_id)
         values (#{execId,jdbcType=INTEGER}, #{recordId,jdbcType=INTEGER}, #{status,jdbcType=VARCHAR},
-        #{serverId,jdbcType=INTEGER}, #{serverIp,jdbcType=VARCHAR}, #{log,jdbcType=VARCHAR},
-        #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{startTime,jdbcType=TIMESTAMP},
-        #{endTime,jdbcType=TIMESTAMP}, #{ensureUser,jdbcType=VARCHAR}, #{ensureTime,jdbcType=TIMESTAMP},
-        #{isValid,jdbcType=VARCHAR}, #{pid,jdbcType=INTEGER}, #{perfTestId,jdbcType=INTEGER}
-        )
+                #{serverId,jdbcType=INTEGER}, #{serverIp,jdbcType=VARCHAR}, #{log,jdbcType=VARCHAR},
+                #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{startTime,jdbcType=TIMESTAMP},
+                #{endTime,jdbcType=TIMESTAMP}, #{ensureUser,jdbcType=VARCHAR}, #{ensureTime,jdbcType=TIMESTAMP},
+                #{isValid,jdbcType=VARCHAR}, #{pid,jdbcType=INTEGER}, #{perfTestId,jdbcType=INTEGER})
     </insert>
-    <insert id="insertSelective" parameterType="com.huawei.emergency.entity.EmergencyExecRecordDetail">
-        <selectKey keyProperty="detailId" order="AFTER" resultType="java.lang.Integer">
-            SELECT LAST_INSERT_ID()
-        </selectKey>
+    <insert id="insertSelective" keyColumn="detail_id" keyProperty="detailId"
+            parameterType="com.huawei.emergency.entity.EmergencyExecRecordDetail" useGeneratedKeys="true">
         insert into emergency_exec_record_detail
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="execId != null">

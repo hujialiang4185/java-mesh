@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huawei.emergency.mapper.EmergencyLogAuditMapper">
+    <insert id="addLogAudit" parameterType="com.huawei.logaudit.entity.LogAuditEntity">
+        insert into emergency_log_audit (resource_type,operation_type,level,operation_results,operation_people,ip_address,operation_details,operation_date)
+        values (#{resourceType},#{operationType},#{level},#{operationResults},#{operationPeople},#{ipAddress},#{operationDetails},#{operationDate})
+    </insert>
+</mapper>

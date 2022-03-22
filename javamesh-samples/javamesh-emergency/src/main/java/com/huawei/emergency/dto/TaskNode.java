@@ -67,7 +67,7 @@ public class TaskNode {
     private Integer byTimeS; // 测试时长 秒数
     private Integer byCount; // 测试次数
     private String basic; // 测试时长 by_count by_time
-    private Integer samplingInterval; // 采样间隔
+    private Integer samplingInterval = 2; // 采样间隔
     private Integer samplingIgnore; // 采样忽略数
     private boolean isSafe; // 是否安全文件分发
     private String testParam; // 测试参数
