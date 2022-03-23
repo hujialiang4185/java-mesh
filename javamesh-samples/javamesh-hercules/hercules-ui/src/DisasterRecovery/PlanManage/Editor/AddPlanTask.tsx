@@ -37,10 +37,14 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
         onFinish={async (values) => {
           try {
             await props.onFinish(values)
-            setIsModalVisible(false)
             if (props.create) {
               form.resetFields()
+              setIsCmd(false)
+              setScript({submit_info: "", content: ""})
+              setBasic(false)
+              setPresure(true)
             }
+            setIsModalVisible(false)
           } catch (error: any) {
             message.error(error.message)
           }
