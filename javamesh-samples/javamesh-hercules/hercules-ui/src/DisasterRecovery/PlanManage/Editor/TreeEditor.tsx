@@ -200,7 +200,6 @@ export default class App extends React.Component<{ plan_id: string }> {
     </div>
   }
 }
-
 function AddScenaTask(props: { onFinish: (values: any) => Promise<void>, initialValues: any, create?: boolean }) {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
@@ -213,7 +212,7 @@ function AddScenaTask(props: { onFinish: (values: any) => Promise<void>, initial
         try {
           values.task_type = "场景"
           await props.onFinish(values)
-          // setIsModalVisible(false)
+          setIsModalVisible(false)
           if (props.create) {
             form.resetFields()
           }
