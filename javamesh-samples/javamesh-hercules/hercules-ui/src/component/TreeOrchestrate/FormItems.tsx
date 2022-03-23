@@ -21,7 +21,7 @@ function defaultFieldsValues(type: string) {
             }
         case "CSVDataSetConfig":
             return {
-                variable_names: ",",
+                delimiter: ",",
                 recycle: true,
                 share_mode: "ALL_THREADS"
             }
