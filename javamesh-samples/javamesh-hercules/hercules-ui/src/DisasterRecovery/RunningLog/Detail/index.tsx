@@ -174,7 +174,7 @@ function TaskReport(props: { uid: string }) {
                 { title: "状态", dataIndex: "status_label", ellipsis: true },
                 { title: "主机名称", dataIndex: "server_name", ellipsis: true },
                 { title: "服务器IP", dataIndex: "server_ip", ellipsis: true },
-                { title: "运行时间", dataIndex: "duration", ellipsis: true },
+                { title: "运行时间(s)", dataIndex: "duration", ellipsis: true },
                 { title: "虚拟用户数", dataIndex: "vuser", ellipsis: true },
                 { title: "TPS", dataIndex: "tps", ellipsis: true },
                 { title: "TPS峰值", dataIndex: "tps_peak", ellipsis: true },
