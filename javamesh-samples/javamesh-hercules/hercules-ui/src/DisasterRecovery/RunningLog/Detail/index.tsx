@@ -253,7 +253,7 @@ function TaskLog(props: { record: Task }) {
         }
     }, [])
     return <>
-        <Button type="primary" size="small" onClick={async function () {
+        <Button disabled={!!props.record.test_id} type="primary" size="small" onClick={async function () {
             if (submit) return
             submit = true
             let line = await load(props.record.key)
