@@ -168,7 +168,7 @@ export default class App extends React.Component<{ plan_id: string }> {
                   values.title = values.task_name
                   await axios.put("/argus-emergency/api/plan/task", { key, ...values })
                   const data = [...this.state.gData];
-                  const index = data.findIndex(item => item.key = key)
+                  const index = data.findIndex(item => item.key === key)
                   data[index] = { ...data[index], ...values };
                   // 保存
                   setTimeout(() => { this.save(data) })
@@ -211,8 +211,9 @@ function AddScenaTask(props: { onFinish: (values: any) => Promise<void>, initial
     }}>
       <Form form={form} labelCol={{ span: 2 }} initialValues={props.initialValues} onFinish={async (values) => {
         try {
+          values.task_type = "场景"
           await props.onFinish(values)
-          setIsModalVisible(false)
+          // setIsModalVisible(false)
           if (props.create) {
             form.resetFields()
           }
