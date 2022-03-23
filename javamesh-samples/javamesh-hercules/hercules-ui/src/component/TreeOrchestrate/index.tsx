@@ -72,7 +72,7 @@ export default class App extends React.Component<{ initialValues: () => Promise<
                 const key = new Date().valueOf() + "-" + type
                 const data = { key, type }
                 item.children.push(data);
-                this.map.set(key, { title: type, ...defaultFieldsValues(type) })
+                this.map.set(key, { title: menus.get(type), ...defaultFieldsValues(type) })
                 this.onSelect(data.key)
                 this.props.onSave({ tree: this.state.tree, map: this.map })
                 this.setState({
