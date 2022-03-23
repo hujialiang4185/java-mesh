@@ -163,7 +163,7 @@ export default class App extends React.Component<{ plan_id: string }> {
                 }} create/>
                 {this.state.gData.find(function (item) {
                   return key === item.key;
-                }) ? <AddScenaTask initialValues={record} onFinish={async values => {
+                }) ? <AddScenaTask initialValues={{ ...record, sync: record.sync === "同步" }} onFinish={async values => {
                   values.sync === false ? values.sync = "异步" : values.sync = "同步"
                   values.title = values.task_name
                   await axios.put("/argus-emergency/api/plan/task", { key, ...values })
