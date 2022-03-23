@@ -41,6 +41,7 @@ import com.huawei.emergency.entity.JwtUser;
 import com.huawei.emergency.entity.UserEntity;
 import com.huawei.emergency.layout.DefaultElementProcessContext;
 import com.huawei.emergency.layout.ElementProcessContext;
+import com.huawei.emergency.layout.TestElement;
 import com.huawei.emergency.layout.TestElementFactory;
 import com.huawei.emergency.layout.TestPlanTestElement;
 import com.huawei.emergency.layout.TreeNode;
@@ -474,6 +475,9 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         if (scriptType == null || scriptType.getScriptType() == ScriptTypeEnum.NORMAL) {
             return;
         }
+        if (script.getContent() == null) {
+            script.setContent("");
+        }
         updateGrinderScript(script); // 更新脚本内容
     }
 
@@ -569,16 +573,16 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         rootElement.setElementParams(JSONObject.toJSONString(elementParams));
         elementMapper.insertSelective(rootElement);
         int seq = 1;
-        for (String handlerType : TestElementFactory.getDefaultTemplate()) {
+        for (TestElement testElement : TestElementFactory.getDefaultTemplate()) {
             EmergencyElement element = new EmergencyElement();
-            element.setElementTitle(handlerType);
-            element.setElementType(handlerType);
+            element.setElementTitle(testElement.getTitle());
+            element.setElementType(testElement.getElementType());
             element.setElementNo(System.currentTimeMillis() + "-" + element.getElementType());
             element.setScriptId(script.getScriptId());
             element.setParentId(rootElement.getElementId());
             element.setCreateUser(script.getScriptUser());
             Map<String, Object> params = new HashMap<>();
-            params.put("title", handlerType);
+            params.put("title", testElement.getTitle());
             element.setElementParams(JSONObject.toJSONString(params));
             element.setSeq(seq);
             elementMapper.insertSelective(element);

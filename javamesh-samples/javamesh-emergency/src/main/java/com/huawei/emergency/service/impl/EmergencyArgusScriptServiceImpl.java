@@ -23,6 +23,7 @@ import com.huawei.emergency.entity.EmergencyElement;
 import com.huawei.emergency.entity.EmergencyElementExample;
 import com.huawei.emergency.layout.DefaultElementProcessContext;
 import com.huawei.emergency.layout.ElementProcessContext;
+import com.huawei.emergency.layout.TestElement;
 import com.huawei.emergency.layout.TestElementFactory;
 import com.huawei.emergency.layout.TestPlanTestElement;
 import com.huawei.emergency.layout.TreeNode;
@@ -214,16 +215,16 @@ public class EmergencyArgusScriptServiceImpl implements EmergencyArgusScriptServ
         rootElement.setElementParams(JSONObject.toJSONString(elementParams));
         elementMapper.insertSelective(rootElement);
         int seq = 1;
-        for (String handlerType : TestElementFactory.getDefaultTemplate()) {
+        for (TestElement testElement : TestElementFactory.getDefaultTemplate()) {
             EmergencyElement element = new EmergencyElement();
-            element.setElementTitle(handlerType);
-            element.setElementType(handlerType);
+            element.setElementTitle(testElement.getTitle());
+            element.setElementType(testElement.getElementType());
             element.setElementNo(System.currentTimeMillis() + "-" + element.getElementType());
             element.setArgusPath(path);
             element.setParentId(rootElement.getElementId());
             element.setCreateUser(userName);
             Map<String, Object> params = new HashMap<>();
-            params.put("title", handlerType);
+            params.put("title", testElement.getTitle());
             element.setElementParams(JSONObject.toJSONString(params));
             element.setSeq(seq);
             elementMapper.insertSelective(element);

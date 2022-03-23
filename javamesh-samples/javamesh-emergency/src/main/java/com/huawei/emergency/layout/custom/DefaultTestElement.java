@@ -16,9 +16,11 @@
 
 package com.huawei.emergency.layout.custom;
 
+import com.huawei.emergency.layout.ParentTestElement;
+
 /**
  * @author y30010171
  * @since 2022-01-13
  **/
-public interface DefaultTestElement {
+public abstract class DefaultTestElement extends ParentTestElement {
 }

@@ -53,71 +53,104 @@ import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
+ * GUI测试元件工厂类
+ *
  * @author y30010171
  * @since 2021-12-17
  **/
-@Component
 public class TestElementFactory {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(TestElementFactory.class);
     private static final Collection<Class<?>> GENERAL_CLASS_TYPE;
     private static final String SET_METHOD_PREFIX = "set";
-    private static final Map<String, String> allHandlerClassName = new HashMap<>();
-    private static final List<String> DEFAULT_HANDLER = Arrays.asList("BeforeProcess", "BeforeThread", "Before",
-        "TransactionController", "After", "AfterThread", "AfterProcess");
+    private static final Map<String, String> ALL_HANDLER_CLASS_NAME = new HashMap<>();
+    private static final List<TestElement> DEFAULT_ELEMENTS = new ArrayList<>();
+
+    private TestElementFactory() {
+    }
 
     static {
         GENERAL_CLASS_TYPE = Sets.newHashSet(boolean.class, Boolean.class, int.class, Integer.class, long.class,
             Long.class, String.class, List.class, Map.class);
-        allHandlerClassName.put("Root", TestPlanTestElement.class.getName());
-        allHandlerClassName.put("ConstantTimer", ConstantTimer.class.getName());
-        allHandlerClassName.put("HTTPRequest", HttpSampler.class.getName());
-        allHandlerClassName.put("JARImport", JarImportTestElement.class.getName());
-        allHandlerClassName.put("Jsr223Sampler", Jsr223Sampler.class.getName());
-        allHandlerClassName.put("JSR223PreProcessor", Jsr223PreProcessor.class.getName());
-        allHandlerClassName.put("JSR223PostProcessor", Jsr223PostProcessor.class.getName());
-        allHandlerClassName.put("bean_shell_post_processor", BeanShellPostProcessor.class.getName());
-        allHandlerClassName.put("RegularExpressionExtractor", RegularPostProcessor.class.getName());
-        allHandlerClassName.put("After", AfterTestElement.class.getName());
-        allHandlerClassName.put("AfterProcess", AfterProcessTestElement.class.getName());
-        allHandlerClassName.put("AfterThread", AfterThreadTestElement.class.getName());
-        allHandlerClassName.put("Before", BeforeTestElement.class.getName());
-        allHandlerClassName.put("BeforeProcess", BeforeProcessTestElement.class.getName());
-        allHandlerClassName.put("BeforeThread", BeforeThreadTestElement.class.getName());
-        allHandlerClassName.put("custom_code", CustomCodeTestElement.class.getName());
-        allHandlerClassName.put("TestFunc", CustomMethodTestElement.class.getName());
-        allHandlerClassName.put("LoopController", LoopController.class.getName());
-        allHandlerClassName.put("TransactionController", TransactionController.class.getName());
-        allHandlerClassName.put("WhileController", WhileController.class.getName());
-        allHandlerClassName.put("KeystoreConfiguration", KeystoreConfiguration.class.getName());
-        allHandlerClassName.put("http_request_default", HttpRequestDefault.class.getName());
-        allHandlerClassName.put("HTTPHeaderManager", HttpHeaderManager.class.getName());
-        allHandlerClassName.put("HTTPCookieManager", HttpCookieManager.class.getName());
-        allHandlerClassName.put("HttpCacheManager", HttpCacheManager.class.getName());
-        allHandlerClassName.put("dns_cache_manager", DnsCacheManager.class.getName());
-        allHandlerClassName.put("CSVDataSetConfig", CsvDataSetConfig.class.getName());
-        allHandlerClassName.put("Counter", Counter.class.getName());
-        allHandlerClassName.put("ResponseAssertion", ResponseAssertion.class.getName());
-        allHandlerClassName.put("JSR223Assertion", Jsr223Assertion.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("Root", TestPlanTestElement.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("ConstantTimer", ConstantTimer.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("HTTPRequest", HttpSampler.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("JARImport", JarImportTestElement.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("Jsr223Sampler", Jsr223Sampler.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("JSR223PreProcessor", Jsr223PreProcessor.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("JSR223PostProcessor", Jsr223PostProcessor.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("bean_shell_post_processor", BeanShellPostProcessor.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("RegularExpressionExtractor", RegularPostProcessor.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("After", AfterTestElement.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("AfterProcess", AfterProcessTestElement.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("AfterThread", AfterThreadTestElement.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("Before", BeforeTestElement.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("BeforeProcess", BeforeProcessTestElement.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("BeforeThread", BeforeThreadTestElement.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("custom_code", CustomCodeTestElement.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("TestFunc", CustomMethodTestElement.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("LoopController", LoopController.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("TransactionController", TransactionController.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("WhileController", WhileController.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("KeystoreConfiguration", KeystoreConfiguration.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("http_request_default", HttpRequestDefault.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("HTTPHeaderManager", HttpHeaderManager.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("HTTPCookieManager", HttpCookieManager.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("HttpCacheManager", HttpCacheManager.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("dns_cache_manager", DnsCacheManager.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("CSVDataSetConfig", CsvDataSetConfig.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("Counter", Counter.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("ResponseAssertion", ResponseAssertion.class.getName());
+        ALL_HANDLER_CLASS_NAME.put("JSR223Assertion", Jsr223Assertion.class.getName());
+        initDefaultTemplate();
     }
 
-    public static List<String> getDefaultTemplate() {
-        return DEFAULT_HANDLER;
+    public static void initDefaultTemplate() {
+        BeforeProcessTestElement beforeProcessTestElement = new BeforeProcessTestElement();
+        beforeProcessTestElement.setTitle("进程前置");
+        beforeProcessTestElement.setElementType("BeforeProcess");
+        DEFAULT_ELEMENTS.add(beforeProcessTestElement);
+        BeforeThreadTestElement beforeThreadTestElement = new BeforeThreadTestElement();
+        beforeThreadTestElement.setTitle("线程前置");
+        beforeThreadTestElement.setElementType("BeforeThread");
+        DEFAULT_ELEMENTS.add(beforeThreadTestElement);
+        BeforeTestElement beforeTestElement = new BeforeTestElement();
+        beforeTestElement.setTitle("事务前置");
+        beforeTestElement.setElementType("Before");
+        DEFAULT_ELEMENTS.add(beforeTestElement);
+        TransactionController transactionController = new TransactionController();
+        transactionController.setTitle("事务控制器");
+        transactionController.setElementType("TransactionController");
+        DEFAULT_ELEMENTS.add(transactionController);
+        AfterTestElement afterTestElement = new AfterTestElement();
+        afterTestElement.setTitle("事务后置");
+        afterTestElement.setElementType("After");
+        DEFAULT_ELEMENTS.add(afterTestElement);
+        AfterThreadTestElement afterThreadTestElement = new AfterThreadTestElement();
+        afterThreadTestElement.setTitle("线程后置");
+        afterThreadTestElement.setElementType("AfterThread");
+        DEFAULT_ELEMENTS.add(afterThreadTestElement);
+        AfterProcessTestElement afterProcessTestElement = new AfterProcessTestElement();
+        afterProcessTestElement.setTitle("进程后置");
+        afterProcessTestElement.setElementType("AfterProcess");
+        DEFAULT_ELEMENTS.add(afterProcessTestElement);
+    }
+
+    public static List<TestElement> getDefaultTemplate() {
+        return DEFAULT_ELEMENTS;
     }
 
     @Deprecated
     public static TestElement getHandler(String type, Map<String, Object> stringStringMap) {
-        String className = allHandlerClassName.get(type);
+        String className = ALL_HANDLER_CLASS_NAME.get(type);
         if (StringUtils.isNotEmpty(className)) {
             try {
                 TestElement testElement = (TestElement) Class.forName(className).newInstance();
@@ -138,7 +171,7 @@ public class TestElementFactory {
     }
 
     public static TestElement getHandler(String type, String jsonStr) {
-        String className = allHandlerClassName.get(type);
+        String className = ALL_HANDLER_CLASS_NAME.get(type);
         if (StringUtils.isNotEmpty(className)) {
             try {
                 return (TestElement) JSONObject.parseObject(jsonStr, Class.forName(className));

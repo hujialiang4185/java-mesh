@@ -16,6 +16,7 @@
 
 package com.huawei.emergency.layout;
 
+import com.huawei.common.exception.ApiException;
 import com.huawei.emergency.layout.controller.TransactionController;
 import com.huawei.emergency.layout.custom.CustomMethodTestElement;
 import com.huawei.emergency.layout.custom.DefaultTestElement;
@@ -77,7 +78,7 @@ public class TestPlanTestElement extends ParentTestElement {
         } else if (rateTotal == ONE_HUNDRED) {
             generateScheduleCode(allTransactional);
         } else {
-            throw new RuntimeException("事务控制器压力分配不能超过100");
+            throw new ApiException("事务控制器压力分配不能超过100");
         }
         nextElements().stream()
             .filter(testElement -> testElement instanceof DefaultTestElement

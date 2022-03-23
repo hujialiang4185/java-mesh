@@ -17,14 +17,12 @@
 package com.huawei.emergency.layout.custom;
 
 import com.huawei.emergency.layout.ElementProcessContext;
-import com.huawei.emergency.layout.ParentTestElement;
 
 /**
  * @author y30010171
  * @since 2021-12-17
  **/
-public class BeforeProcessTestElement extends ParentTestElement implements DefaultTestElement {
-
+public class BeforeProcessTestElement extends DefaultTestElement {
     @Override
     public void handle(ElementProcessContext context) {
         context.setCurrentMethod(context.getTemplate().getBeforeProcessMethod());

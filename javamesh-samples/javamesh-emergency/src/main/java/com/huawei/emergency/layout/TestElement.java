@@ -16,15 +16,21 @@
 
 package com.huawei.emergency.layout;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author y30010171
  * @since 2021-12-14
  **/
+@NoArgsConstructor
+@AllArgsConstructor
 @Data
 public abstract class TestElement {
     private String title;
+    private String elementType;
     private String comments;
+
     public abstract void handle(ElementProcessContext context);
 }
