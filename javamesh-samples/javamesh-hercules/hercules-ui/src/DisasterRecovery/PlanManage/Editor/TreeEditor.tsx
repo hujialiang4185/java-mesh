@@ -131,7 +131,7 @@ export default class App extends React.Component<{ plan_id: string }> {
         }} dataSource={this.state.gData}
         columns={[
           { title: "任务(场景)名称", dataIndex: "title", width: 250, ellipsis: true },
-          { title: "任务类型", dataIndex: "task_type", ellipsis: true },
+          { title: "任务(场景)类型", dataIndex: "task_type", ellipsis: true },
           { title: "脚本名称", dataIndex: "script_name", ellipsis: true },
           { title: "脚本用途", dataIndex: "submit_info", ellipsis: true },
           { title: "执行方式", dataIndex: "sync", ellipsis: true },
