@@ -1,12 +1,17 @@
 import { Button, Form, Input, message, Select } from "antd"
-import React, { useState } from "react"
+import React, { useContext, useEffect, useState } from "react"
 import { UserOutlined, LockOutlined } from '@ant-design/icons'
 import Background from './Background.svg'
 import "./index.scss"
 import axios from "axios"
 import { useHistory, useLocation } from "react-router-dom"
+import Context from "../ContextProvider"
 
 export default function App() {
+    const { setAuth } = useContext(Context)
+    useEffect(function(){
+        setAuth([])
+    },[setAuth])
     let [isLogin, setIsLogin] = useState(true)
     return <div className="Login">
         <div className="Image">
