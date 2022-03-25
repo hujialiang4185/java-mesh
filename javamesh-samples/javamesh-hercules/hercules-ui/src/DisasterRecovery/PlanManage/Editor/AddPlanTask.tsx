@@ -7,6 +7,7 @@ import TabelTransfer from "./TabelTransfer";
 import Editor from "@monaco-editor/react";
 
 export default function App(props: { onFinish: (values: any) => Promise<void>, initialValues: any, create?: boolean }) {
+  props.initialValues.gui_script_name = props.initialValues.script_name
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [isCmd, setIsCmd] = useState(props.initialValues.task_type === "命令行脚本")
   const [script, setScript] = useState({ submit_info: "", content: "" })
@@ -35,6 +36,9 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
       <Form form={form} labelCol={{ span: 2 }}
         initialValues={props.initialValues}
         onFinish={async (values) => {
+          if (values.gui_script_name) {
+            values.script_name = values.gui_script_name
+          }
           try {
             await props.onFinish(values)
             if (props.create) {
@@ -89,7 +93,7 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
             </Collapse.Panel>
           </Collapse>
         </> : <>
-          <Form.Item className="ScriptName" label="脚本名称" name="script_name" rules={[{ required: true }]}>
+          <Form.Item className="ScriptName" label="脚本名称" name="gui_script_name" rules={[{ required: true }]}>
             <SearchSelect type="gui" onChange={loadScript} />
           </Form.Item>
           <Collapse expandIconPosition="right" expandIcon={function ({ isActive }) {
