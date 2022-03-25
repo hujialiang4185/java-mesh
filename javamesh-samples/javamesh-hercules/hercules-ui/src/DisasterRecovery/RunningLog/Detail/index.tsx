@@ -145,7 +145,7 @@ function Home() {
                                     loadTask(history_id)
                                 }} />
                                 <TaskLog record={record} />
-                                <TaskReport uid={record.key} />
+                                <TaskReport record={record} />
                             </>
                         }
                     },
@@ -155,14 +155,13 @@ function Home() {
     </div>
 }
 
-function TaskReport(props: { uid: string }) {
+function TaskReport(props: { record: Task }) {
     const [data, setData] = useState<{ test_id?: string }[]>([]);
     const { path } = useRouteMatch();
     return <>
-        <Button type="primary" size="small" onClick={async function () {
+        <Button disabled={!props.record.test_id} type="primary" size="small" onClick={async function () {
             try {
-                console.log(props.uid)
-                const res = await axios.get("/argus-emergency/api/task/scenario/report", {params: {key: props.uid}})
+                const res = await axios.get("/argus-emergency/api/task/scenario/report", {params: {key: props.record.key}})
                 setData(res.data.data)
             } catch (error: any) {
                 message.error(error.message)
