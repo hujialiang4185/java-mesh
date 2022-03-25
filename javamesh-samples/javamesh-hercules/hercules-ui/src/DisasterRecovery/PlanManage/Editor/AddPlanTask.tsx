@@ -54,6 +54,7 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
           <Form.Item labelCol={{ span: 4 }} className="Middle" label="任务类型" name="task_type" rules={[{ required: true }]}>
             <Radio.Group onChange={function (e) {
               setIsCmd(e.target.value === "命令行脚本")
+              console.log("set xxx")
               form.setFields([{ name: "script_name", value: "" }])
               setScript({ submit_info: "", content: "" })
             }} options={types.map(function (item, index) {
