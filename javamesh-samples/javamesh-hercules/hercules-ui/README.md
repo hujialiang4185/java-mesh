@@ -1,5 +1,10 @@
 # 安装nodejs
 版本v14.17.1及以上
+# 设置代理（可选）
+```sh
+npm config set registry=http://registry.npm.taobao.org
+npm config set strict-ssl false
+```
 # 下载依赖
 ```sh
 npm i
