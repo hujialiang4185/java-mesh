@@ -1,5 +1,5 @@
 import { Button, Form, Input, InputNumber, message, Modal, Radio, Table } from "antd"
-import React, { Key, useEffect, useRef, useState } from "react"
+import React, { Key, useContext, useEffect, useRef, useState } from "react"
 import Breadcrumb from "../../component/Breadcrumb"
 import Card from "../../component/Card"
 import { SearchOutlined, PlusOutlined, ExclamationCircleOutlined, CloseOutlined, ArrowDownOutlined } from '@ant-design/icons'
@@ -9,6 +9,7 @@ import axios from "axios"
 import { useForm } from "antd/lib/form/Form"
 import { debounce } from "lodash"
 import socket from "../socket"
+import Context from "../../ContextProvider"
 
 type Data = { server_id: string, status: string, status_label: string }
 
@@ -19,6 +20,7 @@ export default function App() {
     const [loading, setLoading] = useState(false)
     const stateRef = useRef<any>({})
     const keysRef = useRef<Key[]>([])
+    const { auth } = useContext(Context)
     async function load() {
         setLoading(true)
         try {
@@ -106,13 +108,13 @@ export default function App() {
         <Card>
             <div className="ToolBar">
                 <AddHost load={load} />
-                <Button icon={<ArrowDownOutlined />} onClick={function () {
+                <Button disabled={!auth.includes("operator")} icon={<ArrowDownOutlined />} onClick={function () {
                     if (selectedRowKeys.length === 0) {
                         return
                     }
                     batchStop(selectedRowKeys)
                 }}>批量安装代理</Button>
-                <Button icon={<CloseOutlined />} onClick={function () {
+                <Button disabled={!auth.includes("operator")} icon={<CloseOutlined />} onClick={function () {
                     if (selectedRowKeys.length === 0) {
                         return
                     }
@@ -192,8 +194,9 @@ function AddHost(props: { load: () => void }) {
     const [hasPwd, setHasPwd] = useState(false)
     const [isLocal, setIsLocal] = useState(true)
     const [form] = useForm()
+    const { auth } = useContext(Context)
     return <>
-        <Button type="primary" icon={<PlusOutlined />} onClick={function () { setIsModalVisible(true) }}>添加引擎</Button>
+        <Button disabled={!auth.includes("operator")} type="primary" icon={<PlusOutlined />} onClick={function () { setIsModalVisible(true) }}>添加引擎</Button>
         <Modal className="AddHost" title="添加引擎" visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () { setIsModalVisible(false) }}>
             <Form form={form}  labelCol={{ span: 4 }}
                 initialValues={{ have_password: "无", password_mode: "本地", server_port: 22 }}

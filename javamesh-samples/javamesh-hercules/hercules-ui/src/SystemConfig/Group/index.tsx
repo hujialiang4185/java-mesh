@@ -46,27 +46,36 @@ export default function App() {
                     <Button htmlType="submit" icon={<SearchOutlined />}>查找</Button>
                 </Form>
             </div>
-            <Table loading={loading} dataSource={data.data} rowKey="group_id" columns={[
-                { title: "分组名称", dataIndex: "group_name" },
-                { title: "创建人", dataIndex: "created_by" },
-                { title: "创建时间", dataIndex: "created_time" },
-                { title: "操作", dataIndex: "group_id",width: 200, render(group_id) {
-                    return <Popconfirm title="是否删除?" onConfirm={async function () {
-                        if (submit) return
-                        submit = true
-                        try {
-                            await axios.delete("/argus-user/api/group", {params: {group_id: [group_id]}})
-                            message.success("删除成功!")
-                            load()
-                        } catch (error: any) {
-                            message.error(error.message)
+            <Table size="middle" loading={loading} dataSource={data.data} rowKey="group_id"
+                onChange={function (pagination, filters, sorter) {
+                    stateRef.current = { ...stateRef.current, pagination, filters, sorter }
+                    load()
+                }}
+                pagination={{ total: data.total, size: "small", showTotal() { return `共 ${data.total} 条` }, showSizeChanger: true }}
+                columns={[
+                    { title: "分组名称", dataIndex: "group_name", ellipsis: true },
+                    { title: "创建人", dataIndex: "created_by", ellipsis: true },
+                    { title: "创建时间", dataIndex: "created_time", width: 200 },
+                    {
+                        title: "操作", dataIndex: "group_id", width: 200, render(group_id) {
+                            return <Popconfirm title="是否删除?" onConfirm={async function () {
+                                if (submit) return
+                                submit = true
+                                try {
+                                    await axios.delete("/argus-user/api/group", { params: { group_id: [group_id] } })
+                                    message.success("删除成功!")
+                                    load()
+                                } catch (error: any) {
+                                    message.error(error.message)
+                                }
+                                submit = false
+                            }}>
+                                <Button type="link" size="small">删除</Button>
+                            </Popconfirm>
                         }
-                        submit = false
-                    }}>
-                        <Button type="link" size="small">删除</Button>
-                    </Popconfirm>
-                } }
-            ]} />
+                    }
+                ]}
+            />
         </Card>
     </div>
 }
@@ -76,10 +85,10 @@ function AddGroup(props: { load: () => void }) {
     const [form] = Form.useForm();
     return <>
         <Button type="primary" icon={<PlusOutlined />} onClick={function () { setIsModalVisible(true) }}>添加分组</Button>
-        <Modal className="AddGroup" title="添加分组" width={400} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
+        <Modal className="AddGroup" title="添加分组" width={500} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
             setIsModalVisible(false)
         }}>
-            <Form form={form}  onFinish={async function (values) {
+            <Form form={form} onFinish={async function (values) {
                 try {
                     await axios.post("/argus-user/api/group", values)
                     form.resetFields()

@@ -31,7 +31,6 @@ function Home() {
     const scenaKeysRef = useRef<string[]>([])
     const taskKeysRef = useRef<string[]>([])
     const scenaIdRef = useRef<string>()
-    const { path } = useRouteMatch();
 
     async function loadTask(history_id: string) {
         setLoading(true)
@@ -81,14 +80,14 @@ function Home() {
     const [data, setData] = useState({ plan_no: "", plan_name: "" })
     useEffect(function () {
         (async function () {
-          try {
-            const res = await axios.get("/argus-emergency/api/history/get", { params: { history_id } })
-            setData(res.data.data)
-          } catch (error: any) {
-            message.error(error.message)
-          }
+            try {
+                const res = await axios.get("/argus-emergency/api/history/get", { params: { history_id } })
+                setData(res.data.data)
+            } catch (error: any) {
+                message.error(error.message)
+            }
         })()
-      }, [history_id])
+    }, [history_id])
     return <div className="RunningLogDetail">
         <Breadcrumb label="执行记录" sub={{ label: "详细信息", parentUrl: "/PerformanceTest/RunningLog" }} />
         <Card>
@@ -110,7 +109,7 @@ function Home() {
                         title: "编号", dataIndex: "task_no", ellipsis: true
                     },
                     {
-                        title: "子任务名称", dataIndex: "task_name", ellipsis: true
+                        title: "任务名称", dataIndex: "task_name", ellipsis: true
                     },
                     {
                         title: "操作员", dataIndex: "operator", ellipsis: true
@@ -146,9 +145,7 @@ function Home() {
                                     loadTask(history_id)
                                 }} />
                                 <TaskLog record={record} />
-                                <Button type="primary" size="small" disabled={!record.test_id}>
-                                    <Link to={path + "/Report?test_id=" + record.test_id}>报告</Link>
-                                </Button>
+                                <TaskReport record={record} />
                             </>
                         }
                     },
@@ -156,6 +153,45 @@ function Home() {
             />
         </Card>
     </div>
+}
+
+function TaskReport(props: { record: Task }) {
+    const [data, setData] = useState<{ test_id?: string }[]>([]);
+    const { path } = useRouteMatch();
+    return <>
+        <Button disabled={!props.record.test_id} type="primary" size="small" onClick={async function () {
+            try {
+                const res = await axios.get("/argus-emergency/api/task/scenario/report", {params: {key: props.record.key}})
+                setData(res.data.data)
+            } catch (error: any) {
+                message.error(error.message)
+            }
+        }}>报告</Button>
+        <Modal className="TaskReport" title="报告列表" width={1200} visible={data.length > 0} maskClosable={false} footer={null} onCancel={function () { setData([]) }}>
+            <Table size="small" rowKey="server_id" dataSource={data} columns={[
+                { title: "测试名称", dataIndex: "test_name", ellipsis: true },
+                { title: "状态", dataIndex: "status_label", ellipsis: true },
+                { title: "主机名称", dataIndex: "server_name", ellipsis: true },
+                { title: "服务器IP", dataIndex: "server_ip", ellipsis: true },
+                { title: "运行时间(s)", dataIndex: "duration", ellipsis: true },
+                { title: "虚拟用户数", dataIndex: "vuser", ellipsis: true },
+                { title: "TPS", dataIndex: "tps", ellipsis: true },
+                { title: "TPS峰值", dataIndex: "tps_peak", ellipsis: true },
+                { title: "平均时间(ms)", dataIndex: "avg_time", ellipsis: true },
+                { title: "执行测试数量", dataIndex: "test_count", ellipsis: true },
+                { title: "测试成功数量", dataIndex: "success_count", ellipsis: true },
+                { title: "错误", dataIndex: "fail_count", ellipsis: true },
+                {
+                    title: "操作", dataIndex: "test_id", width: 80,
+                    render(test_id) {
+                        return <Button disabled={!test_id} type="primary" size="small">
+                            <Link to={path + "/Report?test_id=" + test_id}>报告</Link>
+                        </Button>
+                    }
+                }
+            ]} />
+        </Modal>
+    </>
 }
 
 function TaskConfirm(props: { record: Task, load: () => void }) {
@@ -216,7 +252,7 @@ function TaskLog(props: { record: Task }) {
         }
     }, [])
     return <>
-        <Button type="primary" size="small" onClick={async function () {
+        <Button disabled={!!props.record.test_id} type="primary" size="small" onClick={async function () {
             if (submit) return
             submit = true
             let line = await load(props.record.key)

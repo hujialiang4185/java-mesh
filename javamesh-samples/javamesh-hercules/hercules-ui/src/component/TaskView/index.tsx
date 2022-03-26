@@ -59,7 +59,7 @@ export default function App() {
             <div className="SubCard Basic">
                 <div className="Item">
                     <div className="Value">{data.duration}</div>
-                    <div className="Title">运行时间</div>
+                    <div className="Title">运行时间(s)</div>
                 </div>
                 <div className="Item">
                     <div className="Value">{data.vuser}</div>

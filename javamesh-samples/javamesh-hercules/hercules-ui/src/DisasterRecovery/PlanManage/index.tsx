@@ -119,7 +119,6 @@ function Home() {
                                     }
                                 },
                                 { title: "场景名称", dataIndex: "scena_name", ellipsis: true,  },
-                                { title: "通道类型", dataIndex: "channel_type", ellipsis: true },
                                 { title: "脚本名称", dataIndex: "script_name", ellipsis: true },
                                 { title: "脚本用途", dataIndex: "submit_info", ellipsis: true },
                                 { title: "所有者", dataIndex: "user_id", ellipsis: true },
@@ -127,7 +126,8 @@ function Home() {
                                 { title: "开始时间", dataIndex: "start_time", ellipsis: true },
                                 { title: "持续阈值", dataIndex: "duration", ellipsis: true },
                                 { title: "TPS", dataIndex: "tps", ellipsis: true },
-                                { title: "MIT出错率(%)", dataIndex: "mean_test_time", ellipsis: true },
+                                { title: "MTT", dataIndex: "mean_test_time", ellipsis: true },
+                                { title: "出错率(%)", dataIndex: "error_rate", ellipsis: true}
                             ]}
                         />
                     }

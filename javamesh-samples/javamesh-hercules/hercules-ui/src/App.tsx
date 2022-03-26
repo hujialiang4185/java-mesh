@@ -20,30 +20,34 @@ import NoMatch from './component/NoMatch'
 import NoLogin from './component/NoLogin'
 import SystemConfig from './SystemConfig'
 
+let reject: (error: any) => void
+
+axios.interceptors.response.use(function (response) {
+  if (response.data?.msg) {
+    return Promise.reject(new Error(response.data.msg));
+  }
+  return response;
+}, function(error) {
+  return reject(error)
+});
+
 export default function App() {
   const history = useHistory()
-  const { auth, setAuth } = useContext(Context)
+  const { auth } = useContext(Context)
   useEffect(function () {
-    const interceptor = axios.interceptors.response.use(function (response) {
-      if (response.data?.msg) {
-        return Promise.reject(new Error(response.data.msg));
-      }
-      return response;
-    }, function (error) {
+    reject = function (error) {
       if (error.response?.status === 401) {
-        setAuth([])
         const { pathname, search, hash } = window.location
-        history.replace("/Login", pathname + search + hash)
+        setTimeout(function(){
+          history.replace("/Login", pathname + search + hash)
+        })
+        return Promise.reject(new Error("Token失效, 请重新登陆"))
       }
       return Promise.reject(error);
-    });
-    return function () {
-      axios.interceptors.response.eject(interceptor);
     }
-  }, [history, setAuth])
+  }, [history])
   const menuList = [
     { path: "/SystemConfig", label: "系统配置", comp: <SystemConfig />, icon: <SettingOutlined />, auth: "admin" },
-    // { path: "/PerformanceTest", label: "性能测试(旧)", comp: <PerformanceTest />, icon: <AppstoreOutlined /> },
     { path: "/PerformanceTest", label: "性能测试", comp: <PerformanceTest />, icon: <ThunderboltOutlined /> }
   ]
 

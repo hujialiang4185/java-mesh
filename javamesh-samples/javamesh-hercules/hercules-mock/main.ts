@@ -28,7 +28,11 @@ const user = {
     role: "管理员",
     group_name: "群组1",
     update_time: "2021-01-01 00:00:00",
-    auth: ["admin", "approver", "operator"] // admin, approver, operator
+    auth: [
+        "admin",
+        "approver",
+        "operator"
+    ]
 }
 app.get('/argus-user/api/user/me', function (req, res) {
     res.json({
@@ -471,6 +475,7 @@ app.get('/argus-emergency/api/script', function (req, res) {
                 status: ["approved", "approving", "unapproved", "unapproved"][index % 4],
                 status_label: ["已审核", "待审核", "新增", "拒绝"][index % 4],
                 type: ["GUI", "IDE", "NORMAL"][index % 3],
+                type_label: ["GUI", "IDE", "NORMAL"][index % 3],
                 owner: "张三",
                 submit_info: "xxx",
                 create_time: "2021-01-01 00:00:00",
@@ -630,7 +635,10 @@ const orchestrate = {
             "9639388182808-AfterThread": { title: "@AfterThread" },
             "9639388182811-Before": { title: "@Before" },
             "9639388182812-After": { title: "@After" },
-            "9639388182812-CSVDataSetConfig": { title: "CSV数据文件设置", filenames: "001/.npmrc 002/xxx" }
+            "9639388182812-CSVDataSetConfig": {
+                title: "CSV数据文件设置", filenames: "001/.npmrc 002/xxx", variable_names: ",",
+                recycle: true, share_mode: "ALL_THREADS"
+            }
         }
     }
 }
@@ -752,6 +760,8 @@ app.get("/argus-emergency/api/plan/task", function (req, res) {
             title: "场景1",
             task_no: 1,
             task_name: "场景1",
+            task_type: "场景",
+            sync: "同步",
             children: [{
                 key: 2,
                 title: "任务2",
@@ -789,6 +799,8 @@ app.get("/argus-emergency/api/plan/task", function (req, res) {
         {
             key: 5,
             title: "场景5",
+            sync: "同步",
+            task_type: "场景",
             task_no: 5,
             task_name: "场景5",
         }]
@@ -844,6 +856,28 @@ app.get('/argus-emergency/api/history/scenario/task', function (req, res) {
                 end_time: "2021-01-01 00:00:00",
                 sync: "同步",
                 status: ['error', 'process', 'finish', 'wait'][index % 4],
+                status_label: ["失败", "运行中", "成功", "待执行"][index % 4],
+                test_id: index === 0 ? 1 : null
+            }
+        })
+    })
+})
+app.get('/argus-emergency/api/task/scenario/report', function (req, res) {
+    res.json({
+        data: Array.from({ length: 6 }, function (_, index) {
+            return {
+                server_id: index, // 主键，数组内唯一，否则控制台报错
+                test_name: "A主机测试",
+                server_name: "A主机",
+                server_ip: "127.0.0.1",
+                duration: 100,
+                vuser: 120,
+                tps: 123,
+                tps_peak: 250,
+                avg_time: 12,
+                test_count: 210,
+                success_count: 100,
+                fail_count: 10,
                 status_label: ["失败", "运行中", "成功", "待执行"][index % 4],
                 test_id: index === 0 ? 1 : null
             }
@@ -933,7 +967,26 @@ app.get("/argus-user/api/group", function (req, res) {
                 created_by: "zengfan",
                 created_time: "2017-01-01 00:00:00"
             }
-        })
+        }),
+        total: 11
+    })
+})
+app.get("/argus-user/api/logAudit", function (req, res) {
+    res.json({
+        data: Array.from({ length: 10 }, function (_, index) {
+            return {
+                log_id: index,
+                "resource_type": "任务",
+                "operation_type": "新增",
+                "level_label": "提示",
+                "operation_results": "成功",
+                "operation_people": "admin",
+                "ip_address": "192.168.0.1",
+                "peration_details": "/api/test",
+                "operation_date": "2017-01-01",
+            }
+        }),
+        total: 11
     })
 })
 app.post("/argus-user/api/group", function (req, res) {

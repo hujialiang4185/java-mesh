@@ -9,6 +9,11 @@ const Sampler: MenuConfig = {
         { type: "JARImport", title: "JAR导入" },
     ]
 }
+const SamplerB: MenuConfig = {
+    type: "Sampler", title: "取样器", children: [
+        { type: "JARImport", title: "JAR导入" },
+    ]
+}
 const LogicController: MenuConfig = {
     type: "LogicController", title: "逻辑控制器", children: [
         { type: "TransactionController", title: "事务控制器" },
@@ -57,14 +62,14 @@ const ConfigElement: MenuConfig = {
     ]
 }
 
-const common = [Sampler, LogicController, Timer, Assertion, ConfigElement]
+const common = [Sampler, Timer, Assertion, ConfigElement]
 const before = [...common, PreProcessor]
 const after = [...common, PostProcessor]
 
 const menuGroup = new Map<String, MenuConfig[]>([
     ["Root", [LogicController, TestGroup]],
-    ["BeforeProcess", before],
-    ["BeforeThread", before],
+    ["BeforeProcess", [SamplerB, Timer, Assertion, ConfigElement, PreProcessor]],
+    ["BeforeThread", [SamplerB, Timer, Assertion, ConfigElement, PreProcessor, PostProcessor ]],
     ["AfterProcess", after],
     ["AfterThread", after],
     ["Before", before],

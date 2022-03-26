@@ -21,9 +21,14 @@ function defaultFieldsValues(type: string) {
             }
         case "CSVDataSetConfig":
             return {
-                variable_names: ",",
+                delimiter: ",",
                 recycle: true,
                 share_mode: "ALL_THREADS"
+            }
+        case "HTTPRequest":
+            return {
+                protocol: "http",
+                method: "GET",
             }
         default:
             return {}
@@ -32,16 +37,17 @@ function defaultFieldsValues(type: string) {
 
 export { defaultFieldsValues }
 
-export default function App(props: { type: String }) {
+export default function App(props: { type: String, onChange: () => void }) {
     switch (props.type) {
         case "TransactionController":
             return <>
-                <Form.Item name="presure" label="压力分配(%)">
+                <Form.Item name="presure" label="压力分配(%)" rules={[{ type: "integer" }]}>
                     <InputNumber min={0} max={100} />
                 </Form.Item>
             </>
         case "HTTPRequest":
-            return <><Divider orientation="left">Web服务器</Divider>
+            return <>
+                <Divider orientation="left">Web服务器</Divider>
                 <Row gutter={24}>
                     <Col span="6">
                         <Form.Item label="协议" name="protocol">
@@ -88,10 +94,10 @@ export default function App(props: { type: String }) {
             return <>
                 <Divider orientation="left">Import代码块</Divider>
                 <Form.Item name="content">
-                    <Editor className="MonacoEditor" height={400} language="java" />
+                    <Editor className="MonacoEditor" height={400} language="java" onChange={props.onChange} />
                 </Form.Item>
                 <Form.Item label="JAR文件" name="filenames">
-                    <OSSUpload max={10} />
+                    <OSSUpload max={10} mark='&path=lib' onChange={props.onChange} />
                 </Form.Item>
             </>
         case "WhileController":
@@ -112,7 +118,7 @@ export default function App(props: { type: String }) {
         case "JSR223PreProcessor":
         case "JSR223PostProcessor":
         case "JSR223Assertion":
-            return <ScriptEditor />
+            return <ScriptEditor onChange={props.onChange} />
         case "ResponseAssertion":
             return <>
                 <Divider orientation="left">测试字段</Divider>
@@ -134,7 +140,7 @@ export default function App(props: { type: String }) {
                 </Form.Item>
                 <Divider orientation="left">方法内容</Divider>
                 <Form.Item name="script">
-                    <Editor className="MonacoEditor" height={400} language="python" />
+                    <Editor className="MonacoEditor" height={400} language="python" onChange={props.onChange} />
                 </Form.Item>
             </>
         case "Counter":
@@ -154,25 +160,37 @@ export default function App(props: { type: String }) {
                 <Form.Item name="name" label="引用名称">
                     <Input />
                 </Form.Item>
+                <Form.Item name="per_user" label="与每用户独立的跟踪计数器" valuePropName="checked">
+                    <Checkbox />
+                </Form.Item>
+                <Form.Item name="reset_on_each_thread_group" label="在每个线程组迭代中重置计数器" valuePropName="checked">
+                    <Checkbox />
+                </Form.Item>
             </>
         case "CSVDataSetConfig":
             return <>
                 <Form.Item label="文件名" name="filenames">
-                    <OSSUpload max={1} />
+                    <OSSUpload max={1} mark='&path=resource' onChange={props.onChange} />
                 </Form.Item>
                 <Form.Item label="文件编码" name="file_encoding">
                     <Select options={[{ value: "UTF-8" }, { value: "UTF-16" }, { value: "ISO-8859-15" }, { value: "US-ASCII" }]} />
                 </Form.Item>
-                <Form.Item label="分割符(西文逗号间隔)" name="variable_names">
+                <Form.Item label="变量名称(西文逗号间隔)" name="variable_names">
                     <Input />
                 </Form.Item>
                 <Form.Item label="忽略首行(只在设置了变量名称才生效)" name="ignore_first_line" valuePropName="checked">
                     <Checkbox />
                 </Form.Item>
+                <Form.Item label="分割符(用'\t'代表制表符)" name="delimiter">
+                    <Input />
+                </Form.Item>
                 <Form.Item label="是否允许带引号" name="quoted_data" valuePropName="checked">
                     <Checkbox />
                 </Form.Item>
                 <Form.Item label="遇到文件结束符再次循环?" name="recycle" valuePropName="checked">
+                    <Checkbox />
+                </Form.Item>
+                <Form.Item label="遇到文件结束符停止线程?" name="stop_on_eof" valuePropName="checked">
                     <Checkbox />
                 </Form.Item>
                 <Form.Item label="线程共享模式" name="share_mode">
@@ -193,7 +211,7 @@ export default function App(props: { type: String }) {
     return null
 }
 
-function ScriptEditor() {
+function ScriptEditor(props: { onChange: () => void }) {
     const [language, setLanguage] = useState("")
     const radioRef = useRef<HTMLDivElement>(null)
     useEffect(function () {
@@ -207,7 +225,7 @@ function ScriptEditor() {
             }} />
         </Form.Item>
         <Form.Item name="script">
-            <Editor className="MonacoEditor" height={400} language={language} />
+            <Editor className="MonacoEditor" height={400} language={language} onChange={props.onChange} />
         </Form.Item>
     </>
 }
@@ -221,7 +239,7 @@ function HTTPRequest(props: { name: string }) {
                     <Form.Item name={[item.name, "name"]} rules={[{ max: 32 }]}><Input /></Form.Item>
                     <span className="Equal">=</span>
                     <Form.Item name={[item.name, "value"]} rules={[{ max: 32 }]}><Input /></Form.Item>
-                    <PlusCircleOutlined onClick={function(){add()}} />
+                    <PlusCircleOutlined onClick={function () { add() }} />
                     {item.key !== 0 && <MinusCircleOutlined onClick={function () { remove(item.name) }} />}
                 </div>
             })
@@ -240,7 +258,7 @@ function HTTPCookie() {
                     <Form.Item name={[item.name, "domain"]} rules={[{ max: 32 }]}><Input placeholder="域" /></Form.Item>
                     <Form.Item name={[item.name, "path"]} rules={[{ max: 32 }]}><Input placeholder="路径" /></Form.Item>
                     <Form.Item label="Secure" name={[item.name, "safe"]} valuePropName="checked"><Checkbox /></Form.Item>
-                    <PlusCircleOutlined onClick={function(){add()}} />
+                    <PlusCircleOutlined onClick={function () { add() }} />
                     {item.key !== 0 && <MinusCircleOutlined onClick={function () { remove(item.name) }} />}
                 </div>
             })

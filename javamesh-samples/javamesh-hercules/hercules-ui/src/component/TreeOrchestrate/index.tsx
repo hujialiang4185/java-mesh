@@ -173,7 +173,7 @@ export default class App extends React.Component<{ initialValues: () => Promise<
                 <Form.Item name="comments" label="注释">
                     <Input maxLength={128} />
                 </Form.Item>
-                <FormItems type={this.state.selected.slice(14)} />
+                <FormItems type={this.state.selected.slice(14)} onChange={this.onChange}/>
             </Form>
         </div>
     }
