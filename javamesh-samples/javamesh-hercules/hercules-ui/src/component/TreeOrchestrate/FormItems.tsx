@@ -41,8 +41,8 @@ export default function App(props: { type: String, onChange: () => void }) {
     switch (props.type) {
         case "TransactionController":
             return <>
-                <Form.Item name="presure" label="压力分配(%)" rules={[{ type: "integer" }]}>
-                    <InputNumber min={0} max={100} />
+                <Form.Item name="presure" label="压力分配(%)" rules={[{ type: "integer", max: 100, min: 0 }]}>
+                    <InputNumber />
                 </Form.Item>
             </>
         case "HTTPRequest":
