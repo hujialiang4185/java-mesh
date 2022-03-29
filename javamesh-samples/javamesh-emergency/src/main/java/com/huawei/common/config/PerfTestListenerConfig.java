@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Ltd. 2021-2021. Huawei Technologies Co., All rights reserved
+ * Copyright (C) Ltd. 2022-2022. Huawei Technologies Co., All rights reserved
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,12 +70,12 @@ public class PerfTestListenerConfig implements ITestLifeCycleListener {
     }
 
     @Override
-    public void start(PerfTest perfTest, IPerfTestService iPerfTestService, String version) {
+    public void start(PerfTest perfTest, IPerfTestService perfTestService, String version) {
         LOGGER.info("perf_test {} is starting. {}", perfTest.getId(), version);
     }
 
     @Override
-    public void finish(PerfTest perfTest, String stopReason, IPerfTestService iPerfTestService, String version) {
+    public void finish(PerfTest perfTest, String stopReason, IPerfTestService perfTestService, String version) {
         LOGGER.info("perf_test {} is end. {} . {}", perfTest.getId(), stopReason, version);
         try {
             EmergencyExecRecordDetailExample detailExample = new EmergencyExecRecordDetailExample();
