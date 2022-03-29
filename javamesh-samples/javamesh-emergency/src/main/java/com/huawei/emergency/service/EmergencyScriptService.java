@@ -19,7 +19,7 @@ public interface EmergencyScriptService {
     CommonResult<List<EmergencyScript>> listScript(JwtUser jwtUser, String scriptName, String scriptUser, int pageSize,
         int current, String sorter, String order, String status);
 
-    int deleteScripts(int[] scriptIds);
+    CommonResult deleteScripts(int[] scriptIds);
 
     void downloadScript(int scriptId, HttpServletResponse response);
 

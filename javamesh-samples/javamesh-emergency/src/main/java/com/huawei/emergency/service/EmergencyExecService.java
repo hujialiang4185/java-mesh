@@ -49,4 +49,6 @@ public interface EmergencyExecService {
     CommonResult execComplete(ExecResult execResult);
 
     CommonResult getPlanInfo(Integer execId);
+
+    CommonResult isFreeScript(int[] scriptIds);
 }

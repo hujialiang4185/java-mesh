@@ -56,6 +56,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -501,5 +502,21 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
             return CommonResult.success();
         }
         return planController.get(exec.getPlanId());
+    }
+
+    @Override
+    public CommonResult isFreeScript(int[] scriptIds) {
+        if (scriptIds == null || scriptIds.length == 0) {
+            return CommonResult.success();
+        }
+        EmergencyExecRecordExample scriptExample = new EmergencyExecRecordExample();
+        scriptExample.createCriteria()
+            .andScriptIdIn(Arrays.stream(scriptIds).boxed().collect(Collectors.toList()))
+            .andIsValidEqualTo(ValidEnum.VALID.getValue())
+            .andStatusIn(Arrays.asList(RecordStatus.PENDING.getValue(), RecordStatus.RUNNING.getValue()));
+        if (recordMapper.countByExample(scriptExample) > 0) {
+            return CommonResult.failed("当前脚本已存在待执行或正在执行的任务");
+        }
+        return CommonResult.success();
     }
 }
