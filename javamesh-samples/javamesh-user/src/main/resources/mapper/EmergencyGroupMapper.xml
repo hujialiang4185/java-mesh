@@ -263,11 +263,11 @@
         SELECT group_id, group_name, create_time, create_user
         FROM emergency_group
         <where>
-            <if test="groupName!=null and groupName!=''">
-                group_name LIKE CONCAT('%',#{groupName},'%') ESCAPE '/'
+            <if test="groupName != null and groupName != ''">
+                and group_name LIKE CONCAT('%',#{groupName},'%') ESCAPE '/'
             </if>
-            <if test="createUser!=null and createUser!=''">
-                create_user LIKE CONCAT('%',#{createUser},'%') ESCAPE '/'
+            <if test="createUser != null and createUser != '' and createUser != 'admin'">
+                and create_user = #{createUser}
             </if>
         </where>
     </select>

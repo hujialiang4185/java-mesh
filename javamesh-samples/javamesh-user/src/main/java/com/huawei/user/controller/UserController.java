@@ -3,20 +3,23 @@ package com.huawei.user.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.huawei.user.common.api.CommonResult;
 import com.huawei.user.common.constant.FailedInfo;
+import com.huawei.user.common.util.EscapeUtil;
 import com.huawei.user.entity.JwtUser;
 import com.huawei.user.entity.UserEntity;
 import com.huawei.user.service.UserService;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.security.Principal;
-import java.util.*;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -30,7 +33,7 @@ public class UserController {
     public CommonResult login(HttpServletResponse response, @RequestBody JSONObject params) {
         String username = params.getString("username");
         String password = params.getString("password");
-        return service.login(response,username, password);
+        return service.login(response, username, password);
     }
 
     @GetMapping("/user/me")
@@ -64,7 +67,7 @@ public class UserController {
     }
 
     @PostMapping("/user/registe")
-    public CommonResult register(HttpServletResponse response,@RequestBody UserEntity entity) {
+    public CommonResult register(HttpServletResponse response, @RequestBody UserEntity entity) {
         String result = service.register(entity);
         if (!result.equals(SUCCESS)) {
             return CommonResult.failed(result);
@@ -74,7 +77,8 @@ public class UserController {
     }
 
     @GetMapping("/user")
-    public CommonResult listUser(@RequestParam(value = "nickname", required = false) String nickName,
+    public CommonResult listUser(UsernamePasswordAuthenticationToken authentication,
+                                 @RequestParam(value = "nickname", required = false) String nickName,
                                  @RequestParam(value = "username", required = false) String userName,
                                  @RequestParam(value = "role", required = false) String role,
                                  @RequestParam(value = "status", required = false) String status,
@@ -82,7 +86,21 @@ public class UserController {
                                  @RequestParam(value = "current", defaultValue = "1") int current,
                                  @RequestParam(value = "sorter", defaultValue = "created_date") String sorter,
                                  @RequestParam(value = "order", required = false) String order) {
-        return service.listUser(nickName, userName, role, status, pageSize, current, sorter, order);
+        if (authentication == null) {
+            return CommonResult.failed("No login.");
+        }
+        JwtUser principal = (JwtUser) authentication.getPrincipal();
+        if (principal == null) {
+            return CommonResult.failed("No login.");
+        }
+        String groupName = principal.getGroupName();
+        UserEntity user = new UserEntity();
+        user.setNickName(EscapeUtil.escapeChar(nickName));
+        user.setUserName(EscapeUtil.escapeChar(userName));
+        user.setRoleByChinese(role);
+        user.setEnableByChinese(status);
+        user.setGroupName(groupName);
+        return service.listUser(user, pageSize, current, sorter, order);
     }
 
     @PostMapping("/user/batchDeactive")
@@ -117,8 +135,8 @@ public class UserController {
     }
 
     @PutMapping("/user")
-    public CommonResult updateUser(UsernamePasswordAuthenticationToken authentication,@RequestBody UserEntity user) {
-        String result = service.updateUser(((JwtUser) authentication.getPrincipal()).getUserEntity(),user);
+    public CommonResult updateUser(UsernamePasswordAuthenticationToken authentication, @RequestBody UserEntity user) {
+        String result = service.updateUser(((JwtUser) authentication.getPrincipal()).getUserEntity(), user);
         if (result.equals(SUCCESS)) {
             return CommonResult.success(result);
         } else {
@@ -128,6 +146,6 @@ public class UserController {
 
     @GetMapping("/user/approver/search")
     public CommonResult approverSearch(@RequestParam(value = "group_id", required = false) String groupId, UsernamePasswordAuthenticationToken authentication) {
-        return service.approverSearch(groupId,(JwtUser) authentication.getPrincipal());
+        return service.approverSearch(groupId, (JwtUser) authentication.getPrincipal());
     }
 }

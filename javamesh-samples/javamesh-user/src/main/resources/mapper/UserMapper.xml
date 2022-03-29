@@ -53,17 +53,20 @@
         FROM
         emergency_user
         <where>
-            <if test="userName!=null and userName!=''">
+            <if test="userName != null and userName != ''">
                 AND user_name LIKE CONCAT('%',#{userName},'%') ESCAPE '/'
             </if>
-            <if test="nickName!=null and nickName!=''">
+            <if test="nickName != null and nickName != ''">
                 AND nick_name LIKE CONCAT('%',#{nickName},'%') ESCAPE '/'
             </if>
-            <if test="role!=null and role!=''">
+            <if test="role != null and role != ''">
                 AND role_name = #{role}
             </if>
             <if test="enabled!=null and enabled!=''">
                 AND enabled = #{enabled}
+            </if>
+            <if test="groupName != null and groupName != ''">
+                AND group_name = #{groupName}
             </if>
         </where>
     </select>

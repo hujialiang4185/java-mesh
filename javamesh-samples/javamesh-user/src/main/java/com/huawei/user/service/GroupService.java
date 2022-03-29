@@ -4,10 +4,6 @@ import com.huawei.user.common.api.CommonResult;
 import com.huawei.user.entity.EmergencyGroup;
 import com.huawei.user.entity.JwtUser;
 import com.huawei.user.entity.UserEntity;
-import com.mysql.jdbc.exceptions.MySQLIntegrityConstraintViolationException;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 public interface GroupService {
 
@@ -15,7 +11,7 @@ public interface GroupService {
 
     CommonResult addGroup(JwtUser jwtUser, EmergencyGroup emergencyGroup);
 
-    int deleteGroup(int[] groupId) throws MySQLIntegrityConstraintViolationException;
+    int deleteGroup(int[] groupId);
 
     CommonResult searchGroup(UserEntity user, String groupName);
 }

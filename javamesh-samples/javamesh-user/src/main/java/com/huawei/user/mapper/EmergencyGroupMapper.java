@@ -3,10 +3,8 @@ package com.huawei.user.mapper;
 import com.huawei.user.entity.EmergencyGroup;
 import com.huawei.user.entity.EmergencyGroupExample;
 
-import java.sql.SQLException;
 import java.util.List;
 
-import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

@@ -51,6 +51,7 @@ public class UserServiceImpl implements UserService {
     private static final String HEALTHY = "正常";
 
     private static final String EXPIRED = "失效";
+
     private static final int PASSWORD_LENGTH = 10;
 
     private static final String PASSWORD_DIRECTORY = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
@@ -79,7 +80,7 @@ public class UserServiceImpl implements UserService {
                 return CommonResult.failed("账号已被禁用");
             }
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails,
-                null, userDetails.getAuthorities());
+                    null, userDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String token = jwtTokenUtil.generateToken(userDetails);
             if (token == null) {
@@ -177,23 +178,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public CommonResult listUser(String nickName, String userName, String role, String status, int pageSize,
-        int current, String sorter, String order) {
-        UserEntity user = new UserEntity();
-        user.setNickName(EscapeUtil.escapeChar(nickName));
-        user.setUserName(EscapeUtil.escapeChar(userName));
-        if (StringUtils.isNotBlank(role)) {
-            setRoleToUser(user, role);
-        }
-        if (StringUtils.isNotBlank(status)) {
-            switch (status) {
-                case HEALTHY:
-                    user.setEnabled("T");
-                    break;
-                case EXPIRED:
-                    user.setEnabled("F");
-            }
-        }
+    public CommonResult listUser(UserEntity user, int pageSize, int current, String sorter, String order) {
         String mSorter = sorter.equals("update_time") ? "last_modified_date" : sorter;
         String sortType;
         if (StringUtils.isBlank(order)) {
@@ -337,16 +322,10 @@ public class UserServiceImpl implements UserService {
         UserEntity user = jwtUser.getUserEntity();
         String userName = user.getUserName();
         if (userName.equals("admin")) {
-            String[] result = new String[1];
-            result[0] = userName;
+            String[] result = {userName};
             return CommonResult.success(result);
         }
-        List<String> userEntities;
-        if (jwtUser.getAuthList().contains("admin")) {
-            userEntities = mapper.adminApproverSearch(user.getGroupName());
-        } else {
-            userEntities = mapper.approverSearch(user.getGroupName());
-        }
+        List<String> userEntities = mapper.adminApproverSearch(user.getGroupName());
         return CommonResult.success(userEntities);
     }
 

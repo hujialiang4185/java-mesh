@@ -11,15 +11,11 @@ import com.huawei.user.entity.JwtUser;
 import com.huawei.user.entity.UserEntity;
 import com.huawei.user.mapper.EmergencyGroupMapper;
 import com.huawei.user.service.GroupService;
-import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -32,7 +28,7 @@ public class GroupServiceImpl implements GroupService {
     public CommonResult listGroup(String groupName, String createUser, int pageSize, int current, String sorter, String order) {
         EmergencyGroup emergencyGroup = new EmergencyGroup();
         emergencyGroup.setGroupName(EscapeUtil.escapeChar(groupName));
-        emergencyGroup.setCreateUser(EscapeUtil.escapeChar(createUser));
+        emergencyGroup.setCreateUser(createUser);
         Page<EmergencyGroup> pageInfo = PageHelper.startPage(current, pageSize, sorter + System.lineSeparator() + order).doSelectPage(() -> {
             mapper.listGroup(emergencyGroup);
         });

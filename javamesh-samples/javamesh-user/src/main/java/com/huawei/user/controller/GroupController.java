@@ -20,12 +20,20 @@ public class GroupController {
 
     @GetMapping("/group")
     public CommonResult listGroup(@RequestParam(value = "group_name", required = false) String groupName,
-                                  @RequestParam(value = "create_user", required = false) String createUser,
+                                  UsernamePasswordAuthenticationToken authentication,
                                   @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
                                   @RequestParam(value = "current", defaultValue = "1") int current,
                                   @RequestParam(value = "sorter", defaultValue = "create_time") String sorter,
                                   @RequestParam(value = "order", defaultValue = "DESC") String order) {
-        return service.listGroup(groupName, createUser, pageSize, current, sorter, order);
+        if (authentication == null) {
+            return CommonResult.failed("No login.");
+        }
+        JwtUser principal = (JwtUser) authentication.getPrincipal();
+        if (principal == null) {
+            return CommonResult.failed("No login.");
+        }
+        String username = principal.getUsername();
+        return service.listGroup(groupName, username, pageSize, current, sorter, order);
     }
 
     @PostMapping("group")
@@ -36,11 +44,7 @@ public class GroupController {
     @DeleteMapping("group")
     public CommonResult deleteGroup(@RequestParam(value = "group_id[]") int[] groupId) {
         int count;
-        try {
-            count = service.deleteGroup(groupId);
-        } catch (SQLException e) {
-            return CommonResult.failed(FailedInfo.GROUP_BE_USED);
-        }
+        count = service.deleteGroup(groupId);
         if (count == groupId.length) {
             return CommonResult.success();
         } else if (count == -1) {
@@ -53,6 +57,6 @@ public class GroupController {
     @GetMapping("/group/search")
     public CommonResult search(UsernamePasswordAuthenticationToken authentication,
                                @RequestParam(value = "value", required = false) String groupName) {
-        return service.searchGroup(((JwtUser) authentication.getPrincipal()).getUserEntity(),groupName);
+        return service.searchGroup(((JwtUser) authentication.getPrincipal()).getUserEntity(), groupName);
     }
 }

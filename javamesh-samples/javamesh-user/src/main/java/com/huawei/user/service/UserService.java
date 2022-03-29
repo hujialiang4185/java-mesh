@@ -16,7 +16,7 @@ public interface UserService {
 
     String register(UserEntity entity);
 
-    CommonResult listUser(String nickName, String userName, String role, String status, int pageSize, int current, String sorter, String order);
+    CommonResult listUser(UserEntity user, int pageSize, int current, String sorter, String order);
 
     String suspend(UserEntity user, String[] usernames);
 
