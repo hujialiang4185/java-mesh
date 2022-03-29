@@ -5,6 +5,7 @@
 package com.huawei.emergency.mapper;
 
 import com.huawei.emergency.dto.TaskNode;
+import com.huawei.emergency.entity.EmergencyPlan;
 import com.huawei.emergency.entity.EmergencyPlanDetail;
 import com.huawei.emergency.entity.EmergencyPlanDetailExample;
 
@@ -36,10 +37,10 @@ public interface EmergencyPlanDetailMapper {
     EmergencyPlanDetail selectByPrimaryKey(Integer detailId);
 
     int updateByExampleSelective(@Param("record") EmergencyPlanDetail record,
-                                 @Param("example") EmergencyPlanDetailExample example);
+        @Param("example") EmergencyPlanDetailExample example);
 
     int updateByExample(@Param("record") EmergencyPlanDetail record,
-                        @Param("example") EmergencyPlanDetailExample example);
+        @Param("example") EmergencyPlanDetailExample example);
 
     int updateByPrimaryKeySelective(EmergencyPlanDetail record);
 
@@ -47,7 +48,9 @@ public interface EmergencyPlanDetailMapper {
 
     List<TaskNode> selectSceneNodeByPlanId(Integer planId);
 
-    List<TaskNode> selectTaskNodeBySceneId(Integer planId,Integer sceneId);
+    List<TaskNode> selectTaskNodeBySceneId(Integer planId, Integer sceneId);
 
-    List<TaskNode> selectTaskNodeByTaskId(Integer planId,Integer sceneId,Integer taskId);
+    List<TaskNode> selectTaskNodeByTaskId(Integer planId, Integer sceneId, Integer taskId);
+
+    List<EmergencyPlan> selectPlanByTaskId(Integer taskId);
 }

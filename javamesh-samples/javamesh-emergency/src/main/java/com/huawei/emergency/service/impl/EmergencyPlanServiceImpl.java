@@ -772,6 +772,12 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         if (taskNode == null || taskNode.getKey() == null) {
             return CommonResult.failed("请选择要操作的任务");
         }
+        List<EmergencyPlan> taskPlans = detailMapper.selectPlanByTaskId(taskNode.getKey());
+        for (EmergencyPlan taskPlan : taskPlans) {
+            if (haveRunning(taskPlan.getPlanId())) {
+                return CommonResult.failed(String.format(Locale.ROOT, "存在项目[%s]处于执行态，无法修改。", taskPlan.getPlanName()));
+            }
+        }
         EmergencyTask originTask = taskMapper.selectByPrimaryKey(taskNode.getKey());
         if (originTask == null) {
             return CommonResult.failed("请选择正确的任务");
