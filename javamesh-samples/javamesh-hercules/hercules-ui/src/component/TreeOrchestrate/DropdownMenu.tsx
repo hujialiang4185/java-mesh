@@ -69,7 +69,7 @@ const after = [...common, PostProcessor]
 const menuGroup = new Map<String, MenuConfig[]>([
     ["Root", [LogicController, TestGroup]],
     ["BeforeProcess", [SamplerB, Timer, Assertion, ConfigElement, PreProcessor]],
-    ["BeforeThread", [SamplerB, Timer, Assertion, ConfigElement, PreProcessor, PostProcessor ]],
+    ["BeforeThread", [SamplerB, Timer, Assertion, ConfigElement, PreProcessor ]],
     ["AfterProcess", after],
     ["AfterThread", after],
     ["Before", before],
