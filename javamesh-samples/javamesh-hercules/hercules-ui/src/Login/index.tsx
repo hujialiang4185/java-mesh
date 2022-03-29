@@ -4,7 +4,7 @@ import { UserOutlined, LockOutlined } from '@ant-design/icons'
 import Background from './Background.svg'
 import "./index.scss"
 import axios from "axios"
-import { useHistory, useLocation } from "react-router-dom"
+import { useHistory } from "react-router-dom"
 import Context from "../ContextProvider"
 
 export default function App() {
@@ -27,12 +27,12 @@ export default function App() {
 
 function Login(props: { setIsLogin: (isLogin: boolean) => void }) {
     const history = useHistory();
-    const location = useLocation();
+    // const location = useLocation();
     return <Form onFinish={async function (value) {
         try {
             await axios.post("/argus-user/api/user/login", value)
-            const state = location.state as string || ""
-            history.replace(state)
+            // const state = location.state as string || ""
+            history.replace("/")
         } catch (error: any) {
             message.error(error.message)
         }
