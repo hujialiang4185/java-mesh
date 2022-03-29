@@ -17,6 +17,7 @@
         <result column="script_name" jdbcType="VARCHAR" property="scriptName"/>
         <result column="submit_info" jdbcType="VARCHAR" property="submitInfo"/>
         <result column="perf_test_id" jdbcType="INTEGER" property="perfTestId"/>
+        <result column="task_desc" jdbcType="VARCHAR" property="taskDesc"/>
     </resultMap>
     <sql id="Example_Where_Clause">
         <where>
@@ -81,7 +82,8 @@
     <sql id="Base_Column_List">
         task_id
         , task_no, task_name, task_type, scene_id, script_id, server_id, pre_task_id,
-    create_user, create_time, is_valid, channel_type, script_name, submit_info, perf_test_id
+    create_user, create_time, is_valid, channel_type, script_name, submit_info, perf_test_id, 
+    task_desc
     </sql>
     <select id="selectByExample" parameterType="com.huawei.emergency.entity.EmergencyTaskExample"
             resultMap="BaseResultMap">
@@ -122,12 +124,12 @@
                                     scene_id, script_id, server_id,
                                     pre_task_id, create_user, create_time,
                                     is_valid, channel_type, script_name,
-                                    submit_info, perf_test_id)
+                                    submit_info, perf_test_id, task_desc)
         values (#{taskNo,jdbcType=VARCHAR}, #{taskName,jdbcType=VARCHAR}, #{taskType,jdbcType=VARCHAR},
                 #{sceneId,jdbcType=INTEGER}, #{scriptId,jdbcType=INTEGER}, #{serverId,jdbcType=VARCHAR},
                 #{preTaskId,jdbcType=INTEGER}, #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP},
                 #{isValid,jdbcType=VARCHAR}, #{channelType,jdbcType=VARCHAR}, #{scriptName,jdbcType=VARCHAR},
-                #{submitInfo,jdbcType=VARCHAR}, #{perfTestId,jdbcType=INTEGER})
+                #{submitInfo,jdbcType=VARCHAR}, #{perfTestId,jdbcType=INTEGER}, #{taskDesc,jdbcType=VARCHAR})
     </insert>
     <insert id="insertSelective" keyColumn="task_id" keyProperty="taskId"
             parameterType="com.huawei.emergency.entity.EmergencyTask" useGeneratedKeys="true">
@@ -175,6 +177,9 @@
             <if test="perfTestId != null">
                 perf_test_id,
             </if>
+            <if test="taskDesc != null">
+                task_desc,
+            </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="taskNo != null">
@@ -218,6 +223,9 @@
             </if>
             <if test="perfTestId != null">
                 #{perfTestId,jdbcType=INTEGER},
+            </if>
+            <if test="taskDesc != null">
+                #{taskDesc,jdbcType=VARCHAR},
             </if>
         </trim>
     </insert>
@@ -276,6 +284,9 @@
             <if test="record.perfTestId != null">
                 perf_test_id = #{record.perfTestId,jdbcType=INTEGER},
             </if>
+            <if test="record.taskDesc != null">
+                task_desc = #{record.taskDesc,jdbcType=VARCHAR},
+            </if>
         </set>
         <if test="_parameter != null">
             <include refid="Update_By_Example_Where_Clause"/>
@@ -297,7 +308,8 @@
         channel_type = #{record.channelType,jdbcType=VARCHAR},
         script_name = #{record.scriptName,jdbcType=VARCHAR},
         submit_info = #{record.submitInfo,jdbcType=VARCHAR},
-        perf_test_id = #{record.perfTestId,jdbcType=INTEGER}
+        perf_test_id = #{record.perfTestId,jdbcType=INTEGER},
+        task_desc = #{record.taskDesc,jdbcType=VARCHAR}
         <if test="_parameter != null">
             <include refid="Update_By_Example_Where_Clause"/>
         </if>
@@ -347,6 +359,9 @@
             <if test="perfTestId != null">
                 perf_test_id = #{perfTestId,jdbcType=INTEGER},
             </if>
+            <if test="taskDesc != null">
+                task_desc = #{taskDesc,jdbcType=VARCHAR},
+            </if>
         </set>
         where task_id = #{taskId,jdbcType=INTEGER}
     </update>
@@ -365,7 +380,8 @@
             channel_type = #{channelType,jdbcType=VARCHAR},
             script_name  = #{scriptName,jdbcType=VARCHAR},
             submit_info  = #{submitInfo,jdbcType=VARCHAR},
-            perf_test_id = #{perfTestId,jdbcType=INTEGER}
+            perf_test_id = #{perfTestId,jdbcType=INTEGER},
+            task_desc    = #{taskDesc,jdbcType=VARCHAR}
         where task_id = #{taskId,jdbcType=INTEGER}
     </update>
     <select id="countPassedPlanByTaskId" parameterType="Integer" resultType="java.lang.Long">

@@ -39,6 +39,7 @@ public class TaskNode {
     private String submitInfo;
     private String sync;
     private List<TaskNode> children;
+    private String scenaDesc;
 
     /**
      * 查询执行记录使用

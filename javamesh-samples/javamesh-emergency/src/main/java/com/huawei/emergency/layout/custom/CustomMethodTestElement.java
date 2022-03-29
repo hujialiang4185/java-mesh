@@ -16,10 +16,12 @@
 
 package com.huawei.emergency.layout.custom;
 
-import com.huawei.emergency.layout.TestElement;
 import com.huawei.emergency.layout.ElementProcessContext;
+import com.huawei.emergency.layout.TestElement;
 import com.huawei.emergency.layout.template.GroovyMethodTemplate;
+
 import lombok.Data;
+
 import org.apache.commons.lang.StringUtils;
 
 import java.util.Locale;
@@ -32,7 +34,7 @@ import java.util.Locale;
  **/
 @Data
 public class CustomMethodTestElement extends TestElement {
-    private String content;
+    private String script;
     private GroovyMethodTemplate method;
 
     @Override
@@ -40,13 +42,12 @@ public class CustomMethodTestElement extends TestElement {
         if (StringUtils.isEmpty(getTitle())) {
             throw new RuntimeException("请输入方法名称");
         }
-        if (StringUtils.isNotEmpty(content)) {
-            if (context.getTemplate().containsMethod(method.getMethodName())) {
-                throw new RuntimeException(String.format(Locale.ROOT, "存在名称相同的方法 {}", method.getMethodName()));
+        if (StringUtils.isNotEmpty(script)) {
+            if (context.getTemplate().containsMethod(getMethod().getMethodName())) {
+                throw new RuntimeException(String.format(Locale.ROOT, "存在名称相同的方法 {}", getMethod().getMethodName()));
             }
-            GroovyMethodTemplate method = getMethod();
-            method.addContent(content, 2);
-            context.getTemplate().addMethod(method);
+            getMethod().addContent(script, 2);
+            context.getTemplate().addMethod(getMethod());
         }
     }
 

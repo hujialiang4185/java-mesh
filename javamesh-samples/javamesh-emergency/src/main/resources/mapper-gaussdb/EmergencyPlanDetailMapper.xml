@@ -319,7 +319,8 @@
                t3.script_name,
                t3.submit_info,
                t1.sync,
-               t2.task_type
+               t2.task_type,
+        t2.task_desc AS scena_desc
         FROM emergency_plan_detail t1
             LEFT JOIN emergency_task t2
         ON t1.scene_id = t2.task_id

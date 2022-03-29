@@ -54,9 +54,40 @@ ON COLUMN "public"."emergency_user"."nick_name" IS '昵称';
 -- Records of emergency_user
 -- ----------------------------
 INSERT INTO "public"."emergency_user"
-VALUES (1, '2022-03-03 11:25:36', '2022-03-03 11:25:36', 'T', 'ADMIN',
+VALUES (1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'T', 'ADMIN',
         '$2a$10$KE0VERWzRwYJIQn17XoePe0/iokyCqKlnX0t.C90Okg7eDsy0Fi/a', 'admin', 'admin', NULL);
-
+INSERT INTO "public"."NUSER" (created_date,
+                              last_modified_date,
+                              authentication_provider_class,
+                              description,
+                              email,
+                              enabled,
+                              is_external,
+                              mobile_phone,
+                              password,
+                              role_name,
+                              timeZone,
+                              user_id,
+                              user_language,
+                              user_name,
+                              created_user,
+                              last_modified_user)
+values (CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP,
+        NULL,
+        NULL,
+        'admin@nhn.com',
+        'T',
+        'T',
+        NULL,
+        'a40546cc4fd6a12572828bb803380888ad1bfdab',
+        'ADMIN',
+        'Asia/Shanghai',
+        'admin',
+        'cn',
+        'admin',
+        NULL,
+        NULL);
 -- ----------------------------
 -- Indexes structure for table emergency_user
 -- ----------------------------

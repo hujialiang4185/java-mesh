@@ -78,7 +78,7 @@ public class TestPlanTestElement extends ParentTestElement {
         } else if (rateTotal == ONE_HUNDRED) {
             generateScheduleCode(allTransactional);
         } else {
-            throw new ApiException("事务控制器压力分配不能超过100");
+            throw new ApiException("事务控制器压力分配应该等于100的倍数");
         }
         nextElements().stream()
             .filter(testElement -> testElement instanceof DefaultTestElement

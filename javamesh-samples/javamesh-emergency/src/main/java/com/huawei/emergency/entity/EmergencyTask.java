@@ -11,9 +11,13 @@ public class EmergencyTask {
 
     private String taskType;
 
+    private String taskDesc;
+
     private Integer sceneId;
 
     private Integer scriptId;
+
+    private String serverId;
 
     private Integer preTaskId;
 
@@ -28,8 +32,6 @@ public class EmergencyTask {
     private String scriptName;
 
     private String submitInfo;
-
-    private String serverId;
 
     private Integer perfTestId;
 
@@ -65,6 +67,14 @@ public class EmergencyTask {
         this.taskType = taskType == null ? null : taskType.trim();
     }
 
+    public String getTaskDesc() {
+        return taskDesc;
+    }
+
+    public void setTaskDesc(String taskDesc) {
+        this.taskDesc = taskDesc == null ? null : taskDesc.trim();
+    }
+
     public Integer getSceneId() {
         return sceneId;
     }
@@ -79,6 +89,14 @@ public class EmergencyTask {
 
     public void setScriptId(Integer scriptId) {
         this.scriptId = scriptId;
+    }
+
+    public String getServerId() {
+        return serverId;
+    }
+
+    public void setServerId(String serverId) {
+        this.serverId = serverId == null ? null : serverId.trim();
     }
 
     public Integer getPreTaskId() {
@@ -135,14 +153,6 @@ public class EmergencyTask {
 
     public void setSubmitInfo(String submitInfo) {
         this.submitInfo = submitInfo == null ? null : submitInfo.trim();
-    }
-
-    public String getServerId() {
-        return serverId;
-    }
-
-    public void setServerId(String serverId) {
-        this.serverId = serverId == null ? null : serverId.trim();
     }
 
     public Integer getPerfTestId() {

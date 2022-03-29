@@ -564,13 +564,14 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     @Override
     public CommonResult addTask(TaskNode taskNode) {
         TaskTypeEnum taskType = TaskTypeEnum.matchByDesc(taskNode.getTaskType());
-        if (taskType == TaskTypeEnum.FLOW_RECORD) {
+        if (taskType == null || taskType == TaskTypeEnum.FLOW_RECORD) {
             return CommonResult.failed("不支持的任务类型");
         }
         EmergencyTask task = new EmergencyTask();
-        if (taskType == null) {
+        if (taskType == TaskTypeEnum.SCENE) {
             task.setTaskName(taskNode.getTaskName());
-            task.setTaskType(TaskTypeEnum.SCENE.getValue());
+            task.setTaskType(taskType.getValue());
+            task.setCreateUser(taskNode.getCreateUser());
         } else {
             if (StringUtils.isEmpty(taskNode.getScriptName())) {
                 return CommonResult.failed("请选择脚本");
@@ -590,7 +591,6 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             task.setTaskType(taskType.getValue());
             if (taskType == TaskTypeEnum.CUSTOM) { // 创建自定义脚本压测任务
                 PerfTest perfTest = taskNode.parse();
-                //perfTest.setAgentIds(generateSelectAgentIds(taskNode.getServiceId()));
                 perfTest.setScriptName(task.getScriptName());
                 EmergencyScriptExample scriptExample = new EmergencyScriptExample();
                 scriptExample.createCriteria().andScriptNameEqualTo(task.getScriptName());
@@ -779,6 +779,14 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         TaskTypeEnum taskTypeEnum = TaskTypeEnum.matchByDesc(taskNode.getTaskType());
         if (taskTypeEnum == null || !taskTypeEnum.getValue().equals(originTask.getTaskType())) {
             return CommonResult.failed("任务类型不可修改");
+        }
+        if (taskTypeEnum == TaskTypeEnum.SCENE) {
+            EmergencyTask updateTask = new EmergencyTask();
+            updateTask.setTaskId(originTask.getTaskId());
+            updateTask.setTaskName(taskNode.getTaskName());
+            updateTask.setTaskDesc(StringUtils.isEmpty(taskNode.getScenaDesc()) ? "" : taskNode.getScenaDesc());
+            taskMapper.updateByPrimaryKeySelective(updateTask);
+            return CommonResult.success(taskNode);
         }
         EmergencyTask updateTask = new EmergencyTask();
         updateTask.setTaskId(originTask.getTaskId());
