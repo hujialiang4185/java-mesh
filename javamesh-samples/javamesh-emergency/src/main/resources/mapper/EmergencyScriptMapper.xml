@@ -450,19 +450,19 @@
         emergency_script s,emergency_user u
         <where>
             s.script_user = u.user_name
-            <if test="scriptName!=null and scriptName!=''">
+            <if test="scriptName != null and scriptName != ''">
                 AND s.script_name LIKE CONCAT('%',#{scriptName},'%') ESCAPE '/'
             </if>
-            <if test="scriptUser!=null and scriptUser!=''">
-                AND s.script_user LIKE CONCAT('%',#{scriptUser},'%') ESCAPE '/'
+            <if test="scriptUser != null and scriptUser != ''">
+                AND u.nick_name LIKE CONCAT('%',#{scriptUser},'%') ESCAPE '/'
             </if>
-            <if test="auth!='admin' and auth!='approver'">
+            <if test="auth != 'admin' and auth != 'approver'">
                 AND ((s.is_public = '0' AND s.script_user = #{userName}) OR s.is_public = '1')
             </if>
-            <if test="status!='' and status!=null">
-                AND s.script_status = '2'
+            <if test="status != '' and status != null">
+                AND s.script_status = #{status}
             </if>
-            <if test="group!=null and group!=''">
+            <if test="group != null and group != ''">
                 AND s.script_group = #{group}
             </if>
         </where>
