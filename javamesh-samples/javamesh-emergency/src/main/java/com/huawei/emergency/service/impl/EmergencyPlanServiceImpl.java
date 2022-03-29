@@ -780,6 +780,14 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         if (taskTypeEnum == null || !taskTypeEnum.getValue().equals(originTask.getTaskType())) {
             return CommonResult.failed("任务类型不可修改");
         }
+        if (taskTypeEnum == TaskTypeEnum.SCENE) {
+            EmergencyTask updateTask = new EmergencyTask();
+            updateTask.setTaskId(originTask.getTaskId());
+            updateTask.setTaskName(taskNode.getTaskName());
+            updateTask.setTaskDesc(StringUtils.isEmpty(taskNode.getScenaDesc()) ? "" : taskNode.getScenaDesc());
+            taskMapper.updateByPrimaryKeySelective(updateTask);
+            return CommonResult.success(taskNode);
+        }
         EmergencyTask updateTask = new EmergencyTask();
         updateTask.setTaskId(originTask.getTaskId());
         updateTask.setTaskName(taskNode.getTaskName());

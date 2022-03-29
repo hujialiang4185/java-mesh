@@ -375,6 +375,76 @@ public class EmergencyTaskExample {
             return (Criteria) this;
         }
 
+        public Criteria andTaskDescIsNull() {
+            addCriterion("task_desc is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andTaskDescIsNotNull() {
+            addCriterion("task_desc is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andTaskDescEqualTo(String value) {
+            addCriterion("task_desc =", value, "taskDesc");
+            return (Criteria) this;
+        }
+
+        public Criteria andTaskDescNotEqualTo(String value) {
+            addCriterion("task_desc <>", value, "taskDesc");
+            return (Criteria) this;
+        }
+
+        public Criteria andTaskDescGreaterThan(String value) {
+            addCriterion("task_desc >", value, "taskDesc");
+            return (Criteria) this;
+        }
+
+        public Criteria andTaskDescGreaterThanOrEqualTo(String value) {
+            addCriterion("task_desc >=", value, "taskDesc");
+            return (Criteria) this;
+        }
+
+        public Criteria andTaskDescLessThan(String value) {
+            addCriterion("task_desc <", value, "taskDesc");
+            return (Criteria) this;
+        }
+
+        public Criteria andTaskDescLessThanOrEqualTo(String value) {
+            addCriterion("task_desc <=", value, "taskDesc");
+            return (Criteria) this;
+        }
+
+        public Criteria andTaskDescLike(String value) {
+            addCriterion("task_desc like", value, "taskDesc");
+            return (Criteria) this;
+        }
+
+        public Criteria andTaskDescNotLike(String value) {
+            addCriterion("task_desc not like", value, "taskDesc");
+            return (Criteria) this;
+        }
+
+        public Criteria andTaskDescIn(List<String> values) {
+            addCriterion("task_desc in", values, "taskDesc");
+            return (Criteria) this;
+        }
+
+        public Criteria andTaskDescNotIn(List<String> values) {
+            addCriterion("task_desc not in", values, "taskDesc");
+            return (Criteria) this;
+        }
+
+        public Criteria andTaskDescBetween(String value1, String value2) {
+            addCriterion("task_desc between", value1, value2, "taskDesc");
+            return (Criteria) this;
+        }
+
+        public Criteria andTaskDescNotBetween(String value1, String value2) {
+            addCriterion("task_desc not between", value1, value2, "taskDesc");
+            return (Criteria) this;
+        }
+
         public Criteria andSceneIdIsNull() {
             addCriterion("scene_id is null");
             return (Criteria) this;
@@ -492,6 +562,76 @@ public class EmergencyTaskExample {
 
         public Criteria andScriptIdNotBetween(Integer value1, Integer value2) {
             addCriterion("script_id not between", value1, value2, "scriptId");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerIdIsNull() {
+            addCriterion("server_id is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerIdIsNotNull() {
+            addCriterion("server_id is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerIdEqualTo(String value) {
+            addCriterion("server_id =", value, "serverId");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerIdNotEqualTo(String value) {
+            addCriterion("server_id <>", value, "serverId");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerIdGreaterThan(String value) {
+            addCriterion("server_id >", value, "serverId");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerIdGreaterThanOrEqualTo(String value) {
+            addCriterion("server_id >=", value, "serverId");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerIdLessThan(String value) {
+            addCriterion("server_id <", value, "serverId");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerIdLessThanOrEqualTo(String value) {
+            addCriterion("server_id <=", value, "serverId");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerIdLike(String value) {
+            addCriterion("server_id like", value, "serverId");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerIdNotLike(String value) {
+            addCriterion("server_id not like", value, "serverId");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerIdIn(List<String> values) {
+            addCriterion("server_id in", values, "serverId");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerIdNotIn(List<String> values) {
+            addCriterion("server_id not in", values, "serverId");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerIdBetween(String value1, String value2) {
+            addCriterion("server_id between", value1, value2, "serverId");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerIdNotBetween(String value1, String value2) {
+            addCriterion("server_id not between", value1, value2, "serverId");
             return (Criteria) this;
         }
 
@@ -962,76 +1102,6 @@ public class EmergencyTaskExample {
 
         public Criteria andSubmitInfoNotBetween(String value1, String value2) {
             addCriterion("submit_info not between", value1, value2, "submitInfo");
-            return (Criteria) this;
-        }
-
-        public Criteria andServerIdIsNull() {
-            addCriterion("server_id is null");
-            return (Criteria) this;
-        }
-
-        public Criteria andServerIdIsNotNull() {
-            addCriterion("server_id is not null");
-            return (Criteria) this;
-        }
-
-        public Criteria andServerIdEqualTo(String value) {
-            addCriterion("server_id =", value, "serverId");
-            return (Criteria) this;
-        }
-
-        public Criteria andServerIdNotEqualTo(String value) {
-            addCriterion("server_id <>", value, "serverId");
-            return (Criteria) this;
-        }
-
-        public Criteria andServerIdGreaterThan(String value) {
-            addCriterion("server_id >", value, "serverId");
-            return (Criteria) this;
-        }
-
-        public Criteria andServerIdGreaterThanOrEqualTo(String value) {
-            addCriterion("server_id >=", value, "serverId");
-            return (Criteria) this;
-        }
-
-        public Criteria andServerIdLessThan(String value) {
-            addCriterion("server_id <", value, "serverId");
-            return (Criteria) this;
-        }
-
-        public Criteria andServerIdLessThanOrEqualTo(String value) {
-            addCriterion("server_id <=", value, "serverId");
-            return (Criteria) this;
-        }
-
-        public Criteria andServerIdLike(String value) {
-            addCriterion("server_id like", value, "serverId");
-            return (Criteria) this;
-        }
-
-        public Criteria andServerIdNotLike(String value) {
-            addCriterion("server_id not like", value, "serverId");
-            return (Criteria) this;
-        }
-
-        public Criteria andServerIdIn(List<String> values) {
-            addCriterion("server_id in", values, "serverId");
-            return (Criteria) this;
-        }
-
-        public Criteria andServerIdNotIn(List<String> values) {
-            addCriterion("server_id not in", values, "serverId");
-            return (Criteria) this;
-        }
-
-        public Criteria andServerIdBetween(String value1, String value2) {
-            addCriterion("server_id between", value1, value2, "serverId");
-            return (Criteria) this;
-        }
-
-        public Criteria andServerIdNotBetween(String value1, String value2) {
-            addCriterion("server_id not between", value1, value2, "serverId");
             return (Criteria) this;
         }
 
