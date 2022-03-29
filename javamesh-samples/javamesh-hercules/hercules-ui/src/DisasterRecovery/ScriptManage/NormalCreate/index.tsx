@@ -76,7 +76,8 @@ export default function App() {
 
 function Script({ form }: { form: FormInstance }) {
     const [scriptFrom, setScriptFrom] = useState("input")
-    const [script, setScript] = useState<string>()
+    const state = useLocation().state as any
+    
     return <>
         <div className="Line">
             <Form.Item className="Middle" name="script_from" label="脚本来源">
@@ -88,7 +89,7 @@ function Script({ form }: { form: FormInstance }) {
                 <ServiceSelect url='/argus-emergency/api/script/search' onChange={async function (name) {
                     try {
                         const res = await axios.get("/argus-emergency/api/script/getByName", { params: { name } })
-                        setScript(res.data.data.content)
+                        form.setFields([{name: "content", value: res.data.data.content}])
                     } catch (error: any) {
                         message.error(error.message)
                     }
@@ -100,26 +101,18 @@ function Script({ form }: { form: FormInstance }) {
         </div>
         {scriptFrom !== "本地导入" && <>
             <Form.Item label="脚本内容" className="Editor WithoutLabel" name="content" rules={[{ required: true }]}>
-                <ScriptEditor script={script} setScript={setScript} />
+                <Editor className="MonacoEditor" height={200} language={function(){
+                    switch (state.language) {
+                        case "Shell":
+                            return "shell"
+                        case "Groovy":
+                            return "java"
+                        default:
+                            return "python"
+                    }
+                }()} />
             </Form.Item>
             <DebugScript form={form} />
         </>}
     </>
-}
-
-function ScriptEditor(props: { onChange?: (value?: string) => void, script?: string, setScript: (script?: string) => void }) {
-    const state = useLocation().state as any
-    let language = "python"
-    switch (state.language) {
-        case "Shell":
-            language = "shell"
-            break
-        case "Groovy":
-            language = "java"
-    }
-    const debounceRef = useRef(debounce(function (value?: string) {
-        props.setScript(value)
-        props.onChange?.(value)
-    }, 1000))
-    return <Editor className="MonacoEditor" height={200} language={language} value={props.script} onChange={debounceRef.current} />
 }
