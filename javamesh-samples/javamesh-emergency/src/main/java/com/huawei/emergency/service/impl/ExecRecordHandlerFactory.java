@@ -307,7 +307,7 @@ public class ExecRecordHandlerFactory {
             // 更新record,detail为执行完成，结束时间
             EmergencyExecRecordDetailExample whenRunning = new EmergencyExecRecordDetailExample();
             whenRunning.createCriteria()
-                .andRecordIdEqualTo(detail.getRecordId())
+                .andDetailIdEqualTo(detail.getDetailId())
                 .andIsValidEqualTo(ValidEnum.VALID.getValue())
                 .andStatusEqualTo(RecordStatus.RUNNING.getValue());
             EmergencyExecRecordDetail updateRecordDetail = new EmergencyExecRecordDetail();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Ltd. 2021-2021. Huawei Technologies Co., All rights reserved
+ * Copyright (C) Ltd. 2022-2022. Huawei Technologies Co., All rights reserved
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,12 +70,12 @@ public class PerfTestListenerConfig implements ITestLifeCycleListener {
     }
 
     @Override
-    public void start(PerfTest perfTest, IPerfTestService iPerfTestService, String version) {
+    public void start(PerfTest perfTest, IPerfTestService perfTestService, String version) {
         LOGGER.info("perf_test {} is starting. {}", perfTest.getId(), version);
     }
 
     @Override
-    public void finish(PerfTest perfTest, String stopReason, IPerfTestService iPerfTestService, String version) {
+    public void finish(PerfTest perfTest, String stopReason, IPerfTestService perfTestService, String version) {
         LOGGER.info("perf_test {} is end. {} . {}", perfTest.getId(), stopReason, version);
         try {
             EmergencyExecRecordDetailExample detailExample = new EmergencyExecRecordDetailExample();
@@ -85,6 +85,7 @@ public class PerfTestListenerConfig implements ITestLifeCycleListener {
             List<EmergencyExecRecordDetail> details =
                 recordDetailMapper.selectByExample(detailExample);
             if (details.size() == 0) {
+                LOGGER.warn("can't found record_detail by perf_test {}", perfTest.getId());
                 return;
             }
             ExecResult result;
@@ -97,7 +98,8 @@ public class PerfTestListenerConfig implements ITestLifeCycleListener {
             EmergencyExecRecord record = recordMapper.selectByPrimaryKey(details.get(0).getRecordId());
             poolExecutor.execute(() -> handlerFactory.completePerfTest(record, details.get(0), result));
         } catch (Exception e) {
-            LOGGER.info("perf_test {} finish callback error.{}.{}", perfTest.getId(), stopReason, e.getMessage());
+            LOGGER.info("perf_test {} finished but callback error.{}.{}", perfTest.getId(), stopReason,
+                e.getMessage());
         }
     }
 }

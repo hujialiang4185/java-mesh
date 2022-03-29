@@ -218,14 +218,17 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     }
 
     @Override
-    public int deleteScripts(int[] scriptIds) {
-        int count = 0;
+    public CommonResult deleteScripts(int[] scriptIds) {
+        CommonResult result = execService.isFreeScript(scriptIds);
+        if (!result.isSuccess()) {
+            return result;
+        }
         for (int scriptId : scriptIds) {
             resourceService.refreshResource(scriptId, new ArrayList<>());
             deleteGrinderScript(scriptId);
-            count += mapper.deleteByPrimaryKey(scriptId);
+            mapper.deleteByPrimaryKey(scriptId);
         }
-        return count;
+        return CommonResult.success();
     }
 
     @Override
