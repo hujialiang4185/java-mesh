@@ -249,7 +249,7 @@ public class RemoteScriptExecutor implements ScriptExecutor {
      */
     private ExecResult parseResult(Channel channel, LogCallBack logCallback, int id) throws IOException {
         ExecResult execResult = new ExecResult();
-        BufferedReader normalInfoReader = new BufferedReader(new InputStreamReader(channel.getInputStream()));
+        BufferedReader normalInfoReader = new BufferedReader(new InputStreamReader(channel.getInputStream(), StandardCharsets.UTF_8));
         StringBuilder result = new StringBuilder();
         while (true) {
             String line;
