@@ -85,6 +85,7 @@ public class PerfTestListenerConfig implements ITestLifeCycleListener {
             List<EmergencyExecRecordDetail> details =
                 recordDetailMapper.selectByExample(detailExample);
             if (details.size() == 0) {
+                LOGGER.warn("can't found record_detail by perf_test {}", perfTest.getId());
                 return;
             }
             ExecResult result;
@@ -97,7 +98,8 @@ public class PerfTestListenerConfig implements ITestLifeCycleListener {
             EmergencyExecRecord record = recordMapper.selectByPrimaryKey(details.get(0).getRecordId());
             poolExecutor.execute(() -> handlerFactory.completePerfTest(record, details.get(0), result));
         } catch (Exception e) {
-            LOGGER.info("perf_test {} finish callback error.{}.{}", perfTest.getId(), stopReason, e.getMessage());
+            LOGGER.info("perf_test {} finished but callback error.{}.{}", perfTest.getId(), stopReason,
+                e.getMessage());
         }
     }
 }
