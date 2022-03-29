@@ -62,19 +62,22 @@ const ConfigElement: MenuConfig = {
     ]
 }
 
-const common = [Sampler, Timer, Assertion, ConfigElement]
-const before = [...common, PreProcessor]
-const after = [...common, PostProcessor]
+const ConfigElementB: MenuConfig = {
+    type: "ConfigElement", title: "配置元件", children: [
+        { type: "HTTPHeaderManager", title: "HTTP信息头管理器"},
+        { type: "HTTPCookieManager", title: "HTTP Cookie管理器" }
+    ]
+}
 
 const menuGroup = new Map<String, MenuConfig[]>([
     ["Root", [LogicController, TestGroup]],
-    ["BeforeProcess", [SamplerB, Timer, Assertion, ConfigElement, PreProcessor]],
+    ["BeforeProcess", [SamplerB, Timer, Assertion, ConfigElementB, PreProcessor]],
     ["BeforeThread", [SamplerB, Timer, Assertion, ConfigElement, PreProcessor ]],
-    ["AfterProcess", after],
-    ["AfterThread", after],
-    ["Before", before],
-    ["After", after],
-    ["TransactionController", [...common, PreProcessor, PostProcessor]],
+    ["AfterProcess", [Sampler, Timer, Assertion, ConfigElementB, PostProcessor]],
+    ["AfterThread", [Sampler, Timer, Assertion, ConfigElement, PostProcessor]],
+    ["Before", [Sampler, Timer, Assertion, ConfigElement, PreProcessor]],
+    ["After", [Sampler, Timer, Assertion, ConfigElement, PostProcessor]],
+    ["TransactionController", [Sampler, Timer, Assertion, ConfigElement, PreProcessor, PostProcessor]],
     ["HTTPRequest", [ResponseAssertion]]
 ])
 // 计算规则, 菜单

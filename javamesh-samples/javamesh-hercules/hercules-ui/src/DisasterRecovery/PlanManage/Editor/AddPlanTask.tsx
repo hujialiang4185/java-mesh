@@ -36,6 +36,7 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
       <Form form={form} labelCol={{ span: 2 }}
         initialValues={props.initialValues}
         onFinish={async (values) => {
+          values.submit_info = script.submit_info
           if (values.gui_script_name) {
             values.script_name = values.gui_script_name
           }
