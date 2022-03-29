@@ -65,7 +65,9 @@ export default function App() {
                 </Form.Item>
                 <Form.Item className="Buttons">
                     <Button className="Save" htmlType="submit" type="primary">提交</Button>
-                    <Button htmlType="reset">重置</Button>
+                    <Button onClick={function () {
+                        history.goBack()
+                    }}>取消</Button>
                 </Form.Item>
             </Form>
         </Card>
