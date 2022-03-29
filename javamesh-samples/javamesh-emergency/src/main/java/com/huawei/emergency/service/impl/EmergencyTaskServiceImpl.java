@@ -7,7 +7,6 @@ package com.huawei.emergency.service.impl;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ValidEnum;
-import com.huawei.common.filter.JwtAuthenticationTokenFilter;
 import com.huawei.emergency.dto.TaskCommonReport;
 import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyExecRecordExample;
@@ -167,7 +166,7 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
         insertTask.setServerId(emergencyTask.getServerId());
         insertTask.setTaskName(emergencyTask.getTaskName());
         insertTask.setChannelType(emergencyTask.getChannelType());
-        insertTask.setCreateUser(JwtAuthenticationTokenFilter.currentGrinderUser().getUserId());
+        insertTask.setCreateUser(emergencyTask.getCreateUser());
         insertTask.setPerfTestId(emergencyTask.getPerfTestId());
         insertTask.setTaskType(emergencyTask.getTaskType());
         if (emergencyTask.getScriptId() != null) {

@@ -26,7 +26,6 @@ import com.huawei.common.constant.ScriptLanguageEnum;
 import com.huawei.common.constant.ScriptTypeEnum;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.common.exception.ApiException;
-import com.huawei.common.filter.JwtAuthenticationTokenFilter;
 import com.huawei.common.util.EscapeUtil;
 import com.huawei.common.util.FileUtil;
 import com.huawei.common.util.PasswordUtil;
@@ -50,6 +49,7 @@ import com.huawei.emergency.layout.template.GroovyClassTemplate;
 import com.huawei.emergency.mapper.EmergencyElementMapper;
 import com.huawei.emergency.mapper.EmergencyScriptMapper;
 import com.huawei.emergency.service.EmergencyExecService;
+import com.huawei.emergency.service.EmergencyPlanService;
 import com.huawei.emergency.service.EmergencyResourceService;
 import com.huawei.emergency.service.EmergencyScriptService;
 import com.huawei.script.exec.log.LogResponse;
@@ -148,6 +148,9 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
 
     @Autowired
     private Configuration freemarkerConfig;
+
+    @Autowired
+    private EmergencyPlanService planService;
 
     @Value("${mode}")
     private String mode;
@@ -380,8 +383,9 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             }
             resourceService.refreshResource(script.getScriptId(), resourceList);
         }
+        mapper.updateByPrimaryKeySelective(updateScript);
         freshGrinderScript(script.getScriptId());
-        return mapper.updateByPrimaryKeySelective(updateScript);
+        return 1;
     }
 
     @Override
@@ -488,19 +492,18 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
      * @return 是否更新成功
      */
     public boolean updateGrinderScript(EmergencyScript script) {
-        String grinderPath = grinderPath(script);
         FileEntry fileEntry = new FileEntry();
-        fileEntry.setCreatedUser(JwtAuthenticationTokenFilter.currentGrinderUser());
+        fileEntry.setCreatedUser(planService.findNgrinderUserByUserId(script.getScriptUser()));
         fileEntry.setContent(script.getContent());
         fileEntry.setContentBytes(script.getContent().getBytes(StandardCharsets.UTF_8));
-        fileEntry.setPath(grinderPath);
+        fileEntry.setPath(grinderPath(script));
         try {
-            fileEntryService.saveFile(JwtAuthenticationTokenFilter.currentGrinderUser(), fileEntry);
+            fileEntryService.saveFile(fileEntry.getCreatedUser(), fileEntry);
         } catch (IOException e) {
             log.error("update script error.", e);
             return false;
         }
-        log.info("update script {}.", grinderPath);
+        log.info("update script {}.", fileEntry.getPath());
         return true;
     }
 
@@ -675,6 +678,9 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             element.setCreateUser(userName);
             elementMapper.insertSelective(element);
         } else {
+            if (parentId > 0) {
+                element.setParentId(parentId);
+            }
             element.setElementId(node.getElementId());
             element.setIsValid(ValidEnum.VALID.getValue());
             elementMapper.updateByPrimaryKeySelective(element);
@@ -695,6 +701,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             .andScriptIdEqualTo(scriptId)
             .andParentIdIsNull()
             .andIsValidEqualTo(ValidEnum.VALID.getValue());
+        rootElementExample.setOrderByClause("seq");
         List<EmergencyElement> emergencyElements = elementMapper.selectByExample(rootElementExample);
         if (emergencyElements.size() == 0) {
             return CommonResult.success();
@@ -723,6 +730,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         elementExample.createCriteria()
             .andParentIdEqualTo(parent.getElementId())
             .andIsValidEqualTo(ValidEnum.VALID.getValue());
+        elementExample.setOrderByClause("seq");
         List<EmergencyElement> emergencyElements = elementMapper.selectByExample(elementExample);
         for (EmergencyElement emergencyElement : emergencyElements) {
             TreeNode node = new TreeNode();
@@ -758,7 +766,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             StringUtils.isEmpty(scriptManageDto.getSubmitInfo()) ? "" : scriptManageDto.getSubmitInfo());
         script.setHavePassword(TYPE_ZERO);
         script.setContent(
-            generateIdeScript(JwtAuthenticationTokenFilter.currentGrinderUser(), "", scriptManageDto.getForUrl(),
+            generateIdeScript(planService.findNgrinderUserByUserId(user.getUserName()), "", scriptManageDto.getForUrl(),
                 script.getScriptName(), scriptLanguage.getLanguage(), scriptManageDto.isHasResource(),
                 JSONObject.toJSONString(scriptManageDto)));
         script.setScriptUser(user.getUserName());

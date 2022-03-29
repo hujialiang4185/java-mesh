@@ -17,9 +17,12 @@
 package com.huawei.emergency.layout.sampler;
 
 import com.huawei.emergency.layout.ElementProcessContext;
+import com.huawei.emergency.layout.Jsr223Util;
 import com.huawei.emergency.layout.config.HttpRequestDefault;
 import com.huawei.emergency.layout.template.GroovyMethodTemplate;
+
 import lombok.Data;
+
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
@@ -36,7 +39,8 @@ import java.util.Locale;
 @Data
 public class HttpSampler extends Sampler {
 
-    public static final List<String> ALL_METHODS = Arrays.asList("GET", "POST", "PUT", "DELETE", "TRACE", "HEAD", "OPTIONS");
+    public static final List<String> ALL_METHODS = Arrays.asList("GET", "POST", "PUT", "DELETE", "TRACE", "HEAD",
+        "OPTIONS");
     private String protocol = "http";
     private String domain;
     private int port;
@@ -54,7 +58,8 @@ public class HttpSampler extends Sampler {
 
     @Override
     public void handle(ElementProcessContext context) {
-        if (!"http".equals(protocol) || StringUtils.isEmpty(method) || !ALL_METHODS.contains(method.toUpperCase(Locale.ROOT))) {
+        if (!"http".equals(protocol) || StringUtils.isEmpty(method) || !ALL_METHODS.contains(
+            method.toUpperCase(Locale.ROOT))) {
             return;
         }
         /*
@@ -71,11 +76,15 @@ public class HttpSampler extends Sampler {
         String url = String.format(Locale.ROOT, "%s://%s:%s/%s", protocol, domain, port, path);
         currentMethod.addContent(String.format(Locale.ROOT, "def %s = new HTTPRequest();", requestVariableName), 2);
         currentMethod.addContent(String.format(Locale.ROOT, "%s.setUrl(\"%s\");", requestVariableName, url), 2);
-        currentMethod.addContent(String.format(Locale.ROOT, "%s.setHeaders( headers as NVPair[]);", requestVariableName), 2);
-        currentMethod.addContent(String.format(Locale.ROOT, "%s.setData(%s);", requestVariableName, generateBodyData()), 2);
-        currentMethod.addContent(String.format(Locale.ROOT, "%s.setFormData(%s);", requestVariableName, generateNvPairs()), 2);
+        currentMethod.addContent(
+            String.format(Locale.ROOT, "%s.setHeaders( headers as NVPair[]);", requestVariableName), 2);
+        currentMethod.addContent(String.format(Locale.ROOT, "%s.setData(%s);", requestVariableName, generateBodyData()),
+            2);
+        currentMethod.addContent(
+            String.format(Locale.ROOT, "%s.setFormData(%s);", requestVariableName, generateNvPairs()), 2);
         String resultVariableName = "httpResult" + context.getVariableCount();
-        currentMethod.addContent(String.format(Locale.ROOT, "def %s = %s.%s()", resultVariableName, requestVariableName, method.toUpperCase(Locale.ROOT)), 2);
+        currentMethod.addContent(String.format(Locale.ROOT, "def %s = %s.%s()", resultVariableName, requestVariableName,
+            method.toUpperCase(Locale.ROOT)), 2);
         context.setHttpRequestVariableName(requestVariableName);
         context.setHttpResultVariableName(resultVariableName);
         nextElements().forEach(testElement -> testElement.handle(context)); // 生成header cookie等组件信息
@@ -84,7 +93,8 @@ public class HttpSampler extends Sampler {
     private String generateNvPairs() {
         StringBuilder result = new StringBuilder("[");
         for (HttpRequestDefault.Parameters parameter : parameters) {
-            result.append(String.format(Locale.ROOT, "new NVPair(\"%s\", \"%s\"),", parameter.getName(), parameter.getValue()));
+            result.append(
+                String.format(Locale.ROOT, "new NVPair(\"%s\", \"%s\"),", parameter.getName(), parameter.getValue()));
         }
         if (result.length() > 1) {
             result.delete(result.length() - 1, result.length());
@@ -93,6 +103,6 @@ public class HttpSampler extends Sampler {
     }
 
     private String generateBodyData() {
-        return String.format(Locale.ROOT, "\"%s\".bytes", body);
+        return String.format(Locale.ROOT, "\"%s\".bytes", Jsr223Util.escape(body));
     }
 }
