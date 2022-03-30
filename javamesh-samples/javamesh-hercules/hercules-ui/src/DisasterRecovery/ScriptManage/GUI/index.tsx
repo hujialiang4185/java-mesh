@@ -27,7 +27,7 @@ export default function App() {
                     await axios.put("/argus-emergency/api/script/orchestrate", { tree: valuesRef.current?.tree, map, script_id })
                     setSaved(true)
                     message.success("保存成功")
-                    history.goBack();
+                    // history.goBack();
                 } catch (error: any) {
                     message.error(error.message)
                 }

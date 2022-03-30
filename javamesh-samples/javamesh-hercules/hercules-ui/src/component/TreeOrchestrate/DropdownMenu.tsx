@@ -68,13 +68,21 @@ const ConfigElementB: MenuConfig = {
         { type: "HTTPCookieManager", title: "HTTP Cookie管理器" }
     ]
 }
+    
+const ConfigElementC: MenuConfig = {
+    type: "ConfigElement", title: "配置元件", children: [
+        { type: "CSVDataSetConfig", title: "CSV数据文件设置"},
+        { type: "HTTPHeaderManager", title: "HTTP信息头管理器"},
+        { type: "HTTPCookieManager", title: "HTTP Cookie管理器" }
+    ]
+}
 
 const menuGroup = new Map<String, MenuConfig[]>([
     ["Root", [LogicController, TestGroup]],
     ["BeforeProcess", [SamplerB, Timer, Assertion, ConfigElementB, PreProcessor]],
-    ["BeforeThread", [SamplerB, Timer, Assertion, ConfigElement, PreProcessor ]],
-    ["AfterProcess", [Sampler, Timer, Assertion, ConfigElementB, PostProcessor]],
-    ["AfterThread", [Sampler, Timer, Assertion, ConfigElement, PostProcessor]],
+    ["BeforeThread", [SamplerB, Timer, Assertion, ConfigElementC, PreProcessor ]],
+    ["AfterProcess", [SamplerB, Timer, Assertion, ConfigElementB, PostProcessor]],
+    ["AfterThread", [SamplerB, Timer, Assertion, ConfigElementC, PostProcessor]],
     ["Before", [Sampler, Timer, Assertion, ConfigElement, PreProcessor]],
     ["After", [Sampler, Timer, Assertion, ConfigElement, PostProcessor]],
     ["TransactionController", [Sampler, Timer, Assertion, ConfigElement, PreProcessor, PostProcessor]],
