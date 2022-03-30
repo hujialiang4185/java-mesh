@@ -16,6 +16,8 @@
 
 package com.huawei.emergency.layout.postman.impl;
 
+import static com.huawei.emergency.layout.config.HttpRequestDefault.Parameters;
+
 import com.huawei.emergency.layout.TestPlanTestElement;
 import com.huawei.emergency.layout.config.HttpCookieManager;
 import com.huawei.emergency.layout.config.HttpHeaderManager;
@@ -30,6 +32,7 @@ import com.huawei.emergency.layout.postman.entity.request.PostmanRequestHeader;
 import com.huawei.emergency.layout.postman.entity.request.PostmanRequestQueryParam;
 import com.huawei.emergency.layout.postman.entity.request.PostmanRequestUrl;
 import com.huawei.emergency.layout.sampler.HttpSampler;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,8 +40,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import static com.huawei.emergency.layout.config.HttpRequestDefault.Parameters;
 
 /**
  * 功能描述：postman script转换成gui中的test plan
@@ -91,7 +92,6 @@ public class PostmanScript2GuiConverter implements GuiScriptConverter<PostmanScr
      * 日志工具
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(PostmanScript2GuiConverter.class);
-
 
     @Override
     public List<TestPlanTestElement> convertPostmanScript(PostmanScript postmanScript) {
@@ -167,7 +167,7 @@ public class PostmanScript2GuiConverter implements GuiScriptConverter<PostmanScr
      * 根据postman请求数据，封装httpSampler
      *
      * @param postmanRequest postman脚本转义过来的请求数据
-     * @param title          元件名称
+     * @param title 元件名称
      * @return HttpSampler请求实例，封装了请求数据
      */
     private HttpSampler getHttpSampler(PostmanRequest postmanRequest, String title) {
@@ -176,7 +176,7 @@ public class PostmanScript2GuiConverter implements GuiScriptConverter<PostmanScr
         httpSampler.setMethod(postmanRequest.getMethod());
         httpSampler.setProtocol(postmanRequest.getUrl().getProtocol());
         httpSampler.setDomain(postmanRequest.getUrl().getWholeHost());
-        httpSampler.setPort(getIntTypePort(postmanRequest.getUrl().getPort()));
+        httpSampler.setPort(postmanRequest.getUrl().getPort());
         httpSampler.setPath(postmanRequest.getUrl().getWholePath());
         httpSampler.setParameters(getQueryParams(postmanRequest.getUrl().getQuery()));
         PostmanRequestBody requestBody = postmanRequest.getBody();
@@ -232,7 +232,7 @@ public class PostmanScript2GuiConverter implements GuiScriptConverter<PostmanScr
      * postman脚本转义的请求中，每一个请求的cookie都放入到CookieManager中进行管理，该方法提取出cookie并封装到管理器中
      *
      * @param postmanRequest postman脚本转义过来的请求数据
-     * @param title          http请求元件名称
+     * @param title http请求元件名称
      * @return HttpCookieManager，封装了被管理的cookie
      */
     private HttpCookieManager getHttpCookieManager(PostmanRequest postmanRequest, String title) {
@@ -272,7 +272,7 @@ public class PostmanScript2GuiConverter implements GuiScriptConverter<PostmanScr
      * postman脚本转义的请求中，每一个请求的header都放入HeaderManager中进行管理，该方法提取出header并封装到管理器中返回
      *
      * @param postmanRequest postman脚本转义过来的请求数据
-     * @param title          请求名称
+     * @param title 请求名称
      * @return HttpHeaderManager，封装了被管理的header
      */
     private HttpHeaderManager getHttpHeaderManager(PostmanRequest postmanRequest, String title) {

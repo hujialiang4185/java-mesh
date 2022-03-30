@@ -64,7 +64,8 @@ import javax.annotation.Resource;
 @Service
 public class ExecRecordHandlerFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExecRecordHandlerFactory.class);
-
+    private static final int RETRY_TIMES = 10;
+    private static final long RETRY_SLEEP_TIME = 1000L;
     @Autowired
     private EmergencyTaskService taskService;
 
@@ -78,7 +79,7 @@ public class ExecRecordHandlerFactory {
     private EmergencyExecRecordDetailMapper recordDetailMapper;
 
     @Autowired
-    EmergencyServerMapper serverMapper;
+    private EmergencyServerMapper serverMapper;
 
     @Resource(name = "passwordRestTemplate")
     private RestTemplate restTemplate;
@@ -90,10 +91,10 @@ public class ExecRecordHandlerFactory {
     private PasswordUtil passwordUtil;
 
     @Autowired
-    EmergencyElementMapper elementMapper;
+    private EmergencyElementMapper elementMapper;
 
     @Autowired
-    EmergencyTaskMapper taskMapper;
+    private EmergencyTaskMapper taskMapper;
 
     @Autowired
     private RestPerfTestController perfTestController;
@@ -118,86 +119,14 @@ public class ExecRecordHandlerFactory {
         return new ExecRecordDetailHandler(record, recordDetail);
     }
 
-    /**
-     * 脚本执行器
-     *
-     * @author y30010171
-     * @since 2021-11-04
-     **/
-    public class ExecRecordHandler implements Runnable {
-        private final EmergencyExecRecord currentRecord;
-
-        ExecRecordHandler(EmergencyExecRecord currentRecord) {
-            this.currentRecord = currentRecord;
-        }
-
-        @Override
-        public void run() {
-            EmergencyExecRecord record = recordMapper.selectByPrimaryKey(currentRecord.getRecordId());
-            int retryTimes = 10;
-            while (record == null && retryTimes > 0) { // 出现事务还未提交，此时查不到这条数据
-                try {
-                    Thread.sleep(1000);
-                    record = recordMapper.selectByPrimaryKey(currentRecord.getRecordId());
-                } catch (InterruptedException e) {
-                    LOGGER.error("interrupted while wait for exec recordId={}", record.getRecordId());
-                } finally {
-                    retryTimes--;
-                }
-            }
-            if (record == null) {
-                LOGGER.error("record was not commit. {}", record.getRecordId());
-                return;
-            }
-            try {
-                if (!RecordStatus.PENDING.getValue().equals(record.getStatus())) {
-                    LOGGER.error("record was canceled. {}", record.getRecordId());
-                    throw new ApiException("执行已取消.");
-                }
-                List<EmergencyExecRecordDetail> emergencyExecRecordDetails = generateRecordDetail(record);
-                EmergencyExecRecord finalRecord = record;
-                emergencyExecRecordDetails.forEach(recordDetail -> handle(finalRecord, recordDetail));
-            } catch (ApiException e) {
-                LOGGER.error("failed to generateRecordDetail. {}.{}", record.getRecordId(), e.getMessage());
-                EmergencyExecRecord errorRecord = new EmergencyExecRecord();
-                errorRecord.setRecordId(record.getRecordId());
-                errorRecord.setLog(e.getMessage());
-                errorRecord.setStatus(RecordStatus.FAILED.getValue());
-                recordMapper.updateByPrimaryKeySelective(errorRecord);
-                notifySceneRefresh(record.getExecId(), record.getSceneId());
-            }
-        }
-    }
-
-    /**
-     * 脚本任务分发执行器
-     *
-     * @author y30010171
-     * @since 2021-11-04
-     **/
-    public class ExecRecordDetailHandler implements Runnable {
-        private final EmergencyExecRecord record; // 任务信息
-        private final EmergencyExecRecordDetail recordDetail; // 任务分发明细
-
-        private ExecRecordDetailHandler(EmergencyExecRecord record, EmergencyExecRecordDetail recordDetail) {
-            this.record = record;
-            this.recordDetail = recordDetail;
-        }
-
-        @Override
-        public void run() {
-            handle(record, recordDetail);
-        }
-    }
-
-    public void handle(EmergencyExecRecord record, EmergencyExecRecordDetail recordDetail) {
+    public void exec(EmergencyExecRecord record, EmergencyExecRecordDetail recordDetail) {
         EmergencyExecRecordDetail updateRecordDetail = new EmergencyExecRecordDetail();
         updateRecordDetail.setDetailId(recordDetail.getDetailId());
         updateRecordDetail.setStartTime(new Date());
         updateRecordDetail.setStatus(RecordStatus.RUNNING.getValue());
         recordDetailMapper.updateByPrimaryKeySelective(updateRecordDetail); // 更新recordDetail的开始时间和状态
-        recordMapper.tryUpdateStartTime(record.getRecordId(), updateRecordDetail.getStartTime()); //更新record的开始时间
-        recordMapper.tryUpdateStatus(record.getRecordId()); //更新record的状态
+        recordMapper.tryUpdateStartTime(record.getRecordId(), updateRecordDetail.getStartTime()); // 更新record的开始时间
+        recordMapper.tryUpdateStatus(record.getRecordId()); // 更新record的状态
         ScriptExecInfo execInfo;
         try {
             execInfo = generateExecInfo(record, recordDetail); // 生成执行信息
@@ -208,7 +137,7 @@ public class ExecRecordHandlerFactory {
                 }
             } else {
                 if (record.getScriptContent() == null) {
-                    complete(record, recordDetail, ExecResult.success(""));
+                    complete(record, recordDetail, ExecResult.success("脚本内容为空"));
                     return;
                 }
                 if (execInfo.getRemoteServerInfo() == null) {
@@ -230,7 +159,6 @@ public class ExecRecordHandlerFactory {
             LOGGER.error("Failed to process script, {}", e.getMessage());
             complete(record, recordDetail, ExecResult.fail(e.getMessage()));
         } catch (Exception e) {
-            e.printStackTrace();
             LOGGER.error("Failed to exec detailId={}.{}", recordDetail.getDetailId(), e.getMessage());
             complete(record, recordDetail, ExecResult.fail(e.getMessage()));
         }
@@ -258,8 +186,8 @@ public class ExecRecordHandlerFactory {
             updateRecordDetail.setLog(execResult.getMsg());
             if (execResult.isError()) {
                 StringBuilder finalLog = new StringBuilder();
-                for (String s : LogMemoryStore.removeLog(recordDetail.getDetailId())) {
-                    finalLog.append(s).append(System.lineSeparator());
+                for (String log : LogMemoryStore.removeLog(recordDetail.getDetailId())) {
+                    finalLog.append(log).append(System.lineSeparator());
                 }
                 finalLog.append(execResult.getMsg());
                 updateRecordDetail.setLog(finalLog.toString());
@@ -274,6 +202,7 @@ public class ExecRecordHandlerFactory {
             } else {
                 recordMapper.tryUpdateEndTimeAndLog(record.getRecordId(), endTime, updateRecordDetail.getLog());
                 recordMapper.tryUpdateStatus(record.getRecordId());
+
                 // 执行成功 并且 当前record下所有的recordDetail都处于 执行成功 或者人工确认状态
                 if (execResult.isSuccess() && isRecordFinished(record.getRecordId())) {
                     if (record.getTaskId() != null) {
@@ -283,6 +212,7 @@ public class ExecRecordHandlerFactory {
                     }
                 }
             }
+
             // 清除实时日志的在内存中的日志残留
             LogMemoryStore.removeLog(recordDetail.getDetailId());
         } finally {
@@ -293,13 +223,14 @@ public class ExecRecordHandlerFactory {
     /**
      * 压测任务完成
      *
-     * @param record
-     * @param result
+     * @param record 执行记录
+     * @param detail 执行记录明细
+     * @param result 执行结果
      */
     public void completePerfTest(EmergencyExecRecord record, EmergencyExecRecordDetail detail, ExecResult result) {
         Date endTime = new Date();
         try {
-            Thread.sleep(3000); // 子任务可能出现与任务选择同一个agent，但是agent状态还处于busy未刷新
+            Thread.sleep(RETRY_SLEEP_TIME * 3); // 子任务可能出现与任务选择同一个agent，但是agent状态还处于busy未刷新
         } catch (InterruptedException e) {
             LOGGER.error("while waiting agent status refresh.", e);
         }
@@ -329,6 +260,7 @@ public class ExecRecordHandlerFactory {
                     sceneService.onComplete(record);
                 }
             }
+
             // 清除实时日志的在内存中的日志残留
             LogMemoryStore.removeLog(detail.getRecordId());
         } finally {
@@ -339,9 +271,9 @@ public class ExecRecordHandlerFactory {
     /**
      * 生成可执行的信息
      *
-     * @param record
-     * @param recordDetail
-     * @return
+     * @param record 执行记录
+     * @param recordDetail 执行记录明细
+     * @return {@link ScriptExecInfo} 可执行信息
      */
     public ScriptExecInfo generateExecInfo(EmergencyExecRecord record,
         EmergencyExecRecordDetail recordDetail) {
@@ -373,71 +305,65 @@ public class ExecRecordHandlerFactory {
     }
 
     /**
-     * 生成任务分发明细
+     * 根据选择执行的服务器信息来生成任务分发明细
      *
-     * @param record
-     * @return
+     * @param record 执行记录
+     * @return 执行记录明细
      */
     @Transactional(rollbackFor = Exception.class)
     public List<EmergencyExecRecordDetail> generateRecordDetail(EmergencyExecRecord record) {
         List<EmergencyExecRecordDetail> result = new ArrayList<>();
-        if (StringUtils.isNotEmpty(record.getServerId())) {
-            try {
-                List<Integer> serverIdList = Arrays.stream(record.getServerId().split(","))
-                    .map(Integer::valueOf)
-                    .collect(Collectors.toList());
-                EmergencyServerExample allServerExample = new EmergencyServerExample();
-                allServerExample.createCriteria()
-                    .andServerIdIn(serverIdList)
-                    .andIsValidEqualTo(ValidEnum.VALID.getValue());
-                List<EmergencyServer> serverList = filterServer(serverMapper.selectByExample(allServerExample));
-                if (serverList.size() == 0) {
-                    throw new ApiException("选择的agent服务器不可用");
-                }
-                for (EmergencyServer server : serverList) {
-                    if (server == null) {
-                        continue;
-                    }
-                    EmergencyExecRecordDetail recordDetail = new EmergencyExecRecordDetail();
-                    recordDetail.setExecId(record.getExecId());
-                    recordDetail.setRecordId(record.getRecordId());
-                    recordDetail.setStatus(RecordStatus.PENDING.getValue());
-                    recordDetail.setServerId(server.getServerId());
-                    recordDetail.setServerIp(server.getServerIp());
-                    if (record.getPerfTestId() != null) { // 如果是自定义脚本压测，根据此压测模板生成压测任务
-                        PerfTest perfTest = planService.copyPerfTestByTestId(record.getPerfTestId());
-                        perfTest.setAgentCount(1);
-                        List<Integer> agentIds = serverMapper.selectAgentIdsByServerIds(
-                            Arrays.asList(server.getServerId().toString()));
-                        if (agentIds.size() > 0) {
-                            perfTest.setAgentIds(agentIds.get(0).toString());
-                        }
-                        perfTestService.save(perfTest.getCreatedUser(), perfTest);
-                        recordDetail.setPerfTestId(perfTest.getId().intValue());
-                    }
-                    recordDetailMapper.insertSelective(recordDetail);
-                    result.add(recordDetail);
-                }
-            } catch (NumberFormatException e) {
-                LOGGER.error("parse record.serverId error,recordId={}. {}", record.getRecordId(), e.getMessage());
+        if (StringUtils.isEmpty(record.getServerId())) {
+            LOGGER.warn("The server list is empty. recordId={}", record.getRecordId());
+            return result;
+        }
+        try {
+            List<Integer> serverIdList = Arrays.stream(record.getServerId().split(","))
+                .map(Integer::valueOf)
+                .collect(Collectors.toList());
+            EmergencyServerExample allServerExample = new EmergencyServerExample();
+            allServerExample.createCriteria()
+                .andServerIdIn(serverIdList)
+                .andIsValidEqualTo(ValidEnum.VALID.getValue());
+            List<EmergencyServer> serverList = filterServer(serverMapper.selectByExample(allServerExample));
+            if (serverList.size() == 0) {
+                throw new ApiException("选择的agent服务器不可用");
             }
-        } else {
-            EmergencyExecRecordDetail recordDetail = new EmergencyExecRecordDetail();
-            recordDetail.setExecId(record.getExecId());
-            recordDetail.setRecordId(record.getRecordId());
-            recordDetail.setStatus(RecordStatus.PENDING.getValue());
-            recordDetail.setServerIp(record.getServerIp());
-            recordDetailMapper.insertSelective(recordDetail);
-            result.add(recordDetail);
+            for (EmergencyServer server : serverList) {
+                if (server == null) {
+                    continue;
+                }
+                EmergencyExecRecordDetail recordDetail = new EmergencyExecRecordDetail();
+                recordDetail.setExecId(record.getExecId());
+                recordDetail.setRecordId(record.getRecordId());
+                recordDetail.setStatus(RecordStatus.PENDING.getValue());
+                recordDetail.setServerId(server.getServerId());
+                recordDetail.setServerIp(server.getServerIp());
+                if (record.getPerfTestId() != null) { // 如果是自定义脚本压测，根据此压测模板生成压测任务
+                    PerfTest perfTest = planService.copyPerfTestByTestId(record.getPerfTestId());
+                    perfTest.setAgentCount(1);
+                    List<Integer> agentIds = serverMapper.selectAgentIdsByServerIds(
+                        Arrays.asList(server.getServerId().toString()));
+                    if (agentIds.size() > 0) {
+                        perfTest.setAgentIds(agentIds.get(0).toString());
+                    }
+                    perfTestService.save(perfTest.getCreatedUser(), perfTest);
+                    recordDetail.setPerfTestId(perfTest.getId().intValue());
+                }
+                recordDetailMapper.insertSelective(recordDetail);
+                result.add(recordDetail);
+            }
+        } catch (NumberFormatException e) {
+            LOGGER.error("parse record.serverId error,recordId={}. {}", record.getRecordId(), e.getMessage());
         }
         return result;
     }
 
     /**
-     * 选择分发的服务器
+     * 过滤需要分发的服务器
      *
-     * @param serverList
-     * @return
+     * @param serverList 服务器列表
+     * @return 过滤后的服务器列表
      */
     public List<EmergencyServer> filterServer(List<EmergencyServer> serverList) {
         return serverList;
@@ -448,7 +374,7 @@ public class ExecRecordHandlerFactory {
      *
      * @param mode 模式
      * @param source 密文
-     * @return
+     * @return 解密后的密码
      */
     public String parsePassword(String mode, String source) {
         if ("0".equals(mode)) {
@@ -466,7 +392,7 @@ public class ExecRecordHandlerFactory {
      * 判断此任务记录record是否已经完成，即判断该record下是否存在未完成的record_detail
      *
      * @param recordId record主键
-     * @return
+     * @return 是否完成
      */
     public boolean isRecordFinished(int recordId) {
         EmergencyExecRecordDetailExample isFinished = new EmergencyExecRecordDetailExample();
@@ -509,5 +435,77 @@ public class ExecRecordHandlerFactory {
         Map<String, Object> resultMap =
             perfTestController.startOne(user, perfTestId.longValue());
         return Boolean.parseBoolean(resultMap.getOrDefault(WebConstants.JSON_SUCCESS, "false").toString());
+    }
+
+    /**
+     * 脚本执行器
+     *
+     * @author y30010171
+     * @since 2021-11-04
+     **/
+    public class ExecRecordHandler implements Runnable {
+        private final EmergencyExecRecord currentRecord;
+
+        ExecRecordHandler(EmergencyExecRecord currentRecord) {
+            this.currentRecord = currentRecord;
+        }
+
+        @Override
+        public void run() {
+            EmergencyExecRecord record = recordMapper.selectByPrimaryKey(currentRecord.getRecordId());
+            int retryTimes = RETRY_TIMES;
+            while (record == null && retryTimes > 0) { // 出现事务还未提交，此时查不到这条数据
+                try {
+                    Thread.sleep(RETRY_SLEEP_TIME);
+                    record = recordMapper.selectByPrimaryKey(currentRecord.getRecordId());
+                } catch (InterruptedException e) {
+                    LOGGER.error("interrupted while wait for exec recordId={}", record.getRecordId());
+                } finally {
+                    retryTimes--;
+                }
+            }
+            if (record == null) {
+                LOGGER.error("record was not commit. {}", record.getRecordId());
+                return;
+            }
+            try {
+                if (!RecordStatus.PENDING.getValue().equals(record.getStatus())) {
+                    LOGGER.error("record was canceled. {}", record.getRecordId());
+                    throw new ApiException("执行已取消.");
+                }
+                List<EmergencyExecRecordDetail> emergencyExecRecordDetails = generateRecordDetail(record);
+                EmergencyExecRecord finalRecord = record;
+                emergencyExecRecordDetails.forEach(recordDetail -> exec(finalRecord, recordDetail));
+            } catch (ApiException e) {
+                LOGGER.error("failed to generateRecordDetail. {}.{}", record.getRecordId(), e.getMessage());
+                EmergencyExecRecord errorRecord = new EmergencyExecRecord();
+                errorRecord.setRecordId(record.getRecordId());
+                errorRecord.setLog(e.getMessage());
+                errorRecord.setStatus(RecordStatus.FAILED.getValue());
+                recordMapper.updateByPrimaryKeySelective(errorRecord);
+                notifySceneRefresh(record.getExecId(), record.getSceneId());
+            }
+        }
+    }
+
+    /**
+     * 脚本任务分发执行器
+     *
+     * @author y30010171
+     * @since 2021-11-04
+     **/
+    public class ExecRecordDetailHandler implements Runnable {
+        private final EmergencyExecRecord record; // 任务信息
+        private final EmergencyExecRecordDetail recordDetail; // 任务分发明细
+
+        private ExecRecordDetailHandler(EmergencyExecRecord record, EmergencyExecRecordDetail recordDetail) {
+            this.record = record;
+            this.recordDetail = recordDetail;
+        }
+
+        @Override
+        public void run() {
+            exec(record, recordDetail);
+        }
     }
 }

@@ -20,13 +20,17 @@ import com.huawei.common.constant.ScriptLanguageEnum;
 import com.huawei.common.constant.ScriptTypeEnum;
 import com.huawei.common.exception.ApiException;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.tools.ant.filters.StringInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 /**
@@ -56,25 +60,51 @@ public class Jsr223Util {
                 LOGGER.error("Can't not read script.", e);
             }
         } else if (languageEnum == ScriptLanguageEnum.JAVASCRIPT) {
+            context.getTemplate().addImport("import com.huawei.test.scriptexecutor.system.JavaScriptExecutor");
             context.getCurrentMethod()
-                .addContent(String.format(Locale.ROOT, JS_CONTENT_FORMAT, escape(script)), 2);
+                .addContent(String.format(Locale.ROOT, JS_CONTENT_FORMAT, parseScript(script)), 2);
         } else if (languageEnum == ScriptLanguageEnum.SHELL) {
+            context.getTemplate().addImport("import com.huawei.test.scriptexecutor.system.CommandService");
             context.getCurrentMethod()
-                .addContent(String.format(Locale.ROOT, SHELL_CONTENT_FORMAT, escape(script)), 2);
+                .addContent(String.format(Locale.ROOT, SHELL_CONTENT_FORMAT, parseScript(script)), 2);
         }
+    }
+
+    public static String parseScript(String source) {
+        if (StringUtils.isEmpty(source)) {
+            return "";
+        }
+        StringBuilder result = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new StringInputStream(source),
+            StandardCharsets.UTF_8));
+        String line;
+        try {
+            while ((line = reader.readLine()) != null) {
+                result.append(escape(line)).append(StringEscapeUtils.escapeJava(System.lineSeparator()));
+            }
+        } catch (IOException e) {
+            LOGGER.error("Exception occurs. Exception info:{}", e.getMessage());
+        } finally {
+            try {
+                reader.close();
+            } catch (IOException e) {
+                LOGGER.error("close BufferedReader error.", e);
+            }
+        }
+        return result.toString();
     }
 
     /**
      * 转义正则特殊字符 （$()*+.[]?\^{},|）
      *
-     * @param keyword
+     * @param source
      * @return
      */
-    public static String escape(String keyword) {
-        if (keyword == null) {
+    public static String escape(String source) {
+        if (source == null) {
             return "";
         }
-        return keyword.replaceAll("\\\\", "\\\\\\\\")
+        return source.replaceAll("\\\\", "\\\\\\\\")
             .replaceAll("\"", "\\\\\"");
     }
 }
