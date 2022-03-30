@@ -39,8 +39,11 @@ export default function App() {
             <div className="ToolBar">
                 <AddGroup load={load} />
                 <div className="Space"></div>
-                <Form layout="inline">
-                    <Form.Item name="keywords">
+                <Form layout="inline" onFinish={function (values) {
+                    stateRef.current.search = values
+                    load()
+                }}>
+                    <Form.Item name="group_name">
                         <Input placeholder="Keywords" />
                     </Form.Item>
                     <Button htmlType="submit" icon={<SearchOutlined />}>查找</Button>
