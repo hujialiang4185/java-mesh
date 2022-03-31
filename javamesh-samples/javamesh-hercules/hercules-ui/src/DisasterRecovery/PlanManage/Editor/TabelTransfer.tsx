@@ -10,7 +10,8 @@ export default function App(props: { onChange?: (value: Data[]) => void, value?:
     const [rightData, setRightData] = useState<Data[]>(props.value || [])
     const [loading, setLoading] = useState(false)
     const stateRef = useRef<any>({excludes: props.value?.map(function (item){ return item.server_id})})
-    const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([])
+    const [leftSelectedRowKeys, setLeftSelectedRowKeys] = useState<Key[]>([])
+    const [rightSelectedRowKeys, setRightSelectedRowKeys] = useState<Key[]>([])
     async function load() {
         setLoading(true)
         const params = {
@@ -25,7 +26,7 @@ export default function App(props: { onChange?: (value: Data[]) => void, value?:
         try {
             const res = await axios.get("/argus-emergency/api/host", { params })
             setLeftData(res.data)
-            setSelectedRowKeys([])
+            setLeftSelectedRowKeys([])
         } catch (error: any) {
             message.error(error.message)
         }
@@ -72,21 +73,11 @@ export default function App(props: { onChange?: (value: Data[]) => void, value?:
                 }}
                 pagination={{ total: leftData.total, size: "small", pageSize: 5, showTotal() { return `共 ${leftData.total} 条` }, showSizeChanger: false }}
                 rowSelection={{
-                    hideSelectAll: true,
-                    selectedRowKeys: selectedRowKeys,
-                    onSelect(record, selected) {
-                        const index = selectedRowKeys.indexOf(record.server_id)
-                        if (selected) {
-                            if (index === -1) {
-                                selectedRowKeys.push(record.server_id)
-                            } else {
-                                selectedRowKeys[index] = record.server_id
-                            }
-                        } else {
-                            selectedRowKeys.splice(index, 1)
-                        }
-                        setSelectedRowKeys([...selectedRowKeys])
-                        props.onItemSelect(record.server_id, selected)
+                    selectedRowKeys: leftSelectedRowKeys,
+                    onChange(selectedRowKeys) {
+                        props.onItemSelectAll(leftSelectedRowKeys as string[], false)
+                        setLeftSelectedRowKeys(selectedRowKeys)
+                        props.onItemSelectAll(selectedRowKeys as string[], true)
                     }
                 }}
                 columns={columns}
@@ -95,9 +86,11 @@ export default function App(props: { onChange?: (value: Data[]) => void, value?:
             return <Table size="small" rowKey="server_id" dataSource={rightData}
                 pagination={{ total: rightData.length, size: "small", pageSize: 5, showTotal() { return `共 ${rightData.length} 条` }, showSizeChanger: false }}
                 rowSelection={{
-                    hideSelectAll: true,
-                    onSelect(record, selected) {
-                        props.onItemSelect(record.server_id, selected)
+                    selectedRowKeys: rightSelectedRowKeys,
+                    onChange(selectedRowKeys) {
+                        props.onItemSelectAll(rightSelectedRowKeys as string[], false)
+                        setRightSelectedRowKeys(selectedRowKeys)
+                        props.onItemSelectAll(selectedRowKeys as string[], true)
                     }
                 }}
                 columns={columns}

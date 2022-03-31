@@ -3,7 +3,6 @@ import Checkbox from "antd/lib/checkbox/Checkbox"
 import { PlusCircleOutlined, MinusCircleOutlined } from '@ant-design/icons'
 import React, { useEffect, useRef, useState } from "react"
 import Editor from "@monaco-editor/react";
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import OSSUpload from "../OSSUpload"
 
 
@@ -215,7 +214,6 @@ export default function App(props: { type: String, onChange: () => void }) {
 function ScriptEditor(props: { onChange: () => void }) {
     const [language, setLanguage] = useState("")
     const radioRef = useRef<HTMLDivElement>(null)
-    const monacoRef = useRef<monaco.editor.IStandaloneCodeEditor>();
     useEffect(function () {
         setLanguage((radioRef.current?.querySelector(".ant-radio-checked > input") as HTMLInputElement).value)
     }, [])
@@ -224,13 +222,10 @@ function ScriptEditor(props: { onChange: () => void }) {
         <Form.Item name="language">
             <Radio.Group ref={radioRef} options={["shell", "javascript", "groovy",]} onChange={function (e) {
                 setLanguage(e.target.value)
-                monacoRef.current?.setValue("")
             }} />
         </Form.Item>
         <Form.Item name="script">
-            <Editor className="MonacoEditor" height={400} language={language} onChange={props.onChange} onMount={function(editor) {
-                monacoRef.current = editor
-            }}/>
+            <Editor className="MonacoEditor" height={400} language={language} onChange={props.onChange}/>
         </Form.Item>
     </>
 }
