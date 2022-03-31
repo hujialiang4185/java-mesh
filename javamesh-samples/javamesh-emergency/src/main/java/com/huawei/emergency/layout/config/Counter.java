@@ -41,7 +41,7 @@ public class Counter extends Config {
     private int end;
     private String format = "";
     private String name;
-    private boolean perUser = true;
+    private boolean perUser;
     private boolean resetOnEachThreadGroup;
 
     @Override
@@ -52,16 +52,16 @@ public class Counter extends Config {
         String configCreateStr;
         if (perUser) {
             currentClass.addFiled(GroovyFieldTemplate.create(
-                String.format(Locale.ROOT, "    def static %s = new CommonCounter();", counterName)));
+                String.format(Locale.ROOT, "    def %s = new CommonCounter();", counterName)));
             configCreateStr = String.format(Locale.ROOT, CONFIG_FORMAT, start, incr, end, format,
                 "SharingMode.CURRENT_THREAD", resetOnEachThreadGroup);
         } else {
             currentClass.addFiled(GroovyFieldTemplate.create(
-                String.format(Locale.ROOT, "    def static %s = new CommonCounter();", counterName)));
+                String.format(Locale.ROOT, "    def %s = new CommonCounter();", counterName)));
             configCreateStr = String.format(Locale.ROOT, CONFIG_FORMAT, start, incr, end, format,
                 "SharingMode.ALL_THREADS", resetOnEachThreadGroup);
         }
-        currentClass.getBeforeProcessMethod()
+        currentClass.getBeforeThreadMethod()
             .addContent(String.format(Locale.ROOT, "%s.initConfig(%s);", counterName, configCreateStr), 2);
         if (StringUtils.isNotEmpty(name)) { // 需要生成参数
             currentClass.addFiled(
