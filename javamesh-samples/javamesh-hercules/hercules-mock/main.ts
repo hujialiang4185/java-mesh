@@ -822,6 +822,9 @@ app.get("/argus-emergency/api/history", function (req, res) {
         total: 11
     })
 })
+app.delete("/argus-emergency/api/history", function (req, res) {
+    res.json()
+})
 app.get("/argus-emergency/api/history/get", function (req, res) {
     res.json({
         data: {
