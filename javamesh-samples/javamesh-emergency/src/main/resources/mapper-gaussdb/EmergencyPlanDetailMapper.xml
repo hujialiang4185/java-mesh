@@ -377,4 +377,16 @@
           AND t1.is_valid = '1'
           AND t1.task_id IS NOT NULL
     </select>
+
+    <select id="selectPlanByTaskId" resultType="com.huawei.emergency.entity.EmergencyPlan">
+        SELECT *
+        FROM emergency_plan
+        WHERE plan_id IN (
+            SELECT DISTINCT plan_id
+            FROM emergency_plan_detail t1
+            WHERE t1.task_id = #{taskId}
+               OR t1.scene_id = #{taskId}
+                AND t1.is_valid = '1')
+          and is_valid = '1'
+    </select>
 </mapper>

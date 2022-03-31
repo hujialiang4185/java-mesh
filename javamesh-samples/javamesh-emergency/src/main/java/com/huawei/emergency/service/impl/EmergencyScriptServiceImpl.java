@@ -339,13 +339,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             throw new ApiException("请选择正确的脚本语言");
         }
         script.setScriptType(scriptType.getValue());
-
-        // 如果是dev或test则不需要提审审核脚本
-        if (MODE_DEV.equals(mode) || MODE_TEST.equals(mode)) {
-            script.setScriptStatus(TYPE_TWO);
-        } else {
-            script.setScriptStatus(TYPE_ZERO);
-        }
+        updateStatusByMode(script);
         if (StringUtils.isEmpty(script.getSubmitInfo())) {
             script.setSubmitInfo("");
         }
@@ -367,13 +361,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         updateScript.setScriptId(script.getScriptId());
         updateScript.setContent(script.getContent());
         updateScript.setParam(script.getParam());
-
-        // 如果是dev或test则不需要提审审核脚本
-        if (MODE_DEV.equals(mode) || MODE_TEST.equals(mode)) {
-            updateScript.setScriptStatus(TYPE_TWO);
-        } else {
-            updateScript.setScriptStatus(TYPE_ZERO);
-        }
+        updateStatusByMode(updateScript);
         updateScript.setUpdateTime(Timestamp.from(Instant.now()));
         if (script instanceof ScriptManageDto) {
             ScriptManageDto scriptManageDto = (ScriptManageDto) script;
@@ -552,7 +540,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         newScript.setHavePassword(TYPE_ZERO);
         newScript.setContent("");
         newScript.setScriptUser(user.getUserName());
-        newScript.setScriptStatus(TYPE_ZERO);
+        updateStatusByMode(newScript);
         newScript.setScriptGroup(user.getGroup());
         newScript.setUpdateTime(Timestamp.from(Instant.now()));
         mapper.insertSelective(newScript);
@@ -631,7 +619,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             EmergencyScript script = new EmergencyScript();
             script.setScriptId(treeResponse.getScriptId());
             script.setContent(scriptContent);
-            script.setScriptStatus(TYPE_ZERO);
+            updateStatusByMode(script);
             script.setUpdateTime(Timestamp.from(Instant.now()));
             mapper.updateByPrimaryKeySelective(script);
             freshGrinderScript(script.getScriptId()); // 更新ngrinder
@@ -642,6 +630,15 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         } catch (IOException e) {
             log.error("Failed to print script.{}", e);
             return CommonResult.failed("输出编排脚本失败");
+        }
+    }
+
+    public void updateStatusByMode(EmergencyScript script) {
+        // 如果是dev或test则不需要提审审核脚本
+        if (MODE_DEV.equals(mode) || MODE_TEST.equals(mode)) {
+            script.setScriptStatus(TYPE_TWO);
+        } else {
+            script.setScriptStatus(TYPE_ZERO);
         }
     }
 

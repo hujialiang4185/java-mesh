@@ -20,7 +20,9 @@ import com.huawei.emergency.layout.ElementProcessContext;
 import com.huawei.emergency.layout.template.GroovyClassTemplate;
 import com.huawei.emergency.layout.template.GroovyFieldTemplate;
 import com.huawei.emergency.layout.template.GroovyMethodTemplate;
+
 import lombok.Data;
+
 import org.apache.commons.lang.StringUtils;
 
 import java.util.Locale;
@@ -39,7 +41,7 @@ public class Counter extends Config {
     private int end;
     private String format = "";
     private String name;
-    private boolean perUser = true;
+    private boolean perUser;
     private boolean resetOnEachThreadGroup;
 
     @Override
@@ -49,15 +51,21 @@ public class Counter extends Config {
         String counterName = String.format(Locale.ROOT, NAME_FORMAT, context.getVariableCount());
         String configCreateStr;
         if (perUser) {
-            currentClass.addFiled(GroovyFieldTemplate.create(String.format(Locale.ROOT, "    def static %s = new CommonCounter();", counterName)));
-            configCreateStr = String.format(Locale.ROOT, CONFIG_FORMAT, start, incr, end, format, "SharingMode.ALL_THREADS", resetOnEachThreadGroup);
+            currentClass.addFiled(GroovyFieldTemplate.create(
+                String.format(Locale.ROOT, "    def %s = new CommonCounter();", counterName)));
+            configCreateStr = String.format(Locale.ROOT, CONFIG_FORMAT, start, incr, end, format,
+                "SharingMode.CURRENT_THREAD", resetOnEachThreadGroup);
         } else {
-            currentClass.addFiled(GroovyFieldTemplate.create(String.format(Locale.ROOT, "    def static %s = new CommonCounter();", counterName)));
-            configCreateStr = String.format(Locale.ROOT, CONFIG_FORMAT, start, incr, end, format, "SharingMode.CURRENT_THREAD", resetOnEachThreadGroup);
+            currentClass.addFiled(GroovyFieldTemplate.create(
+                String.format(Locale.ROOT, "    def %s = new CommonCounter();", counterName)));
+            configCreateStr = String.format(Locale.ROOT, CONFIG_FORMAT, start, incr, end, format,
+                "SharingMode.ALL_THREADS", resetOnEachThreadGroup);
         }
-        currentClass.getBeforeProcessMethod().addContent(String.format(Locale.ROOT, "%s.initConfig(%s);", counterName, configCreateStr), 2);
+        currentClass.getBeforeThreadMethod()
+            .addContent(String.format(Locale.ROOT, "%s.initConfig(%s);", counterName, configCreateStr), 2);
         if (StringUtils.isNotEmpty(name)) { // 需要生成参数
-            currentClass.addFiled(GroovyFieldTemplate.create(String.format(Locale.ROOT, "def static %s;", name, counterName)));
+            currentClass.addFiled(
+                GroovyFieldTemplate.create(String.format(Locale.ROOT, "def static %s;", name, counterName)));
             currentMethod.addContent(String.format(Locale.ROOT, "%s = %s.nextNumber();", name, counterName), 2);
         } else {
             currentMethod.addContent(String.format(Locale.ROOT, "%s.nextNumber();", counterName), 2);

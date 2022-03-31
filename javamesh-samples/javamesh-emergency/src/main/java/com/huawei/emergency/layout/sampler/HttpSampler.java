@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * http 取样器
@@ -38,12 +40,15 @@ import java.util.Locale;
  **/
 @Data
 public class HttpSampler extends Sampler {
-
+    /**
+     * 支持的http请求
+     */
     public static final List<String> ALL_METHODS = Arrays.asList("GET", "POST", "PUT", "DELETE", "TRACE", "HEAD",
         "OPTIONS");
+    public static final Pattern PARAMETER_PATTERN = Pattern.compile("#\\{(\\w+)}");
     private String protocol = "http";
     private String domain;
-    private int port;
+    private String port;
     private String method;
     private String path;
     private String contentEncoding;
@@ -62,20 +67,18 @@ public class HttpSampler extends Sampler {
             method.toUpperCase(Locale.ROOT))) {
             return;
         }
-        /*
-        // todo 使用自定义dns解析器
-        String url = path;
-        for (DnsCacheManager dnsCacheManager : context.getDnsCacheManagers()) {
-            url = dnsCacheManager.resolver(url);
-        }*/
         GroovyMethodTemplate currentMethod = context.getCurrentMethod();
         String requestVariableName = "request" + context.getVariableCount();
         if (StringUtils.isNotEmpty(path) && path.startsWith("/")) {
             path = path.substring(1);
         }
-        String url = String.format(Locale.ROOT, "%s://%s:%s/%s", protocol, domain, port, path);
+        String url = String.format(Locale.ROOT, "\"%s://\"+\"%s\" + \":\" + \"%s\" + \"/\" + \"%s\"",
+            protocol,
+            parameterized(domain),
+            parameterized(port),
+            parameterized(path));
         currentMethod.addContent(String.format(Locale.ROOT, "def %s = new HTTPRequest();", requestVariableName), 2);
-        currentMethod.addContent(String.format(Locale.ROOT, "%s.setUrl(\"%s\");", requestVariableName, url), 2);
+        currentMethod.addContent(String.format(Locale.ROOT, "%s.setUrl(%s);", requestVariableName, url), 2);
         currentMethod.addContent(
             String.format(Locale.ROOT, "%s.setHeaders( headers as NVPair[]);", requestVariableName), 2);
         currentMethod.addContent(String.format(Locale.ROOT, "%s.setData(%s);", requestVariableName, generateBodyData()),
@@ -94,7 +97,8 @@ public class HttpSampler extends Sampler {
         StringBuilder result = new StringBuilder("[");
         for (HttpRequestDefault.Parameters parameter : parameters) {
             result.append(
-                String.format(Locale.ROOT, "new NVPair(\"%s\", \"%s\"),", parameter.getName(), parameter.getValue()));
+                String.format(Locale.ROOT, "new NVPair(\"%s\", \"%s\"),", parameterized(parameter.getName()),
+                    parameterized(parameter.getValue())));
         }
         if (result.length() > 1) {
             result.delete(result.length() - 1, result.length());
@@ -103,6 +107,16 @@ public class HttpSampler extends Sampler {
     }
 
     private String generateBodyData() {
-        return String.format(Locale.ROOT, "\"%s\".bytes", Jsr223Util.escape(body));
+        return String.format(Locale.ROOT, "\"%s\".bytes", Jsr223Util.parseScript(body));
+    }
+
+    private static String parameterized(String source) {
+        Matcher matcher = PARAMETER_PATTERN.matcher(source);
+        StringBuffer result = new StringBuffer();
+        while (matcher.find()) {
+            matcher.appendReplacement(result, "\"+" + matcher.group(1) + "+\"");
+        }
+        matcher.appendTail(result);
+        return result.toString();
     }
 }

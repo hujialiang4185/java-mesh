@@ -16,6 +16,7 @@
 
 package com.huawei.emergency.layout.custom;
 
+import com.huawei.common.exception.ApiException;
 import com.huawei.emergency.layout.ElementProcessContext;
 import com.huawei.emergency.layout.TestElement;
 import com.huawei.emergency.layout.template.GroovyMethodTemplate;
@@ -35,12 +36,13 @@ import java.util.Locale;
 @Data
 public class CustomMethodTestElement extends TestElement {
     private String script;
+    private String methodName;
     private GroovyMethodTemplate method;
 
     @Override
     public void handle(ElementProcessContext context) {
-        if (StringUtils.isEmpty(getTitle())) {
-            throw new RuntimeException("请输入方法名称");
+        if (StringUtils.isEmpty(methodName)) {
+            throw new ApiException("请输入方法名称");
         }
         if (StringUtils.isNotEmpty(script)) {
             if (context.getTemplate().containsMethod(getMethod().getMethodName())) {
@@ -54,9 +56,9 @@ public class CustomMethodTestElement extends TestElement {
     public GroovyMethodTemplate getMethod() {
         if (method == null) {
             method = new GroovyMethodTemplate()
-                .start(String.format(Locale.ROOT, "public void \"%s\"() {", getTitle()), 1)
+                .start(String.format(Locale.ROOT, "public void \"%s\"() {", getMethodName()), 1)
                 .end("}", 1);
-            method.setMethodName(getTitle());
+            method.setMethodName(getMethodName());
         }
         return method;
     }
