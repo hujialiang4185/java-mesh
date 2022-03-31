@@ -313,9 +313,18 @@ public class ExecRecordHandlerFactory {
     @Transactional(rollbackFor = Exception.class)
     public List<EmergencyExecRecordDetail> generateRecordDetail(EmergencyExecRecord record) {
         List<EmergencyExecRecordDetail> result = new ArrayList<>();
+        if (record.getTaskId() == null) { // 场景记录
+            EmergencyExecRecordDetail recordDetail = new EmergencyExecRecordDetail();
+            recordDetail.setExecId(record.getExecId());
+            recordDetail.setRecordId(record.getRecordId());
+            recordDetail.setStatus(RecordStatus.PENDING.getValue());
+            recordDetailMapper.insertSelective(recordDetail);
+            result.add(recordDetail);
+            return result;
+        }
         if (StringUtils.isEmpty(record.getServerId())) {
             LOGGER.warn("The server list is empty. recordId={}", record.getRecordId());
-            return result;
+            throw new ApiException("未选择执行的agent");
         }
         try {
             List<Integer> serverIdList = Arrays.stream(record.getServerId().split(","))
