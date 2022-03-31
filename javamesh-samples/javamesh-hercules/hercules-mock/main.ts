@@ -750,6 +750,9 @@ app.post("/argus-emergency/api/plan/submitReview", function (req, res) {
 app.post("/argus-emergency/api/plan/cancel", function (req, res) {
     res.json()
 })
+app.post("/argus-emergency/api/plan/stop", function (req, res) {
+    res.json()
+})
 app.put("/argus-emergency/api/plan", function (req, res) {
     res.json()
 })

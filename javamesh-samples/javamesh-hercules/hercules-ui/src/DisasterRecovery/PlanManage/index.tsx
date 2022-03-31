@@ -149,6 +149,17 @@ function Home() {
                                 </Link>}
                                 {record.auditable && <ApprovePlan plan_id={plan_id} load={load} />}
                                 {record.status === "unapproved" && auth.includes("operator") && <SubmitReview load={load} group_id={record.group_id} plan_id={plan_id} />}
+                                {record.status === "running" && auth.includes("operator") && <Popconfirm title="是否停止?" onConfirm={async function () {
+                                    try {
+                                        await axios.post("/argus-emergency/api/plan/stop", { plan_id })
+                                        message.success("停止成功")
+                                        load()
+                                    } catch (error: any) {
+                                        message.error(error.message)
+                                    }
+                                }}>
+                                    <Button type="link" size="small">停止</Button>
+                                </Popconfirm>}
                                 {(record.status === "approved" || record.status === "ran") && auth.includes("operator") && <Button type="link" size="small" onClick={async function () {
                                     if (submit) return
                                     submit = true
