@@ -381,7 +381,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             try {
                 nextTriggerTime = Long.valueOf(plan.getScheduleConf());
                 if (System.currentTimeMillis() > nextTriggerTime) {
-                    return CommonResult.failed("请设置正确的执行时间");
+                    return CommonResult.failed("启动时间不得早于当前时间");
                 }
             } catch (NumberFormatException e) {
                 return CommonResult.failed("请设置正确的执行时间");

@@ -137,7 +137,7 @@ public class ExecRecordHandlerFactory {
                 }
             } else {
                 if (record.getScriptContent() == null) {
-                    complete(record, recordDetail, ExecResult.success("脚本内容为空"));
+                    complete(record, recordDetail, ExecResult.success("脚本为空"));
                     return;
                 }
                 if (execInfo.getRemoteServerInfo() == null) {

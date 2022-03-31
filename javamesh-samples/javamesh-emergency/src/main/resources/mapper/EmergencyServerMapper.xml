@@ -40,7 +40,7 @@
                                 <when test="criterion.listValue">
                                     and ${criterion.condition}
                                     <foreach close=")" collection="criterion.value" item="listItem" open="("
-                                             separator=",">
+                                            separator=",">
                                         #{listItem}
                                     </foreach>
                                 </when>
@@ -70,7 +70,7 @@
                                 <when test="criterion.listValue">
                                     and ${criterion.condition}
                                     <foreach close=")" collection="criterion.value" item="listItem" open="("
-                                             separator=",">
+                                            separator=",">
                                         #{listItem}
                                     </foreach>
                                 </when>
@@ -462,12 +462,12 @@
         </if>
         order by create_time desc
     </select>
-
     <select id="selectAgentIdsByServerIds" resultType="java.lang.Integer">
         select t2.id
         from emergency_server t1, AGENT t2
         where t1.is_valid = '1'
-          and t1.server_ip = t2.ip
+        and t2.state != 'INACTIVE'
+        and t1.server_ip = t2.ip
         <if test=" allServerIds != null and allServerIds.size > 0">
             and t1.server_id in
             <foreach close=")" collection="allServerIds" index="index" item="serverId" open="(" separator=",">
