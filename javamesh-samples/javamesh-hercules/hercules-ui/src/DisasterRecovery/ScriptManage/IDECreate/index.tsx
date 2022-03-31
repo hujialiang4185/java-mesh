@@ -110,7 +110,7 @@ export default function App() {
                                         return <div key={item.key} className="FormList">
                                             <Form.Item name={[item.name, "key"]} rules={[{ max: 32 }]}><Input /></Form.Item>
                                             <span className="Equal">=</span>
-                                            <Form.Item name={[item.name, "value"]} rules={[{ max: 32 }]} style={{ width: 100 }}><Input /></Form.Item>
+                                            <Form.Item name={[item.name, "value"]} rules={[{ max: 256 }]} style={{ width: 100 }}><Input /></Form.Item>
                                             <Form.Item name={[item.name, "value_a"]} rules={[{ max: 32 }]} style={{ width: 100 }}><Input placeholder="host" /></Form.Item>
                                             <Form.Item name={[item.name, "value_b"]} rules={[{ max: 32 }]} style={{ width: 100 }}><Input placeholder="path" /></Form.Item>
                                             {item.key !== 0 && <MinusCircleOutlined onClick={function () {

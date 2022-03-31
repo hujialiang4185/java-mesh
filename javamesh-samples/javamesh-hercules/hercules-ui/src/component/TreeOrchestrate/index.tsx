@@ -15,14 +15,14 @@ type Data = {
 export type Values = {
     tree: Data, map: Map<Key, any>
 }
-function loop(data: Data[], key: Key, callback: (data: Data, i: number, gData: Data[]) => void) {
+function loop(data: Data[], key: Key, callback: (data: Data, i: number, gData: Data[], parent?: Data) => void, parent?: Data) {
     for (let i = 0; i < data.length; i++) {
         if (data[i].key === key) {
-            return callback(data[i], i, data);
+            return callback(data[i], i, data, parent);
         }
         const children = data[i].children
         if (children) {
-            loop(children, key, callback);
+            loop(children, key, callback, data[i]);
         }
     }
 };
@@ -107,17 +107,25 @@ export default class App extends React.Component<{ initialValues: () => Promise<
                 <Tree className="Tree" defaultExpandParent draggable autoExpandParent defaultExpandAll selectedKeys={[this.state.selected]}
                     treeData={[this.state.tree].map(this.renderTree)}
                     onDrop={info => {
+                        const data = [this.state.tree];
                         const dropKey = info.node.key;
                         const dragKey = info.dragNode.key;
                         const dropPosition = info.dropPosition;
                         // 不符合关系要求
-                        const dropType = dropKey.toString().slice(14)
+                        let dropType = dropKey.toString().slice(14)
                         const dragType = dragKey.toString().slice(14)
+                        if (info.dropToGap) {
+                            loop(data, dropKey, (data, i, gData, parent) => {
+                                if (!parent) {
+                                    return
+                                }
+                                dropType = parent.key.toString().slice(14)
+                            })
+                        }
                         if (!rules.get(dropType)?.has(dragType)) {
                             return
                         }
 
-                        const data = [this.state.tree];
                         // Find dragObject
                         let dragObj: Data = { key: "" };
                         loop(data, dragKey, (item, index, arr) => {
