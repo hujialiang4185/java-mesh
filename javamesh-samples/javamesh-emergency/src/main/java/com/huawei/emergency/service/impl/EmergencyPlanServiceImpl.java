@@ -177,13 +177,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         insertPlan.setCreateUser(emergencyPlan.getCreateUser());
         insertPlan.setPlanGroup(emergencyPlan.getPlanGroup());
         insertPlan.setUpdateTime(new Date());
-
-        // 如果是dev或test则不需要提审审核脚本
-        if (MODE_DEV.equals(mode) || MODE_TEST.equals(mode)) {
-            insertPlan.setStatus(PlanStatus.APPROVED.getValue());
-        } else {
-            insertPlan.setStatus(PlanStatus.NEW.getValue());
-        }
+        updateStatusByMode(insertPlan);
         planMapper.insertSelective(insertPlan);
         EmergencyPlan updatePlanNo = new EmergencyPlan();
         updatePlanNo.setPlanId(insertPlan.getPlanId());
@@ -680,13 +674,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
 
         EmergencyPlan updatePlan = new EmergencyPlan();
         updatePlan.setPlanId(planId);
-
-        // 如果是dev或test则不需要提审审核脚本
-        if (MODE_DEV.equals(mode) || MODE_TEST.equals(mode)) {
-            updatePlan.setStatus(PlanStatus.APPROVED.getValue());
-        } else {
-            updatePlan.setStatus(PlanStatus.NEW.getValue());
-        }
+        updateStatusByMode(updatePlan);
         updatePlan.setUpdateTime(new Date());
         planMapper.updateByPrimaryKeySelective(updatePlan);
         taskMapper.tryClearTaskNo(planId);
@@ -981,5 +969,14 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             throw new RuntimeException("最大子任务数量不能超过99");
         }
         return result;
+    }
+
+    public void updateStatusByMode(EmergencyPlan plan) {
+        // 如果是dev或test则不需要提审审核脚本
+        if (MODE_DEV.equals(mode) || MODE_TEST.equals(mode)) {
+            plan.setStatus(PlanStatus.APPROVED.getValue());
+        } else {
+            plan.setStatus(PlanStatus.NEW.getValue());
+        }
     }
 }
