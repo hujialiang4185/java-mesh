@@ -51,7 +51,7 @@ export default function App(props: { type: String, onChange: () => void }) {
                 <Row gutter={24}>
                     <Col span="6">
                         <Form.Item label="协议" name="protocol">
-                            <Select options={[{ value: "http" }]} />
+                            <Select options={[{ value: "http" }]} onChange={props.onChange} />
                         </Form.Item>
                     </Col>
                     <Col span="12">
@@ -69,7 +69,7 @@ export default function App(props: { type: String, onChange: () => void }) {
                 <Row gutter={24}>
                     <Col span="6">
                         <Form.Item name="method">
-                            <Select options={[{ value: "GET" }, { value: "POST" }, { value: "PUT" }, { value: "DELETE" }, { value: "TRACE" }, { value: "HEAD" }, { value: "OPTIONS" }]} onChange={props.onChange}/>
+                            <Select options={[{ value: "GET" }, { value: "POST" }, { value: "PUT" }, { value: "DELETE" }, { value: "TRACE" }, { value: "HEAD" }, { value: "OPTIONS" }]} onChange={props.onChange} />
                         </Form.Item>
                     </Col>
                     <Col span="12">
@@ -173,7 +173,7 @@ export default function App(props: { type: String, onChange: () => void }) {
                     <OSSUpload max={1} mark='&path=resource' onChange={props.onChange} />
                 </Form.Item>
                 <Form.Item label="文件编码" name="file_encoding">
-                    <Select options={[{ value: "UTF-8" }, { value: "UTF-16" }, { value: "ISO-8859-15" }, { value: "US-ASCII" }]} />
+                    <Select options={[{ value: "UTF-8" }, { value: "UTF-16" }, { value: "ISO-8859-15" }, { value: "US-ASCII" }]} onChange={props.onChange} />
                 </Form.Item>
                 <Form.Item label="变量名称(西文逗号间隔)" name="variable_names">
                     <Input />
@@ -194,7 +194,7 @@ export default function App(props: { type: String, onChange: () => void }) {
                     <Checkbox />
                 </Form.Item>
                 <Form.Item label="线程共享模式" name="share_mode">
-                    <Select options={[{ value: "ALL_THREADS" }, { value: "CURRENT_AGENT" }, { value: "CURRENT_PROCESS" }, { value: "CURRENT_THREAD" }]} />
+                    <Select options={[{ value: "ALL_THREADS" }, { value: "CURRENT_AGENT" }, { value: "CURRENT_PROCESS" }, { value: "CURRENT_THREAD" }]} onChange={props.onChange} />
                 </Form.Item>
             </>
         case "HTTPCookieManager":
@@ -225,7 +225,7 @@ function ScriptEditor(props: { onChange: () => void }) {
             }} />
         </Form.Item>
         <Form.Item name="script">
-            <Editor className="MonacoEditor" height={400} language={language} onChange={props.onChange}/>
+            <Editor className="MonacoEditor" height={400} language={language} onChange={props.onChange} />
         </Form.Item>
     </>
 }
