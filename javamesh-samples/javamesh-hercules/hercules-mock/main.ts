@@ -678,7 +678,11 @@ app.get("/argus-emergency/api/plan", function (req, res) {
                 expand: [
                     {
                         key: 2, scena_name: "场景一", task_name: "任务一", channel_type: "SSH",
-                        script_name: "C01T01.sh", submit_info: "提交信息", test_id: 1
+                        script_name: "C01T01.sh", submit_info: "提交信息", test_id: 1,
+                        service_id: [
+                            { server_id: 0, server_name: "服务名称0", server_ip: "192.168.0.1" },
+                            { server_id: 1, server_name: "服务名称1", server_ip: "192.168.0.1" }
+                        ], vuser: 100
                     },
                     {
                         key: 3, scena_name: "场景一", task_name: "任务一",
@@ -774,7 +778,10 @@ app.get("/argus-emergency/api/plan/task", function (req, res) {
                 script_name: "1.sh",
                 submit_info: "xxx",
                 sync: "同步",
-                service_id: [{ server_id: 0, server_name: "服务名称0", server_ip: "192.168.0.1" }],
+                service_id: [
+                    { server_id: 0, server_name: "服务名称0", server_ip: "192.168.0.1" },
+                    { server_id: 1, server_name: "服务名称1", server_ip: "192.168.0.1" }
+                ],
                 children: [{
                     key: 3,
                     title: "任务3",
