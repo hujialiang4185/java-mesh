@@ -770,7 +770,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
                 script.getScriptName(), scriptLanguage.getLanguage(), scriptManageDto.isHasResource(),
                 JSONObject.toJSONString(scriptManageDto)));
         script.setScriptUser(user.getUserName());
-        script.setScriptStatus(TYPE_ZERO);
+        updateStatusByMode(script);
         script.setUpdateTime(Timestamp.from(Instant.now()));
         script.setScriptGroup(user.getGroup());
         mapper.insertSelective(script);
