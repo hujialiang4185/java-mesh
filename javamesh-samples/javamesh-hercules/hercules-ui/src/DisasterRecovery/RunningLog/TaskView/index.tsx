@@ -17,11 +17,9 @@ export default function App() {
 
     useEffect(function () {
         const interval = setInterval(load, 5000)
-        let clear = false
         async function load() {
             try {
                 const res = await axios.get("/argus-emergency/api/task/view", { params: { test_id } })
-                if (clear) return
                 setData(res.data.data)
             } catch (error: any) {
                 clearInterval(interval)
@@ -30,7 +28,6 @@ export default function App() {
         }
         load()
         return function () {
-            clear = true
             clearInterval(interval)
         }
     }, [test_id])
@@ -126,7 +123,10 @@ function BusinessCharts() {
             setData(res.data.data)
         }
         load()
-        setInterval(load, 5000)
+        const interval = setInterval(load, 5000)
+        return function() {
+            clearInterval(interval)
+        }
     }, [test_id])
     return <Table dataSource={data} size="small" rowKey="transaction" pagination={false} columns={[
         { title: "事务名称", dataIndex: "transaction" },
