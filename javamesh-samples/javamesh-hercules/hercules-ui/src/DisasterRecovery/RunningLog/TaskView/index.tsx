@@ -5,9 +5,9 @@ import axios from "axios";
 import moment from "moment";
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
-import Breadcrumb from "../Breadcrumb";
-import Card from "../Card";
-import ServiceSelect from "../ServiceSelect";
+import Breadcrumb from "../../../component/Breadcrumb";
+import Card from "../../../component/Card";
+import ServiceSelect from "../../../component/ServiceSelect";
 import "./index.scss"
 
 export default function App() {

@@ -15,7 +15,7 @@ import ApproveFormItems from "../ApproveFormItems"
 import { useForm } from "antd/lib/form/Form"
 import socket from "../socket"
 import { debounce } from "lodash"
-import TaskView from "../../component/TaskView"
+import TaskView from "../RunningLog/TaskView"
 
 export default function App() {
     const { path } = useRouteMatch();

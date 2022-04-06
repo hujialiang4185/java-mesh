@@ -8,7 +8,7 @@ import axios from "axios"
 import { Link, Route, Switch, useLocation, useRouteMatch } from "react-router-dom"
 import Editor from "@monaco-editor/react";
 import { debounce } from 'lodash';
-import TaskView from "../../../component/TaskView"
+import TaskView from "../TaskView"
 
 export default function App() {
     const { path } = useRouteMatch();

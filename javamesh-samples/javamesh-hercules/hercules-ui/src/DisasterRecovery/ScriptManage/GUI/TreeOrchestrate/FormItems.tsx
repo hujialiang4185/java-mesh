@@ -3,7 +3,7 @@ import Checkbox from "antd/lib/checkbox/Checkbox"
 import { PlusCircleOutlined, MinusCircleOutlined } from '@ant-design/icons'
 import React, { useEffect, useRef, useState } from "react"
 import Editor from "@monaco-editor/react";
-import OSSUpload from "../OSSUpload"
+import OSSUpload from "../../../../component/OSSUpload";
 
 
 function defaultFieldsValues(type: string) {
