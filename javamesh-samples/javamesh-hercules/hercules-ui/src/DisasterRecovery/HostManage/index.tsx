@@ -208,7 +208,7 @@ function AddHost(props: { load: () => void }) {
                         props.load()
                         message.success("创建成功")
                     } catch (error: any) {
-                        message.error("创建失败")
+                        message.error(error.message)
                     }
                 }}
             >

@@ -88,8 +88,8 @@ export default function App() {
                     await axios.post("/argus-user/api/user/batchDeactive", { username: selectedRowKeys })
                     message.success("禁用成功")
                     load()
-                } catch (e: any) {
-                    message.error(e.message)
+                } catch (error: any) {
+                    message.error(error.message)
                 }
             }
         })
