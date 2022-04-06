@@ -116,17 +116,13 @@ export default function App() {
 function BusinessCharts() {
     const [data, setData] = useState()
     const urlSearchParams = new URLSearchParams(useLocation().search)
-    const test_id = urlSearchParams.get("test_id")
+    const test_id = urlSearchParams.get("test_id") || ""
+    async function load(test_id: string) {
+        const res = await axios.get('/argus-emergency/api/task/service', { params: { test_id } })
+        setData(res.data.data)
+    }
     useEffect(function () {
-        async function load() {
-            const res = await axios.get('/argus-emergency/api/task/service', { params: { test_id } })
-            setData(res.data.data)
-        }
-        load()
-        const interval = setInterval(load, 5000)
-        return function() {
-            clearInterval(interval)
-        }
+        load(test_id)
     }, [test_id])
     return <Table dataSource={data} size="small" rowKey="transaction" pagination={false} columns={[
         { title: "事务名称", dataIndex: "transaction" },
