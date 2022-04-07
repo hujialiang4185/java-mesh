@@ -1,4 +1,4 @@
-import { Button, DatePicker, Form, Input, Table } from "antd"
+import { Button, DatePicker, Form, Input, message, Table } from "antd"
 import axios from "axios"
 import React from "react"
 import { useEffect, useRef, useState } from "react"
@@ -6,30 +6,125 @@ import { useLocation } from "react-router-dom"
 import { debounce } from 'lodash'
 import * as echarts from 'echarts'
 import "./BusinessCharts.scss"
+import { Moment } from "moment"
 
 export default function BusinessCharts() {
     const [services, setServices] = useState()
     const urlSearchParams = new URLSearchParams(useLocation().search)
     const test_id = urlSearchParams.get("test_id") || ""
     const tpsRef = useRef(null)
+    const userRef = useRef(null)
+    const meanRef = useRef(null)
     const chartsRef = useRef<{
-        tps: echarts.ECharts
+        tps: echarts.ECharts,
+        user: echarts.ECharts,
+        mean: echarts.ECharts
     }>()
-    async function load(test_id: string) {
-        const res = await axios.get('/argus-emergency/api/task/service', { params: { test_id } })
-        setServices(res.data.data)
+    async function load(test_id: string, values?: { end?: Moment, start?: number, step?: string }) {
+        try {
+            const end = values?.end ? values.end.valueOf() : new Date().getTime()
+            const start = end - (values?.start || 3600000)
+            const step = values?.step?.replace(/[^0-9]/ig, "");
+            const metricsRes = await axios.get<{
+                data: {
+                    time: number[],
+                    errors: number[],
+                    vuser: number[],
+                    tps: number[],
+                    user_defined: number[],
+                    mean_test_time_ms: number[],
+                    mean_time_to_first_byte: number[]
+                },
+            }>('/argus-emergency/api/task/metrics', { params: { test_id, start, end, step } })
+            const data = metricsRes.data.data
+
+            const errors: number[][] = []
+            const vuser: number[][] = []
+            const tps: number[][] = []
+            const user_defined: number[][] = []
+            const mean_test_time_ms: number[][] = []
+            const mean_time_to_first_byte: number[][] = []
+            data.time.forEach(function (time, index) {
+                tps.push([time, data.tps[index]])
+                errors.push([time, data.errors[index]])
+                vuser.push([time, data.vuser[index]])
+                user_defined.push([time, data.user_defined[index]])
+                mean_test_time_ms.push([time, data.mean_test_time_ms[index]])
+                mean_time_to_first_byte.push([time, data.mean_time_to_first_byte[index]])
+            })
+            chartsRef.current?.tps.setOption({
+                series: [
+                    {
+                        name: 'TPS',
+                        type: 'line',
+                        showSymbol: false,
+                        data: tps
+                    },
+                    {
+                        name: 'Errors',
+                        type: 'line',
+                        showSymbol: false,
+                        data: errors
+                    }
+                ]
+            })
+            chartsRef.current?.user.setOption({
+                series: [
+                    {
+                        name: 'Vuser',
+                        type: 'line',
+                        showSymbol: false,
+                        data: vuser
+                    },
+                    {
+                        name: 'User Defined',
+                        type: 'line',
+                        showSymbol: false,
+                        data: user_defined
+                    },
+                ]
+            })
+            chartsRef.current?.mean.setOption({
+                series: [
+                    {
+                        name: 'Mean Test Time(ms)',
+                        type: 'line',
+                        showSymbol: false,
+                        data: mean_test_time_ms
+                    },
+                    {
+                        name: 'Mean Time To First Byte(ms)',
+                        type: 'line',
+                        showSymbol: false,
+                        data: mean_time_to_first_byte
+                    },
+                ]
+            })
+            const res = await axios.get('/argus-emergency/api/task/service', { params: { test_id } })
+            setServices(res.data.data)
+        } catch (error: any) {
+            message.error(error.message)
+        }
     }
-    useEffect(function(){
-        const chart = echarts.init(tpsRef.current!)
-        chart.setOption({
+    useEffect(function () {
+        const tpsDiv = tpsRef.current!
+        const userDiv = userRef.current!
+        const meanDiv = meanRef.current!
+        const tps = echarts.init(tpsDiv)
+        const user = echarts.init(userDiv)
+        const mean = echarts.init(meanDiv)
+        const option = {
             grid: {
-                top: 30,
+                top: 50,
                 left: 50,
-                right: 30,
-                bottom: 30,
+                right: 50,
+                bottom: 50,
             },
-            legend: {},
+            legend: {
+                top: 20
+            },
             toolbox: {
+                top: 20,
                 right: 30,
                 feature: {
                     saveAsImage: {},
@@ -49,40 +144,32 @@ export default function BusinessCharts() {
                     show: true
                 }
             },
-        })
-        chartsRef.current = { tps: chart }
+        }
+        tps.setOption(option)
+        user.setOption(option)
+        mean.setOption(option)
+        chartsRef.current = { tps, user, mean }
         // 自动缩放
-        const resize = debounce(function(){
-            chart.resize()
+        const resize = debounce(function () {
+            tps.resize()
+            user.resize()
+            mean.resize()
         }, 1000)
         window.addEventListener("resize", resize, false);
-        return function() {
+        return function () {
+            echarts.dispose(tpsDiv)
+            echarts.dispose(userDiv)
+            echarts.dispose(meanDiv)
             window.removeEventListener("resize", resize, false)
         }
-    },[])
+    }, [])
     useEffect(function () {
-        load(test_id)
-        let base = +new Date(2022, 3, 15);
-
-        let data = [[base, Math.random() * 300]];
-
-        for (let i = 1; i < 200; i++) {
-            let now = new Date((base += 1000));
-            data.push([+now, Math.abs(Math.round((Math.random() - 0.5) * 20 + data[i - 1][1]))]);
-        }
-        chartsRef.current?.tps.setOption({
-            series: [
-                {
-                    name: 'Fake Data',
-                    type: 'line',
-                    showSymbol: false,
-                    data: data
-                }
-            ]
-        })
+        load(test_id, {})
     }, [test_id])
     return <div className="BusinessCharts">
-        <Form layout="inline" initialValues={{ start: "1h" }}>
+        <Form layout="inline" onFinish={function (values) {
+            load(test_id, values)
+        }}>
             <Form.Item name="start">
                 <RangeInput />
             </Form.Item>
@@ -92,9 +179,11 @@ export default function BusinessCharts() {
             <Form.Item name="step">
                 <Input placeholder="采样精度(s)" />
             </Form.Item>
-            <Button type="primary">查询</Button>
+            <Button type="primary" htmlType="submit">查询</Button>
         </Form>
-        <div className="Chart" ref={tpsRef} style={{ height: 200 }}></div>
+        <div ref={tpsRef} style={{ height: 300 }}></div>
+        <div ref={userRef} style={{ height: 300 }}></div>
+        <div ref={meanRef} style={{ height: 300 }}></div>
         <Table dataSource={services} size="small" rowKey="transaction" pagination={false} columns={[
             { title: "事务名称", dataIndex: "transaction" },
             { title: "TPS", dataIndex: "tps" },

@@ -291,10 +291,30 @@ app.get('/argus-emergency/api/task/service', function (req, res) {
     })
 })
 app.get('/argus-emergency/api/task/metrics', function (req, res) {
+    const base = new Date().getTime();
     res.json({
         data: {
-            time: [],
-            tps: []
+            time: Array.from({length: 100}, function(_, index){
+                return base + index * 1000
+            }),
+            errors: Array.from({length: 100}, function(_, index){
+                return Math.round(Math.random() * 100)
+            }),
+            vuser: Array.from({length: 100}, function(_, index){
+                return Math.round(Math.random() * 100)
+            }),
+            tps: Array.from({length: 100}, function(_, index){
+                return Math.round(Math.random() * 100)
+            }),
+            user_defined: Array.from({length: 100}, function(_, index){
+                return Math.round(Math.random() * 100)
+            }),
+            mean_test_time_ms: Array.from({length: 100}, function(_, index){
+                return Math.round(Math.random() * 100)
+            }),
+            mean_time_to_first_byte: Array.from({length: 100}, function(_, index){
+                return Math.round(Math.random() * 100)
+            }),
         }
     })
 })
