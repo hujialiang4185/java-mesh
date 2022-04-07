@@ -267,7 +267,7 @@
                 and group_name LIKE CONCAT('%',#{groupName},'%') ESCAPE '/'
             </if>
             <if test="createUser != null and createUser != '' and createUser != 'admin'">
-                and create_user in (select user_name from emergency_user where role_name = 'ADMIN' and group_name =
+                and create_user in (select user_name from emergency_user where group_name =
                 (select group_name from emergency_user where user_name = #{createUser}))
             </if>
         </where>
