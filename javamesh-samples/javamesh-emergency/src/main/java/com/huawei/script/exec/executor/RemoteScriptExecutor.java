@@ -1,5 +1,17 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2021. All rights reserved.
+ * Copyright (C) Ltd. 2021-2021. Huawei Technologies Co., All rights reserved
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.huawei.script.exec.executor;
@@ -37,6 +49,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
 import javax.annotation.Resource;
 
 /**
@@ -74,13 +87,14 @@ public class RemoteScriptExecutor implements ScriptExecutor {
         try {
             session = serverSessionFactory.getSession(scriptExecInfo.getRemoteServerInfo());
             ExecResult uploadFileResult =
-                    uploadFile(session, scriptExecInfo.getScriptName(), scriptExecInfo.getScriptContent());
+                uploadFile(session, scriptExecInfo.getScriptName(), scriptExecInfo.getScriptContent());
             if (!uploadFileResult.isSuccess()) {
                 LOGGER.error("Failed to upload script. {}", uploadFileResult.getMsg());
                 return uploadFileResult;
             }
             fileName = uploadFileResult.getMsg();
-            return exec(session, commands("sh", fileName, scriptExecInfo.getParams()), logCallback, scriptExecInfo.getDetailId(), scriptExecInfo.getTimeOut());
+            return exec(session, commands("sh", fileName, scriptExecInfo.getParams()), logCallback,
+                scriptExecInfo.getDetailId(), scriptExecInfo.getTimeOut());
         } catch (JSchException | IOException | SftpException e) {
             LOGGER.error("Can't get remote server session.", e);
             return ExecResult.error(e.getMessage());
@@ -109,22 +123,24 @@ public class RemoteScriptExecutor implements ScriptExecutor {
         }
     }
 
-    public ExecResult uploadFile(Session session, String uploadPath, File file) throws JSchException, IOException, SftpException {
+    public ExecResult uploadFile(Session session, String uploadPath, File file)
+        throws JSchException, IOException, SftpException {
         ChannelSftp channel = null;
         try (FileInputStream inputStream = new FileInputStream(file)
         ) {
             ExecResult createDirResult = createRemoteDir(session, uploadPath);
-            String fileName = uploadPath + file.getName();
             if (!createDirResult.isSuccess()) {
                 LOGGER.error("Failed to create dir {}. {}", uploadPath, createDirResult.getMsg());
                 return createDirResult;
             }
-            long startUpload = System.currentTimeMillis();
             channel = (ChannelSftp) session.openChannel("sftp");
             channel.setInputStream(inputStream);
+            long startUpload = System.currentTimeMillis();
             channel.connect();
+            String fileName = uploadPath + file.getName();
             channel.put(inputStream, fileName);
-            LOGGER.debug("upload file {} to {} cost {} ms", file.getPath(), fileName, System.currentTimeMillis() - startUpload);
+            LOGGER.debug("upload file {} to {} cost {} ms", file.getPath(), fileName,
+                System.currentTimeMillis() - startUpload);
         } finally {
             if (channel != null && channel.isConnected()) {
                 channel.disconnect();
@@ -134,12 +150,12 @@ public class RemoteScriptExecutor implements ScriptExecutor {
     }
 
     private ExecResult uploadFile(Session session, String scriptName, String scriptContent)
-            throws JSchException, IOException, SftpException {
+        throws JSchException, IOException, SftpException {
         ChannelSftp channel = null;
         String fileName = String.format(Locale.ROOT, "%s%s-%s.sh",
-                scriptLocation, scriptName, System.currentTimeMillis());
+            scriptLocation, scriptName, System.currentTimeMillis());
         try (BufferedInputStream inputStream = new BufferedInputStream(
-                new ByteArrayInputStream(scriptContent.getBytes(StandardCharsets.UTF_8)))
+            new ByteArrayInputStream(scriptContent.getBytes(StandardCharsets.UTF_8)))
         ) {
             ExecResult createDirResult = createRemoteDir(session, scriptLocation);
             if (!createDirResult.isSuccess()) {
@@ -179,7 +195,7 @@ public class RemoteScriptExecutor implements ScriptExecutor {
     /**
      * 在远程服务器上创建文件夹
      *
-     * @param session           远程连接会话
+     * @param session 远程连接会话
      * @param remoteDirLocation 远程文件夹路径
      */
     private ExecResult createRemoteDir(Session session, String remoteDirLocation) {
@@ -196,7 +212,10 @@ public class RemoteScriptExecutor implements ScriptExecutor {
      *
      * @param session 远程服务器连接会话
      * @param command 命令
-     * @param id      标识本次执行的关键字
+     * @param logCallback 日志回调
+     * @param id 标识本次执行的关键字
+     * @param timeOut 超时时间
+     * @return {@link ExecResult} 执行结果
      */
     public ExecResult exec(Session session, String command, LogCallBack logCallback, int id, long timeOut) {
         ChannelExec channel = null;
@@ -241,15 +260,16 @@ public class RemoteScriptExecutor implements ScriptExecutor {
     /**
      * 解析远程服务器返回的消息
      *
-     * @param channel     通道
+     * @param channel 通道
      * @param logCallback 处理日志回调
-     * @param id          标识本次执行的关键字
+     * @param id 标识本次执行的关键字
      * @return String 结果
      * @throws IOException
      */
     private ExecResult parseResult(Channel channel, LogCallBack logCallback, int id) throws IOException {
         ExecResult execResult = new ExecResult();
-        BufferedReader normalInfoReader = new BufferedReader(new InputStreamReader(channel.getInputStream(), StandardCharsets.UTF_8));
+        BufferedReader normalInfoReader = new BufferedReader(
+            new InputStreamReader(channel.getInputStream(), StandardCharsets.UTF_8));
         StringBuilder result = new StringBuilder();
         while (true) {
             String line;
