@@ -1003,7 +1003,7 @@ app.get("/argus-user/api/logAudit", function (req, res) {
                 "operation_results": "成功",
                 "operation_people": "admin",
                 "ip_address": "192.168.0.1",
-                "peration_details": "/api/test",
+                "operation_details": "/api/test",
                 "operation_date": "2017-01-01",
             }
         }),

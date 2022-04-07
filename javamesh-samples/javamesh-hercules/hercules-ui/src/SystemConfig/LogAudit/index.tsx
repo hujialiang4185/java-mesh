@@ -56,7 +56,7 @@ export default function App() {
                     { title: "操作结果", dataIndex: "operation_results", ellipsis: true },
                     { title: "操作人", dataIndex: "operation_people", ellipsis: true },
                     { title: "IP地址", dataIndex: "ip_address", ellipsis: true },
-                    { title: "操作详情", dataIndex: "peration_details", ellipsis: true },
+                    { title: "操作详情", dataIndex: "operation_details", ellipsis: true },
                     { title: "操作时间", dataIndex: "operation_date", ellipsis: true },
                 ]} 
             />
