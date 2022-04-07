@@ -1,5 +1,5 @@
 import { Line, LineOptions, Liquid, LiquidOptions } from "@antv/g2plot";
-import {Descriptions, message, Table, Tabs, Tag } from "antd";
+import { Descriptions, message, Tabs, Tag } from "antd";
 import { PresetColorTypes } from "antd/lib/_util/colors";
 import axios from "axios";
 import moment from "moment";
@@ -8,6 +8,7 @@ import { useLocation } from "react-router-dom";
 import Breadcrumb from "../../../component/Breadcrumb";
 import Card from "../../../component/Card";
 import ServiceSelect from "../../../component/ServiceSelect";
+import BusinessCharts from "./BusinessCharts";
 import "./index.scss"
 
 export default function App() {
@@ -111,27 +112,6 @@ export default function App() {
             })}
         </Card>
     </div>
-}
-
-function BusinessCharts() {
-    const [data, setData] = useState()
-    const urlSearchParams = new URLSearchParams(useLocation().search)
-    const test_id = urlSearchParams.get("test_id") || ""
-    async function load(test_id: string) {
-        const res = await axios.get('/argus-emergency/api/task/service', { params: { test_id } })
-        setData(res.data.data)
-    }
-    useEffect(function () {
-        load(test_id)
-    }, [test_id])
-    return <Table dataSource={data} size="small" rowKey="transaction" pagination={false} columns={[
-        { title: "事务名称", dataIndex: "transaction" },
-        { title: "TPS", dataIndex: "tps" },
-        { title: "响应时间(ms)", dataIndex: "response_ms" },
-        { title: "成功数", dataIndex: "success_count" },
-        { title: "失败数", dataIndex: "fail_count" },
-        { title: "失败率%", dataIndex: "fail_rate" }
-    ]} />
 }
 
 function ResourceCharts() {
@@ -378,7 +358,7 @@ function ResourceCharts() {
         }
     }
     return <div className="ResourceCharts">
-        <ServiceSelect value={data.ip} placeholder="IP地址" url={"/argus-emergency/api/task/search/ip?test_id="+test_id} onChange={function (value) {
+        <ServiceSelect value={data.ip} placeholder="IP地址" url={"/argus-emergency/api/task/search/ip?test_id=" + test_id} onChange={function (value) {
             ipRef.current = value
             load(test_id, true)
         }} />
@@ -684,10 +664,10 @@ function JvmCharts() {
         }
     }
     return <div className="ResourceCharts">
-        <ServiceSelect value={data.ip} placeholder="IP地址" url={"/argus-emergency/api/task/search/ip?test_id="+test_id} onChange={function(value) {
+        <ServiceSelect value={data.ip} placeholder="IP地址" url={"/argus-emergency/api/task/search/ip?test_id=" + test_id} onChange={function (value) {
             ipRef.current = value
             load(test_id, true)
-        }}/>
+        }} />
         <div className="Grid">
             <div className="Item">
                 <div ref={cpuRef} className="Line"></div>

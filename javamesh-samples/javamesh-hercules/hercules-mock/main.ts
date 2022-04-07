@@ -290,6 +290,14 @@ app.get('/argus-emergency/api/task/service', function (req, res) {
         ]
     })
 })
+app.get('/argus-emergency/api/task/metrics', function (req, res) {
+    res.json({
+        data: {
+            time: [],
+            tps: []
+        }
+    })
+})
 app.get('/argus-emergency/api/task/resource', function (req, res) {
     res.json({
         data: {
