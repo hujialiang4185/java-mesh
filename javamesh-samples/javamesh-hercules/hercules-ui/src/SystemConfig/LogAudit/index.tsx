@@ -36,7 +36,10 @@ export default function App() {
         <Breadcrumb label="系统配置" sub={{ label: "日志审计", parentUrl: "/SystemConfig" }} />
         <Card>
             <div className="ToolBar">
-                <Form layout="inline">
+                <Form layout="inline" onFinish={function (values) {
+                    stateRef.current.search = values
+                    load()
+                }}>
                     <Form.Item name="keywords">
                         <Input placeholder="Keywords" />
                     </Form.Item>
