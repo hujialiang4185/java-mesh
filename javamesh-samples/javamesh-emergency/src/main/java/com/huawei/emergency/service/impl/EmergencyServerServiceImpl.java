@@ -26,6 +26,7 @@ import com.jcraft.jsch.SftpException;
 
 import org.apache.commons.lang.StringUtils;
 import org.ngrinder.agent.service.AgentPackageService;
+import org.ngrinder.infra.config.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -78,6 +80,9 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
     @Autowired
     private AgentPackageService packageService;
 
+    @Autowired
+    private Config config;
+
     @Override
     public CommonResult<EmergencyServer> add(EmergencyServer server) {
         if (StringUtils.isEmpty(server.getServerIp()) || StringUtils.isEmpty(server.getServerName())) {
@@ -92,7 +97,7 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
             .andServerIpEqualTo(server.getServerIp())
             .andIsValidEqualTo(ValidEnum.VALID.getValue());
         if (serverMapper.countByExample(isServerNameExist) > 0) {
-            return CommonResult.failed("已存在服务器名称或服务器ip相同的主机");
+            return CommonResult.failed("本组或其他组已存在服务器名称或服务器ip相同的主机");
         }
 
         CommonResult<EmergencyServer> serverResult = generateServer(server);
@@ -266,15 +271,21 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
                 LOGGER.error("解压agent失败。 {}", execResult.getMsg());
                 return CommonResult.failed("解压agent失败");
             }
-            /*String remoteAgentFile = uploadPath + agentFile.getName();
-            execResult = remoteExecutor.exec(session,
-                String.format(Locale.ROOT, "source /etc/profile && nohup java -jar %s >%s.log 2>&1 &", remoteAgentFile,
-                    remoteAgentFile),
-                null, -1);
+            String agentHome = uploadPath + "ngrinder-agent";
+            String createStartCommand = String.format(Locale.ROOT, "cd %s && echo \" sh ./run_agent_bg.sh -ah %s -ch "
+                    + "%s -cp %s -r NONE \" > start.sh && chmod 777 start.sh", agentHome,
+                agentHome, InetAddress.getLocalHost().getHostAddress(), config.getControllerPort());
+            execResult = remoteExecutor.exec(session, createStartCommand, null, -1);
+            if (!execResult.isSuccess()) {
+                LOGGER.error("初始化agent失败。 {}", execResult.getMsg());
+                return CommonResult.failed("初始化agent失败");
+            }
+            String startCommand = String.format(Locale.ROOT, "source /etc/profile && cd %s && ./start.sh", agentHome);
+            execResult = remoteExecutor.exec(session, startCommand, null, -1);
             if (!execResult.isSuccess()) {
                 LOGGER.error("启动agent失败。 {}", execResult.getMsg());
                 return CommonResult.failed("启动agent失败");
-            }*/
+            }
         } catch (JSchException e) {
             LOGGER.error("Failed to connect  ip={}, {}", serverInfo.getServerIp(), e.getMessage());
             return CommonResult.failed("连接服务器失败");
