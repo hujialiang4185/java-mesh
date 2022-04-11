@@ -8,6 +8,7 @@ import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.emergency.dto.TaskCommonReport;
+import com.huawei.emergency.dto.TaskMetricsDTO;
 import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyExecRecordExample;
 import com.huawei.emergency.entity.EmergencyScript;
@@ -29,8 +30,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -44,6 +50,9 @@ import javax.annotation.Resource;
 @Transactional(rollbackFor = Exception.class)
 public class EmergencyTaskServiceImpl implements EmergencyTaskService {
     private static final Logger LOGGER = LoggerFactory.getLogger(EmergencyTaskServiceImpl.class);
+    private static final int ONE_THOUSAND = 1000;
+    private static final Pattern PATTERN = Pattern.compile("[\\[\\]]");
+    private static final String SIGN_COMMA = "逗号";
 
     @Resource(name = "scriptExecThreadPool")
     private ThreadPoolExecutor threadPoolExecutor;
@@ -246,5 +255,67 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
         }
         List<TaskCommonReport> commonReportList = taskMapper.getTaskReportByRecordId(recordId);
         return CommonResult.success(commonReportList.toArray());
+    }
+
+    @Override
+    public CommonResult getMetricsReport(long perfTestId, int step) {
+        TaskMetricsDTO taskMetrics = new TaskMetricsDTO();
+        int interval = perfTestService.getReportDataInterval(perfTestId, "TPS", step);
+        taskMetrics.setTps(Arrays.stream(PATTERN.matcher(perfTestService.getReportData(perfTestId, "TPS",
+                false,
+                interval).getSecond().get(0)).replaceAll("").split(SIGN_COMMA))
+            .map(this::stringToDouble).collect(Collectors.toList()));
+        taskMetrics.setErrors(Arrays.stream(PATTERN.matcher(perfTestService.getReportData(perfTestId, "Errors",
+                false,
+                interval).getSecond().get(0)).replaceAll("").split(SIGN_COMMA))
+            .map(this::stringToLong).collect(Collectors.toList()));
+        taskMetrics.setMeanTestTime(
+            Arrays.stream(PATTERN.matcher(perfTestService.getReportData(perfTestId, "Mean_Test_Time_(ms)",
+                    false,
+                    interval).getSecond().get(0)).replaceAll("").split(SIGN_COMMA))
+                .map(this::stringToDouble).collect(Collectors.toList()));
+        taskMetrics.setMeanTimeToFirstByte(
+            Arrays.stream(PATTERN.matcher(perfTestService.getReportData(perfTestId, "Mean_time_to_first_byte",
+                    false,
+                    interval).getSecond().get(0)).replaceAll("").split(SIGN_COMMA))
+                .map(this::stringToDouble).collect(Collectors.toList()));
+        taskMetrics.setVuser(Arrays.stream(PATTERN.matcher(perfTestService.getReportData(perfTestId, "Vuser",
+                false,
+                interval).getSecond().get(0)).replaceAll("").split(SIGN_COMMA))
+            .map(this::stringToLong).collect(
+                Collectors.toList()));
+        ArrayList<String> userDefinedResult = perfTestService.getReportData(perfTestId, "User_defined",
+            false,
+            interval).getSecond();
+        if (userDefinedResult.size() > 0) {
+            taskMetrics.setUserDefined(
+                Arrays.stream(PATTERN.matcher(userDefinedResult.get(0)).replaceAll("").split(SIGN_COMMA))
+                    .map(this::stringToLong).collect(
+                        Collectors.toList()));
+        } else {
+            taskMetrics.setUserDefined(new ArrayList<>());
+        }
+        final PerfTest test = perfTestService.getOne(perfTestId);
+        long extra = test.getSamplingInterval() * interval;
+        long start = test.getStartTime().getTime();
+        taskMetrics.setTime(new ArrayList<>());
+        for (int i = 1; i <= taskMetrics.getTps().size(); i++) {
+            taskMetrics.getTime().add(start + (extra * i * ONE_THOUSAND));
+        }
+        return CommonResult.success(taskMetrics);
+    }
+
+    private Long stringToLong(String str) {
+        if (StringUtils.isEmpty(str) || "null".equals(str.toLowerCase(Locale.ROOT))) {
+            return 0L;
+        }
+        return Long.valueOf(str);
+    }
+
+    private Double stringToDouble(String str) {
+        if (StringUtils.isEmpty(str) || "null".equals(str.toLowerCase(Locale.ROOT))) {
+            return 0D;
+        }
+        return Double.valueOf(str);
     }
 }

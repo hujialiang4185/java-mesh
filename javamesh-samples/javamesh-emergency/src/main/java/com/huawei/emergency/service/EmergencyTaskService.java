@@ -31,4 +31,6 @@ public interface EmergencyTaskService extends EmergencyCommonService<EmergencyTa
      * @return {@link CommonResult} 压测报告集合
      */
     CommonResult getTaskReport(Integer recordId);
+
+    CommonResult getMetricsReport(long perfTestId, int step);
 }

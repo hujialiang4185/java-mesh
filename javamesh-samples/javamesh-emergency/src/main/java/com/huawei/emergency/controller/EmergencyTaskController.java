@@ -24,6 +24,7 @@ import com.huawei.emergency.dto.TaskServiceReport;
 import com.huawei.emergency.service.EmergencyTaskService;
 
 import org.apache.commons.lang.StringUtils;
+import org.ngrinder.perftest.service.PerfTestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -51,6 +52,9 @@ public class EmergencyTaskController {
 
     @Autowired
     private EmergencyTaskService taskService;
+
+    @Autowired
+    private PerfTestService perfTestService;
 
     /**
      * 获取任务下发各agent执行的基本信息
@@ -113,6 +117,16 @@ public class EmergencyTaskController {
     @GetMapping("/service")
     public CommonResult<List<TaskServiceReport>> getServiceReport(@RequestParam("test_id") Integer testId) {
         return CommonResult.success(Arrays.asList(mockService()));
+    }
+
+    @GetMapping("/metrics")
+    public CommonResult getMetrics(@RequestParam(value = "test_id", defaultValue = "154") long perfTestId,
+        @RequestParam("start") long startTime,
+        @RequestParam("end") long endTime, @RequestParam(value = "step", defaultValue = "0") int step) {
+        if (step <= 0) {
+            step = 250;
+        }
+        return taskService.getMetricsReport(perfTestId, step);
     }
 
     public TaskCommonReport mockCommon() {
