@@ -76,6 +76,13 @@ public class TaskCommonReport {
      * 平均时间
      */
     private Double avgTime;
+
+    private Double responseTime25;
+    private Double responseTime50;
+    private Double responseTime75;
+    private Double responseTime90;
+    private Double responseTime95;
+    private Double responseTime99;
     /**
      * 测试数量
      */
@@ -136,6 +143,12 @@ public class TaskCommonReport {
         commonReport.setTps(perfTest.getTps());
         commonReport.setTpsPeak(perfTest.getPeakTps());
         commonReport.setAvgTime(perfTest.getMeanTestTime());
+        commonReport.setResponseTime25(perfTest.getResponseTimePercent25());
+        commonReport.setResponseTime50(perfTest.getResponseTimePercent50());
+        commonReport.setResponseTime75(perfTest.getResponseTimePercent75());
+        commonReport.setResponseTime90(perfTest.getResponseTimePercent90());
+        commonReport.setResponseTime95(perfTest.getResponseTimePercent95());
+        commonReport.setResponseTime99(perfTest.getResponseTimePercent99());
         commonReport.setTestCount((perfTest.getTests() == null ? 0 : perfTest.getTests()) + (
             perfTest.getErrors() == null ? 0 : perfTest.getErrors()));
         commonReport.setSuccessCount(perfTest.getTests());
