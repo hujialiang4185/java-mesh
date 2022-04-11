@@ -87,6 +87,40 @@ export default function App() {
                     <div className="Value">{data.fail_count}</div>
                     <div className="Title">错误</div>
                 </div>
+                <div className="Item">
+                    <div className="Value">{data.agent}</div>
+                    <div className="Title">Agent数量</div>
+                </div>
+            </div>
+            <div className="SubCard Basic">
+                <div className="Item">
+                    <div className="Value">{data.start_time}</div>
+                    <div className="Title">开始时间</div>
+                </div>
+                <div className="Item">
+                    <div className="Value">{data.response_time25}</div>
+                    <div className="Title">响应时间中位数P25(ms)</div>
+                </div>
+                <div className="Item">
+                    <div className="Value">{data.response_time50}</div>
+                    <div className="Title">响应时间中位数P50(ms)</div>
+                </div>
+                <div className="Item">
+                    <div className="Value">{data.response_time75}</div>
+                    <div className="Title">响应时间中位数P75(ms)</div>
+                </div>
+                <div className="Item">
+                    <div className="Value">{data.response_time90}</div>
+                    <div className="Title">响应时间中位数P90(ms)</div>
+                </div>
+                <div className="Item">
+                    <div className="Value">{data.response_time95}</div>
+                    <div className="Title">响应时间中位数P95(ms)</div>
+                </div>
+                <div className="Item">
+                    <div className="Value">{data.response_time99}</div>
+                    <div className="Title">响应时间中位数P99(ms)</div>
+                </div>
             </div>
             <div className="Label">TPS图表</div>
             <Tabs type="card" size="small">

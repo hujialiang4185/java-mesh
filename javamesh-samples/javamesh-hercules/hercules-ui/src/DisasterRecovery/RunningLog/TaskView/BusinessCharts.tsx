@@ -32,7 +32,7 @@ export default function BusinessCharts() {
                     vuser: number[],
                     tps: number[],
                     user_defined: number[],
-                    mean_test_time_ms: number[],
+                    mean_test_time: number[],
                     mean_time_to_first_byte: number[]
                 },
             }>('/argus-emergency/api/task/metrics', { params: { test_id, start, end, step } })
@@ -49,7 +49,7 @@ export default function BusinessCharts() {
                 errors.push([time, data.errors[index]])
                 vuser.push([time, data.vuser[index]])
                 user_defined.push([time, data.user_defined[index]])
-                mean_test_time_ms.push([time, data.mean_test_time_ms[index]])
+                mean_test_time_ms.push([time, data.mean_test_time[index]])
                 mean_time_to_first_byte.push([time, data.mean_time_to_first_byte[index]])
             })
             chartsRef.current?.tps.setOption({
@@ -167,7 +167,7 @@ export default function BusinessCharts() {
         load(test_id, {})
     }, [test_id])
     return <div className="BusinessCharts">
-        <Form layout="inline" onFinish={function (values) {
+        <Form style={{display: "none"}} layout="inline" onFinish={function (values) {
             load(test_id, values)
         }}>
             <Form.Item name="start">

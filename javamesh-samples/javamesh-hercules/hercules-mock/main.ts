@@ -280,6 +280,14 @@ app.get('/argus-emergency/api/task/view', function (req, res) {
             test_comment: "备注文本，长文本长文本",
             log_name: ["anent-NONE-log1.zip", "anent-NONE-log2.zip"],
             progress_message: ["第一行失败", "第二行失败"],
+            response_time25: 10,
+            response_time50: 10,
+            response_time75: 10,
+            response_time90: 10,
+            response_time95: 10,
+            response_time99: 10,
+            agent: 10,
+            start_time: "2022-01-01 00:00:00"
         }
     })
 })
@@ -309,7 +317,7 @@ app.get('/argus-emergency/api/task/metrics', function (req, res) {
             user_defined: Array.from({length: 100}, function(_, index){
                 return Math.round(Math.random() * 100)
             }),
-            mean_test_time_ms: Array.from({length: 100}, function(_, index){
+            mean_test_time: Array.from({length: 100}, function(_, index){
                 return Math.round(Math.random() * 100)
             }),
             mean_time_to_first_byte: Array.from({length: 100}, function(_, index){
