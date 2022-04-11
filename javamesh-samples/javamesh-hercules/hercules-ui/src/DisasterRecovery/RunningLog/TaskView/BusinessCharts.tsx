@@ -107,12 +107,9 @@ export default function BusinessCharts() {
         }
     }
     useEffect(function () {
-        const tpsDiv = tpsRef.current!
-        const userDiv = userRef.current!
-        const meanDiv = meanRef.current!
-        const tps = echarts.init(tpsDiv)
-        const user = echarts.init(userDiv)
-        const mean = echarts.init(meanDiv)
+        const tps = echarts.init(tpsRef.current!)
+        const user = echarts.init(userRef.current!)
+        const mean = echarts.init(meanRef.current!)
         const option = {
             grid: {
                 top: 50,
@@ -151,15 +148,17 @@ export default function BusinessCharts() {
         chartsRef.current = { tps, user, mean }
         // 自动缩放
         const resize = debounce(function () {
-            tps.resize()
-            user.resize()
+            tps.resize({width: 0})
+            user.resize({width: 0})
             mean.resize()
+            tps.resize({width: "auto"})
+            user.resize({width: "auto"})
         }, 1000)
         window.addEventListener("resize", resize, false);
         return function () {
-            echarts.dispose(tpsDiv)
-            echarts.dispose(userDiv)
-            echarts.dispose(meanDiv)
+            tps.dispose()
+            user.dispose()
+            mean.dispose()
             window.removeEventListener("resize", resize, false)
         }
     }, [])
