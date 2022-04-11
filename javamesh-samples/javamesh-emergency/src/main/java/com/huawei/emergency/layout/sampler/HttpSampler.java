@@ -111,6 +111,9 @@ public class HttpSampler extends Sampler {
     }
 
     private static String parameterized(String source) {
+        if (StringUtils.isEmpty(source)) {
+            return "";
+        }
         Matcher matcher = PARAMETER_PATTERN.matcher(source);
         StringBuffer result = new StringBuffer();
         while (matcher.find()) {
