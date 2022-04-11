@@ -14,7 +14,5 @@ import java.util.List;
  **/
 @Mapper
 public interface EmergencyLogAuditMapper {
-    List<LogAuditEntity> queryLogAuditList();
-
     int addLogAudit(LogAuditEntity logAudit);
 }

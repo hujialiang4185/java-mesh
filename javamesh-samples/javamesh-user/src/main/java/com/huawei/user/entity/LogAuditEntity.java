@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.huawei.logaudit.entity;
+package com.huawei.user.entity;
 
 import lombok.Data;
 
@@ -24,10 +24,11 @@ import java.sql.Timestamp;
  * 日志实体类
  *
  * @author h30009881
- * @since 2022-03-16
+ * @since 2022-03-30
  */
 @Data
 public class LogAuditEntity {
+    private Integer logId;
     /**
      * 资源类型(模块名称)
      */
@@ -40,6 +41,8 @@ public class LogAuditEntity {
      * 级别(提示、一般、警告、危险、高危) 0-提示、 1-一般、 2-警告、 3-危险、 4-高危
      */
     private int level;
+
+    private String levelLabel;
     /**
      * 操作结果(成功、失败) 1-成功；0-失败
      */

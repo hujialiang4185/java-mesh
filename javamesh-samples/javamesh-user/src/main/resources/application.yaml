@@ -31,7 +31,7 @@ spring:
       max-wait: 60000
       time-between-eviction-runs-millis: 60000
       min-evictable-idle-time-millis: 300000
-      validation-query: SELECT 1 FROM sys_user
+      validation-query: SELECT 1
       test-while-idle: true
       test-on-borrow: false
       test-on-return: false
@@ -49,6 +49,11 @@ spring:
   #        allow: 127.0.0.1
   #        deny: 192.168.31.253
   #        reset-enable: false
+  jackson:
+    property-naming-strategy: CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES
+    default-property-inclusion: non_null
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
 mybatis:
   configuration:
     map-underscore-to-camel-case: true

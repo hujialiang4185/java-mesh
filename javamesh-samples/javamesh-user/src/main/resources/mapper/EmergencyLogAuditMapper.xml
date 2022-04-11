@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huawei.user.mapper.EmergencyLogAuditMapper">
+    <select id="queryLogAuditList" resultType="com.huawei.user.entity.LogAuditEntity">
+        select id as log_id,
+        resource_type,
+        operation_type,
+        level,
+        case when level = 0 then '提示'
+        when level = 1 then '一般'
+        when level = 2 then '警告'
+        when level = 3 then '危险'
+        when level = 4 then '高危'
+        end level_label,
+        operation_results,
+        operation_people,
+        ip_address,
+        operation_details,
+        operation_date
+        from emergency_log_audit
+        where 1 = 1
+        <if test="level != ''">
+            level = #{level}
+        </if>
+        <if test="resourceType != null">
+            and (instr(#{resourceType},resource_type) &gt; -1 or
+            instr(#{resourceType},resource_type) &gt; -1)
+        </if>
+        <if test="operationPeople != null">
+            and (instr(#{operationPeople},operation_people) &gt; -1 or
+            instr(#{operationPeople},operation_people) &gt; -1)
+        </if>
+        <if test="ipAddress != null">
+            and (instr(#{ipAddress},ip_address) &gt; -1 or instr(#{ipAddress},ip_address) &gt; -1)
+        </if>
+        order by operation_date desc
+    </select>
+</mapper>
