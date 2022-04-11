@@ -23,6 +23,7 @@ import org.ngrinder.model.PerfTest;
 import org.ngrinder.model.Tag;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -76,6 +77,9 @@ public class TaskCommonReport {
      * 平均时间
      */
     private Double avgTime;
+
+    private Integer agent;
+    private Date startTime;
 
     private Double responseTime25;
     private Double responseTime50;
@@ -139,6 +143,8 @@ public class TaskCommonReport {
             commonReport.setDuration(
                 (perfTest.getFinishTime().getTime() - perfTest.getStartTime().getTime()) / ONE_THOUSAND);
         }
+        commonReport.setAgent(perfTest.getAgentCount());
+        commonReport.setStartTime(perfTest.getStartTime());
         commonReport.setVuser(perfTest.getVuserPerAgent());
         commonReport.setTps(perfTest.getTps());
         commonReport.setTpsPeak(perfTest.getPeakTps());
