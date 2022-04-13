@@ -102,6 +102,10 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                 userDetails, null, userDetails.getAuthorities());
             JwtUser jwtUser = (JwtUser) authentication.getPrincipal();
+            if (!"T".equals(jwtUser.getUserEntity().getEnabled())) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
             if (!ALLOWED_PATHS.contains(path)) {
                 if (!"admin".equals(jwtUser.getUsername()) && StringUtils.isBlank(jwtUser.getGroupName())) {
                     JSONObject jsonObject = new JSONObject();
