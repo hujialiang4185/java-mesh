@@ -79,7 +79,7 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
         </Form.Item>
         {isCmd ? <>
           <Form.Item className="ScriptName" label="脚本名称" name="script_name" rules={[{ required: true }]}>
-            <SearchSelect onChange={loadScript} />
+            <SearchSelect type="normal" onChange={loadScript} />
           </Form.Item>
           <Collapse expandIconPosition="right" expandIcon={function ({ isActive }) {
             return <span className={`icon fa fa-angle-double-${isActive ? "down" : "right"}`}></span>

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react"
 import ServiceSelect from "../../component/ServiceSelect"
 import "./DebugScript.scss"
 
-export default function App({ form }: { form: FormInstance }) {
+export default function App({ form, language }: { form: FormInstance, language: string }) {
     let submit = false
     const [data, setData] = useState<string[]>([])
     const [debug, setDebug] = useState({ debugId: undefined, timeInterval: undefined })
@@ -50,7 +50,7 @@ export default function App({ form }: { form: FormInstance }) {
             submit = true
             try {
                 const content = form.getFieldValue("content")
-                const res = await axios.post('/argus-emergency/api/script/debug', { content, server_name })
+                const res = await axios.post('/argus-emergency/api/script/debug', { content, server_name, language })
                 const debugId = res.data.data.debug_id
                 let line = await load(debugId)
                 if (!line) return

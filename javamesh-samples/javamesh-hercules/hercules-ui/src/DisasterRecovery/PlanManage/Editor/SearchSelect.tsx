@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState } from "react"
 import { FileSearchOutlined, SearchOutlined } from '@ant-design/icons'
 import "./SearchSelect.scss"
 
-export default function App(props: { value?: string, onChange?: (value: string) => void, type?: string }) {
+export default function App(props: { value?: string, onChange?: (value: string) => void, type: string }) {
   const [options, setOptions] = useState()
   const [loading, setLoading] = useState(false)
   const [isModalVisible, setIsModalVisible] = useState(false)

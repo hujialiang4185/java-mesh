@@ -72,7 +72,16 @@ export default function App() {
         </Card>
     </div>
 }
-
+function formatLanguage(language: string) {
+    switch (language) {
+        case "Shell":
+            return "shell"
+        case "Groovy":
+            return "java"
+        default:
+            return "python"
+    }
+}
 function Script({ form }: { form: FormInstance }) {
     const [scriptFrom, setScriptFrom] = useState("input")
     const state = useLocation().state as any
@@ -100,18 +109,9 @@ function Script({ form }: { form: FormInstance }) {
         </div>
         {scriptFrom !== "本地导入" && <>
             <Form.Item label="脚本内容" className="Editor WithoutLabel" name="content" rules={[{ required: true }]}>
-                <Editor className="MonacoEditor" height={200} language={function(){
-                    switch (state.language) {
-                        case "Shell":
-                            return "shell"
-                        case "Groovy":
-                            return "java"
-                        default:
-                            return "python"
-                    }
-                }()} />
+                <Editor className="MonacoEditor" height={200} language={formatLanguage(state.language)} />
             </Form.Item>
-            <DebugScript form={form} />
+            <DebugScript form={form} language={state.language}/>
         </>}
     </>
 }

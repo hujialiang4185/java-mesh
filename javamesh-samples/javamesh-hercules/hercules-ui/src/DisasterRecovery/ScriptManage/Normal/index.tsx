@@ -8,6 +8,16 @@ import "./index.scss"
 import DebugScript from "../DebugScript"
 import Editor from "@monaco-editor/react";
 
+function formatLanguage(language: string) {
+    switch (language) {
+        case "Shell":
+            return "shell"
+        case "Groovy":
+            return "java"
+        default:
+            return "python"
+    }
+}
 export default function App() {
     let submit = false
     const history = useHistory()
@@ -20,17 +30,7 @@ export default function App() {
             try {
                 const res = await axios.get('/argus-emergency/api/script/get', { params: { script_id } })
                 form.setFieldsValue(res.data.data)
-                switch (res.data.data.language) {
-                    case "Shell":
-                        setLanguage("shell")
-                        break
-                    case "Groovy":
-                        setLanguage("java")
-                        break
-                    case "Jython":
-                        setLanguage("python")
-                }
-                
+                setLanguage(res.data.data.language)
             } catch (error: any) {
                 message.error(error.message)
             }
@@ -65,9 +65,9 @@ export default function App() {
                     </Form.Item>
                 </div>
                 <Form.Item label="脚本内容" className="Editor WithoutLabel" name="content" rules={[{ required: true }]}>
-                    <Editor className="MonacoEditor" language={language} height={200} />
+                    <Editor className="MonacoEditor" language={formatLanguage(language)} height={200} />
                 </Form.Item>
-                <DebugScript form={form} />
+                <DebugScript form={form} language={language}/>
                 <Form.Item className="ScriptParam" labelCol={{ span: 1 }} name="param" label="脚本参数" rules={[{
                     pattern: /^[\w,.|]+$/,
                     message: "格式错误"
