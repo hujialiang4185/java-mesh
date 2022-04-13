@@ -6,6 +6,7 @@ package com.huawei.emergency.service;
 
 import com.huawei.common.api.CommonPage;
 import com.huawei.common.api.CommonResult;
+import com.huawei.emergency.dto.ScriptManageDto;
 import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyPlan;
 import com.huawei.emergency.entity.EmergencyScript;
@@ -21,7 +22,7 @@ import com.huawei.script.exec.log.LogResponse;
 public interface EmergencyExecService {
     CommonResult exec(EmergencyScript script);
 
-    CommonResult debugScript(String content, String serverName);
+    CommonResult debugScript(ScriptManageDto script);
 
     LogResponse getLog(int detailId, int line);
 
@@ -51,4 +52,6 @@ public interface EmergencyExecService {
     CommonResult getPlanInfo(Integer execId);
 
     CommonResult isFreeScript(int[] scriptIds);
+
+    CommonResult deleteExecRecord(Integer[] historyIds);
 }

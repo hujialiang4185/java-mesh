@@ -157,7 +157,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
 
     @Override
     public CommonResult<List<EmergencyScript>> listScript(JwtUser jwtUser, String scriptName, String scriptUser,
-        int pageSize, int current, String sorter, String order, String status) {
+        int pageSize, int current, String sorter, String order, String status, String scriptType) {
         UserEntity userEntity = jwtUser.getUserEntity();
         String auth;
         List<String> userAuth = jwtUser.getAuthList();
@@ -178,9 +178,14 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         }
         String userName = userEntity.getUserName();
         String group = userEntity.getGroup();
+        List<String> scriptTypes =
+            ScriptLanguageEnum.matchScriptType(ScriptTypeEnum.match(scriptType, null))
+                .stream()
+                .map(ScriptLanguageEnum::getValue)
+                .collect(Collectors.toList());
         Page<EmergencyScript> pageInfo = PageHelper.startPage(current, pageSize, sortType).doSelectPage(() -> {
             mapper.listScript(userName, auth, EscapeUtil.escapeChar(scriptName), EscapeUtil.escapeChar(scriptUser),
-                status, group);
+                status, group, scriptTypes);
         });
         List<EmergencyScript> emergencyScripts = pageInfo.getResult();
         String scriptStatus;
@@ -209,9 +214,9 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
                     script.setScriptStatus("unapproved");
                     script.setStatusLabel(UNAPPROVED);
             }
-            ScriptLanguageEnum scriptType = ScriptLanguageEnum.matchByValue(script.getScriptType());
-            if (scriptType != null) {
-                script.setTypeLabel(scriptType.getView());
+            ScriptLanguageEnum scriptTypeEnum = ScriptLanguageEnum.matchByValue(script.getScriptType());
+            if (scriptTypeEnum != null) {
+                script.setTypeLabel(scriptTypeEnum.getView());
             }
         }
         return CommonResult.success(emergencyScripts, (int) pageInfo.getTotal());
@@ -508,8 +513,8 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     }
 
     @Override
-    public CommonResult debugScriptBeforeSave(String content, String serverName) {
-        return execService.debugScript(content, serverName);
+    public CommonResult debugScriptBeforeSave(ScriptManageDto script) {
+        return execService.debugScript(script);
     }
 
     @Override

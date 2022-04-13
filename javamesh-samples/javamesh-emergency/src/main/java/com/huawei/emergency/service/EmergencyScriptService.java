@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 
 public interface EmergencyScriptService {
     CommonResult<List<EmergencyScript>> listScript(JwtUser jwtUser, String scriptName, String scriptUser, int pageSize,
-        int current, String sorter, String order, String status);
+        int current, String sorter, String order, String status, String scriptType);
 
     CommonResult deleteScripts(int[] scriptIds);
 
@@ -41,7 +41,7 @@ public interface EmergencyScriptService {
 
     CommonResult debugScript(int scriptId);
 
-    CommonResult debugScriptBeforeSave(String content, String serverName);
+    CommonResult debugScriptBeforeSave(ScriptManageDto script);
 
     CommonResult debugScriptStop(Integer debugId);
 

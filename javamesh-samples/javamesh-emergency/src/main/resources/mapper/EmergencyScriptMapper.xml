@@ -460,10 +460,16 @@
                 AND ((s.is_public = '0' AND s.script_user = #{userName}) OR s.is_public = '1')
             </if>
             <if test="status != '' and status != null">
-                AND s.script_status = #{status}
+                AND s.script_status = '2'
             </if>
             <if test="group != null and group != ''">
                 AND s.script_group = #{group}
+            </if>
+            <if test="scriptTypes != null and scriptTypes.size > 0">
+                and s.script_type in
+                <foreach close=")" collection="scriptTypes" index="index" item="scriptType" open="(" separator=",">
+                    #{scriptType}
+                </foreach>
             </if>
         </where>
     </select>

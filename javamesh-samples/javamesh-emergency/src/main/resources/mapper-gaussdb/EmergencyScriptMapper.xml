@@ -450,7 +450,7 @@
                 AND s.script_name LIKE CONCAT('%',#{scriptName},'%') ESCAPE '/'
             </if>
             <if test="scriptUser!=null and scriptUser!=''">
-                AND s.script_user LIKE CONCAT('%',#{scriptUser},'%') ESCAPE '/'
+                AND u.nick_name LIKE CONCAT('%',#{scriptUser},'%') ESCAPE '/'
             </if>
             <if test="auth!='admin' and auth!='approver'">
                 AND ((s.is_public = '0' AND s.script_user = #{userName}) OR s.is_public = '1')
@@ -460,6 +460,12 @@
             </if>
             <if test="group!=null and group!=''">
                 AND s.script_group = #{group}
+            </if>
+            <if test="scriptTypes != null and scriptTypes.size > 0">
+                and s.script_type in
+                <foreach close=")" collection="scriptTypes" index="index" item="scriptType" open="(" separator=",">
+                    #{scriptType}
+                </foreach>
             </if>
         </where>
     </select>

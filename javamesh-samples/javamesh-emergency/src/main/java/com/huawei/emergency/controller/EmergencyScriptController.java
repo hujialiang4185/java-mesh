@@ -70,9 +70,11 @@ public class EmergencyScriptController {
         @RequestParam(value = "current", defaultValue = "1") int current,
         @RequestParam(value = "sorter", required = false) String sorter,
         @RequestParam(value = "order", required = false) String order,
-        @RequestParam(value = "status", required = false) String status) {
+        @RequestParam(value = "status", required = false) String status,
+        @RequestParam(value = "type", required = false) String scriptType) {
         JwtUser jwtUser = (JwtUser) authentication.getPrincipal();
-        return service.listScript(jwtUser, scriptName, scriptUser, pageSize, current, sorter, order, status);
+        return service.listScript(jwtUser, scriptName, scriptUser, pageSize, current, sorter, order, status,
+            scriptType);
     }
 
     /**
@@ -249,16 +251,12 @@ public class EmergencyScriptController {
         }
     }
 
-    public CommonResult debugScript(@RequestBody Map<String, Integer> param) {
-        return service.debugScript(param.get("script_id"));
-    }
-
     @PostMapping("/debug")
     @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
         operationType = OperationTypeEnum.EXECUTE,
         operationDetails = OperationDetails.DEBUG_SCRIPT)
-    public CommonResult debugScriptBeforeSave(@RequestBody Map<String, String> param) {
-        return service.debugScriptBeforeSave(param.get("content"), param.get("server_name"));
+    public CommonResult debugScriptBeforeSave(@RequestBody ScriptManageDto script) {
+        return service.debugScriptBeforeSave(script);
     }
 
     @PostMapping("/debugStop")
