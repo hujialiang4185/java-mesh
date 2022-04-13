@@ -33,6 +33,8 @@ public class EmergencyExec {
 
     private Date endTime;
 
+    private String isValid;
+
     private Integer historyId; // 仅用于返回前端显示
 
     public Integer getExecId() {
@@ -113,6 +115,14 @@ public class EmergencyExec {
 
     public void setEndTime(Date endTime) {
         this.endTime = endTime;
+    }
+
+    public String getIsValid() {
+        return isValid;
+    }
+
+    public void setIsValid(String isValid) {
+        this.isValid = isValid == null ? null : isValid.trim();
     }
 
     public Integer getHistoryId() {

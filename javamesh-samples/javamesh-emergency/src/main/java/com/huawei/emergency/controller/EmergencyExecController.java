@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -66,8 +67,8 @@ public class EmergencyExecController {
      */
     @PostMapping("/scenario/task/runAgain")
     @WebOperationLog(resourceType = ResourceType.EXECUTION_RECORD,
-            operationType = OperationTypeEnum.EXECUTE,
-            operationDetails = OperationDetails.RE_EXECUTE)
+        operationType = OperationTypeEnum.EXECUTE,
+        operationDetails = OperationDetails.RE_EXECUTE)
     public CommonResult reExec(UsernamePasswordAuthenticationToken authentication, @RequestBody PlanQueryDto params) {
         if (params.getKey() == null) {
             return CommonResult.failed("请选择正确的执行记录");
@@ -83,8 +84,8 @@ public class EmergencyExecController {
      */
     @PostMapping("/scenario/task/ensure")
     @WebOperationLog(resourceType = ResourceType.EXECUTION_RECORD,
-            operationType = OperationTypeEnum.MANUAL_CONFIRMATION,
-            operationDetails = OperationDetails.MANUAL_CONFIRMATION)
+        operationType = OperationTypeEnum.MANUAL_CONFIRMATION,
+        operationDetails = OperationDetails.MANUAL_CONFIRMATION)
     public CommonResult success(UsernamePasswordAuthenticationToken authentication, @RequestBody PlanQueryDto params) {
         if (params.getKey() == null) {
             return CommonResult.failed("请选择正确的执行记录");
@@ -112,8 +113,8 @@ public class EmergencyExecController {
      */
     @GetMapping()
     @WebOperationLog(resourceType = ResourceType.EXECUTION_RECORD,
-            operationType = OperationTypeEnum.SELECT,
-            operationDetails = OperationDetails.QUERY_EXEC_LIST)
+        operationType = OperationTypeEnum.SELECT,
+        operationDetails = OperationDetails.QUERY_EXEC_LIST)
     public CommonResult allPlanExecRecords(UsernamePasswordAuthenticationToken authentication,
         @RequestParam(value = "keywords", required = false) String planName,
         @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
@@ -146,8 +147,8 @@ public class EmergencyExecController {
      */
     @GetMapping("/scenario")
     @WebOperationLog(resourceType = ResourceType.EXECUTION_RECORD,
-            operationType = OperationTypeEnum.SELECT,
-            operationDetails = OperationDetails.QUERY_SCENARIO_EXEC_LIST)
+        operationType = OperationTypeEnum.SELECT,
+        operationDetails = OperationDetails.QUERY_SCENARIO_EXEC_LIST)
     public CommonResult allSceneExecRecords(@RequestParam("history_id") int execId) {
         CommonPage<EmergencyExecRecord> params = new CommonPage<>();
         EmergencyExecRecord record = new EmergencyExecRecord();
@@ -165,8 +166,8 @@ public class EmergencyExecController {
      */
     @GetMapping("/scenario/task")
     @WebOperationLog(resourceType = ResourceType.EXECUTION_RECORD,
-            operationType = OperationTypeEnum.SELECT,
-            operationDetails = OperationDetails.QUERY_TASK_EXEC_LIST)
+        operationType = OperationTypeEnum.SELECT,
+        operationDetails = OperationDetails.QUERY_TASK_EXEC_LIST)
     public CommonResult allTaskExecRecords(@RequestParam("history_id") int execId,
         @RequestParam("scena_id") int sceneId) {
         CommonPage<EmergencyExecRecord> params = new CommonPage<>();
@@ -186,8 +187,8 @@ public class EmergencyExecController {
      */
     @GetMapping("/scenario/task/log")
     @WebOperationLog(resourceType = ResourceType.EXECUTION_RECORD,
-            operationType = OperationTypeEnum.SELECT,
-            operationDetails = OperationDetails.EXECUTE_LOG)
+        operationType = OperationTypeEnum.SELECT,
+        operationDetails = OperationDetails.EXECUTE_LOG)
     public LogResponse getLog(@RequestParam("key") int recordId,
         @RequestParam(value = "line", defaultValue = "1") int lineNum) {
         int lineIndex = lineNum;
@@ -204,8 +205,8 @@ public class EmergencyExecController {
      */
     @GetMapping("/download")
     @WebOperationLog(resourceType = ResourceType.EXECUTION_RECORD,
-            operationType = OperationTypeEnum.DOWNLOAD,
-            operationDetails = OperationDetails.DOWNLOAD_EXECUTION)
+        operationType = OperationTypeEnum.DOWNLOAD,
+        operationDetails = OperationDetails.DOWNLOAD_EXECUTION)
     public void download(HttpServletResponse response) {
         ExcelWriter excelWriter = null;
         try {
@@ -266,8 +267,8 @@ public class EmergencyExecController {
      */
     @GetMapping("/log")
     @WebOperationLog(resourceType = ResourceType.EXECUTION_RECORD,
-            operationType = OperationTypeEnum.SELECT,
-            operationDetails = OperationDetails.EXECUTE_LOG)
+        operationType = OperationTypeEnum.SELECT,
+        operationDetails = OperationDetails.EXECUTE_LOG)
     public LogResponse logOneServer(@RequestParam("key") int detailId,
         @RequestParam(value = "line", defaultValue = "1") int lineNum) {
         int lineIndex = lineNum;
@@ -280,5 +281,13 @@ public class EmergencyExecController {
     @GetMapping("/get")
     public CommonResult getPlanInfo(@RequestParam(value = "history_id") Integer execId) {
         return execService.getPlanInfo(execId);
+    }
+
+    @DeleteMapping
+    @WebOperationLog(resourceType = ResourceType.EXECUTION_RECORD,
+        operationType = OperationTypeEnum.DELETE,
+        operationDetails = OperationDetails.DELETE_EXECUTION)
+    public CommonResult deleteExecRecord(@RequestParam("history_id[]") Integer[] historyIds) {
+        return execService.deleteExecRecord(historyIds);
     }
 }

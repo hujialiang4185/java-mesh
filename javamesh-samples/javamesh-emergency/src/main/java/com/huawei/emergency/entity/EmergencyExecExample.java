@@ -1,19 +1,9 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2021. All rights reserved.
- */
-
 package com.huawei.emergency.entity;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-/**
- * 执行记录
- *
- * @author y30010171
- * @since 2021-11-15
- **/
 public class EmergencyExecExample {
     protected String orderByClause;
 
@@ -722,6 +712,76 @@ public class EmergencyExecExample {
 
         public Criteria andEndTimeNotBetween(Date value1, Date value2) {
             addCriterion("end_time not between", value1, value2, "endTime");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsValidIsNull() {
+            addCriterion("is_valid is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsValidIsNotNull() {
+            addCriterion("is_valid is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsValidEqualTo(String value) {
+            addCriterion("is_valid =", value, "isValid");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsValidNotEqualTo(String value) {
+            addCriterion("is_valid <>", value, "isValid");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsValidGreaterThan(String value) {
+            addCriterion("is_valid >", value, "isValid");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsValidGreaterThanOrEqualTo(String value) {
+            addCriterion("is_valid >=", value, "isValid");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsValidLessThan(String value) {
+            addCriterion("is_valid <", value, "isValid");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsValidLessThanOrEqualTo(String value) {
+            addCriterion("is_valid <=", value, "isValid");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsValidLike(String value) {
+            addCriterion("is_valid like", value, "isValid");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsValidNotLike(String value) {
+            addCriterion("is_valid not like", value, "isValid");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsValidIn(List<String> values) {
+            addCriterion("is_valid in", values, "isValid");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsValidNotIn(List<String> values) {
+            addCriterion("is_valid not in", values, "isValid");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsValidBetween(String value1, String value2) {
+            addCriterion("is_valid between", value1, value2, "isValid");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsValidNotBetween(String value1, String value2) {
+            addCriterion("is_valid not between", value1, value2, "isValid");
             return (Criteria) this;
         }
     }

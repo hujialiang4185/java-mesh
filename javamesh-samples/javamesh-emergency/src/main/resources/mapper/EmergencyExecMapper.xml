@@ -12,6 +12,7 @@
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
         <result column="start_time" jdbcType="TIMESTAMP" property="startTime"/>
         <result column="end_time" jdbcType="TIMESTAMP" property="endTime"/>
+        <result column="is_valid" jdbcType="VARCHAR" property="isValid"/>
     </resultMap>
     <sql id="Example_Where_Clause">
         <where>
@@ -76,7 +77,7 @@
     <sql id="Base_Column_List">
         exec_id
         , plan_id, scene_id, task_id, task_detail_id, script_id, create_user, create_time,
-    start_time, end_time
+    start_time, end_time, is_valid
     </sql>
     <select id="selectByExample" parameterType="com.huawei.emergency.entity.EmergencyExecExample"
             resultMap="BaseResultMap">
@@ -117,12 +118,12 @@
         </selectKey>
         insert into emergency_exec (plan_id, scene_id, task_id,
         task_detail_id, script_id, create_user,
-        create_time, start_time, end_time
-        )
+        create_time, start_time, end_time,
+        is_valid)
         values (#{planId,jdbcType=INTEGER}, #{sceneId,jdbcType=INTEGER}, #{taskId,jdbcType=INTEGER},
         #{taskDetailId,jdbcType=INTEGER}, #{scriptId,jdbcType=INTEGER}, #{createUser,jdbcType=VARCHAR},
-        #{createTime,jdbcType=TIMESTAMP}, #{startTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP}
-        )
+        #{createTime,jdbcType=TIMESTAMP}, #{startTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP},
+        #{isValid,jdbcType=VARCHAR})
     </insert>
     <insert id="insertSelective" parameterType="com.huawei.emergency.entity.EmergencyExec">
         <selectKey keyProperty="execId" order="AFTER" resultType="java.lang.Integer">
@@ -157,6 +158,9 @@
             <if test="endTime != null">
                 end_time,
             </if>
+            <if test="isValid != null">
+                is_valid,
+            </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="planId != null">
@@ -185,6 +189,9 @@
             </if>
             <if test="endTime != null">
                 #{endTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="isValid != null">
+                #{isValid,jdbcType=VARCHAR},
             </if>
         </trim>
     </insert>
@@ -228,6 +235,9 @@
             <if test="record.endTime != null">
                 end_time = #{record.endTime,jdbcType=TIMESTAMP},
             </if>
+            <if test="record.isValid != null">
+                is_valid = #{record.isValid,jdbcType=VARCHAR},
+            </if>
         </set>
         <if test="_parameter != null">
             <include refid="Update_By_Example_Where_Clause"/>
@@ -244,7 +254,8 @@
         create_user = #{record.createUser,jdbcType=VARCHAR},
         create_time = #{record.createTime,jdbcType=TIMESTAMP},
         start_time = #{record.startTime,jdbcType=TIMESTAMP},
-        end_time = #{record.endTime,jdbcType=TIMESTAMP}
+        end_time = #{record.endTime,jdbcType=TIMESTAMP},
+        is_valid = #{record.isValid,jdbcType=VARCHAR}
         <if test="_parameter != null">
             <include refid="Update_By_Example_Where_Clause"/>
         </if>
@@ -279,6 +290,9 @@
             <if test="endTime != null">
                 end_time = #{endTime,jdbcType=TIMESTAMP},
             </if>
+            <if test="isValid != null">
+                is_valid = #{isValid,jdbcType=VARCHAR},
+            </if>
         </set>
         where exec_id = #{execId,jdbcType=INTEGER}
     </update>
@@ -292,7 +306,8 @@
             create_user    = #{createUser,jdbcType=VARCHAR},
             create_time    = #{createTime,jdbcType=TIMESTAMP},
             start_time     = #{startTime,jdbcType=TIMESTAMP},
-            end_time       = #{endTime,jdbcType=TIMESTAMP}
+            end_time       = #{endTime,jdbcType=TIMESTAMP},
+            is_valid       = #{isValid,jdbcType=VARCHAR}
         where exec_id = #{execId,jdbcType=INTEGER}
     </update>
 
@@ -313,19 +328,20 @@
         JOIN emergency_plan t2 ON t1.plan_id = t2.plan_id
         left JOIN emergency_exec_record t3 on t1.exec_id = t3.exec_id and t3.is_valid='1'
         where t1.plan_id is not null
+        and t1.is_valid = '1'
         <if test="param1.planName != null and param1.planName != ''">
-            and locate(#{param1.planName},t2.plan_name) > 0
+            and locate(#{param1.planName},t2.plan_name) &gt; 0
         </if>
         <if test="historyGroup != null and historyGroup != ''">
             and t2.plan_group = #{historyGroup}
         </if>
-        <if test="filters.planNames != null and filters.planNames.length > 0">
+        <if test="filters.planNames != null and filters.planNames.length &gt; 0">
             and t2.plan_name in
             <foreach close=")" collection="filters.planNames" index="index" item="planName" open="(" separator=",">
                 #{planName}
             </foreach>
         </if>
-        <if test="filters.creators != null and filters.creators.length > 0">
+        <if test="filters.creators != null and filters.creators.length &gt; 0">
             and IFNULL((select user_name from NUSER where user_id = t1.create_user),t1.create_user) in
             <foreach close=")" collection="filters.creators" index="index" item="creator" open="(" separator=",">
                 #{creator}

@@ -137,6 +137,11 @@ public class OperationDetails {
     public static final String DOWNLOAD_EXECUTION = "执行记录下载";
 
     /**
+     * 执行记录下载
+     */
+    public static final String DELETE_EXECUTION = "执行记录删除";
+
+    /**
      * 修改项目下的拓扑任务信息
      */
     public static final String PLAN_SAVE = "修改项目下的拓扑任务信息";

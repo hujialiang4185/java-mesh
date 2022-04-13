@@ -5,13 +5,7 @@
 package com.huawei.logaudit.constant;
 
 /**
- * 操作类型和级别的枚举类
- * 级别：
- * 1-提示
- * 2-一般
- * 3-警告
- * 4-危险
- * 5-高危
+ * 操作类型和级别的枚举类 级别： 1-提示 2-一般 3-警告 4-危险 5-高危
  *
  * @author zhengbin zhao
  * @since 2021-03-09
@@ -85,7 +79,7 @@ public enum OperationTypeEnum {
     /**
      * 操作类型：人工确认；级别：一般
      */
-    MANUAL_CONFIRMATION("人工确认",2),
+    MANUAL_CONFIRMATION("人工确认", 2),
 
     /**
      * 操作类型：未知；级别：未知
@@ -106,5 +100,14 @@ public enum OperationTypeEnum {
 
     public int getTypeInt() {
         return typeInt;
+    }
+
+    public static OperationTypeEnum matchByInt(int typeInt, OperationTypeEnum defaultValue) {
+        for (OperationTypeEnum item : OperationTypeEnum.values()) {
+            if (item.getTypeInt() == typeInt) {
+                return item;
+            }
+        }
+        return defaultValue;
     }
 }

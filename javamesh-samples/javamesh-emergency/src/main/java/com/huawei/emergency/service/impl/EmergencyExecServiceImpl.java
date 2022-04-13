@@ -8,11 +8,15 @@ import com.huawei.common.api.CommonPage;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.PlanStatus;
 import com.huawei.common.constant.RecordStatus;
+import com.huawei.common.constant.ScriptLanguageEnum;
+import com.huawei.common.constant.ScriptTypeEnum;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.emergency.controller.EmergencyPlanController;
 import com.huawei.emergency.dto.PlanQueryDto;
 import com.huawei.emergency.dto.SceneExecDto;
+import com.huawei.emergency.dto.ScriptManageDto;
 import com.huawei.emergency.entity.EmergencyExec;
+import com.huawei.emergency.entity.EmergencyExecExample;
 import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyExecRecordDetail;
 import com.huawei.emergency.entity.EmergencyExecRecordDetailExample;
@@ -166,8 +170,8 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
     }
 
     @Override
-    public CommonResult debugScript(String content, String serverName) {
-        if (StringUtils.isEmpty(content)) {
+    public CommonResult debugScript(ScriptManageDto script) {
+        if (script == null || StringUtils.isEmpty(script.getContent())) {
             return CommonResult.failed("脚本内容为空");
         }
         EmergencyExec exec = new EmergencyExec();
@@ -179,14 +183,20 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
         record.setPlanId(0);
         record.setSceneId(0);
         record.setTaskId(0);
+        ScriptLanguageEnum scriptLanguage =
+            ScriptLanguageEnum.match(script.getScriptType(), ScriptTypeEnum.NORMAL);
+        if (scriptLanguage == null) {
+            return CommonResult.failed("请选择正确的脚本语言类型");
+        }
+        record.setScriptType(scriptLanguage.getValue());
         record.setStatus(RecordStatus.PENDING.getValue());
         record.setScriptName("debug");
-        record.setScriptContent(content);
+        record.setScriptContent(script.getContent());
         record.setCreateUser("system");
-        if (StringUtils.isNotEmpty(serverName)) {
+        if (StringUtils.isNotEmpty(script.getServerName())) {
             EmergencyServerExample isServerExist = new EmergencyServerExample();
             isServerExist.createCriteria()
-                .andServerNameEqualTo(serverName)
+                .andServerNameEqualTo(script.getServerName())
                 .andIsValidEqualTo(ValidEnum.VALID.getValue());
             List<EmergencyServer> serverList = serverMapper.selectByExample(isServerExist);
             if (serverList.size() == 0) {
@@ -437,10 +447,15 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
         }
         if (StringUtils.isEmpty(recordDetail.getLog())) {
             LogResponse log = LogMemoryStore.getLog(detailId, line);
-            if (log.getLine() == null && log.getData().length == 0) { // 可能开始执行 但还未生成日志
-                return new LogResponse(line, LogMemoryStore.EMPTY_ARRAY);
+            if (log.getLine() != null || log.getData().length > 0) {
+                return log;
             }
-            return log;
+            if (RecordStatus.PENDING.getValue().equals(recordDetail.getStatus()) || RecordStatus.RUNNING.getValue()
+                .equals(recordDetail.getStatus())) {
+                return new LogResponse(line, LogMemoryStore.EMPTY_ARRAY); // 可能开始执行 但还未生成日志
+            } else {
+                return LogResponse.END;
+            }
         }
         return LogResponse.parse(recordDetail.getLog(), line);
     }
@@ -517,6 +532,30 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
         if (recordMapper.countByExample(scriptExample) > 0) {
             return CommonResult.failed("当前脚本已存在待执行或正在执行的任务");
         }
+        return CommonResult.success();
+    }
+
+    @Override
+    public CommonResult deleteExecRecord(Integer[] historyIds) {
+        EmergencyExecExample execExample = new EmergencyExecExample();
+        execExample.createCriteria().andExecIdIn(Arrays.stream(historyIds).collect(Collectors.toList()));
+        EmergencyExec exec = new EmergencyExec();
+        exec.setIsValid(ValidEnum.IN_VALID.getValue());
+        execMapper.updateByExampleSelective(exec, execExample);
+
+        // 更新任务执行表
+        EmergencyExecRecordExample recordExample = new EmergencyExecRecordExample();
+        recordExample.createCriteria().andExecIdIn(Arrays.stream(historyIds).collect(Collectors.toList()));
+        EmergencyExecRecord execRecord = new EmergencyExecRecord();
+        execRecord.setIsValid(ValidEnum.IN_VALID.getValue());
+        recordMapper.updateByExampleSelective(execRecord, recordExample);
+
+        // 更新任务执行明细表
+        EmergencyExecRecordDetailExample recordDetailExample = new EmergencyExecRecordDetailExample();
+        recordDetailExample.createCriteria().andExecIdIn(Arrays.stream(historyIds).collect(Collectors.toList()));
+        EmergencyExecRecordDetail recordDetail = new EmergencyExecRecordDetail();
+        recordDetail.setIsValid(ValidEnum.IN_VALID.getValue());
+        recordDetailMapper.updateByExampleSelective(recordDetail, recordDetailExample);
         return CommonResult.success();
     }
 }
