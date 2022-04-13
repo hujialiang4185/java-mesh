@@ -32,6 +32,7 @@ import org.ngrinder.model.Role;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -42,10 +43,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -61,18 +62,28 @@ import javax.servlet.http.HttpServletResponse;
 @Slf4j
 public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     private static final Logger LOGGER = LoggerFactory.getLogger(JwtAuthenticationTokenFilter.class);
-    private static final Set<String> ALLOWED_PATHS = Collections.unmodifiableSet(new HashSet<>(
-        Arrays.asList("/ws", "/swagger-ui.html", "/api/script/execComplete")));
     @Autowired
     private UserDetailsService userDetailsService;
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
+    @Value("${secure.ignored.urls}")
+    private String ignoredUrls;
+    private Set<String> ignoredUrlSet;
+
+    @PostConstruct
+    public void init() {
+        ignoredUrlSet = Arrays.stream(ignoredUrls.split(",")).collect(Collectors.toSet());
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
         HttpServletResponse response,
         FilterChain chain) throws ServletException, IOException {
         String path = request.getRequestURI().substring(request.getContextPath().length()).replaceAll("[/]+$", "");
+        if (ignoredUrlSet.contains(path)) {
+            chain.doFilter(request, response);
+            return;
+        }
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -106,14 +117,14 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }
-            if (!ALLOWED_PATHS.contains(path)) {
-                if (!"admin".equals(jwtUser.getUsername()) && StringUtils.isBlank(jwtUser.getGroupName())) {
-                    JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("msg", FailedInfo.USER_HAVE_NOT_GROUP);
-                    responseJson(response, jsonObject);
-                    return;
-                }
+
+            if (!"admin".equals(jwtUser.getUsername()) && StringUtils.isBlank(jwtUser.getGroupName())) {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("msg", FailedInfo.USER_HAVE_NOT_GROUP);
+                responseJson(response, jsonObject);
+                return;
             }
+
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             LOGGER.debug("authenticated user:{}", username);
             SecurityContextHolder.getContext().setAuthentication(authentication);
