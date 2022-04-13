@@ -23,6 +23,7 @@ import com.huawei.script.exec.log.LogResponse;
 
 import io.swagger.annotations.Api;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -75,6 +76,15 @@ public class EmergencyScriptController {
         JwtUser jwtUser = (JwtUser) authentication.getPrincipal();
         return service.listScript(jwtUser, scriptName, scriptUser, pageSize, current, sorter, order, status,
             scriptType);
+    }
+
+    @PostMapping("/script_name_exist")
+    public CommonResult isScriptNameExist(@RequestBody EmergencyScript script) {
+        if (script == null || StringUtils.isEmpty(script.getScriptName())) {
+            return CommonResult.failed("脚本名称为空");
+        }
+        return service.isScriptNameExist(script.getScriptName()) ? CommonResult.success() : CommonResult.failed(
+            "脚本名称在本组或其他组重复");
     }
 
     /**

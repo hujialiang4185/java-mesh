@@ -102,4 +102,12 @@ public interface EmergencyScriptService {
      * @return 脚本的文件夹
      */
     String grinderDirPath(EmergencyScript script);
+
+    /**
+     * 脚本名称是否已存在
+     *
+     * @param scriptName 脚本名称
+     * @return 是否存在
+     */
+    boolean isScriptNameExist(String scriptName);
 }

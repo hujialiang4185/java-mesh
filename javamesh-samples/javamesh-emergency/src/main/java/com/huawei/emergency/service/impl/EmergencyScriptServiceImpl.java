@@ -788,6 +788,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
         return CommonResult.success();
     }
 
+    @Override
     public boolean isScriptNameExist(String scriptName) {
         EmergencyScriptExample isNameExist = new EmergencyScriptExample();
         isNameExist.createCriteria()
