@@ -41,6 +41,7 @@ import com.huawei.emergency.entity.EmergencyPlanExample;
 import com.huawei.emergency.entity.EmergencyScript;
 import com.huawei.emergency.entity.EmergencyScriptExample;
 import com.huawei.emergency.entity.EmergencyServer;
+import com.huawei.emergency.entity.EmergencyServerExample;
 import com.huawei.emergency.entity.EmergencyTask;
 import com.huawei.emergency.entity.JwtUser;
 import com.huawei.emergency.mapper.EmergencyExecMapper;
@@ -306,7 +307,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         newTest.setId(null);
         newTest.setCreatedDate(new Date());
         newTest.setCreatedUser(testTemplate.getCreatedUser());
-        newTest.setStatus(Status.READY);
+        newTest.setStatus(Status.SAVED); // 开启自动执行的情况下，READY状态的压测任务会被直接自动执行
         PerfTest perfTest = perfTestController.saveOne(testTemplate.getCreatedUser(), newTest);
         LOGGER.info("create perfTest {}", perfTest.getId());
         return perfTest;
@@ -474,12 +475,13 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
                 scene.setChildren(children);
             }
 
-            //查找场景下的子任务
+            // 查找场景下的子任务
             children.forEach(task -> {
                 TaskTypeEnum subTaskTypeEnum = TaskTypeEnum.matchByValue(task.getTaskType());
                 if (subTaskTypeEnum != null) {
                     task.setTaskType(subTaskTypeEnum.getDesc());
                 }
+                queryServer(task);
                 queryPerfTest(task);
                 // 查找子任务下的子任务
                 List<TaskNode> taskChildren = getChildren(task.getPlanId(), task.getSceneId(), task.getTaskId());
@@ -489,6 +491,16 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             });
         });
         return CommonResult.success(taskNodes);
+    }
+
+    public void queryServer(TaskNode node) {
+        if (node != null && StringUtils.isNotEmpty(node.getServerId())) {
+            EmergencyServerExample serverExample = new EmergencyServerExample();
+            serverExample.createCriteria()
+                .andServerIdIn(Arrays.stream(node.getServerId().split(",")).map(Integer::valueOf
+                ).collect(Collectors.toList()));
+            node.setServiceId(serverMapper.selectByExample(serverExample));
+        }
     }
 
     public void queryPerfTest(TaskNode node) {
@@ -619,9 +631,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         Page<PlanQueryDto> pageInfo = PageHelper
             .startPage(params.getPageIndex(), params.getPageSize(), StringUtils.isEmpty(params.getSortType()) ? "" :
                 params.getSortField() + System.lineSeparator() + params.getSortType())
-            .doSelectPage(() -> {
-                planMapper.queryPlanDto(params.getObject());
-            });
+            .doSelectPage(() -> planMapper.queryPlanDto(params.getObject()));
         List<PlanQueryDto> result = pageInfo.getResult();
         List<String> auth = jwtUser.getAuthList();
         String userName = jwtUser.getUsername();
@@ -642,7 +652,10 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
                 if (perfTest != null) {
                     planDetail.setTestId(perfTest.getId());
                     planDetail.setStartTime(perfTest.getStartTime());
-                    planDetail.setDuration(perfTest.getDuration());
+                    if (perfTest.getFinishTime() != null && perfTest.getStartTime() != null) {
+                        planDetail.setDuration(
+                            (perfTest.getFinishTime().getTime() - perfTest.getStartTime().getTime()) / 1000L);
+                    }
                     planDetail.setTagString(perfTest.getTagString());
                     planDetail.setTps(perfTest.getTps());
                     planDetail.setMeanTestTime(perfTest.getMeanTestTime());
@@ -653,7 +666,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
                         planDetail.setErrorRate(0D);
                     } else {
                         planDetail.setErrorRate(
-                            (perfTest.getErrors() == null ? 0D : perfTest.getErrors().doubleValue()) / testCount);
+                            (perfTest.getErrors() == null ? 0D : perfTest.getErrors().doubleValue()) * 100 / testCount);
                     }
                     planDetail.setStatus(perfTest.getStatus().getIconName());
                 }
@@ -906,6 +919,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             if (taskTypeEnum != null) {
                 detail.setTaskType(taskTypeEnum.getDesc());
             }
+            queryServer(detail);
             queryPerfTest(detail);
             List<TaskNode> children = getChildren(detail.getPlanId(), detail.getSceneId(), detail.getTaskId());
             if (children.size() > 0) {

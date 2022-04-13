@@ -46,7 +46,7 @@ public interface EmergencyScriptMapper {
     int updateByPrimaryKey(EmergencyScript record);
 
     List<EmergencyScript> listScript(String userName, String auth, String scriptName, String scriptUser, String status,
-        String group);
+        String group, List<String> scriptTypes);
 
     ScriptManageDto getScriptInfo(int scriptId);
 

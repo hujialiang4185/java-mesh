@@ -17,11 +17,9 @@ import com.huawei.emergency.entity.EmergencyExecRecordDetailExample;
 import com.huawei.emergency.entity.EmergencyExecRecordExample;
 import com.huawei.emergency.entity.EmergencyServer;
 import com.huawei.emergency.entity.EmergencyServerExample;
-import com.huawei.emergency.mapper.EmergencyElementMapper;
 import com.huawei.emergency.mapper.EmergencyExecRecordDetailMapper;
 import com.huawei.emergency.mapper.EmergencyExecRecordMapper;
 import com.huawei.emergency.mapper.EmergencyServerMapper;
-import com.huawei.emergency.mapper.EmergencyTaskMapper;
 import com.huawei.emergency.service.EmergencyPlanService;
 import com.huawei.emergency.service.EmergencySceneService;
 import com.huawei.emergency.service.EmergencyTaskService;
@@ -33,6 +31,7 @@ import com.huawei.script.exec.session.ServerInfo;
 import org.apache.commons.lang.StringUtils;
 import org.ngrinder.common.constant.WebConstants;
 import org.ngrinder.model.PerfTest;
+import org.ngrinder.model.Status;
 import org.ngrinder.model.User;
 import org.ngrinder.perftest.service.PerfTestService;
 import org.slf4j.Logger;
@@ -47,6 +46,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -66,6 +66,7 @@ public class ExecRecordHandlerFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExecRecordHandlerFactory.class);
     private static final int RETRY_TIMES = 10;
     private static final long RETRY_SLEEP_TIME = 1000L;
+    private static final String SPLIT_SIGN = ",";
     @Autowired
     private EmergencyTaskService taskService;
 
@@ -87,14 +88,11 @@ public class ExecRecordHandlerFactory {
     @Value("${script.timeOut}")
     private long timeOut;
 
+    @Value("${ngrinder.auto.execute.test}")
+    private boolean autoTest;
+
     @Autowired
     private PasswordUtil passwordUtil;
-
-    @Autowired
-    private EmergencyElementMapper elementMapper;
-
-    @Autowired
-    private EmergencyTaskMapper taskMapper;
 
     @Autowired
     private RestPerfTestController perfTestController;
@@ -284,7 +282,7 @@ public class ExecRecordHandlerFactory {
         execInfo.setScriptContent(record.getScriptContent());
         execInfo.setTimeOut(timeOut);
         if (StringUtils.isNotEmpty(record.getScriptParams())) {
-            String[] split = record.getScriptParams().split(",");
+            String[] split = record.getScriptParams().split(SPLIT_SIGN);
             execInfo.setParams(split);
         }
         if (recordDetail.getServerId() != null) {
@@ -312,22 +310,20 @@ public class ExecRecordHandlerFactory {
      */
     @Transactional(rollbackFor = Exception.class)
     public List<EmergencyExecRecordDetail> generateRecordDetail(EmergencyExecRecord record) {
-        List<EmergencyExecRecordDetail> result = new ArrayList<>();
         if (record.getTaskId() == null) { // 场景记录
             EmergencyExecRecordDetail recordDetail = new EmergencyExecRecordDetail();
             recordDetail.setExecId(record.getExecId());
             recordDetail.setRecordId(record.getRecordId());
             recordDetail.setStatus(RecordStatus.PENDING.getValue());
             recordDetailMapper.insertSelective(recordDetail);
-            result.add(recordDetail);
-            return result;
+            return Arrays.asList(recordDetail);
         }
         if (StringUtils.isEmpty(record.getServerId())) {
             LOGGER.warn("The server list is empty. recordId={}", record.getRecordId());
             throw new ApiException("未选择执行的agent");
         }
         try {
-            List<Integer> serverIdList = Arrays.stream(record.getServerId().split(","))
+            List<Integer> serverIdList = Arrays.stream(record.getServerId().split(SPLIT_SIGN))
                 .map(Integer::valueOf)
                 .collect(Collectors.toList());
             EmergencyServerExample allServerExample = new EmergencyServerExample();
@@ -338,34 +334,61 @@ public class ExecRecordHandlerFactory {
             if (serverList.size() == 0) {
                 throw new ApiException("选择的agent服务器不可用");
             }
-            for (EmergencyServer server : serverList) {
-                if (server == null) {
-                    continue;
-                }
-                EmergencyExecRecordDetail recordDetail = new EmergencyExecRecordDetail();
-                recordDetail.setExecId(record.getExecId());
-                recordDetail.setRecordId(record.getRecordId());
-                recordDetail.setStatus(RecordStatus.PENDING.getValue());
-                recordDetail.setServerId(server.getServerId());
-                recordDetail.setServerIp(server.getServerIp());
-                if (record.getPerfTestId() != null) { // 如果是自定义脚本压测，根据此压测模板生成压测任务
-                    PerfTest perfTest = planService.copyPerfTestByTestId(record.getPerfTestId());
-                    perfTest.setAgentCount(1);
-                    List<Integer> agentIds = serverMapper.selectAgentIdsByServerIds(
-                        Arrays.asList(server.getServerId().toString()));
-                    if (agentIds.size() > 0) {
-                        perfTest.setAgentIds(agentIds.get(0).toString());
-                    }
-                    perfTestService.save(perfTest.getCreatedUser(), perfTest);
-                    recordDetail.setPerfTestId(perfTest.getId().intValue());
-                }
-                recordDetailMapper.insertSelective(recordDetail);
-                result.add(recordDetail);
-            }
+            return record.getPerfTestId() == null ? createNormalRecordDetail(record, serverList)
+                : createPerfTestRecordDetail(record, serverList);
         } catch (NumberFormatException e) {
             LOGGER.error("parse record.serverId error,recordId={}. {}", record.getRecordId(), e.getMessage());
         }
+        return Collections.emptyList();
+    }
+
+    private List<EmergencyExecRecordDetail> createNormalRecordDetail(EmergencyExecRecord record,
+        List<EmergencyServer> serverList) {
+        List<EmergencyExecRecordDetail> result = new ArrayList<>();
+        for (EmergencyServer server : serverList) {
+            if (server == null) {
+                continue;
+            }
+            EmergencyExecRecordDetail recordDetail = new EmergencyExecRecordDetail();
+            recordDetail.setExecId(record.getExecId());
+            recordDetail.setRecordId(record.getRecordId());
+            recordDetail.setStatus(RecordStatus.PENDING.getValue());
+            recordDetail.setServerId(server.getServerId());
+            recordDetail.setServerIp(server.getServerIp());
+            recordDetailMapper.insertSelective(recordDetail);
+            result.add(recordDetail);
+        }
         return result;
+    }
+
+    private List<EmergencyExecRecordDetail> createPerfTestRecordDetail(EmergencyExecRecord record,
+        List<EmergencyServer> serverList) {
+        EmergencyExecRecordDetail recordDetail = new EmergencyExecRecordDetail();
+        recordDetail.setExecId(record.getExecId());
+        recordDetail.setRecordId(record.getRecordId());
+        recordDetail.setStatus(RecordStatus.PENDING.getValue());
+        if (record.getPerfTestId() != null) { // 如果是自定义脚本压测，根据此压测模板生成压测任务
+            PerfTest perfTest = planService.copyPerfTestByTestId(record.getPerfTestId());
+            perfTest.setAgentCount(serverList.size());
+            List<Integer> agentIds = new ArrayList<>();
+            for (EmergencyServer server : serverList) {
+                List<Integer> agent = serverMapper.selectAgentIdsByServerIds(
+                    Arrays.asList(server.getServerId().toString()));
+                if (agent.size() > 0) {
+                    agentIds.add(agent.get(0));
+                    LOGGER.debug("found agent {} by ip {}.", agent.get(0), server.getServerIp());
+                } else {
+                    LOGGER.warn("can't found agent by ip {}.", server.getServerIp());
+                }
+            }
+            if (agentIds.size() > 0) {
+                perfTest.setAgentIds(StringUtils.join(agentIds, SPLIT_SIGN));
+            }
+            perfTestService.save(perfTest.getCreatedUser(), perfTest);
+            recordDetail.setPerfTestId(perfTest.getId().intValue());
+        }
+        recordDetailMapper.insertSelective(recordDetail);
+        return Arrays.asList(recordDetail);
     }
 
     /**
@@ -441,9 +464,15 @@ public class ExecRecordHandlerFactory {
         }
         User user = new User();
         user.setUserId(perfTest.getCreatedUser().getUserId());
-        Map<String, Object> resultMap =
-            perfTestController.startOne(user, perfTestId.longValue());
-        return Boolean.parseBoolean(resultMap.getOrDefault(WebConstants.JSON_SUCCESS, "false").toString());
+        if (autoTest) {
+            perfTest.setStatus(Status.READY);
+            perfTestService.save(user, perfTest); // 开启自动执行的情况下，将压测任务置为ready即可自动执行
+            return true;
+        } else {
+            Map<String, Object> resultMap =
+                perfTestController.startOne(user, perfTestId.longValue());
+            return Boolean.parseBoolean(resultMap.getOrDefault(WebConstants.JSON_SUCCESS, "false").toString());
+        }
     }
 
     /**
@@ -485,7 +514,7 @@ public class ExecRecordHandlerFactory {
                 List<EmergencyExecRecordDetail> emergencyExecRecordDetails = generateRecordDetail(record);
                 EmergencyExecRecord finalRecord = record;
                 emergencyExecRecordDetails.forEach(recordDetail -> exec(finalRecord, recordDetail));
-            } catch (ApiException e) {
+            } catch (ApiException | IllegalArgumentException e) {
                 LOGGER.error("failed to generateRecordDetail. {}.{}", record.getRecordId(), e.getMessage());
                 EmergencyExecRecord errorRecord = new EmergencyExecRecord();
                 errorRecord.setRecordId(record.getRecordId());

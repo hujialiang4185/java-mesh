@@ -52,7 +52,7 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
     private static final Logger LOGGER = LoggerFactory.getLogger(EmergencyTaskServiceImpl.class);
     private static final int ONE_THOUSAND = 1000;
     private static final Pattern PATTERN = Pattern.compile("[\\[\\]]");
-    private static final String SIGN_COMMA = "逗号";
+    private static final String SIGN_COMMA = ",";
 
     @Resource(name = "scriptExecThreadPool")
     private ThreadPoolExecutor threadPoolExecutor;
@@ -261,29 +261,36 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
     public CommonResult getMetricsReport(long perfTestId, int step) {
         TaskMetricsDTO taskMetrics = new TaskMetricsDTO();
         int interval = perfTestService.getReportDataInterval(perfTestId, "TPS", step);
-        taskMetrics.setTps(Arrays.stream(PATTERN.matcher(perfTestService.getReportData(perfTestId, "TPS",
-                false,
-                interval).getSecond().get(0)).replaceAll("").split(SIGN_COMMA))
-            .map(this::stringToDouble).collect(Collectors.toList()));
-        taskMetrics.setErrors(Arrays.stream(PATTERN.matcher(perfTestService.getReportData(perfTestId, "Errors",
-                false,
-                interval).getSecond().get(0)).replaceAll("").split(SIGN_COMMA))
-            .map(this::stringToLong).collect(Collectors.toList()));
-        taskMetrics.setMeanTestTime(
-            Arrays.stream(PATTERN.matcher(perfTestService.getReportData(perfTestId, "Mean_Test_Time_(ms)",
-                    false,
-                    interval).getSecond().get(0)).replaceAll("").split(SIGN_COMMA))
+        ArrayList<String> tps = perfTestService.getReportData(perfTestId, "TPS", false, interval).getSecond();
+        if (tps.size() > 0) {
+            taskMetrics.setTps(Arrays.stream(PATTERN.matcher(tps.get(0)).replaceAll("").split(SIGN_COMMA))
                 .map(this::stringToDouble).collect(Collectors.toList()));
-        taskMetrics.setMeanTimeToFirstByte(
-            Arrays.stream(PATTERN.matcher(perfTestService.getReportData(perfTestId, "Mean_time_to_first_byte",
-                    false,
-                    interval).getSecond().get(0)).replaceAll("").split(SIGN_COMMA))
-                .map(this::stringToDouble).collect(Collectors.toList()));
-        taskMetrics.setVuser(Arrays.stream(PATTERN.matcher(perfTestService.getReportData(perfTestId, "Vuser",
-                false,
-                interval).getSecond().get(0)).replaceAll("").split(SIGN_COMMA))
-            .map(this::stringToLong).collect(
-                Collectors.toList()));
+        }
+        ArrayList<String> errors = perfTestService.getReportData(perfTestId, "Errors", false, interval).getSecond();
+        if (errors.size() > 0) {
+            taskMetrics.setErrors(Arrays.stream(PATTERN.matcher(errors.get(0)).replaceAll("").split(SIGN_COMMA))
+                .map(this::stringToLong).collect(Collectors.toList()));
+        }
+        ArrayList<String> meanTestTime = perfTestService.getReportData(perfTestId, "Mean_Test_Time_(ms)", false,
+            interval).getSecond();
+        if (meanTestTime.size() > 0) {
+            taskMetrics.setMeanTestTime(
+                Arrays.stream(PATTERN.matcher(meanTestTime.get(0)).replaceAll("").split(SIGN_COMMA))
+                    .map(this::stringToDouble).collect(Collectors.toList()));
+        }
+        ArrayList<String> meanTimeToFirstByte = perfTestService.getReportData(perfTestId, "Mean_time_to_first_byte",
+            false, interval).getSecond();
+        if (meanTimeToFirstByte.size() > 0) {
+            taskMetrics.setMeanTimeToFirstByte(
+                Arrays.stream(PATTERN.matcher(meanTimeToFirstByte.get(0)).replaceAll("").split(SIGN_COMMA))
+                    .map(this::stringToDouble).collect(Collectors.toList()));
+        }
+        ArrayList<String> vuser = perfTestService.getReportData(perfTestId, "Vuser", false, interval).getSecond();
+        if (vuser.size() > 0) {
+            taskMetrics.setVuser(Arrays.stream(PATTERN.matcher(vuser.get(0)).replaceAll("").split(SIGN_COMMA))
+                .map(this::stringToLong).collect(
+                    Collectors.toList()));
+        }
         ArrayList<String> userDefinedResult = perfTestService.getReportData(perfTestId, "User_defined",
             false,
             interval).getSecond();
@@ -292,15 +299,14 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
                 Arrays.stream(PATTERN.matcher(userDefinedResult.get(0)).replaceAll("").split(SIGN_COMMA))
                     .map(this::stringToLong).collect(
                         Collectors.toList()));
-        } else {
-            taskMetrics.setUserDefined(new ArrayList<>());
         }
         final PerfTest test = perfTestService.getOne(perfTestId);
         long extra = test.getSamplingInterval() * interval;
-        long start = test.getStartTime().getTime();
-        taskMetrics.setTime(new ArrayList<>());
-        for (int i = 1; i <= taskMetrics.getTps().size(); i++) {
-            taskMetrics.getTime().add(start + (extra * i * ONE_THOUSAND));
+        if (test.getStartTime() != null) {
+            long start = test.getStartTime().getTime();
+            for (int i = 1; i <= taskMetrics.getTps().size(); i++) {
+                taskMetrics.getTime().add(start + (extra * i * ONE_THOUSAND));
+            }
         }
         return CommonResult.success(taskMetrics);
     }

@@ -7,6 +7,7 @@ package com.huawei.emergency.dto;
 import com.huawei.emergency.entity.EmergencyServer;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -35,6 +36,7 @@ public class TaskNode {
     private String channelType;
     private Integer scriptId;
     private String scriptName;
+    private String serverId;
     private List<EmergencyServer> serviceId;
     private String submitInfo;
     private String sync;
@@ -72,6 +74,7 @@ public class TaskNode {
     private Integer samplingIgnore; // 采样忽略数
     private boolean isSafe; // 是否安全文件分发
     private String testParam; // 测试参数
+    @JsonProperty("is_increased")
     private boolean isIncreased; // 开启压力递增
     private String concurrency; // 并发量
     private Integer initValue; // 初始化值
@@ -106,11 +109,13 @@ public class TaskNode {
         perfTest.setSafeDistribution(this.isSafe());
         perfTest.setParam(this.getTestParam());
         perfTest.setUseRampUp(this.isIncreased());
-        perfTest.setRampUpType("线程".equals(this.getConcurrency()) ? RampUp.THREAD : RampUp.PROCESS);
-        perfTest.setRampUpInitCount(this.getInitValue());
-        perfTest.setRampUpStep(this.getIncrement());
-        perfTest.setRampUpInitSleepTime(this.getInitWait());
-        perfTest.setRampUpIncrementInterval(this.getGrowthInterval());
+        if (perfTest.getUseRampUp()) {
+            perfTest.setRampUpType("线程".equals(this.getConcurrency()) ? RampUp.THREAD : RampUp.PROCESS);
+            perfTest.setRampUpInitCount(this.getInitValue());
+            perfTest.setRampUpStep(this.getIncrement());
+            perfTest.setRampUpInitSleepTime(this.getInitWait());
+            perfTest.setRampUpIncrementInterval(this.getGrowthInterval());
+        }
         perfTest.setStatus(Status.SAVED);
         perfTest.setCreatedDate(new Date());
         return perfTest;

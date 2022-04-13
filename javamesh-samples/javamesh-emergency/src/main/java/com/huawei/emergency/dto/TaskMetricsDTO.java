@@ -18,6 +18,7 @@ package com.huawei.emergency.dto;
 
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,12 +29,12 @@ import java.util.List;
  **/
 @Data
 public class TaskMetricsDTO {
-    private List<Long> time;
-    private List<Double> tps;
-    private List<Long> errors;
-    private List<Long> vuser;
-    private List<Long> userDefined;
-    private List<Double> meanTestTime;
-    private List<Double> meanTimeToFirstByte;
+    private List<Long> time = new ArrayList<>();
+    private List<Double> tps = new ArrayList<>();
+    private List<Long> errors = new ArrayList<>();
+    private List<Long> vuser = new ArrayList<>();
+    private List<Long> userDefined = new ArrayList<>();
+    private List<Double> meanTestTime = new ArrayList<>();
+    private List<Double> meanTimeToFirstByte = new ArrayList<>();
 }
 

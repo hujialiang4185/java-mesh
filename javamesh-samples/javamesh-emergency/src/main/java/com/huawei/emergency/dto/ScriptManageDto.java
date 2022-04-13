@@ -72,6 +72,8 @@ public class ScriptManageDto extends EmergencyScript {
 
     private String resources;
 
+    private String serverName;
+
     /**
      * CookiesDTO
      */
