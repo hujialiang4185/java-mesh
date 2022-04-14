@@ -540,6 +540,11 @@ app.post('/argus-emergency/api/script', function (req, res) {
 app.put('/argus-emergency/api/script', function (req, res) {
     res.json()
 })
+app.post('/argus-emergency/api/script/script_name_exist', function (req, res) {
+    res.json({
+        msg: "已存在"
+    })
+})
 app.post('/argus-emergency/api/script/debug', function (req, res) {
     res.json({
         data: {
