@@ -74,7 +74,7 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
             <Switch checkedChildren="同步" unCheckedChildren="异步" defaultChecked />
           </Form.Item>
         </div>
-        <Form.Item label="执行主机" name="service_id" rules={[{ required: true }]}>
+        <Form.Item label="执行主机" name="server_list" rules={[{ required: true }]}>
           <TabelTransfer />
         </Form.Item>
         {isCmd ? <>
