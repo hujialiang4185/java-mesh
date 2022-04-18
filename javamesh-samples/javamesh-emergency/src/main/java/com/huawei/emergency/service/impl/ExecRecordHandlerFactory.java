@@ -244,18 +244,19 @@ public class ExecRecordHandlerFactory {
             updateRecordDetail.setLog(result.getMsg());
             updateRecordDetail.setStatus(
                 result.isSuccess() ? RecordStatus.SUCCESS.getValue() : RecordStatus.FAILED.getValue());
-            recordDetailMapper.updateByExampleSelective(updateRecordDetail, whenRunning); // 更新所有detail的状态
-            EmergencyExecRecord updateRecord = new EmergencyExecRecord();
-            updateRecord.setEndTime(endTime);
-            updateRecord.setLog(result.getMsg());
-            updateRecord.setRecordId(detail.getRecordId());
-            recordMapper.updateByPrimaryKeySelective(updateRecord); // 更新record的信息
-            recordMapper.tryUpdateStatus(detail.getRecordId()); // 执行成功 并且 当前record下所有的recordDetail都处于 执行成功 或者人工确认状态
-            if (result.isSuccess() && isRecordFinished(detail.getRecordId())) {
-                if (record.getTaskId() != null) {
-                    taskService.onComplete(record);
-                } else {
-                    sceneService.onComplete(record);
+            if (recordDetailMapper.updateByExampleSelective(updateRecordDetail, whenRunning) > 0) { // 更新所有detail的状态
+                EmergencyExecRecord updateRecord = new EmergencyExecRecord();
+                updateRecord.setEndTime(endTime);
+                updateRecord.setLog(result.getMsg());
+                updateRecord.setRecordId(detail.getRecordId());
+                recordMapper.updateByPrimaryKeySelective(updateRecord); // 更新record的信息
+                recordMapper.tryUpdateStatus(detail.getRecordId()); // 执行成功 并且 当前record下所有的recordDetail都处于 执行成功 或者人工确认状态
+                if (result.isSuccess() && isRecordFinished(detail.getRecordId())) {
+                    if (record.getTaskId() != null) {
+                        taskService.onComplete(record);
+                    } else {
+                        sceneService.onComplete(record);
+                    }
                 }
             }
 

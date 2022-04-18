@@ -37,7 +37,7 @@ public class TaskNode {
     private Integer scriptId;
     private String scriptName;
     private String serverId;
-    private List<EmergencyServer> serviceId;
+    private List<EmergencyServer> serverList;
     private String submitInfo;
     private String sync;
     private List<TaskNode> children;
@@ -92,7 +92,7 @@ public class TaskNode {
     public PerfTest parse() {
         PerfTest perfTest = new PerfTest();
         perfTest.setTestName(StringUtils.isEmpty(this.getTestName()) ? this.getTaskName() : this.getTestName());
-        perfTest.setAgentCount(this.getServiceId() == null ? 0 : this.getServiceId().size());
+        perfTest.setAgentCount(this.getServerList() == null ? 0 : this.getServerList().size());
         if (this.getVuser() != null) {
             perfTest.setProcesses(getProcessCount(this.getVuser()));
             perfTest.setThreads(this.getVuser() / perfTest.getProcesses());

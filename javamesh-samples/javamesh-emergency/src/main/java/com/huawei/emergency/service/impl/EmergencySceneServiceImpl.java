@@ -6,7 +6,6 @@ package com.huawei.emergency.service.impl;
 
 import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ValidEnum;
-import com.huawei.common.ws.WebSocketServer;
 import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyExecRecordExample;
 import com.huawei.emergency.mapper.EmergencyExecRecordMapper;
@@ -19,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -75,7 +73,8 @@ public class EmergencySceneServiceImpl implements EmergencySceneService {
                 .andIsValidEqualTo(ValidEnum.VALID.getValue());
             List<EmergencyExecRecord> needExecTasks = execRecordMapper.selectByExample(needExecTaskCondition);
             needExecTasks.forEach(execRecord -> {
-                LOGGER.debug("Submit record_id={}. exec_id={}, task_id={}.", execRecord.getRecordId(), execRecord.getExecId(), execRecord.getTaskId());
+                LOGGER.debug("Submit record_id={}. exec_id={}, task_id={}.", execRecord.getRecordId(),
+                    execRecord.getExecId(), execRecord.getTaskId());
                 threadPoolExecutor.execute(handlerFactory.handle(execRecord));
             });
         } else {

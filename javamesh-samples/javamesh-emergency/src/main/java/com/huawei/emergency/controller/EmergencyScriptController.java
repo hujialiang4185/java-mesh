@@ -7,6 +7,8 @@ package com.huawei.emergency.controller;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.FailedInfo;
 import com.huawei.common.constant.ResultCode;
+import com.huawei.common.constant.ScriptLanguageEnum;
+import com.huawei.common.constant.ScriptTypeEnum;
 import com.huawei.emergency.dto.ScriptManageDto;
 import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyScript;
@@ -36,8 +38,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -83,8 +87,8 @@ public class EmergencyScriptController {
         if (script == null || StringUtils.isEmpty(script.getScriptName())) {
             return CommonResult.failed("脚本名称为空");
         }
-        return service.isScriptNameExist(script.getScriptName()) ? CommonResult.success() : CommonResult.failed(
-            "脚本名称在本组或其他组重复");
+        return service.isScriptNameExist(script.getScriptName()) ? CommonResult.failed(
+            "脚本名称在本组或其他组重复") : CommonResult.success();
     }
 
     /**
@@ -218,10 +222,23 @@ public class EmergencyScriptController {
     public CommonResult searchScript(UsernamePasswordAuthenticationToken authentication,
         @RequestParam(value = "value", required = false) String scriptName,
         @RequestParam(value = "status", required = false) String status,
-        @RequestParam(value = "type", required = false) String scriptType) {
-        List<String> scriptNames = service.searchScript((JwtUser) authentication.getPrincipal(), scriptName, status,
-            scriptType);
-        return CommonResult.success(scriptNames);
+        @RequestParam(value = "type", required = false) String scriptType,
+        @RequestParam(value = "language", required = false) String scriptLanguage) {
+        List<String> scriptTypes;
+        if (StringUtils.isNotEmpty(scriptLanguage)) { // 指定了具体的脚本语言
+            scriptTypes =
+                Arrays.asList(ScriptLanguageEnum.match(scriptLanguage, ScriptTypeEnum.NORMAL)).stream()
+                    .map(ScriptLanguageEnum::getValue).collect(
+                        Collectors.toList());
+        } else { // 通过脚本类型来查找脚本语言
+            scriptTypes =
+                ScriptLanguageEnum.matchScriptType(ScriptTypeEnum.match(scriptType, ScriptTypeEnum.NORMAL))
+                    .stream()
+                    .map(ScriptLanguageEnum::getValue)
+                    .collect(Collectors.toList());
+        }
+        return CommonResult.success(service.searchScript((JwtUser) authentication.getPrincipal(), scriptName, status,
+            scriptTypes));
     }
 
     @GetMapping("/getByName")

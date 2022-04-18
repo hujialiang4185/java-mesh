@@ -80,6 +80,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -425,7 +426,15 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         LOGGER.debug("Plan exec_id={},plan_id={} is finished.", record.getExecId(), record.getPlanId());
         EmergencyPlan updatePlan = new EmergencyPlan();
         updatePlan.setPlanId(record.getPlanId());
-        updatePlan.setStatus(PlanStatus.SUCCESS.getValue());
+        EmergencyExecRecordExample hasFailedRecord = new EmergencyExecRecordExample();
+        hasFailedRecord.createCriteria().andExecIdEqualTo(record.getExecId())
+            .andIsValidEqualTo(ValidEnum.VALID.getValue())
+            .andStatusIn(Arrays.asList(RecordStatus.FAILED.getValue(), RecordStatus.ENSURE_FAILED.getValue()));
+        if (recordMapper.countByExample(hasFailedRecord) > 0) {
+            updatePlan.setStatus(PlanStatus.FAILED.getValue());
+        } else {
+            updatePlan.setStatus(PlanStatus.SUCCESS.getValue());
+        }
         WebSocketServer.sendMessage("/plan/" + record.getPlanId());
         planMapper.updateByPrimaryKeySelective(updatePlan);
     }
@@ -481,7 +490,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
                 if (subTaskTypeEnum != null) {
                     task.setTaskType(subTaskTypeEnum.getDesc());
                 }
-                queryServer(task);
+                task.setServerList(queryServer(task.getServerId()));
                 queryPerfTest(task);
                 // 查找子任务下的子任务
                 List<TaskNode> taskChildren = getChildren(task.getPlanId(), task.getSceneId(), task.getTaskId());
@@ -493,14 +502,15 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         return CommonResult.success(taskNodes);
     }
 
-    public void queryServer(TaskNode node) {
-        if (node != null && StringUtils.isNotEmpty(node.getServerId())) {
+    public List<EmergencyServer> queryServer(String serverIds) {
+        if (StringUtils.isNotEmpty(serverIds)) {
             EmergencyServerExample serverExample = new EmergencyServerExample();
             serverExample.createCriteria()
-                .andServerIdIn(Arrays.stream(node.getServerId().split(",")).map(Integer::valueOf
+                .andServerIdIn(Arrays.stream(serverIds.split(",")).map(Integer::valueOf
                 ).collect(Collectors.toList()));
-            node.setServiceId(serverMapper.selectByExample(serverExample));
+            return serverMapper.selectByExample(serverExample);
         }
+        return Collections.emptyList();
     }
 
     public void queryPerfTest(TaskNode node) {
@@ -587,8 +597,8 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             task.setScriptName(StringUtils.isNotEmpty(taskNode.getScriptName()) ? taskNode.getScriptName()
                 : taskNode.getGuiScriptName());
             task.setChannelType(taskNode.getChannelType());
-            if (taskNode.getServiceId() != null) {
-                task.setServerId(StringUtils.join(taskNode.getServiceId().stream()
+            if (taskNode.getServerList() != null) {
+                task.setServerId(StringUtils.join(taskNode.getServerList().stream()
                     .filter(server -> server.getServerId() != null)
                     .map(EmergencyServer::getServerId)
                     .collect(Collectors.toList()), ","));
@@ -645,12 +655,14 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             }
             List<PlanDetailQueryDto> planDetails = planMapper.queryPlanDetailDto(planQueryDto.getPlanId());
             planDetails.forEach(planDetail -> {
+                planDetail.setServerList(queryServer(planDetail.getServerId()));
                 if (planDetail.getPerfTestId() == null) {
                     return;
                 }
                 PerfTest perfTest = perfTestService.getOne(planDetail.getPerfTestId());
                 if (perfTest != null) {
                     planDetail.setTestId(perfTest.getId());
+                    planDetail.setVuser(perfTest.getVuserPerAgent());
                     planDetail.setStartTime(perfTest.getStartTime());
                     if (perfTest.getFinishTime() != null && perfTest.getStartTime() != null) {
                         planDetail.setDuration(
@@ -802,8 +814,8 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         updateTask.setScriptName(
             StringUtils.isNotEmpty(taskNode.getScriptName()) ? taskNode.getScriptName() : taskNode.getGuiScriptName());
         updateTask.setChannelType(taskNode.getChannelType());
-        if (taskNode.getServiceId() != null) {
-            updateTask.setServerId(StringUtils.join(taskNode.getServiceId().stream()
+        if (taskNode.getServerList() != null) {
+            updateTask.setServerId(StringUtils.join(taskNode.getServerList().stream()
                 .filter(server -> server.getServerId() != null)
                 .map(EmergencyServer::getServerId)
                 .collect(Collectors.toList()), ","));
@@ -821,6 +833,8 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         if (originTask.getPerfTestId() != null) {
             PerfTest perfTest = taskNode.parse();
             if (emergencyScripts.get(0) != null) {
+                User ngrinderUser = findNgrinderUserByUserId(emergencyScripts.get(0).getScriptUser());
+                perfTest.setCreatedUser(ngrinderUser);
                 perfTest.setScriptName(scriptService.grinderPath(emergencyScripts.get(0)));
             }
             perfTest.setId(originTask.getPerfTestId().longValue());
@@ -919,7 +933,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             if (taskTypeEnum != null) {
                 detail.setTaskType(taskTypeEnum.getDesc());
             }
-            queryServer(detail);
+            detail.setServerList(queryServer(detail.getServerId()));
             queryPerfTest(detail);
             List<TaskNode> children = getChildren(detail.getPlanId(), detail.getSceneId(), detail.getTaskId());
             if (children.size() > 0) {

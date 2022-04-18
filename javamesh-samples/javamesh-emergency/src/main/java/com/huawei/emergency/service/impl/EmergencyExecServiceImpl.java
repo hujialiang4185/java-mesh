@@ -265,9 +265,17 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
         updateRecord.setStatus(result);
         updateRecord.setRecordId(needEnsureRecord.getRecordId());
         updateRecord.setEnsureUser(userName);
-        if (recordMapper.updateByPrimaryKeySelective(updateRecord) == 0) {
-            return CommonResult.failed("确认失败！");
-        }
+        recordMapper.updateByPrimaryKeySelective(updateRecord);
+        EmergencyExecRecordDetail updateRecordDetail = new EmergencyExecRecordDetail();
+        updateRecordDetail.setStatus(result);
+        updateRecordDetail.setEnsureUser(userName);
+        updateRecordDetail.setEnsureTime(new Date());
+        EmergencyExecRecordDetailExample updateDetailCondition = new EmergencyExecRecordDetailExample();
+        updateDetailCondition.createCriteria()
+            .andRecordIdEqualTo(needEnsureRecord.getRecordId())
+            .andStatusEqualTo(RecordStatus.FAILED.getValue())
+            .andIsValidEqualTo(ValidEnum.VALID.getValue());
+        recordDetailMapper.updateByExampleSelective(updateRecordDetail, updateDetailCondition);
 
         // 当前子任务完成，执行后续任务
         if (RecordStatus.ENSURE_SUCCESS.getValue().equals(result)) {

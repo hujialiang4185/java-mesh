@@ -385,16 +385,10 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
     }
 
     @Override
-    public List<String> searchScript(JwtUser jwtUser, String scriptName, String status, String scriptType) {
+    public List<String> searchScript(JwtUser jwtUser, String scriptName, String status, List<String> scriptTypes) {
         UserEntity userEntity = jwtUser.getUserEntity();
         String userName = userEntity.getUserName();
         String auth = jwtUser.getAuthList().contains("admin") ? "admin" : "";
-        List<String> scriptTypes =
-            ScriptLanguageEnum.matchScriptType(ScriptTypeEnum.match(scriptType, ScriptTypeEnum.NORMAL))
-                .stream()
-                .map(ScriptLanguageEnum::getValue)
-                .collect(Collectors.toList());
-
         return mapper.searchScript(EscapeUtil.escapeChar(scriptName), userName, auth, status, scriptTypes,
             userEntity.getGroup());
     }

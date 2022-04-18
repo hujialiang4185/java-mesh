@@ -31,7 +31,7 @@ public interface EmergencyScriptService {
 
     int updateScript(EmergencyScript script);
 
-    List<String> searchScript(JwtUser jwtUser, String scriptName, String status, String scriptType);
+    List<String> searchScript(JwtUser jwtUser, String scriptName, String status, List<String> scriptTypes);
 
     EmergencyScript getScriptByName(String scriptName);
 

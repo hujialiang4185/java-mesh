@@ -140,7 +140,7 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
         finishedCondition.createCriteria()
             .andExecIdEqualTo(task.getExecId())
             .andParentTaskIdEqualTo(task.getTaskId())
-            .andIsValidEqualTo("1");
+            .andIsValidEqualTo(ValidEnum.VALID.getValue());
         List<EmergencyExecRecord> emergencyExecRecords = execRecordMapper.selectByExample(finishedCondition);
         long runningCount = emergencyExecRecords.stream()
             .filter(record -> RecordStatus.HAS_RUNNING_STATUS.contains(record.getStatus()))
