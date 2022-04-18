@@ -6,11 +6,11 @@
         resource_type,
         operation_type,
         level,
-        case when level = 0 then '提示'
-        when level = 1 then '一般'
-        when level = 2 then '警告'
-        when level = 3 then '危险'
-        when level = 4 then '高危'
+        case when level = 1 then '提示'
+        when level = 2 then '一般'
+        when level = 3 then '警告'
+        when level = 4 then '危险'
+        when level = 5 then '高危'
         end level_label,
         operation_results,
         operation_people,
