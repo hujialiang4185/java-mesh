@@ -1,0 +1,25 @@
+server:
+  port: 9095
+  servlet:
+    context-path: /agent
+  compression:
+    enabled: true
+    mime-types: application/javascript,text/css,application/json,application/xml,text/html,text/xml,text/plain
+spring:
+  application:
+    name: emergency_agent
+heartbeat:
+  connectTimeoutMillis: 9000
+  writeIdleSeconds: 10
+  reconnectInterval: 30
+  server:
+    ip: 127.0.0.1
+    port: 9100
+remoteServer:
+ execComplete: /argus-emergency/api/script/execComplete
+script:
+  executor:
+    corePoolSize: 32
+    maxPoolSize: 32
+    keepAliveTime: 60
+    blockingQueueSize: 1024
