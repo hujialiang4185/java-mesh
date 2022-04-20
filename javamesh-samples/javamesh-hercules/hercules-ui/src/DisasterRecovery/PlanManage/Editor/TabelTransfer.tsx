@@ -76,7 +76,7 @@ export default function App(props: { onChange?: (value: Data[]) => void, value?:
                         setPageSize(currentPageSize)
                     }
                 }}
-                pagination={{ total: leftData.total, size: "small", pageSize, showTotal() { return `共 ${leftData.total} 条` } }}
+                pagination={{ total: leftData.total, size: "small", pageSize, showSizeChanger: true, showTotal() { return `共 ${leftData.total} 条` } }}
                 rowSelection={{
                     selectedRowKeys: leftSelectedRowKeys,
                     onChange(selectedRowKeys) {
@@ -89,7 +89,7 @@ export default function App(props: { onChange?: (value: Data[]) => void, value?:
             />
         } else {
             return <Table size="small" rowKey="server_id" dataSource={rightData}
-                pagination={{ total: rightData.length, size: "small", pageSize, showTotal() { return `共 ${rightData.length} 条` } }}
+                pagination={{ total: rightData.length, size: "small", pageSize, showSizeChanger: true, showTotal() { return `共 ${rightData.length} 条` } }}
                 onChange={function(pagination){
                     const currentPageSize = pagination.pageSize
                     if (currentPageSize && currentPageSize !== pageSize) {
