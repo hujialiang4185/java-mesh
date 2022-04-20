@@ -44,6 +44,12 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
+/**
+ * 心跳维持客户端
+ *
+ * @author h3009881
+ * @since 2021-12-17
+ **/
 @Component
 @Slf4j
 public class HeartbeatClient {

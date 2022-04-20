@@ -16,8 +16,10 @@
 
 package com.huawei.agent.util;
 
-import com.alibaba.fastjson.JSONObject;
 import com.huawei.agent.entity.ExecResult;
+
+import com.alibaba.fastjson.JSONObject;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -28,21 +30,28 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 
+/**
+ * RestTemplate工具类
+ *
+ * @author h3009881
+ * @since 2021-12-17
+ **/
 @Component
 public class RestTemplateUtil {
-    @Autowired
-    private RestTemplate restTemplate;
 
     private static RestTemplate client;
 
+    @Autowired
+    private RestTemplate restTemplate;
+
     @PostConstruct
-    public void init(){
+    public void init() {
         client = restTemplate;
     }
 
     public static ResponseEntity sendPostRequest(String cookie, String url, ExecResult result) {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Cookie",cookie);
+        headers.set("Cookie", cookie);
         HttpEntity httpEntity = new HttpEntity(result, headers);
         return client.exchange(url, HttpMethod.POST, httpEntity, JSONObject.class);
     }

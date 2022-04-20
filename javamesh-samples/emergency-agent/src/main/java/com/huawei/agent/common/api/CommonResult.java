@@ -1,16 +1,31 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2021. All rights reserved.
+ * Copyright (C) Ltd. 2021-2021. Huawei Technologies Co., All rights reserved
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.huawei.agent.common.api;
 
+import lombok.Data;
+
 /**
  * 通用返回对象
  *
- * @author h30009881
  * @param <T>
+ * @author h30009881
  * @since 2021-10-14
  */
+@Data
 public class CommonResult<T> {
     // 提示信息
     private String msg;
@@ -60,29 +75,5 @@ public class CommonResult<T> {
      */
     public static <T> CommonResult<T> failed(String msg) {
         return new CommonResult<T>(msg, null, -1);
-    }
-
-    public String getMsg() {
-        return msg;
-    }
-
-    public void setMsg(String msg) {
-        this.msg = msg;
-    }
-
-    public T getData() {
-        return data;
-    }
-
-    public void setData(T data) {
-        this.data = data;
-    }
-
-    public int getTotal() {
-        return code;
-    }
-
-    public void setTotal(int code) {
-        this.code = code;
     }
 }

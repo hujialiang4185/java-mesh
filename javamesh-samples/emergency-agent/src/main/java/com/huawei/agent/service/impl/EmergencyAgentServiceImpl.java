@@ -32,20 +32,50 @@ import org.python.util.PythonInterpreter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.script.*;
-import javax.servlet.http.HttpServletRequest;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.script.Bindings;
+import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import javax.servlet.http.HttpServletRequest;
+
+/**
+ * 执行agent
+ *
+ * @author h3009881
+ * @since 2021-12-17
+ **/
 @Service
 @Slf4j
 public class EmergencyAgentServiceImpl implements EmergencyAgentService {
+    private static final String UTF_8 = "UTF-8";
+    private static final String SPLIT_SIGN = ",";
+    /**
+     * 脚本执行ID 与 线程的pid的映射关系
+     */
+    private static Map<Integer, String> cache = new HashMap<>();
+    /**
+     * 脚本执行ID 与 请求token的映射关系
+     */
+    private static Map<Integer, String> requestCache = new HashMap<>();
 
     @Value("${remoteServer.execComplete}")
     private String execCompleteUrl;
@@ -56,7 +86,7 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
     @PostConstruct
     public void init() {
         Properties props = new Properties();
-        props.put("python.console.encoding", "UTF-8");
+        props.put("python.console.encoding", UTF_8);
         PythonInterpreter.initialize(System.getProperties(), props, new String[0]);
     }
 
@@ -77,7 +107,7 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
     @Override
     public CommonResult cancel(int detailId, String scriptType) {
         ExecutorHandler executorHandler = new ExecutorHandler();
-        if (scriptType.equals("0")) {
+        if ("0".equals(scriptType)) {
             executorHandler.cancelShell(detailId);
         } else {
             executorHandler.cancelGroovyAndPython(detailId);
@@ -163,7 +193,7 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
                 throw new IllegalArgumentException("不存在groovy执行引擎");
             }
             if (StringUtils.isNotBlank(param)) {
-                String[] params = param.split(",");
+                String[] params = param.split(SPLIT_SIGN);
 
                 // 初始化Bindings
                 Bindings bindings = engine.createBindings();
@@ -193,12 +223,12 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
                 try {
                     sw.close();
                 } catch (Exception e) {
-                    log.error("close exec groovy script normalOutputStream error.",e);
+                    log.error("close exec groovy script normalOutputStream error.", e);
                 }
                 try {
                     swError.close();
                 } catch (Exception e) {
-                    log.error("close exec groovy script errorOutputStream error.",e);
+                    log.error("close exec groovy script errorOutputStream error.", e);
                 }
                 cache.remove(detailId);
             }
@@ -208,7 +238,7 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
             cache.put(detailId, String.valueOf(Thread.currentThread().getId()));
             PythonInterpreter interpreter = new PythonInterpreter();
             if (StringUtils.isNotBlank(param)) {
-                String[] params = param.split(",");
+                String[] params = param.split(SPLIT_SIGN);
                 for (String keyValue : params) {
                     String[] split = keyValue.split("=");
                     interpreter.set(split[0], split[1]);
@@ -222,16 +252,16 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
                 interpreter.setErr(errorOutputStream);
                 pythonFile = createPythonFile(scriptName, content);
                 interpreter.execfile(pythonFile);
-                String errorInfo = errorOutputStream.toString("UTF-8");
+                String errorInfo = errorOutputStream.toString(UTF_8);
                 if (StringUtils.isNotBlank(errorInfo)) {
                     onComplete(ExecResult.fail(detailId, errorInfo));
                 } else {
-                    onComplete(ExecResult.success(detailId, normalOutputStream.toString("UTF-8")));
+                    onComplete(ExecResult.success(detailId, normalOutputStream.toString(UTF_8)));
                 }
             } catch (PyException e) {
                 log.error("exec python script {} failed.", detailId, e);
                 onComplete(ExecResult.fail(detailId,
-                    normalOutputStream.toString("UTF-8") + e));
+                    normalOutputStream.toString(UTF_8) + e));
             } finally {
                 if (StringUtils.isNotEmpty(pythonFile)) {
                     File file = new File(pythonFile);
@@ -243,12 +273,12 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
                 try {
                     normalOutputStream.close();
                 } catch (Exception e) {
-                    log.error("close exec python script normalOutputStream error.",e);
+                    log.error("close exec python script normalOutputStream error.", e);
                 }
                 try {
                     errorOutputStream.close();
                 } catch (Exception e) {
-                    log.error("close exec python script errorOutputStream error.",e);
+                    log.error("close exec python script errorOutputStream error.", e);
                 }
             }
         }
@@ -271,9 +301,9 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
             try {
                 fileName = createScriptFile(scriptName, content);
                 if (param != null) {
-                    onComplete(execute(commands(fileName, param.split(","))));
+                    onComplete(execute(commands(fileName, param.split(SPLIT_SIGN))));
                 } else {
-                    onComplete(execute(commands(fileName, "".split(","))));
+                    onComplete(execute(commands(fileName, "".split(SPLIT_SIGN))));
                 }
             } catch (FileNotFoundException e) {
                 onComplete(ExecResult.fail(detailId, "Please check out your scriptLocation."));
