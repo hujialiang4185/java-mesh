@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Ltd. 2021-2021. Huawei Technologies Co., All rights reserved
+ * Copyright (C) Ltd. 2022-2022. Huawei Technologies Co., All rights reserved
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,6 +80,7 @@ public class TaskCommonReport {
 
     private Integer agent;
     private Date startTime;
+    private Date finishTime;
 
     private Double responseTime25;
     private Double responseTime50;
@@ -144,6 +145,7 @@ public class TaskCommonReport {
         }
         commonReport.setAgent(perfTest.getAgentCount());
         commonReport.setStartTime(perfTest.getStartTime());
+        commonReport.setFinishTime(perfTest.getFinishTime());
         commonReport.setVuser(perfTest.getVuserPerAgent());
         commonReport.setTps(perfTest.getTps());
         commonReport.setTpsPeak(perfTest.getPeakTps());
