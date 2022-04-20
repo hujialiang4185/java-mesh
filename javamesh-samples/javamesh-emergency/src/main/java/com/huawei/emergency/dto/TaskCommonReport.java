@@ -138,7 +138,6 @@ public class TaskCommonReport {
         commonReport.setLabel(perfTest.getTags()
             == null ? null : perfTest.getTags().stream().map(Tag::getTagValue).collect(Collectors.toList()));
         commonReport.setDesc(perfTest.getDescription());
-        commonReport.setDuration(perfTest.getDuration());
         if (perfTest.getFinishTime() != null && perfTest.getStartTime() != null) {
             commonReport.setDuration(
                 (perfTest.getFinishTime().getTime() - perfTest.getStartTime().getTime()) / ONE_THOUSAND);
