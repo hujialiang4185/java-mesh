@@ -12,10 +12,11 @@ export default function App(props: { onChange?: (value: Data[]) => void, value?:
     const stateRef = useRef<any>({excludes: props.value?.map(function (item){ return item.server_id})})
     const [leftSelectedRowKeys, setLeftSelectedRowKeys] = useState<Key[]>([])
     const [rightSelectedRowKeys, setRightSelectedRowKeys] = useState<Key[]>([])
+    const [pageSize, setPageSize] = useState(10)
     async function load() {
         setLoading(true)
         const params = {
-            pageSize: stateRef.current.pagination?.pageSize || 5,
+            pageSize: stateRef.current.pagination?.pageSize || 10,
             current: stateRef.current.pagination?.current,
             sorter: stateRef.current.sorter?.field,
             order: stateRef.current.sorter?.order,
@@ -70,8 +71,12 @@ export default function App(props: { onChange?: (value: Data[]) => void, value?:
                 onChange={function (pagination, filters, sorter) {
                     stateRef.current = { ...stateRef.current, pagination, filters, sorter }
                     load()
+                    const currentPageSize = pagination.pageSize
+                    if (currentPageSize && currentPageSize !== pageSize) {
+                        setPageSize(currentPageSize)
+                    }
                 }}
-                pagination={{ total: leftData.total, size: "small", pageSize: 5, showTotal() { return `共 ${leftData.total} 条` }, showSizeChanger: false }}
+                pagination={{ total: leftData.total, size: "small", pageSize, showTotal() { return `共 ${leftData.total} 条` } }}
                 rowSelection={{
                     selectedRowKeys: leftSelectedRowKeys,
                     onChange(selectedRowKeys) {
@@ -84,7 +89,13 @@ export default function App(props: { onChange?: (value: Data[]) => void, value?:
             />
         } else {
             return <Table size="small" rowKey="server_id" dataSource={rightData}
-                pagination={{ total: rightData.length, size: "small", pageSize: 5, showTotal() { return `共 ${rightData.length} 条` }, showSizeChanger: false }}
+                pagination={{ total: rightData.length, size: "small", pageSize, showTotal() { return `共 ${rightData.length} 条` } }}
+                onChange={function(pagination){
+                    const currentPageSize = pagination.pageSize
+                    if (currentPageSize && currentPageSize !== pageSize) {
+                        setPageSize(currentPageSize)
+                    }
+                }}
                 rowSelection={{
                     selectedRowKeys: rightSelectedRowKeys,
                     onChange(selectedRowKeys) {

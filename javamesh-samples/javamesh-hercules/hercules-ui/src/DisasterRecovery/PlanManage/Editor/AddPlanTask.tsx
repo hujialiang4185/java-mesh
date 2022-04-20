@@ -30,7 +30,7 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
       setIsModalVisible(true)
       loadScript(props.initialValues.script_name)
     }}>{props.create ? "加任务" : "修改"}</Button>
-    <Drawer className="AddPlanTask" title={props.create ? "加任务" : "修改"} width={950} visible={isModalVisible} maskClosable={false} footer={null} onClose={function () {
+    <Drawer className="AddPlanTask" title={props.create ? "加任务" : "修改"} width={1200} visible={isModalVisible} footer={null} onClose={function () {
       setIsModalVisible(false)
     }}>
       <Form form={form} labelCol={{ span: 2 }}

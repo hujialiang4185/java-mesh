@@ -1,5 +1,5 @@
 import React, { Key, useState } from 'react'
-import { Button, Table, Tree, Modal, Popconfirm, message, Form, Input, Switch } from 'antd';
+import { Button, Table, Tree, Modal, Popconfirm, message, Form, Input, Switch, Drawer } from 'antd';
 import "./TreeEditor.scss"
 import axios from 'axios';
 import AddPlanTask from "./AddPlanTask"
@@ -213,7 +213,7 @@ function AddScenaTask(props: { onFinish: (values: any) => Promise<void>, initial
   const [form] = Form.useForm();
   return <>
     <Button type="link" size="small" onClick={function () { setIsModalVisible(true) }}>{props.create ? "加场景" : "修改"}</Button>
-    <Modal className="AddScenaTask" title={props.create ? "加场景" : "修改"} width={950} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
+    <Drawer className="AddScenaTask" title={props.create ? "加场景" : "修改"} width={1200} visible={isModalVisible} footer={null} onClose={function () {
       setIsModalVisible(false)
     }}>
       <Form form={form} labelCol={{ span: 2 }} initialValues={props.initialValues} onFinish={async (values) => {
@@ -244,6 +244,6 @@ function AddScenaTask(props: { onFinish: (values: any) => Promise<void>, initial
           }}>取消</Button>
         </Form.Item>
       </Form>
-    </Modal>
+    </Drawer>
   </>
 }

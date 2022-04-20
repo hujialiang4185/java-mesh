@@ -957,7 +957,7 @@ app.get("/argus-emergency/api/history/scenario/task/log", function (req, res) {
         line
     })
 })
-const hosts = Array.from({ length: 11 }, function (_, index) {
+const hosts = Array.from({ length: 101 }, function (_, index) {
     return {
         status: ["running", "pending", "success", "fail"][index % 4],
         status_label: ["运行中", "准备中", "成功", "失败"][index % 4],
@@ -975,12 +975,13 @@ const hosts = Array.from({ length: 11 }, function (_, index) {
 })
 app.get("/argus-emergency/api/host", function (req, res) {
     const excludes = req.query.excludes as string[]
-    const end = Number(req.query.current || 1) * 5
+    const pageSize = Number(req.query.pageSize)
+    const end = Number(req.query.current || 1) * pageSize
     const data = hosts.filter(function (item) {
         return !excludes?.includes(item.server_id)
     })
     res.json({
-        data: data.slice(end - 5, end),
+        data: data.slice(end - pageSize, end),
         total: data.length
     })
 })

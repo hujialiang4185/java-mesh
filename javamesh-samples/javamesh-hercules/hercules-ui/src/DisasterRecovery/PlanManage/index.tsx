@@ -132,7 +132,7 @@ function Home() {
                                 { title: "所有者", dataIndex: "user_id", ellipsis: true },
                                 { title: "标签", dataIndex: "tag_string", ellipsis: true },
                                 { title: "开始时间", dataIndex: "start_time", ellipsis: true },
-                                { title: "持续阈值", dataIndex: "duration", ellipsis: true },
+                                { title: "持续阈值(秒)", dataIndex: "duration", ellipsis: true },
                                 { title: "TPS", dataIndex: "tps", ellipsis: true },
                                 { title: "MTT", dataIndex: "mean_test_time", ellipsis: true },
                                 { title: "出错率(%)", dataIndex: "error_rate", ellipsis: true }
