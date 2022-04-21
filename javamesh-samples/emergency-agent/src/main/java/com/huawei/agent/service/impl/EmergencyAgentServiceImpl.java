@@ -125,34 +125,19 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
     }
 
     class ExecutorHandler implements Runnable {
-        private String content;
-
-        private String param;
-
-        private int detailId;
-
-        private String scriptType;
-
-        private String scriptName;
-
         private static final String TYPE_SHELL = "0";
-
         private static final String TYPE_PYTHON = "1";
-
         private static final String TYPE_GROOVY = "2";
-
+        private static final String SH = "/bin/sh";
+        private static final String SH_C = "-C";
+        private String content;
+        private String param;
+        private int detailId;
+        private String scriptType;
+        private String scriptName;
         private String scriptLocation = "/tmp/";
 
-        private static final String SH = "/bin/sh";
-
-        //private static final String SH = "cmd";
-
-        private static final String SH_C = "-C";
-
-        //private static final String SH_C = "/C";
-
         public ExecutorHandler(String content, String param, int detailId, String scriptType, String scriptName) {
-
             this.content = content;
             this.param = param;
             this.detailId = detailId;
@@ -176,6 +161,8 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
                     case TYPE_GROOVY:
                         execGroovy();
                         break;
+                    default:
+                        break;
                 }
             } catch (Exception e) {
                 log.error("Exception occurs. Exception info", e);
@@ -187,7 +174,7 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
             cache.put(detailId, String.valueOf(Thread.currentThread().getId()));
             ScriptEngineManager factory = new ScriptEngineManager();
 
-            //每次生成一个engine实例
+            // 每次生成一个engine实例
             ScriptEngine engine = factory.getEngineByName("groovy");
             if (engine == null) {
                 throw new IllegalArgumentException("不存在groovy执行引擎");
@@ -222,12 +209,12 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
             } finally {
                 try {
                     sw.close();
-                } catch (Exception e) {
+                } catch (IOException e) {
                     log.error("close exec groovy script normalOutputStream error.", e);
                 }
                 try {
                     swError.close();
-                } catch (Exception e) {
+                } catch (IOException e) {
                     log.error("close exec groovy script errorOutputStream error.", e);
                 }
                 cache.remove(detailId);
@@ -272,12 +259,12 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
                 cache.remove(detailId);
                 try {
                     normalOutputStream.close();
-                } catch (Exception e) {
+                } catch (IOException e) {
                     log.error("close exec python script normalOutputStream error.", e);
                 }
                 try {
                     errorOutputStream.close();
-                } catch (Exception e) {
+                } catch (IOException e) {
                     log.error("close exec python script errorOutputStream error.", e);
                 }
             }
@@ -401,91 +388,4 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
         }
         return null;
     }
-
-    /* public static void main(String[] args) throws Exception {
-
-     *//*Thread t = new Thread(new InnerRunnable());
-        t.start();
-        System.out.println("线程id:"+t.getId());
-        System.out.println("       thread: " + t);
-        long threadId = t.getId();
-
-        Thread s = findThread(threadId);
-        System.out.println("  find thread: " + s);
-        System.out.println("current thread: " + Thread.currentThread());
-        s.interrupt();*//*
-
-     *//*PythonInterpreter interpreter = new PythonInterpreter();
-        StringWriter sw = new StringWriter();
-        interpreter.setOut(sw);
-        interpreter.set("a", "hello aaa");
-        interpreter.set("b", 1);
-        interpreter.set("c", 2);
-        interpreter.execfile("D:\\Runtime.py");
-        System.out.println("sw:" + sw);*//*
-
-
-
-     *//*Process proc;
-        try {
-            proc = Runtime.getRuntime().exec("cmd /c python D:\\Runtime.py");// 执行py文件
-            //用输入输出流来截取结果
-            BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-            BufferedReader error = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-
-            String line = null;
-            String errorLine = null;
-            while ((line = in.readLine()) != null) {
-                System.out.println(line);
-            }
-            while ((errorLine = error.readLine())!=null){
-                System.out.println(errorLine);
-            }
-            in.close();
-            proc.waitFor();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }*//*
-
-
-     *//*ScriptEngineManager factory = new ScriptEngineManager();
-        //每次生成一个engine实例
-        ScriptEngine engine = factory.getEngineByName("groovy");
-
-        // 初始化Bindings
-        Bindings bindings = engine.createBindings();
-        // 绑定参数
-        bindings.put("date", new Date());
-        bindings.put("name", "groovy");
-        final String name = "groovy";
-        // 定义groovy脚本中执行方法的名称
-        final String scriptName = "execute";
-        // 定义groovy脚本内容
-        final String scriptContent = "def " + scriptName + "(){" +
-                "    println(\"now dateTime is: ${date.getTime()}\");" +
-                "    println(\"my name is $name\");" +
-                "    return date.getTime() > 0;" +
-                "}" +
-                "\r\n return execute()";
-        System.out.println(scriptContent);
-
-//
-            // 执行脚本
-            StringWriter sw = new StringWriter();
-
-            engine.getContext().setWriter(sw);
-
-            Object eval = engine.eval(scriptContent, bindings);
-
-            System.out.println("sw = " + sw);
-
-
-            System.out.println("eval" + eval);
-
-            System.out.println("---------------------------------------");*//*
-    }*/
 }
-
-
