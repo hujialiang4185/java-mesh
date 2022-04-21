@@ -11,6 +11,12 @@ import ServiceSelect from "../../../component/ServiceSelect";
 import BusinessCharts from "./BusinessCharts";
 import "./index.scss"
 
+function getTimeString(ms?: number) {
+    if (!ms) return
+    const date = new Date(ms)
+    return date.getUTCHours().toString().padStart(2, '0') + ":" + date.getMinutes().toString().padStart(2, '0') + ":" + date.getSeconds().toString().padStart(2, '0')
+}
+
 export default function App() {
     const [data, setData] = useState<any>({})
     const urlSearchParams = new URLSearchParams(useLocation().search)
@@ -33,7 +39,7 @@ export default function App() {
         }
     }, [test_id])
     return <div className="TaskView">
-        <Breadcrumb label="压测任务" sub={{ label: "实时TPS数据", parentUrl: "/PerformanceTest/TestTask" }} />
+        <Breadcrumb label="压测报告" sub={{ label: "实时TPS数据", parentUrl: "/PerformanceTest/RunningLog" }} />
         <Card>
             <div className="Label">基本信息</div>
             <div className="SubCard Info">
@@ -41,9 +47,21 @@ export default function App() {
                     <Descriptions.Item label={
                         <div className="Title">测试名称</div>
                     }>{data.test_name}</Descriptions.Item>
-                    <Descriptions.Item span={2} label={
+                    <Descriptions.Item label={
                         <div className="Title">压测状态</div>
                     }>{data.status_label}</Descriptions.Item>
+                    <Descriptions.Item label={
+                        <div className="Title">初始数</div>
+                    }>{data.init_value}</Descriptions.Item>
+                    <Descriptions.Item label={
+                        <div className="Title">增量</div>
+                    }>{data.increment}</Descriptions.Item>
+                    <Descriptions.Item label={
+                        <div className="Title">初始等待时间</div>
+                    }>{getTimeString(data.init_wait)}</Descriptions.Item>
+                    <Descriptions.Item  label={
+                        <div className="Title">进程增长间隔</div>
+                    }>{getTimeString(data.growth_interval)}</Descriptions.Item>
                     <Descriptions.Item label={
                         <div className="Title">标签</div>
                     }>{data.label?.map(function (item: string, index: number) {

@@ -287,7 +287,11 @@ app.get('/argus-emergency/api/task/view', function (req, res) {
             response_time95: 10,
             response_time99: 10,
             agent: 10,
-            start_time: "2022-01-01 00:00:00"
+            start_time: "2022-01-01 00:00:00",
+            init_value: 100,
+            increment: 10,
+            init_wait: 3000,
+            growth_interval: 4000
         }
     })
 })

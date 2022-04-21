@@ -191,7 +191,7 @@ function TimePicker(props: { disabled: boolean, value?: number, onChange?: (valu
   }, 100))
   return <div className="TimePicker">
     <InputNumber value={date.getUTCHours()} disabled={props.disabled} className="Time" min={0} max={23} onChange={function(value){
-      date.setHours(value)
+      date.setUTCHours(value)
       onChangeRef.current(date)
     }}/>
     <span className="Sep">:</span>

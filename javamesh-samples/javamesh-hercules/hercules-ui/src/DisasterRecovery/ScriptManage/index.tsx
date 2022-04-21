@@ -35,7 +35,8 @@ type Data = {
     script_id: string, script_name: string, param: string,
     owner: string, status: string, submit_info: string,
     has_pwd: string, pwd_from: string, content: string,
-    type: string, group_id: string, auditable: string
+    type: string, group_id: string, auditable: string,
+    language: string
 }
 function Home() {
     let submit = false
@@ -279,7 +280,7 @@ function ScriptDetail(props: { data: Data, height: number }) {
             <Descriptions.Item label="脚本用途">{props.data.submit_info}</Descriptions.Item>
         </Descriptions>
         <div className="Editor">
-            <Editor height={props.height} language="shell" options={{ readOnly: true }} value={props.data.content} />
+            <Editor height={props.height} language={props.data.language.toLowerCase()} options={{ readOnly: true }} value={props.data.content} />
         </div>
     </div>
 }
