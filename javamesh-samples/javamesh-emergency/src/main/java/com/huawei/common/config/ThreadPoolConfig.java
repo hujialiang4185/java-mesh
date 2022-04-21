@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Ltd. 2021-2021. Huawei Technologies Co., All rights reserved
+ * Copyright (C) Ltd. 2022-2022. Huawei Technologies Co., All rights reserved
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,16 +27,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ * 线程池配置
+ *
  * @author y30010171
  * @since 2022-01-15
  **/
 @Configuration
 public class ThreadPoolConfig {
-
-    private static final String EXEC_THREAD_NAME_PREFIX = "task-exec-";
-    private static final String TIMEOUT_THREAD_NAME_PREFIX = "timeout-exec-";
-    private static final String AGENT_THREAD_NAME_PREFIX = "sendAgent-";
-
     private static final long KEEP_ALIVE_TIME = 60L;
 
     @Value("${script.executor.maxTaskSize}")
@@ -49,9 +46,7 @@ public class ThreadPoolConfig {
     private int blockingTaskSize;
 
     /**
-     * 用于预案，任务，脚本执行的线程池
-     * 设置核心线程数与最大线程数一致，使得创建的线程与线程名一致。
-     * 每个脚本在不同服务器执行时，根据此线程名去获取一个线程池来并发执行。
+     * 用于预案，任务，脚本执行的线程池 设置核心线程数与最大线程数一致，使得创建的线程与线程名一致。 每个脚本在不同服务器执行时，根据此线程名去获取一个线程池来并发执行。
      *
      * @return {@link ThreadPoolExecutor}
      */
@@ -68,7 +63,7 @@ public class ThreadPoolConfig {
 
                 @Override
                 public Thread newThread(Runnable r) {
-                    return new Thread(r, EXEC_THREAD_NAME_PREFIX + threadCount.getAndIncrement());
+                    return new Thread(r, "task-exec-" + threadCount.getAndIncrement());
                 }
             });
         threadPoolExecutor.allowCoreThreadTimeOut(true);
@@ -93,7 +88,7 @@ public class ThreadPoolConfig {
 
                 @Override
                 public Thread newThread(Runnable r) {
-                    return new Thread(r, TIMEOUT_THREAD_NAME_PREFIX + threadCount.getAndIncrement());
+                    return new Thread(r, "timeout-exec-" + threadCount.getAndIncrement());
                 }
             });
         threadPoolExecutor.allowCoreThreadTimeOut(true);
@@ -113,7 +108,7 @@ public class ThreadPoolConfig {
 
                 @Override
                 public Thread newThread(Runnable r) {
-                    return new Thread(r, AGENT_THREAD_NAME_PREFIX + threadCount.getAndIncrement());
+                    return new Thread(r, "sendAgent-" + threadCount.getAndIncrement());
                 }
             });
         threadPoolExecutor.allowCoreThreadTimeOut(true);

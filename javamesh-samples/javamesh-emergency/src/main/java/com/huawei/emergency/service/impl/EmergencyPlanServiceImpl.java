@@ -662,7 +662,6 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
                 PerfTest perfTest = perfTestService.getOne(planDetail.getPerfTestId());
                 if (perfTest != null) {
                     planDetail.setTestId(perfTest.getId());
-                    planDetail.setVuser(perfTest.getVuserPerAgent());
                     planDetail.setStartTime(perfTest.getStartTime());
                     if (perfTest.getFinishTime() != null && perfTest.getStartTime() != null) {
                         planDetail.setDuration(

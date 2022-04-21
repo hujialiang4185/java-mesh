@@ -1,5 +1,6 @@
 package com.huawei.user.common.filter;
 
+import com.huawei.user.common.api.CommonResult;
 import com.huawei.user.common.constant.FailedInfo;
 import com.huawei.user.common.util.JwtTokenUtil;
 import com.huawei.user.entity.JwtUser;
@@ -81,11 +82,12 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                 userDetails, null, userDetails.getAuthorities());
             JwtUser jwtUser = (JwtUser) authentication.getPrincipal();
-            if (!"T".equals(jwtUser.getUserEntity().getEnabled())) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return;
-            }
             if (!ALLOWED_PATHS.contains(path)) {
+                if (!"T".equals(jwtUser.getUserEntity().getEnabled())) {
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    responseJson(response, CommonResult.failed("账号已被禁用"));
+                    return;
+                }
                 if (!"admin".equals(jwtUser.getUsername()) && StringUtils.isBlank(jwtUser.getGroupName())) {
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("msg", FailedInfo.USER_HAVE_NOT_GROUP);
