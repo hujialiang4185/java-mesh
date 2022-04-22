@@ -70,6 +70,7 @@ export default function App(props: { onChange?: (value: Data[]) => void, value?:
         if (props.direction === "left") {
             return <Table size="small" rowKey="server_id" dataSource={leftData.data} loading={loading}
                 onChange={function (pagination, filters, sorter) {
+                    props.onItemSelectAll(leftSelectedRowKeys as string[], false)
                     stateRef.current = { ...stateRef.current, pagination, filters, sorter }
                     load()
                     const currentPageSize = pagination.pageSize
@@ -92,6 +93,7 @@ export default function App(props: { onChange?: (value: Data[]) => void, value?:
             return <Table size="small" rowKey="server_id" dataSource={rightData}
                 pagination={{ total: rightData.length, size: "small", pageSize, showSizeChanger: true, showTotal() { return `共 ${rightData.length} 条` } }}
                 onChange={function (pagination){
+                    props.onItemSelectAll(rightSelectedRowKeys as string[], false)
                     stateRef.current.pagination = {...stateRef.current.pagination, pageSize: pagination.pageSize}
                     load()
                     const currentPageSize = pagination.pageSize
