@@ -272,7 +272,18 @@ function ApproveScript(props: { data: Data, load: () => {} }) {
     </>
 }
 
+export function formatLanguage(language: string) {
+    switch (language) {
+        case "Shell":
+            return "shell"
+        case "Groovy":
+            return "java"
+        default:
+            return "python"
+    }
+}
 function ScriptDetail(props: { data: Data, height: number }) {
+    const language = formatLanguage(props.data.language)
     return <div className="ScriptDetail">
         <Descriptions className="Desc">
             <Descriptions.Item label="脚本名称">{props.data.script_name}</Descriptions.Item>
@@ -280,7 +291,7 @@ function ScriptDetail(props: { data: Data, height: number }) {
             <Descriptions.Item label="脚本用途">{props.data.submit_info}</Descriptions.Item>
         </Descriptions>
         <div className="Editor">
-            <Editor height={props.height} language={props.data.language.toLowerCase()} options={{ readOnly: true }} value={props.data.content} />
+            <Editor height={props.height} language={language} options={{ readOnly: true }} value={props.data.content} />
         </div>
     </div>
 }

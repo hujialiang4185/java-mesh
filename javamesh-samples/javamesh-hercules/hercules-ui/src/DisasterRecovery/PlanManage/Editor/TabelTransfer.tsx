@@ -89,13 +89,7 @@ export default function App(props: { onChange?: (value: Data[]) => void, value?:
             />
         } else {
             return <Table size="small" rowKey="server_id" dataSource={rightData}
-                pagination={{ total: rightData.length, size: "small", pageSize, showSizeChanger: true, showTotal() { return `共 ${rightData.length} 条` } }}
-                onChange={function(pagination){
-                    const currentPageSize = pagination.pageSize
-                    if (currentPageSize && currentPageSize !== pageSize) {
-                        setPageSize(currentPageSize)
-                    }
-                }}
+                pagination={{ total: rightData.length, size: "small", pageSize, showSizeChanger: false, showTotal() { return `共 ${rightData.length} 条` } }}
                 rowSelection={{
                     selectedRowKeys: rightSelectedRowKeys,
                     onChange(selectedRowKeys) {

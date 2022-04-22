@@ -9,6 +9,7 @@ import ServiceSelect from "../../../component/ServiceSelect"
 import Upload from "../../../component/Upload"
 import DebugScript from "../DebugScript"
 import Editor from "@monaco-editor/react";
+import { formatLanguage } from ".."
 
 export default function App() {
     let submit = false
@@ -72,16 +73,7 @@ export default function App() {
         </Card>
     </div>
 }
-function formatLanguage(language: string) {
-    switch (language) {
-        case "Shell":
-            return "shell"
-        case "Groovy":
-            return "java"
-        default:
-            return "python"
-    }
-}
+
 function Script({ form }: { form: FormInstance }) {
     const [scriptFrom, setScriptFrom] = useState("input")
     const state = useLocation().state as any

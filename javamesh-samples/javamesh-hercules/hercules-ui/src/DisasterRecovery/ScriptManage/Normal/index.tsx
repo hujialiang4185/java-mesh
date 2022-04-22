@@ -7,17 +7,8 @@ import axios from "axios"
 import "./index.scss"
 import DebugScript from "../DebugScript"
 import Editor from "@monaco-editor/react";
+import { formatLanguage } from ".."
 
-function formatLanguage(language: string) {
-    switch (language) {
-        case "Shell":
-            return "shell"
-        case "Groovy":
-            return "java"
-        default:
-            return "python"
-    }
-}
 export default function App() {
     let submit = false
     const history = useHistory()

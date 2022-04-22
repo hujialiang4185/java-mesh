@@ -523,11 +523,12 @@ app.get('/argus-emergency/api/script', function (req, res) {
                 has_pwd: "是",
                 pwd_from: "本地",
                 param: "a,b",
-                content: `#!/bin/bash`,
+                content: `#!/bin/bash\necho hello`,
                 group_id: 1,
                 group_name: "分组1",
                 approver: "张三",
-                auditable: index === 1
+                auditable: index === 1,
+                language: "Shell"
             }
         }),
         total: 11
