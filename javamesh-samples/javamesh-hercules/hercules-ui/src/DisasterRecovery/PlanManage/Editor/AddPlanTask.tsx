@@ -184,7 +184,7 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
 }
 
 function TimePicker(props: { disabled: boolean, value?: number, onChange?: (value: number) => void }) {
-  const [date, setDate] = useState(new Date(props.value || 0))
+  const [date, setDate] = useState(new Date(props.value && props.value > 0 ? props.value : 0))
   const onChangeRef = useRef(debounce(function(date: Date){
     setDate(date)
     props.onChange?.(+date)
