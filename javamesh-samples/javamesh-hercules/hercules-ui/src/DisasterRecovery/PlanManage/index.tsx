@@ -15,14 +15,12 @@ import ApproveFormItems from "../ApproveFormItems"
 import { useForm } from "antd/lib/form/Form"
 import socket from "../socket"
 import { debounce } from "lodash"
-import TaskView from "../RunningLog/TaskView"
 
 export default function App() {
     const { path } = useRouteMatch();
     return <CacheSwitch>
         <CacheRoute exact path={path} component={Home} />
         <Route exact path={path + '/Editor'}><Editor /></Route>
-        <Route exact path={path + '/Report'}><TaskView /></Route>
     </CacheSwitch>
 }
 
@@ -115,7 +113,7 @@ function Home() {
                             columns={[
                                 {
                                     title: "任务名称", width: 300, dataIndex: "task_name", ellipsis: true, render(value, row) {
-                                        return !row.test_id ? value : <Link to={path + "/Report?test_id=" + row.test_id}>{value}</Link>
+                                        return !row.test_id ? value : <Link to={"/PerformanceTest/RunningLog/Detail/Report?test_id=" + row.test_id}>{value}</Link>
                                     }
                                 },
                                 { title: "场景名称", dataIndex: "scena_name", ellipsis: true, },

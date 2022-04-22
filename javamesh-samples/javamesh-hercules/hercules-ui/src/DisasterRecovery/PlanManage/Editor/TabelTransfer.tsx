@@ -28,6 +28,7 @@ export default function App(props: { onChange?: (value: Data[]) => void, value?:
             const res = await axios.get("/argus-emergency/api/host", { params })
             setLeftData(res.data)
             setLeftSelectedRowKeys([])
+            setRightSelectedRowKeys([])
         } catch (error: any) {
             message.error(error.message)
         }
@@ -89,7 +90,15 @@ export default function App(props: { onChange?: (value: Data[]) => void, value?:
             />
         } else {
             return <Table size="small" rowKey="server_id" dataSource={rightData}
-                pagination={{ total: rightData.length, size: "small", pageSize, showSizeChanger: false, showTotal() { return `共 ${rightData.length} 条` } }}
+                pagination={{ total: rightData.length, size: "small", pageSize, showSizeChanger: true, showTotal() { return `共 ${rightData.length} 条` } }}
+                onChange={function (pagination){
+                    stateRef.current.pagination = {...stateRef.current.pagination, pageSize: pagination.pageSize}
+                    load()
+                    const currentPageSize = pagination.pageSize
+                    if (currentPageSize && currentPageSize !== pageSize) {
+                        setPageSize(currentPageSize)
+                    }
+                }}
                 rowSelection={{
                     selectedRowKeys: rightSelectedRowKeys,
                     onChange(selectedRowKeys) {
