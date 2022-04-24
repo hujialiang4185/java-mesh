@@ -27,6 +27,7 @@ export default function App() {
             }
             const res = await axios.get("/argus-user/api/user", { params })
             setData(res.data)
+            setSelectedRowKeys([])
         } catch (error: any) {
             message.error(error.message)
         }

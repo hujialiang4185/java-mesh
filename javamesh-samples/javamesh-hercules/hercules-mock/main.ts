@@ -980,11 +980,17 @@ const hosts = Array.from({ length: 101 }, function (_, index) {
 })
 app.get("/argus-emergency/api/host", function (req, res) {
     const excludes = req.query.excludes as string[]
+    const server_name = req.query.server_name as string
     const pageSize = Number(req.query.pageSize)
     const end = Number(req.query.current || 1) * pageSize
-    const data = hosts.filter(function (item) {
+    let data = hosts.filter(function (item) {
         return !excludes?.includes(item.server_id)
     })
+    if (server_name) {
+        data = data.filter(function(item) {
+            return item.server_name.includes(server_name)
+        })
+    }
     res.json({
         data: data.slice(end - pageSize, end),
         total: data.length

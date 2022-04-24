@@ -66,6 +66,7 @@ function Home() {
         try {
             const res = await axios.get('/argus-emergency/api/history', { params })
             setData(res.data)
+            setSelectedRowKeys([])
         } catch (error: any) {
             message.error(error.message)
         }
