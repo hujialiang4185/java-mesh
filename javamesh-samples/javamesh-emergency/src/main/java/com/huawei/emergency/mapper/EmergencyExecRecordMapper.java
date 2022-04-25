@@ -43,4 +43,6 @@ public interface EmergencyExecRecordMapper {
         @Param("log") String log);
 
     int tryUpdateStatus(Integer recordId);
+
+    List<String> selectPlanNoByPerfTestId(Long perfTestId);
 }

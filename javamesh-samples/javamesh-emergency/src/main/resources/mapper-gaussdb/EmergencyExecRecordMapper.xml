@@ -686,4 +686,12 @@
         WHERE t.record_id = #{recordId}
           AND t.is_valid = '1'
     </update>
+    <select id="selectPlanNoByPerfTestId" resultType="string">
+        SELECT t2.plan_no
+        FROM emergency_exec_record_detail t
+                 LEFT JOIN emergency_exec t1 ON t.exec_id = t1.exec_id
+                 LEFT JOIN emergency_plan t2 ON t1.plan_id = t2.plan_id
+        WHERE t.perf_test_id = #{perfTestId}
+          and t.is_valid = '1'
+    </select>
 </mapper>

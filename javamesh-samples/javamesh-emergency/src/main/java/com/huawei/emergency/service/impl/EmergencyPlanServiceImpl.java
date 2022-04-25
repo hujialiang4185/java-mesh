@@ -53,6 +53,7 @@ import com.huawei.emergency.mapper.EmergencyScriptMapper;
 import com.huawei.emergency.mapper.EmergencyServerMapper;
 import com.huawei.emergency.mapper.EmergencyTaskMapper;
 import com.huawei.emergency.schedule.thread.TaskScheduleCenter;
+import com.huawei.emergency.service.EmergencyExecService;
 import com.huawei.emergency.service.EmergencyPlanService;
 import com.huawei.emergency.service.EmergencyScriptService;
 import com.huawei.emergency.service.EmergencyTaskService;
@@ -159,6 +160,9 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     @Autowired
     private EmergencyScriptService scriptService;
 
+    @Autowired
+    private EmergencyExecService execService;
+
     @Value("${mode}")
     private String mode;
 
@@ -172,7 +176,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             .andPlanNameEqualTo(emergencyPlan.getPlanName())
             .andIsValidEqualTo(ValidEnum.VALID.getValue());
         if (planMapper.countByExample(isPlanNameExist) > 0) {
-            return CommonResult.failed("已存在名称相同的项目");
+            return CommonResult.failed("本组或其他组下已存在名称相同的项目");
         }
         EmergencyPlan insertPlan = new EmergencyPlan();
         insertPlan.setPlanName(emergencyPlan.getPlanName());
@@ -322,6 +326,20 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     @Override
     public Optional<User> findNgrinderUserById(Long id) {
         return userRepository.findById(id);
+    }
+
+    @Override
+    public CommonResult stopPlan(EmergencyPlan plan) {
+        if (plan == null || plan.getPlanId() == null) {
+            return CommonResult.failed("请选择正确的预案");
+        }
+        EmergencyExecRecordExample recordExample = new EmergencyExecRecordExample();
+        recordExample.createCriteria()
+            .andPlanIdEqualTo(plan.getPlanId())
+            .andStatusIn(Arrays.asList(RecordStatus.RUNNING.getValue()))
+            .andIsValidEqualTo(ValidEnum.VALID.getValue());
+        recordMapper.selectByExample(recordExample).forEach(record -> execService.stopRecord(record));
+        return CommonResult.success();
     }
 
     public String generateSelectAgentIds(List<EmergencyServer> serverIds) {

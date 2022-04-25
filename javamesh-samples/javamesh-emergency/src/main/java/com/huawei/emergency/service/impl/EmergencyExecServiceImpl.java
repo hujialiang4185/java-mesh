@@ -566,4 +566,25 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
         recordDetailMapper.updateByExampleSelective(recordDetail, recordDetailExample);
         return CommonResult.success();
     }
+
+    @Override
+    public CommonResult stopRecord(EmergencyExecRecord record) {
+        if (record == null || record.getRecordId() == null) {
+            return CommonResult.failed("请选择正确的执行记录。");
+        }
+        EmergencyExecRecord execRecord = recordMapper.selectByPrimaryKey(record.getRecordId());
+        if (execRecord == null || ValidEnum.IN_VALID.equals(execRecord.getIsValid())) {
+            return CommonResult.failed("请选择正确的执行记录。");
+        }
+        if (RecordStatus.PENDING.getValue().equals(execRecord.getStatus())) {
+            execRecord.setStatus(RecordStatus.CANCEL.getValue());
+            execRecord.setEndTime(new Date());
+            execRecord.setLog("取消执行");
+            recordMapper.updateByPrimaryKeySelective(record);
+        }
+        if (RecordStatus.RUNNING.getValue().equals(execRecord.getStatus())) {
+            return handlerFactory.stopRecord(execRecord);
+        }
+        return CommonResult.success();
+    }
 }

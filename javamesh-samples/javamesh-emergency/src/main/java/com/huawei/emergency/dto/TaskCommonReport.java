@@ -126,6 +126,11 @@ public class TaskCommonReport {
 
     private Integer testId;
 
+    private Integer initValue; // 初始化值
+    private Integer increment; // 增量
+    private Integer initWait; // 初始等待时间
+    private Integer growthInterval; // 增长时间
+
     /**
      * 压测明细
      */
@@ -164,6 +169,10 @@ public class TaskCommonReport {
         commonReport.setProgressMessage(perfTest.getProgressMessage()
             == null ? null
             : Arrays.stream(perfTest.getProgressMessage().split(System.lineSeparator())).collect(Collectors.toList()));
+        commonReport.setInitValue(perfTest.getRampUpInitCount());
+        commonReport.setIncrement(perfTest.getRampUpStep());
+        commonReport.setInitWait(perfTest.getRampUpInitSleepTime());
+        commonReport.setGrowthInterval(perfTest.getRampUpIncrementInterval());
         return commonReport;
     }
 }

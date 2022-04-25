@@ -15,10 +15,12 @@ import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyExecRecordDetail;
 import com.huawei.emergency.entity.EmergencyExecRecordDetailExample;
 import com.huawei.emergency.entity.EmergencyExecRecordExample;
+import com.huawei.emergency.entity.EmergencyScript;
 import com.huawei.emergency.entity.EmergencyServer;
 import com.huawei.emergency.entity.EmergencyServerExample;
 import com.huawei.emergency.mapper.EmergencyExecRecordDetailMapper;
 import com.huawei.emergency.mapper.EmergencyExecRecordMapper;
+import com.huawei.emergency.mapper.EmergencyScriptMapper;
 import com.huawei.emergency.mapper.EmergencyServerMapper;
 import com.huawei.emergency.service.EmergencyPlanService;
 import com.huawei.emergency.service.EmergencySceneService;
@@ -103,6 +105,9 @@ public class ExecRecordHandlerFactory {
     @Autowired
     private EmergencyPlanService planService;
 
+    @Autowired
+    private EmergencyScriptMapper scriptMapper;
+
     /**
      * 获取一个执行器实例
      *
@@ -128,6 +133,13 @@ public class ExecRecordHandlerFactory {
         ScriptExecInfo execInfo;
         try {
             execInfo = generateExecInfo(record, recordDetail); // 生成执行信息
+            if (record.getScriptId() != null) {
+                EmergencyScript script = scriptMapper.selectByPrimaryKey(record.getScriptId());
+                if (script != null && !"2".equals(script.getScriptStatus())) {
+                    complete(record, recordDetail, ExecResult.fail("脚本未审核通过."));
+                    return;
+                }
+            }
             if (execInfo.getPerfTestId() != null) {
                 if (!startPerfTest(execInfo.getPerfTestId())) { // 执行压测任务
                     complete(record, recordDetail, ExecResult.fail("启动压测任务失败."));
@@ -477,6 +489,45 @@ public class ExecRecordHandlerFactory {
     }
 
     /**
+     * 停止运行
+     *
+     * @param execRecord 执行记录
+     */
+    public CommonResult stopRecord(EmergencyExecRecord execRecord) {
+        EmergencyExecRecordDetailExample recordDetailExample = new EmergencyExecRecordDetailExample();
+        recordDetailExample.createCriteria()
+            .andRecordIdEqualTo(execRecord.getRecordId())
+            .andIsValidEqualTo(ValidEnum.VALID.getValue());
+        List<EmergencyExecRecordDetail> recordDetails = recordDetailMapper.selectByExample(recordDetailExample);
+        recordDetails.stream()
+            .filter(recordDetail -> RecordStatus.PENDING.getValue().equals(recordDetail.getStatus()))
+            .forEach(recordDetail -> {
+                recordDetail.setStatus(RecordStatus.CANCEL.getValue());
+                recordDetail.setEndTime(new Date());
+                recordDetail.setLog("执行取消");
+                recordDetailMapper.updateByPrimaryKeySelective(recordDetail);
+            });
+        recordDetails.stream()
+            .filter(recordDetail -> RecordStatus.RUNNING.getValue().equals(recordDetail.getStatus()))
+            .forEach(recordDetail -> {
+                if (recordDetail.getPerfTestId() != null) {
+                    PerfTest one = perfTestService.getOne(recordDetail.getPerfTestId().longValue());
+                    perfTestService.stop(one.getCreatedUser(), one.getId());
+                } else {
+                    EmergencyServer server = serverMapper.selectByPrimaryKey(recordDetail.getServerId());
+                    ScriptExecInfo execInfo = new ScriptExecInfo();
+                    execInfo.setDetailId(recordDetail.getDetailId());
+                    execInfo.setScriptType(execRecord.getScriptType());
+                    String url =
+                        String.format(Locale.ROOT, "http://%s:%s/agent/cancel", server.getServerIp(),
+                            server.getAgentPort());
+                    restTemplate.postForObject(url, execInfo, CommonResult.class);
+                }
+            });
+        return CommonResult.success();
+    }
+
+    /**
      * 脚本执行器
      *
      * @author y30010171
@@ -508,11 +559,20 @@ public class ExecRecordHandlerFactory {
                 return;
             }
             try {
-                if (!RecordStatus.PENDING.getValue().equals(record.getStatus())) {
-                    LOGGER.error("record was canceled. {}", record.getRecordId());
-                    throw new ApiException("执行已取消.");
-                }
                 List<EmergencyExecRecordDetail> emergencyExecRecordDetails = generateRecordDetail(record);
+                if (RecordStatus.CANCEL.getValue().equals(record.getStatus())) {
+                    emergencyExecRecordDetails.forEach(recordDetail -> {
+                        recordDetail.setStatus(RecordStatus.CANCEL.getValue());
+                        recordDetail.setLog("执行取消");
+                        recordDetailMapper.updateByPrimaryKeySelective(recordDetail);
+                    });
+                    return;
+                }
+                if (!RecordStatus.PENDING.getValue().equals(record.getStatus())) {
+                    RecordStatus recordStatus = RecordStatus.matchByValue(record.getStatus());
+                    LOGGER.error("record {} status is {}, can't exec. ", record.getRecordId(), recordStatus);
+                    throw new ApiException("任务状态不为待执行。当前状态为 " + recordStatus);
+                }
                 EmergencyExecRecord finalRecord = record;
                 emergencyExecRecordDetails.forEach(recordDetail -> exec(finalRecord, recordDetail));
             } catch (ApiException | IllegalArgumentException e) {

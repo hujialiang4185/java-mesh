@@ -216,6 +216,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             }
             ScriptLanguageEnum scriptTypeEnum = ScriptLanguageEnum.matchByValue(script.getScriptType());
             if (scriptTypeEnum != null) {
+                script.setScriptType(scriptTypeEnum.getLanguage());
                 script.setTypeLabel(scriptTypeEnum.getView());
             }
         }
@@ -527,7 +528,7 @@ public class EmergencyScriptServiceImpl implements EmergencyScriptService {
             return CommonResult.failed("请输入脚本名称");
         }
         if (isScriptNameExist(script.getScriptName())) {
-            return CommonResult.failed("存在名称相同的脚本");
+            return CommonResult.failed("本组或其他组下存在名称相同的脚本");
         }
 
         // 生成脚本信息 以及脚本编排信息

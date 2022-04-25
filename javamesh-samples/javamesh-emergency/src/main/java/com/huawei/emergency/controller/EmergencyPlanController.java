@@ -349,4 +349,12 @@ public class EmergencyPlanController {
         emergencyPlan.setCreateUser(((JwtUser) authentication.getPrincipal()).getUsername());
         return planService.copy(emergencyPlan);
     }
+
+    @PostMapping("/plan/stop")
+    @WebOperationLog(resourceType = ResourceType.PLAN_MANAGEMENT,
+        operationType = OperationTypeEnum.DISCONTINUE,
+        operationDetails = OperationDetails.PLAN_CANCEL)
+    public CommonResult stopPlan(@RequestBody EmergencyPlan emergencyPlan) {
+        return planService.stopPlan(emergencyPlan);
+    }
 }

@@ -228,7 +228,7 @@ public class EmergencyExecController {
         }
     }
 
-    @PostMapping("/stop")
+    @PostMapping("/detail/stop")
     public CommonResult stopOneServer(UsernamePasswordAuthenticationToken authentication,
         @RequestBody EmergencyExecRecordDetail detail) {
         return execService.stopOneServer(detail.getDetailId(), ((JwtUser) authentication.getPrincipal()).getUsername());
@@ -289,5 +289,16 @@ public class EmergencyExecController {
         operationDetails = OperationDetails.DELETE_EXECUTION)
     public CommonResult deleteExecRecord(@RequestParam("history_id[]") Integer[] historyIds) {
         return execService.deleteExecRecord(historyIds);
+    }
+
+    /**
+     * 停止正在运行的执行记录
+     *
+     * @param record {@link EmergencyExecRecord} 记录信息
+     * @return {@link CommonResult}
+     */
+    @PostMapping("/stop")
+    public CommonResult stopExecRecord(@RequestBody EmergencyExecRecord record) {
+        return execService.stopRecord(record);
     }
 }

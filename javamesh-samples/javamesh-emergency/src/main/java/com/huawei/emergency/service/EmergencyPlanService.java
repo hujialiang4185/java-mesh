@@ -80,4 +80,6 @@ public interface EmergencyPlanService extends EmergencyCommonService<EmergencyPl
     User findNgrinderUserByUserId(String userId);
 
     Optional<User> findNgrinderUserById(Long id);
+
+    CommonResult stopPlan(EmergencyPlan emergencyPlan);
 }

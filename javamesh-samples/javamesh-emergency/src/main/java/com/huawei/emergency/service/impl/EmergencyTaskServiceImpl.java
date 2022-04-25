@@ -244,6 +244,8 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
             return CommonResult.success();
         }
         TaskCommonReport commonReport = TaskCommonReport.parse(perfTest);
+        commonReport.setLabel(execRecordMapper.selectPlanNoByPerfTestId(perfTestId));
+        commonReport.getLabel().add(perfTestId.toString());
         commonReport.setPlugins(perfTestService.getAvailableReportPlugins(perfTestId));
         return CommonResult.success(commonReport);
     }

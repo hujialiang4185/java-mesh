@@ -54,4 +54,12 @@ public interface EmergencyExecService {
     CommonResult isFreeScript(int[] scriptIds);
 
     CommonResult deleteExecRecord(Integer[] historyIds);
+
+    /**
+     * 停止运行
+     *
+     * @param record {@link EmergencyExecRecord} 记录信息
+     * @return {@link CommonResult}
+     */
+    CommonResult stopRecord(EmergencyExecRecord record);
 }

@@ -162,6 +162,11 @@ public class OperationDetails {
     public static final String PLAN_STOP = "项目停止,停止调度";
 
     /**
+     * 项目停止,停止调度
+     */
+    public static final String PLAN_CANCEL = "项目执行取消";
+
+    /**
      * 查询项目的编号与名称
      */
     public static final String GET_PLAN_INFO = "查询项目的编号与名称";

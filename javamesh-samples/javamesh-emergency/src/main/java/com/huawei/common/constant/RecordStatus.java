@@ -63,4 +63,13 @@ public enum RecordStatus {
         this.value = value;
         this.description = description;
     }
+
+    public static RecordStatus matchByValue(String value) {
+        for (RecordStatus item : RecordStatus.values()) {
+            if (item.getValue().equals(value)) {
+                return item;
+            }
+        }
+        return null;
+    }
 }
