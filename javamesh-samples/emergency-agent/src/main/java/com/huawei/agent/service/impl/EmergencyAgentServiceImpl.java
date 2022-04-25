@@ -112,6 +112,7 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
         } else {
             executorHandler.cancelGroovyAndPython(detailId);
         }
+        onComplete(ExecResult.fail(detailId, "执行取消"));
         return CommonResult.success();
     }
 
@@ -204,8 +205,7 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
                 }
             } catch (ScriptException e) {
                 log.error("exec groovy script {} failed.", detailId, e);
-                onComplete(ExecResult.fail(detailId,
-                    sw.toString() + e.getMessage()));
+                onComplete(ExecResult.fail(detailId, sw + e.getMessage()));
             } finally {
                 try {
                     sw.close();
