@@ -77,7 +77,7 @@ export default function App() {
 function Script({ form }: { form: FormInstance }) {
     const [scriptFrom, setScriptFrom] = useState("input")
     const state = useLocation().state as any
-    
+    console.log(state)
     return <>
         <div className="Line">
             <Form.Item className="Middle" name="script_from" label="脚本来源">
@@ -86,7 +86,7 @@ function Script({ form }: { form: FormInstance }) {
                 }} options={["手工录入", "脚本克隆", "本地导入"]} />
             </Form.Item>
             {scriptFrom === "脚本克隆" && <Form.Item className="Middle" name="content_from" label="克隆来源">
-                <ServiceSelect url='/argus-emergency/api/script/search' onChange={async function (name) {
+                <ServiceSelect url='/argus-emergency/api/script/search' params={{language: state.language}} onChange={async function (name) {
                     try {
                         const res = await axios.get("/argus-emergency/api/script/getByName", { params: { name } })
                         form.setFields([{name: "content", value: res.data.data.content}])

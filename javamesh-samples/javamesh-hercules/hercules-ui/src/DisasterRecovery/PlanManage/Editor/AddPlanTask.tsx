@@ -143,7 +143,7 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
             </Radio.Group>
           </Form.Item>
           <Form.Item labelCol={{ span: 3 }} labelAlign="left" label="采样间隔" name="sampling_interval" rules={[{ type: "integer" }]}>
-            <InputNumber className="InputNumber" min={0} addonAfter="MS" placeholder="默认2ms对TPS进行采样" />
+            <InputNumber className="InputNumber" min={0} addonAfter="秒" placeholder="默认2ms对TPS进行采样" />
           </Form.Item>
           <Form.Item labelCol={{ span: 3 }} labelAlign="left" label="忽略采样数量" name="sampling_ignore" rules={[{ type: "integer" }]}>
             <InputNumber className="InputNumber" min={0} placeholder="请输入要忽略的采样个数。实际忽略的采样时间是 忽略的个数 * 采样间隔。" />
