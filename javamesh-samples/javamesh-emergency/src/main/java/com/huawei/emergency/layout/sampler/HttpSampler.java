@@ -107,7 +107,7 @@ public class HttpSampler extends Sampler {
     }
 
     private String generateBodyData() {
-        return String.format(Locale.ROOT, "\"%s\".bytes", Jsr223Util.parseScript(body));
+        return String.format(Locale.ROOT, "(\"%s\").bytes", parameterized(Jsr223Util.parseScript(body)));
     }
 
     private static String parameterized(String source) {
