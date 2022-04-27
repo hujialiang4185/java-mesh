@@ -16,10 +16,11 @@ heartbeat:
     ip: 127.0.0.1
     port: 9100
 remoteServer:
- execComplete: /argus-emergency/api/script/execComplete
+  execComplete: /argus-emergency/api/script/execComplete
 script:
   executor:
     corePoolSize: 32
     maxPoolSize: 32
     keepAliveTime: 60
     blockingQueueSize: 1024
+    timeOut: 300
