@@ -390,7 +390,7 @@ public class EmergencyScriptController {
     @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
         operationType = OperationTypeEnum.SELECT,
         operationDetails = OperationDetails.GET_IDE_SCRIPT)
-    public CommonResult createIdeScript(@RequestParam("script_id") Integer scriptId) {
+    public CommonResult getIdeScript(@RequestParam("script_id") Integer scriptId) {
         return selectScript(scriptId);
     }
 

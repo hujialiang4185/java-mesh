@@ -281,9 +281,12 @@ public class EmergencyPlanController {
     @WebOperationLog(resourceType = ResourceType.PLAN_MANAGEMENT,
         operationType = OperationTypeEnum.DELETE,
         operationDetails = OperationDetails.DELETE_PLAN)
-    public CommonResult deletePlan(@RequestParam("plan_id") int planId) {
+    public CommonResult deletePlan(UsernamePasswordAuthenticationToken authentication,
+        @RequestParam("plan_id") int planId) {
+        UserEntity userEntity = ((JwtUser) authentication.getPrincipal()).getUserEntity();
         EmergencyPlan plan = new EmergencyPlan();
         plan.setPlanId(planId);
+        plan.setUpdateUser(userEntity.getUserName());
         return planService.delete(plan);
     }
 
@@ -347,6 +350,7 @@ public class EmergencyPlanController {
     public CommonResult copyPlan(UsernamePasswordAuthenticationToken authentication,
         @RequestBody EmergencyPlan emergencyPlan) {
         emergencyPlan.setCreateUser(((JwtUser) authentication.getPrincipal()).getUsername());
+        emergencyPlan.setPlanGroup(((JwtUser) authentication.getPrincipal()).getGroupName());
         return planService.copy(emergencyPlan);
     }
 

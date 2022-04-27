@@ -183,7 +183,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         insertPlan.setCreateUser(emergencyPlan.getCreateUser());
         insertPlan.setPlanGroup(emergencyPlan.getPlanGroup());
         insertPlan.setUpdateTime(new Date());
-        updateStatusByMode(insertPlan);
+        markStatusByMode(insertPlan);
         planMapper.insertSelective(insertPlan);
         EmergencyPlan updatePlanNo = new EmergencyPlan();
         updatePlanNo.setPlanId(insertPlan.getPlanId());
@@ -199,10 +199,6 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             return CommonResult.failed("请选择正确的项目");
         }
 
-        if (havePass(emergencyPlan.getPlanId())) {
-            return CommonResult.failed("审核通过后不能删除");
-        }
-
         // 是否正在执行
         if (haveRunning(emergencyPlan.getPlanId())) {
             return CommonResult.failed("当前项目正在执行中，无法删除。");
@@ -211,11 +207,11 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         EmergencyPlan updatePlan = new EmergencyPlan();
         updatePlan.setIsValid(ValidEnum.IN_VALID.getValue());
         updatePlan.setPlanId(emergencyPlan.getPlanId());
+        updatePlan.setUpdateUser(emergencyPlan.getUpdateUser());
         updatePlan.setUpdateTime(new Date());
         if (planMapper.updateByPrimaryKeySelective(updatePlan) == 0) {
             return CommonResult.failed("请选择正确的项目");
         }
-
         EmergencyPlanDetail updatePlanDetail = new EmergencyPlanDetail();
         updatePlanDetail.setIsValid(ValidEnum.IN_VALID.getValue());
         EmergencyPlanDetailExample updatePlanDetailCondition = new EmergencyPlanDetailExample();
@@ -716,7 +712,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
 
         EmergencyPlan updatePlan = new EmergencyPlan();
         updatePlan.setPlanId(planId);
-        updateStatusByMode(updatePlan);
+        markStatusByMode(updatePlan);
         updatePlan.setUpdateTime(new Date());
         planMapper.updateByPrimaryKeySelective(updatePlan);
         taskMapper.tryClearTaskNo(planId);
@@ -781,8 +777,6 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         if (emergencyPlan.getPlanId() == null) {
             return CommonResult.failed("请选择要克隆的项目");
         }
-        EmergencyPlan oldPlan = planMapper.selectByPrimaryKey(emergencyPlan.getPlanId());
-        emergencyPlan.setPlanGroup(oldPlan.getPlanGroup());
         CommonResult<EmergencyPlan> addResult = add(emergencyPlan);
         if (StringUtils.isNotEmpty(addResult.getMsg())) {
             return addResult;
@@ -1016,7 +1010,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         return result;
     }
 
-    public void updateStatusByMode(EmergencyPlan plan) {
+    public void markStatusByMode(EmergencyPlan plan) {
         // 如果是dev或test则不需要提审审核脚本
         if (MODE_DEV.equals(mode) || MODE_TEST.equals(mode)) {
             plan.setStatus(PlanStatus.APPROVED.getValue());
