@@ -93,11 +93,17 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
     @Value("${script.executor.timeOut}")
     private long timeOutSecond;
 
+    private ScriptEngine groovyEngine;
+
     @PostConstruct
     public void init() {
         Properties props = new Properties();
         props.put("python.console.encoding", UTF_8);
         PythonInterpreter.initialize(System.getProperties(), props, new String[0]);
+        groovyEngine = new ScriptEngineManager().getEngineByName("groovy");
+        if (groovyEngine == null) {
+            throw new RuntimeException("不存在groovy执行引擎");
+        }
     }
 
     @Override
@@ -149,7 +155,7 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
         private String scriptName;
         private String scriptLocation = "/tmp/";
 
-        public ExecutorHandler(String content, String param, int detailId, String scriptType, String scriptName) {
+        ExecutorHandler(String content, String param, int detailId, String scriptType, String scriptName) {
             this.content = content;
             this.param = param;
             this.detailId = detailId;
@@ -157,7 +163,7 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
             this.scriptName = scriptName;
         }
 
-        public ExecutorHandler() {
+        ExecutorHandler() {
         }
 
         @Override
@@ -174,6 +180,7 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
                         execGroovy();
                         break;
                     default:
+                        LOGGER.error("invalid script type {}", scriptType);
                         break;
                 }
             } catch (Exception e) {
@@ -184,39 +191,41 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
 
         private void execGroovy() {
             cache.put(detailId, String.valueOf(Thread.currentThread().getId()));
-            ScriptEngineManager factory = new ScriptEngineManager();
-
-            // 每次生成一个engine实例
-            ScriptEngine engine = factory.getEngineByName("groovy");
-            if (engine == null) {
-                throw new IllegalArgumentException("不存在groovy执行引擎");
-            }
             if (StringUtils.isNotBlank(param)) {
                 String[] params = param.split(SPLIT_SIGN);
-
-                // 初始化Bindings
-                Bindings bindings = engine.createBindings();
+                Bindings bindings = groovyEngine.createBindings();
                 for (String keyValue : params) {
                     String[] split = keyValue.split("=");
                     bindings.put(split[0], split[1]);
                 }
             }
-            StringWriter sw = new StringWriter();
-            StringWriter swError = new StringWriter();
             Future<ExecResult> scriptExecTask = null;
             try {
-                ScriptContext context = engine.getContext();
-                context.setWriter(sw);
-                context.setErrorWriter(swError);
                 scriptExecTask = scriptExecExecutor.submit(() -> {
+                    StringWriter sw = new StringWriter();
+                    StringWriter swError = new StringWriter();
+                    ScriptContext context = groovyEngine.getContext();
+                    context.setWriter(sw);
+                    context.setErrorWriter(swError);
                     try {
-                        engine.eval(content);
+                        groovyEngine.eval(content);
                         String errorInfo = swError.toString();
                         return StringUtils.isNotBlank(errorInfo) ? ExecResult.fail(detailId, errorInfo)
                             : ExecResult.success(detailId, sw.toString());
                     } catch (ScriptException e) {
                         LOGGER.error("exec groovy script {} failed.", detailId, e);
                         return ExecResult.fail(detailId, sw + e.getMessage());
+                    } finally {
+                        try {
+                            sw.close();
+                        } catch (IOException e) {
+                            LOGGER.error("close exec groovy script normalOutputStream error.", e);
+                        }
+                        try {
+                            swError.close();
+                        } catch (IOException e) {
+                            LOGGER.error("close exec groovy script errorOutputStream error.", e);
+                        }
                     }
                 });
                 if (timeOutSecond > 0) {
@@ -231,16 +240,6 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
                 LOGGER.error("exec groovy time out.", e);
                 onComplete(ExecResult.fail(detailId, "timeOut"));
             } finally {
-                try {
-                    sw.close();
-                } catch (IOException e) {
-                    LOGGER.error("close exec groovy script normalOutputStream error.", e);
-                }
-                try {
-                    swError.close();
-                } catch (IOException e) {
-                    LOGGER.error("close exec groovy script errorOutputStream error.", e);
-                }
                 cache.remove(detailId);
                 if (scriptExecTask != null) {
                     scriptExecTask.cancel(true);
@@ -259,15 +258,15 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
                 }
             }
             String pythonFile = "";
-            ByteArrayOutputStream normalOutputStream = new ByteArrayOutputStream();
-            ByteArrayOutputStream errorOutputStream = new ByteArrayOutputStream();
             Future<ExecResult> scriptExecTask = null;
             try {
-                interpreter.setOut(normalOutputStream);
-                interpreter.setErr(errorOutputStream);
                 pythonFile = createPythonFile(scriptName, content);
                 String finalPythonFile = pythonFile;
                 scriptExecTask = scriptExecExecutor.submit(() -> {
+                    ByteArrayOutputStream normalOutputStream = new ByteArrayOutputStream();
+                    ByteArrayOutputStream errorOutputStream = new ByteArrayOutputStream();
+                    interpreter.setOut(normalOutputStream);
+                    interpreter.setErr(errorOutputStream);
                     try {
                         interpreter.execfile(finalPythonFile);
                         String errorInfo = errorOutputStream.toString(UTF_8);
@@ -277,6 +276,17 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
                         LOGGER.error("exec python script {} failed.", detailId, e);
                         return ExecResult.fail(detailId,
                             normalOutputStream.toString(UTF_8) + e);
+                    } finally {
+                        try {
+                            normalOutputStream.close();
+                        } catch (IOException e) {
+                            LOGGER.error("close exec python script normalOutputStream error.", e);
+                        }
+                        try {
+                            errorOutputStream.close();
+                        } catch (IOException e) {
+                            LOGGER.error("close exec python script errorOutputStream error.", e);
+                        }
                     }
                 });
                 if (timeOutSecond > 0) {
@@ -284,10 +294,6 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
                 } else {
                     onComplete(scriptExecTask.get());
                 }
-            } catch (PyException e) {
-                LOGGER.error("exec python script {} failed.", detailId, e);
-                onComplete(ExecResult.fail(detailId,
-                    normalOutputStream.toString(UTF_8) + e));
             } catch (InterruptedException | ExecutionException e) {
                 LOGGER.error("exec python script {} failed.", detailId, e);
                 onComplete(ExecResult.fail(detailId, e.getMessage()));
@@ -302,16 +308,6 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
                     }
                 }
                 cache.remove(detailId);
-                try {
-                    normalOutputStream.close();
-                } catch (IOException e) {
-                    LOGGER.error("close exec python script normalOutputStream error.", e);
-                }
-                try {
-                    errorOutputStream.close();
-                } catch (IOException e) {
-                    LOGGER.error("close exec python script errorOutputStream error.", e);
-                }
                 if (scriptExecTask != null) {
                     scriptExecTask.cancel(true);
                 }
