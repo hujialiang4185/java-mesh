@@ -47,8 +47,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -85,8 +84,11 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
     @Value("${remoteServer.execComplete}")
     private String execCompleteUrl;
 
+    @Resource(name = "scriptHandlerThreadPool")
+    private ThreadPoolExecutor scriptHandlerExecutor;
+
     @Resource(name = "scriptExecThreadPool")
-    private ThreadPoolExecutor executor;
+    private ThreadPoolExecutor scriptExecExecutor;
 
     @Value("${script.executor.timeOut}")
     private long timeOutSecond;
@@ -108,7 +110,8 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
             return CommonResult.failed("The param required is null. ");
         }
         requestCache.put(detailId, request.getHeader("Cookie"));
-        executor.execute(new ExecutorHandler(content, param, detailId, scriptType, execParam.getScriptName()));
+        scriptHandlerExecutor.execute(
+            new ExecutorHandler(content, param, detailId, scriptType, execParam.getScriptName()));
         return CommonResult.success();
     }
 
@@ -200,12 +203,12 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
             }
             StringWriter sw = new StringWriter();
             StringWriter swError = new StringWriter();
-            RunnableFuture<ExecResult> scriptExecTask = null;
+            Future<ExecResult> scriptExecTask = null;
             try {
                 ScriptContext context = engine.getContext();
                 context.setWriter(sw);
                 context.setErrorWriter(swError);
-                scriptExecTask = new FutureTask<>(() -> {
+                scriptExecTask = scriptExecExecutor.submit(() -> {
                     try {
                         engine.eval(content);
                         String errorInfo = swError.toString();
@@ -216,7 +219,6 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
                         return ExecResult.fail(detailId, sw + e.getMessage());
                     }
                 });
-                new Thread(scriptExecTask, "groovy-exec-" + detailId).start();
                 if (timeOutSecond > 0) {
                     onComplete(scriptExecTask.get(timeOutSecond, TimeUnit.SECONDS));
                 } else {
@@ -259,13 +261,13 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
             String pythonFile = "";
             ByteArrayOutputStream normalOutputStream = new ByteArrayOutputStream();
             ByteArrayOutputStream errorOutputStream = new ByteArrayOutputStream();
-            RunnableFuture<ExecResult> scriptExecTask = null;
+            Future<ExecResult> scriptExecTask = null;
             try {
                 interpreter.setOut(normalOutputStream);
                 interpreter.setErr(errorOutputStream);
                 pythonFile = createPythonFile(scriptName, content);
                 String finalPythonFile = pythonFile;
-                scriptExecTask = new FutureTask<>(() -> {
+                scriptExecTask = scriptExecExecutor.submit(() -> {
                     try {
                         interpreter.execfile(finalPythonFile);
                         String errorInfo = errorOutputStream.toString(UTF_8);
@@ -277,7 +279,6 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
                             normalOutputStream.toString(UTF_8) + e);
                     }
                 });
-                new Thread(scriptExecTask, "python-exec-" + detailId).start();
                 if (timeOutSecond > 0) {
                     onComplete(scriptExecTask.get(timeOutSecond, TimeUnit.SECONDS));
                 } else {
@@ -357,15 +358,13 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
 
         private ExecResult execute(String[] commands, long timeOut) {
             Process process = null;
-            RunnableFuture<String> scriptLogTask = null;
-            RunnableFuture<String> scriptErrorLogTask = null;
+            Future<String> scriptLogTask = null;
+            Future<String> scriptErrorLogTask = null;
             try {
                 process = Runtime.getRuntime().exec(commands);
                 Process finalProcess = process;
-                scriptLogTask = new FutureTask<>(() -> parseResult(finalProcess.getInputStream()));
-                scriptErrorLogTask = new FutureTask<>(() -> parseResult(finalProcess.getErrorStream()));
-                new Thread(scriptLogTask).start();
-                new Thread(scriptErrorLogTask).start();
+                scriptLogTask = scriptExecExecutor.submit(() -> parseResult(finalProcess.getInputStream()));
+                scriptErrorLogTask = scriptExecExecutor.submit(() -> parseResult(finalProcess.getErrorStream()));
                 String scriptLog;
                 String scriptErrorLog;
                 if (timeOut > 0) {

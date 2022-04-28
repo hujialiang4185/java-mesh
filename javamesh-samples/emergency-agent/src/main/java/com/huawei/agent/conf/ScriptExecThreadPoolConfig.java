@@ -47,18 +47,43 @@ public class ScriptExecThreadPoolConfig {
     private int blockingSize;
 
     /**
-     * 用于脚本执行的线程池。
+     * 用于处理脚本执行请求的线程池。
      *
      * @return {@link ThreadPoolExecutor}
      */
     @Bean(destroyMethod = "shutdown")
-    public ThreadPoolExecutor scriptExecThreadPool() {
+    public ThreadPoolExecutor scriptHandlerThreadPool() {
         ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
             coreSize,
             maxSize,
             keepAliveTime,
             TimeUnit.SECONDS,
             new LinkedBlockingQueue<>(blockingSize),
+            new ThreadFactory() {
+                private AtomicInteger threadCount = new AtomicInteger();
+
+                @Override
+                public Thread newThread(Runnable r) {
+                    return new Thread(r, "script-handle-" + threadCount.getAndIncrement());
+                }
+            });
+        threadPoolExecutor.allowCoreThreadTimeOut(true);
+        return threadPoolExecutor;
+    }
+
+    /**
+     * 用于执行脚本文件的线程池。
+     *
+     * @return {@link ThreadPoolExecutor}
+     */
+    @Bean(destroyMethod = "shutdown")
+    public ThreadPoolExecutor scriptExecThreadPool() {
+        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
+            coreSize * 2,
+            maxSize * 2,
+            keepAliveTime,
+            TimeUnit.SECONDS,
+            new LinkedBlockingQueue<>(blockingSize * 2),
             new ThreadFactory() {
                 private AtomicInteger threadCount = new AtomicInteger();
 
