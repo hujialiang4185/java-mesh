@@ -19,4 +19,11 @@ public interface EmergencyCallBack {
      * @param record {@link EmergencyExecRecord} 执行记录
      */
     void onComplete(EmergencyExecRecord record);
+
+    /**
+     * 预案，场景，任务人工确认失败后的回调
+     *
+     * @param record {@link EmergencyExecRecord} 执行记录
+     */
+    void onEnsureFailed(EmergencyExecRecord record);
 }

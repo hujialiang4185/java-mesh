@@ -135,6 +135,11 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
         }
     }
 
+    @Override
+    public void onEnsureFailed(EmergencyExecRecord record) {
+        
+    }
+
     private boolean isTaskFinished(EmergencyExecRecord task) {
         EmergencyExecRecordExample finishedCondition = new EmergencyExecRecordExample();
         finishedCondition.createCriteria()
@@ -244,8 +249,10 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
             return CommonResult.success();
         }
         TaskCommonReport commonReport = TaskCommonReport.parse(perfTest);
-        commonReport.setLabel(execRecordMapper.selectPlanNoByPerfTestId(perfTestId));
-        commonReport.getLabel().add(perfTestId.toString());
+        List<String> labels = commonReport.getLabel() == null ? new ArrayList<>() : commonReport.getLabel();
+        labels.add(perfTestId.toString());
+        labels.addAll(execRecordMapper.selectPlanNoByPerfTestId(perfTestId));
+        commonReport.setLabel(labels);
         commonReport.setPlugins(perfTestService.getAvailableReportPlugins(perfTestId));
         return CommonResult.success(commonReport);
     }

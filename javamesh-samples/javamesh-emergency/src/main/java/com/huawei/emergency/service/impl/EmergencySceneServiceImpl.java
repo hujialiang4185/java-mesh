@@ -96,6 +96,11 @@ public class EmergencySceneServiceImpl implements EmergencySceneService {
     }
 
     @Override
+    public void onEnsureFailed(EmergencyExecRecord record) {
+        
+    }
+
+    @Override
     public boolean isSceneFinished(int execId, int sceneId) {
         EmergencyExecRecordExample isFinishedCondition = new EmergencyExecRecordExample();
         isFinishedCondition.createCriteria()

@@ -449,8 +449,17 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         } else {
             updatePlan.setStatus(PlanStatus.SUCCESS.getValue());
         }
-        WebSocketServer.sendMessage("/plan/" + record.getPlanId());
         planMapper.updateByPrimaryKeySelective(updatePlan);
+        WebSocketServer.sendMessage("/plan/" + record.getPlanId());
+    }
+
+    @Override
+    public void onEnsureFailed(EmergencyExecRecord record) {
+        EmergencyPlan updatePlan = new EmergencyPlan();
+        updatePlan.setPlanId(record.getPlanId());
+        updatePlan.setStatus(PlanStatus.FAILED.getValue());
+        planMapper.updateByPrimaryKeySelective(updatePlan);
+        WebSocketServer.sendMessage("/plan/" + record.getPlanId());
     }
 
     @Override
