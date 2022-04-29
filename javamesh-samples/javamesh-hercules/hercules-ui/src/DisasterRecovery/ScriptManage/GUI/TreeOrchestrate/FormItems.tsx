@@ -87,7 +87,7 @@ export default function App(props: { type: String, onChange: () => void }) {
                 <HTTPRequest name="parameters" />
                 <Divider orientation="left">消息体数据</Divider>
                 <Form.Item label="消息体" name="body">
-                    <Input.TextArea maxLength={1000} showCount />
+                    <Input.TextArea showCount />
                 </Form.Item>
             </>
         case "JARImport":
@@ -238,7 +238,7 @@ function HTTPRequest(props: { name: string }) {
                 return <div key={item.name} className="FormList">
                     <Form.Item name={[item.name, "name"]} rules={[{ max: 32 }]}><Input /></Form.Item>
                     <span className="Equal">=</span>
-                    <Form.Item name={[item.name, "value"]} rules={[{ max: 32 }]}><Input /></Form.Item>
+                    <Form.Item name={[item.name, "value"]} rules={[{ max: 256 }]}><Input /></Form.Item>
                     <PlusCircleOutlined onClick={function () { add() }} />
                     {item.key !== 0 && <MinusCircleOutlined onClick={function () { remove(item.name) }} />}
                 </div>
