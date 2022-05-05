@@ -611,6 +611,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             task.setTaskName(taskNode.getTaskName());
             task.setTaskType(taskType.getValue());
             task.setCreateUser(taskNode.getCreateUser());
+            task.setTaskDesc(taskNode.getScenaDesc());
         } else {
             if (StringUtils.isEmpty(taskNode.getScriptName())) {
                 return CommonResult.failed("请选择脚本");

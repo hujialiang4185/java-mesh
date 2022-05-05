@@ -137,7 +137,7 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
 
     @Override
     public void onEnsureFailed(EmergencyExecRecord record) {
-        
+
     }
 
     private boolean isTaskFinished(EmergencyExecRecord task) {
@@ -183,6 +183,7 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
         insertTask.setCreateUser(emergencyTask.getCreateUser());
         insertTask.setPerfTestId(emergencyTask.getPerfTestId());
         insertTask.setTaskType(emergencyTask.getTaskType());
+        insertTask.setTaskDesc(emergencyTask.getTaskDesc());
         if (emergencyTask.getScriptId() != null) {
             EmergencyScript script = scriptMapper.selectByPrimaryKey(emergencyTask.getScriptId());
             if (script != null) {
