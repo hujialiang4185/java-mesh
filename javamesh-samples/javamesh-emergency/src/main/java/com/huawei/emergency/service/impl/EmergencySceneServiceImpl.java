@@ -24,11 +24,12 @@ import java.util.concurrent.ThreadPoolExecutor;
 import javax.annotation.Resource;
 
 /**
+ * 场景管理
+ *
  * @author y30010171
  * @since 2021-11-04
  **/
 @Service
-@Transactional(rollbackFor = Exception.class)
 public class EmergencySceneServiceImpl implements EmergencySceneService {
     private static final Logger LOGGER = LoggerFactory.getLogger(EmergencySceneServiceImpl.class);
 
@@ -45,6 +46,7 @@ public class EmergencySceneServiceImpl implements EmergencySceneService {
     private EmergencyPlanService planService;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void onComplete(EmergencyExecRecord record) {
         LOGGER.debug("Scene exec_id={},plan_id={},scene_id={} is finished.",
             record.getExecId(), record.getPlanId(), record.getSceneId());
@@ -97,7 +99,7 @@ public class EmergencySceneServiceImpl implements EmergencySceneService {
 
     @Override
     public void onEnsureFailed(EmergencyExecRecord record) {
-        
+
     }
 
     @Override

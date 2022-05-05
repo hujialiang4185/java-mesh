@@ -38,6 +38,7 @@ import org.ngrinder.model.User;
 import org.ngrinder.perftest.service.PerfTestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -122,6 +123,13 @@ public class ExecRecordHandlerFactory {
         return new ExecRecordDetailHandler(record, recordDetail);
     }
 
+    /**
+     * 执行任务
+     *
+     * @param record 任务执行记录
+     * @param recordDetail 任务执行记录明细
+     */
+    @Transactional(rollbackFor = Exception.class)
     public void exec(EmergencyExecRecord record, EmergencyExecRecordDetail recordDetail) {
         EmergencyExecRecordDetail updateRecordDetail = new EmergencyExecRecordDetail();
         updateRecordDetail.setDetailId(recordDetail.getDetailId());
@@ -181,6 +189,7 @@ public class ExecRecordHandlerFactory {
      * @param recordDetail
      * @param execResult
      */
+    @Transactional(rollbackFor = Exception.class)
     public void complete(EmergencyExecRecord record, EmergencyExecRecordDetail recordDetail, ExecResult execResult) {
         try {
             // 更新record,detail为执行完成，结束时间
@@ -237,6 +246,7 @@ public class ExecRecordHandlerFactory {
      * @param detail 执行记录明细
      * @param result 执行结果
      */
+    @Transactional(rollbackFor = Exception.class)
     public void completePerfTest(EmergencyExecRecord record, EmergencyExecRecordDetail detail, ExecResult result) {
         Date endTime = new Date();
         try {
@@ -493,6 +503,7 @@ public class ExecRecordHandlerFactory {
      *
      * @param execRecord 执行记录
      */
+    @Transactional(rollbackFor = Exception.class)
     public CommonResult stopRecord(EmergencyExecRecord execRecord) {
         EmergencyExecRecordDetailExample recordDetailExample = new EmergencyExecRecordDetailExample();
         recordDetailExample.createCriteria()
@@ -541,6 +552,7 @@ public class ExecRecordHandlerFactory {
         }
 
         @Override
+        @Transactional(rollbackFor = Exception.class)
         public void run() {
             EmergencyExecRecord record = recordMapper.selectByPrimaryKey(currentRecord.getRecordId());
             int retryTimes = RETRY_TIMES;
@@ -574,7 +586,9 @@ public class ExecRecordHandlerFactory {
                     throw new ApiException("任务状态不为待执行。当前状态为 " + recordStatus);
                 }
                 EmergencyExecRecord finalRecord = record;
-                emergencyExecRecordDetails.forEach(recordDetail -> exec(finalRecord, recordDetail));
+                emergencyExecRecordDetails.forEach(
+                    recordDetail -> ((ExecRecordHandlerFactory) AopContext.currentProxy()).exec(finalRecord,
+                        recordDetail));
             } catch (ApiException | IllegalArgumentException e) {
                 LOGGER.error("failed to generateRecordDetail. {}.{}", record.getRecordId(), e.getMessage());
                 EmergencyExecRecord errorRecord = new EmergencyExecRecord();
