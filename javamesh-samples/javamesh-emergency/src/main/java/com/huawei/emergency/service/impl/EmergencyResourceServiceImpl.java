@@ -35,6 +35,7 @@ import org.ngrinder.script.model.FileEntry;
 import org.ngrinder.script.service.NfsFileEntryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,11 +53,12 @@ import java.util.List;
 import javax.servlet.ServletOutputStream;
 
 /**
+ * 上传资源管理
+ *
  * @author y30010171
  * @since 2022-01-14
  **/
 @Service
-@Transactional
 public class EmergencyResourceServiceImpl implements EmergencyResourceService {
     private static final Logger LOGGER = LoggerFactory.getLogger(EmergencyResourceServiceImpl.class);
 
@@ -76,6 +78,7 @@ public class EmergencyResourceServiceImpl implements EmergencyResourceService {
     private EmergencyPlanService planService;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public CommonResult upload(String userName, int scriptId, String path, String originalFilename,
         InputStream inputStream) {
         EmergencyScript script = scriptMapper.selectByPrimaryKey(scriptId);
@@ -139,6 +142,7 @@ public class EmergencyResourceServiceImpl implements EmergencyResourceService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void refreshResource(int scriptId, List<String> resourceList) {
         List<Integer> currentResourceId = new ArrayList<>();
         if (resourceList != null) {
@@ -163,7 +167,7 @@ public class EmergencyResourceServiceImpl implements EmergencyResourceService {
             criteria.andResourceIdNotIn(currentResourceId);
         }
         List<EmergencyResource> emergencyResources = resourceMapper.selectByExample(needDeleteResource);
-        emergencyResources.forEach(this::deleteResource);
+        emergencyResources.forEach(((EmergencyResourceServiceImpl) AopContext.currentProxy())::deleteResource);
     }
 
     @Override
@@ -207,6 +211,7 @@ public class EmergencyResourceServiceImpl implements EmergencyResourceService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public CommonResult deleteResourceByIdAndName(int resourceId, String fileName) {
         EmergencyResource resource = resourceMapper.selectByPrimaryKey(resourceId);
         if (resource == null || ValidEnum.IN_VALID.equals(resource.getIsValid())) {
@@ -215,7 +220,7 @@ public class EmergencyResourceServiceImpl implements EmergencyResourceService {
         if (StringUtils.isEmpty(fileName) || !fileName.equals(resource.getResourceName())) {
             return CommonResult.failed("资源名不一致");
         }
-        return deleteResource(resource);
+        return ((EmergencyResourceServiceImpl) AopContext.currentProxy()).deleteResource(resource);
     }
 
     @Override
