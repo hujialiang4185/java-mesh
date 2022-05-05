@@ -71,7 +71,6 @@ import javax.annotation.Resource;
  * @since 2021-11-09
  **/
 @Service
-@Transactional(rollbackFor = Exception.class)
 @Setter
 public class EmergencyExecServiceImpl implements EmergencyExecService {
     private static final Logger LOGGER = LoggerFactory.getLogger(EmergencyExecServiceImpl.class);
@@ -113,6 +112,7 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
     private EmergencyPlanController planController;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public CommonResult exec(EmergencyScript script) {
         if (script == null || script.getScriptId() == null) {
             return CommonResult.failed("请选择正确的脚本.");
@@ -170,6 +170,7 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public CommonResult debugScript(ScriptManageDto script) {
         if (script == null || StringUtils.isEmpty(script.getContent())) {
             return CommonResult.failed("脚本内容为空");
@@ -252,6 +253,7 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public CommonResult ensure(int recordId, String result, String userName) {
         EmergencyExecRecord needEnsureRecord = recordMapper.selectByPrimaryKey(recordId);
         if (needEnsureRecord == null || needEnsureRecord.getRecordId() == null) {
@@ -309,6 +311,7 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public CommonResult reExec(int recordId, String userName) {
         EmergencyExecRecord oldRecord = recordMapper.selectByPrimaryKey(recordId);
         if (!RecordStatus.FAILED.getValue().equals(oldRecord.getStatus()) ||
@@ -334,6 +337,7 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public CommonResult stopOneServer(int detailId, String userName) {
         EmergencyExecRecordDetail recordDetail = recordDetailMapper.selectByPrimaryKey(detailId);
         if (recordDetail == null
@@ -379,6 +383,7 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public CommonResult startOneServer(int detailId, String userName) {
         EmergencyExecRecordDetail oldDetail = recordDetailMapper.selectByPrimaryKey(detailId);
         if (oldDetail == null
@@ -415,6 +420,7 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public CommonResult ensureOneServer(int detailId, String result, String userName) {
         EmergencyExecRecordDetail recordDetail = recordDetailMapper.selectByPrimaryKey(detailId);
         if (recordDetail == null
@@ -544,6 +550,7 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public CommonResult deleteExecRecord(Integer[] historyIds) {
         EmergencyExecExample execExample = new EmergencyExecExample();
         execExample.createCriteria().andExecIdIn(Arrays.stream(historyIds).collect(Collectors.toList()));
@@ -568,6 +575,7 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public CommonResult stopRecord(EmergencyExecRecord record) {
         if (record == null || record.getRecordId() == null) {
             return CommonResult.failed("请选择正确的执行记录。");

@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -23,6 +24,7 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
     private EmergencyServerMapper serverMapper;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void addAgent(String ip, String port) {
         try {
             EmergencyServerExample serverExample = new EmergencyServerExample();
@@ -51,6 +53,7 @@ public class EmergencyAgentServiceImpl implements EmergencyAgentService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void removeAgent(String ip) {
         try {
             EmergencyServerExample serverExample = new EmergencyServerExample();
