@@ -38,7 +38,6 @@ import org.ngrinder.model.User;
 import org.ngrinder.perftest.service.PerfTestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -587,7 +586,7 @@ public class ExecRecordHandlerFactory {
                 }
                 EmergencyExecRecord finalRecord = record;
                 emergencyExecRecordDetails.forEach(
-                    recordDetail -> ((ExecRecordHandlerFactory) AopContext.currentProxy()).exec(finalRecord,
+                    recordDetail -> exec(finalRecord,
                         recordDetail));
             } catch (ApiException | IllegalArgumentException e) {
                 LOGGER.error("failed to generateRecordDetail. {}.{}", record.getRecordId(), e.getMessage());

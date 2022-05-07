@@ -35,7 +35,6 @@ import org.ngrinder.script.model.FileEntry;
 import org.ngrinder.script.service.NfsFileEntryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -167,7 +166,7 @@ public class EmergencyResourceServiceImpl implements EmergencyResourceService {
             criteria.andResourceIdNotIn(currentResourceId);
         }
         List<EmergencyResource> emergencyResources = resourceMapper.selectByExample(needDeleteResource);
-        emergencyResources.forEach(((EmergencyResourceServiceImpl) AopContext.currentProxy())::deleteResource);
+        emergencyResources.forEach(this::deleteResource);
     }
 
     @Override
@@ -220,7 +219,7 @@ public class EmergencyResourceServiceImpl implements EmergencyResourceService {
         if (StringUtils.isEmpty(fileName) || !fileName.equals(resource.getResourceName())) {
             return CommonResult.failed("资源名不一致");
         }
-        return ((EmergencyResourceServiceImpl) AopContext.currentProxy()).deleteResource(resource);
+        return deleteResource(resource);
     }
 
     @Override

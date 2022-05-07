@@ -552,15 +552,26 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CommonResult deleteExecRecord(Integer[] historyIds) {
+        EmergencyExecRecordExample recordExample = new EmergencyExecRecordExample();
+        recordExample.createCriteria()
+            .andExecIdIn(Arrays.stream(historyIds).collect(Collectors.toList()))
+            .andIsValidEqualTo(ValidEnum.VALID.getValue());
+        List<EmergencyExecRecord> emergencyExecRecords = recordMapper.selectByExample(recordExample);
+        if (emergencyExecRecords.stream()
+            .filter(record -> RecordStatus.HAS_RUNNING_STATUS.contains(record.getStatus()))
+            .count() > 0) {
+            return CommonResult.failed("请选择已执行完成的记录。");
+        }
+
         EmergencyExecExample execExample = new EmergencyExecExample();
-        execExample.createCriteria().andExecIdIn(Arrays.stream(historyIds).collect(Collectors.toList()));
+        execExample.createCriteria()
+            .andExecIdIn(Arrays.stream(historyIds).collect(Collectors.toList()))
+            .andIsValidEqualTo(ValidEnum.VALID.getValue());
         EmergencyExec exec = new EmergencyExec();
         exec.setIsValid(ValidEnum.IN_VALID.getValue());
         execMapper.updateByExampleSelective(exec, execExample);
 
         // 更新任务执行表
-        EmergencyExecRecordExample recordExample = new EmergencyExecRecordExample();
-        recordExample.createCriteria().andExecIdIn(Arrays.stream(historyIds).collect(Collectors.toList()));
         EmergencyExecRecord execRecord = new EmergencyExecRecord();
         execRecord.setIsValid(ValidEnum.IN_VALID.getValue());
         recordMapper.updateByExampleSelective(execRecord, recordExample);
