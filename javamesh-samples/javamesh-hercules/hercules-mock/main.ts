@@ -889,7 +889,7 @@ app.get("/argus-emergency/api/history/get", function (req, res) {
 })
 app.get("/argus-emergency/api/history/scenario", function (req, res) {
     res.json({
-        data: Array.from({ length: 4 }, function (_, index) {
+        data: Array.from({ length: 20 }, function (_, index) {
             return {
                 key: "key" + index,
                 scena_name: "A机房分流, 长文本长文本长文本长文本长文本长文本长文本长文本",
