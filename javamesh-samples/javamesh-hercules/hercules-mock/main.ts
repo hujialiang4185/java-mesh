@@ -280,6 +280,18 @@ app.get('/argus-emergency/api/task/view', function (req, res) {
             test_comment: "备注文本，长文本长文本",
             log_name: ["anent-NONE-log1.zip", "anent-NONE-log2.zip"],
             progress_message: ["第一行失败", "第二行失败"],
+            response_time25: 10,
+            response_time50: 10,
+            response_time75: 10,
+            response_time90: 10,
+            response_time95: 10,
+            response_time99: 10,
+            agent: 10,
+            start_time: "2022-01-01 00:00:00",
+            init_value: 100,
+            increment: 10,
+            init_wait: 3000,
+            growth_interval: 4000
         }
     })
 })
@@ -288,6 +300,34 @@ app.get('/argus-emergency/api/task/service', function (req, res) {
         data: [
             { transaction: '测试1', tps: 123, response_ms: 12, success_count: 9, fail_count: 1, fail_rate: "10%" }
         ]
+    })
+})
+app.get('/argus-emergency/api/task/metrics', function (req, res) {
+    const base = new Date().getTime();
+    res.json({
+        data: {
+            time: Array.from({length: 100}, function(_, index){
+                return base + index * 1000
+            }),
+            errors: Array.from({length: 100}, function(_, index){
+                return Math.round(Math.random() * 100)
+            }),
+            vuser: Array.from({length: 100}, function(_, index){
+                return Math.round(Math.random() * 100)
+            }),
+            tps: Array.from({length: 100}, function(_, index){
+                return Math.round(Math.random() * 100)
+            }),
+            user_defined: Array.from({length: 100}, function(_, index){
+                return Math.round(Math.random() * 100)
+            }),
+            mean_test_time: Array.from({length: 100}, function(_, index){
+                return Math.round(Math.random() * 100)
+            }),
+            mean_time_to_first_byte: Array.from({length: 100}, function(_, index){
+                return Math.round(Math.random() * 100)
+            }),
+        }
     })
 })
 app.get('/argus-emergency/api/task/resource', function (req, res) {
@@ -483,11 +523,12 @@ app.get('/argus-emergency/api/script', function (req, res) {
                 has_pwd: "是",
                 pwd_from: "本地",
                 param: "a,b",
-                content: `#!/bin/bash`,
+                content: `#!/bin/bash\necho hello`,
                 group_id: 1,
                 group_name: "分组1",
                 approver: "张三",
-                auditable: index === 1
+                auditable: index === 1,
+                language: "Shell"
             }
         }),
         total: 11
@@ -502,6 +543,9 @@ app.post('/argus-emergency/api/script', function (req, res) {
     res.json()
 })
 app.put('/argus-emergency/api/script', function (req, res) {
+    res.json()
+})
+app.post('/argus-emergency/api/script/script_name_exist', function (req, res) {
     res.json()
 })
 app.post('/argus-emergency/api/script/debug', function (req, res) {
@@ -678,7 +722,11 @@ app.get("/argus-emergency/api/plan", function (req, res) {
                 expand: [
                     {
                         key: 2, scena_name: "场景一", task_name: "任务一", channel_type: "SSH",
-                        script_name: "C01T01.sh", submit_info: "提交信息", test_id: 1
+                        script_name: "C01T01.sh", submit_info: "提交信息", test_id: 1,
+                        server_list: [
+                            { server_id: 0, server_name: "服务名称0", server_ip: "192.168.0.1" },
+                            { server_id: 1, server_name: "服务名称1", server_ip: "192.168.0.1" }
+                        ], vuser: 100
                     },
                     {
                         key: 3, scena_name: "场景一", task_name: "任务一",
@@ -750,6 +798,9 @@ app.post("/argus-emergency/api/plan/submitReview", function (req, res) {
 app.post("/argus-emergency/api/plan/cancel", function (req, res) {
     res.json()
 })
+app.post("/argus-emergency/api/plan/stop", function (req, res) {
+    res.json()
+})
 app.put("/argus-emergency/api/plan", function (req, res) {
     res.json()
 })
@@ -771,7 +822,10 @@ app.get("/argus-emergency/api/plan/task", function (req, res) {
                 script_name: "1.sh",
                 submit_info: "xxx",
                 sync: "同步",
-                service_id: [{ server_id: 0, server_name: "服务名称0", server_ip: "192.168.0.1" }],
+                server_list: [
+                    { server_id: 0, server_name: "服务名称0", server_ip: "192.168.0.1" },
+                    { server_id: 1, server_name: "服务名称1", server_ip: "192.168.0.1" }
+                ],
                 children: [{
                     key: 3,
                     title: "任务3",
@@ -783,15 +837,15 @@ app.get("/argus-emergency/api/plan/task", function (req, res) {
                     vuser: 5,
                     basic: "by_count",
                     by_count: 100,
-                    growth_interval: 4,
+                    growth_interval: 4000,
                     increment: 2,
                     init_value: 1,
-                    init_wait: 3,
+                    init_wait: 3000,
                     is_increased: true,
                     sampling_ignore: 10,
                     sampling_interval: 100,
                     test_param: "param",
-                    service_id: [{ server_id: "1", server_name: "服务名称0", server_ip: "192.168.0.1" }],
+                    server_list: [{ server_id: "1", server_name: "服务名称0", server_ip: "192.168.0.1" }],
                     sync: "同步",
                 }]
             }]
@@ -822,6 +876,9 @@ app.get("/argus-emergency/api/history", function (req, res) {
         total: 11
     })
 })
+app.delete("/argus-emergency/api/history", function (req, res) {
+    res.json()
+})
 app.get("/argus-emergency/api/history/get", function (req, res) {
     res.json({
         data: {
@@ -832,7 +889,7 @@ app.get("/argus-emergency/api/history/get", function (req, res) {
 })
 app.get("/argus-emergency/api/history/scenario", function (req, res) {
     res.json({
-        data: Array.from({ length: 4 }, function (_, index) {
+        data: Array.from({ length: 20 }, function (_, index) {
             return {
                 key: "key" + index,
                 scena_name: "A机房分流, 长文本长文本长文本长文本长文本长文本长文本长文本",
@@ -903,7 +960,7 @@ app.get("/argus-emergency/api/history/scenario/task/log", function (req, res) {
         line
     })
 })
-const hosts = Array.from({ length: 11 }, function (_, index) {
+const hosts = Array.from({ length: 101 }, function (_, index) {
     return {
         status: ["running", "pending", "success", "fail"][index % 4],
         status_label: ["运行中", "准备中", "成功", "失败"][index % 4],
@@ -921,12 +978,19 @@ const hosts = Array.from({ length: 11 }, function (_, index) {
 })
 app.get("/argus-emergency/api/host", function (req, res) {
     const excludes = req.query.excludes as string[]
-    const end = Number(req.query.current || 1) * 5
-    const data = hosts.filter(function (item) {
+    const server_name = req.query.server_name as string
+    const pageSize = Number(req.query.pageSize)
+    const end = Number(req.query.current || 1) * pageSize
+    let data = hosts.filter(function (item) {
         return !excludes?.includes(item.server_id)
     })
+    if (server_name) {
+        data = data.filter(function(item) {
+            return item.server_name.includes(server_name)
+        })
+    }
     res.json({
-        data: data.slice(end - 5, end),
+        data: data.slice(end - pageSize, end),
         total: data.length
     })
 })
@@ -982,7 +1046,7 @@ app.get("/argus-user/api/logAudit", function (req, res) {
                 "operation_results": "成功",
                 "operation_people": "admin",
                 "ip_address": "192.168.0.1",
-                "peration_details": "/api/test",
+                "operation_details": "/api/test",
                 "operation_date": "2017-01-01",
             }
         }),

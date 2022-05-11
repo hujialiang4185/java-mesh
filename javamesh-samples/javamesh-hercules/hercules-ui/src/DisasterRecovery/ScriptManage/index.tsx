@@ -17,6 +17,7 @@ import { useForm } from "antd/lib/form/Form"
 import ServiceSelect from "../../component/ServiceSelect"
 import IDE from "./IDE"
 import IDECreate from "./IDECreate"
+import { debounce } from "lodash"
 
 export default function App() {
     const { path } = useRouteMatch();
@@ -34,7 +35,8 @@ type Data = {
     script_id: string, script_name: string, param: string,
     owner: string, status: string, submit_info: string,
     has_pwd: string, pwd_from: string, content: string,
-    type: string, group_id: string, auditable: string
+    type: string, group_id: string, auditable: string,
+    language: string
 }
 function Home() {
     let submit = false
@@ -58,6 +60,7 @@ function Home() {
             try {
                 const res = await axios.get('/argus-emergency/api/script', { params })
                 setData(res.data)
+                setSelectedRowKeys([])
             } catch (error: any) {
                 message.error(error.message)
             }
@@ -270,7 +273,18 @@ function ApproveScript(props: { data: Data, load: () => {} }) {
     </>
 }
 
+export function formatLanguage(language: string) {
+    switch (language) {
+        case "Shell":
+            return "shell"
+        case "Groovy":
+            return "java"
+        default:
+            return "python"
+    }
+}
 function ScriptDetail(props: { data: Data, height: number }) {
+    const language = formatLanguage(props.data.language)
     return <div className="ScriptDetail">
         <Descriptions className="Desc">
             <Descriptions.Item label="脚本名称">{props.data.script_name}</Descriptions.Item>
@@ -278,7 +292,7 @@ function ScriptDetail(props: { data: Data, height: number }) {
             <Descriptions.Item label="脚本用途">{props.data.submit_info}</Descriptions.Item>
         </Descriptions>
         <div className="Editor">
-            <Editor height={props.height} language="shell" options={{ readOnly: true }} value={props.data.content} />
+            <Editor height={props.height} language={language} options={{ readOnly: true }} value={props.data.content} />
         </div>
     </div>
 }
@@ -316,9 +330,12 @@ function AddScript() {
                 <div className="Line">
                     <Form.Item className="Middle" labelCol={{ span: 4 }} name="script_name" label="脚本名" rules={[
                         { min: 3, max: 20, required: true, whitespace: true },
-                        { pattern: /^[A-Za-z][\w.-]+$/, message: "格式不正确" }
+                        { pattern: /^[A-Za-z][\w.-]+$/, message: "格式不正确" },
+                        { async validator(_, script_name) {
+                            await axios.post("/argus-emergency/api/script/script_name_exist", {script_name})
+                        } }
                     ]}>
-                        <Input placeholder='必须以字母开头, 可以包括字母, 数字和 ._- 最短3位, 最长20位'/>
+                        <DebounceInput/>
                     </Form.Item>
                     <Form.Item className="Middle" labelCol={{ span: 4 }} name="group_name" label="分组">
                         <ServiceSelect allowClear url="/argus-user/api/group/search" />
@@ -348,4 +365,13 @@ function AddScript() {
             </Form>
         </Modal>
     </>
+}
+
+function DebounceInput(props: {onChange?: (value: string)=> void}) {
+    const onChangeRef = useRef(debounce(function(value){
+        props.onChange?.(value);
+    }, 1000))
+    return <Input placeholder='必须以字母开头, 可以包括字母, 数字和 ._- 最短3位, 最长20位' onChange={function(e){
+        onChangeRef.current(e.target.value);
+    }}/>
 }

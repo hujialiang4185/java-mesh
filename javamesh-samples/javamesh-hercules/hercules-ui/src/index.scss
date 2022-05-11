@@ -1,0 +1,89 @@
+@import 'antd/dist/antd.css';
+@import "./fonts/font-awesome.css";
+@import "./fonts/mb-icons.css";
+@import "./fonts/material.css";
+@import "./fonts/custom.css";
+
+body {
+  font-family: unset;
+}
+
+li {
+  list-style: none;
+}
+
+.MonacoEditor {
+  max-width: 99%;
+}
+
+.ant-form-item-label>label::after {
+  content: "";
+}
+
+.ant-descriptions-item-label::after {
+  content: "";
+}
+
+.ant-steps-item-title {
+  width: 300px;
+}
+
+.ant-input-number {
+  width: 100%;
+}
+
+.ant-input-number-group-wrapper {
+  width: 100%;
+}
+
+.ant-collapse {
+  border: none;
+
+  .ant-collapse-item {
+    .ant-collapse-header {
+      background-color: #ffffff;
+      color: #0185FF;
+
+      .icon {
+        font-size: 20px;
+      }
+    }
+  }
+}
+
+.ant-transfer-list-header {
+  display: none;
+}
+
+.WithoutLabel {
+  .ant-form-item-label {
+    display: none;
+  }
+}
+
+.icon {
+  line-height: 1;
+  vertical-align: bottom;
+}
+
+.FormList {
+  display: flex;
+
+  .Equal {
+    font-size: 14px;
+    line-height: 32px;
+    margin: 0 5px;
+  }
+
+  .anticon {
+    color: #0185FF;
+    font-size: 18px;
+    line-height: 32px;
+    margin-left: 20px;
+  }
+
+  .ant-form-item+.ant-form-item {
+    margin-left: 10px;
+  }
+}
+

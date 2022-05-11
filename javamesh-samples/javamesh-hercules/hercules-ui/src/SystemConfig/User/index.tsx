@@ -27,6 +27,7 @@ export default function App() {
             }
             const res = await axios.get("/argus-user/api/user", { params })
             setData(res.data)
+            setSelectedRowKeys([])
         } catch (error: any) {
             message.error(error.message)
         }
@@ -88,8 +89,8 @@ export default function App() {
                     await axios.post("/argus-user/api/user/batchDeactive", { username: selectedRowKeys })
                     message.success("禁用成功")
                     load()
-                } catch (e: any) {
-                    message.error(e.message)
+                } catch (error: any) {
+                    message.error(error.message)
                 }
             }
         })
@@ -272,7 +273,7 @@ function UpdateUser(props: { data: Data, load: () => {} }) {
                     message.error(error.message)
                 }
             }}>
-                <Form.Item name="username" label="登录账号">
+                <Form.Item name="username" label="登录账号" rules={[{ required: true}]}>
                     <Input disabled />
                 </Form.Item>
                 <Form.Item name="nickname" label="用户名称" rules={[{ required: true, max: 15 }]}>
@@ -281,7 +282,7 @@ function UpdateUser(props: { data: Data, load: () => {} }) {
                 <Form.Item name="role" label="用户角色" rules={[{ required: true }]}>
                     <Select options={[{ value: "操作员" }, { value: "审核员" }, { value: "管理员" }]} />
                 </Form.Item>
-                <Form.Item name="group_name" label="用户分组">
+                <Form.Item name="group_name" label="用户分组" rules={[{ required: true}]}>
                     <ServiceSelect allowClear url="/argus-user/api/group/search" />
                 </Form.Item>
                 <Form.Item className="Buttons">

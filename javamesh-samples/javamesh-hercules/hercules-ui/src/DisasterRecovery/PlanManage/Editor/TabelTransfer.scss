@@ -1,4 +1,10 @@
 .TabelTransfer {
+    .ant-transfer-list:nth-child(3) {
+        padding-top: 56px;
+    }
+    .ant-transfer-operation {
+        align-self: unset;
+    }
     &>div:last-child {
         .ant-transfer-list-body-search-wrapper {
             display: none;

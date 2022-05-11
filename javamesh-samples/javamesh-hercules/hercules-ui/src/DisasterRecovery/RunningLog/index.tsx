@@ -1,13 +1,14 @@
-import { Button, Form, Input, message, Table } from "antd";
-import React, { useEffect, useRef, useState } from "react"
+import { Button, Form, Input, message, Modal, Table } from "antd";
+import React, { useContext, useEffect, useRef, useState } from "react"
 import CacheRoute, { CacheSwitch, useDidRecover } from "react-router-cache-route";
 import { Link, Route, useRouteMatch } from "react-router-dom";
 import Breadcrumb from "../../component/Breadcrumb";
 import Card from "../../component/Card";
 import Detail from "./Detail"
-import { SearchOutlined } from '@ant-design/icons'
+import { SearchOutlined, CloseOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
 import "./index.scss"
 import axios from "axios";
+import Context from "../../ContextProvider";
 
 export default function App() {
     const { path } = useRouteMatch();
@@ -24,10 +25,34 @@ type Data = {
 }
 
 function Home() {
+    let submit = false
     let { path } = useRouteMatch();
     const [data, setData] = useState<{ data: Data[], total: number }>({ data: [], total: 0 })
     const [loading, setLoading] = useState(false)
+    const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
     const stateRef = useRef<any>({})
+    const { auth } = useContext(Context)
+    function batchDelete(selectedRowKeys: React.Key[]) {
+        if (submit) return
+        submit = true
+        Modal.confirm({
+            title: '是否删除?',
+            icon: <ExclamationCircleOutlined />,
+            content: '删除后无法恢复, 请谨慎操作',
+            okType: 'danger',
+            async onOk() {
+                try {
+                    await axios.delete("/argus-emergency/api/history", { params: { history_id: selectedRowKeys } })
+                    message.success("删除成功")
+                    load()
+                } catch (e: any) {
+                    message.error(e.message)
+                    throw e
+                }
+            },
+        })
+        submit = false
+    }
     async function load() {
         setLoading(true)
         const params = {
@@ -41,6 +66,7 @@ function Home() {
         try {
             const res = await axios.get('/argus-emergency/api/history', { params })
             setData(res.data)
+            setSelectedRowKeys([])
         } catch (error: any) {
             message.error(error.message)
         }
@@ -54,6 +80,13 @@ function Home() {
         <Breadcrumb label="执行记录" />
         <Card>
             <div className="ToolBar">
+                <Button disabled={!auth.includes("operator")} icon={<CloseOutlined />} onClick={function () {
+                    if (selectedRowKeys.length === 0) {
+                        return
+                    }
+                    batchDelete(selectedRowKeys)
+                }}>批量删除</Button>
+                <div className="Space"></div>
                 <Form layout="inline" onFinish={function (values) {
                     stateRef.current.search = values
                     load()
@@ -65,6 +98,11 @@ function Home() {
                 </Form>
             </div>
             <Table size="middle" loading={loading} dataSource={data.data} rowKey="history_id"
+                rowSelection={{
+                    selectedRowKeys, onChange(selectedRowKeys) {
+                        setSelectedRowKeys(selectedRowKeys)
+                    }
+                }}
                 onChange={function (pagination, filters, sorter) {
                     stateRef.current = { ...stateRef.current, pagination, filters, sorter }
                     load()
@@ -106,7 +144,7 @@ function Home() {
                     {
                         title: "执行状态",
                         width: 200,
-                        dataIndex: "status", 
+                        dataIndex: "status",
                         ellipsis: true
                     },
                     {

@@ -5,7 +5,7 @@ import { Prompt, useHistory, useLocation } from "react-router-dom"
 import Breadcrumb from "../../../component/Breadcrumb"
 import Card from "../../../component/Card"
 import "./index.scss"
-import TreeOrchestrate, { Values } from "../../../component/TreeOrchestrate"
+import TreeOrchestrate, { Values } from "./TreeOrchestrate"
 
 export default function App() {
     let submit = false

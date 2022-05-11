@@ -1,10 +1,11 @@
 import { Button, Checkbox, Collapse, Divider, Drawer, Form, Input, InputNumber, message, Radio, Switch } from "antd";
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import "./AddPlanTask.scss"
 import SearchSelect from "./SearchSelect";
 import TabelTransfer from "./TabelTransfer";
 import Editor from "@monaco-editor/react";
+import { debounce } from "lodash";
 
 export default function App(props: { onFinish: (values: any) => Promise<void>, initialValues: any, create?: boolean }) {
   props.initialValues.gui_script_name = props.initialValues.script_name
@@ -30,12 +31,13 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
       setIsModalVisible(true)
       loadScript(props.initialValues.script_name)
     }}>{props.create ? "加任务" : "修改"}</Button>
-    <Drawer className="AddPlanTask" title={props.create ? "加任务" : "修改"} width={950} visible={isModalVisible} maskClosable={false} footer={null} onClose={function () {
+    <Drawer className="AddPlanTask" title={props.create ? "加任务" : "修改"} width={1200} visible={isModalVisible} footer={null} onClose={function () {
       setIsModalVisible(false)
     }}>
       <Form form={form} labelCol={{ span: 2 }}
         initialValues={props.initialValues}
         onFinish={async (values) => {
+          values.submit_info = script.submit_info
           if (values.gui_script_name) {
             values.script_name = values.gui_script_name
           }
@@ -44,7 +46,7 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
             if (props.create) {
               form.resetFields()
               setIsCmd(false)
-              setScript({submit_info: "", content: ""})
+              setScript({ submit_info: "", content: "" })
               setBasic(false)
               setPresure(true)
             }
@@ -73,12 +75,12 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
             <Switch checkedChildren="同步" unCheckedChildren="异步" defaultChecked />
           </Form.Item>
         </div>
-        <Form.Item label="执行主机" name="service_id" rules={[{ required: true }]}>
+        <Form.Item label="执行主机" name="server_list" rules={[{ required: true }]}>
           <TabelTransfer />
         </Form.Item>
         {isCmd ? <>
           <Form.Item className="ScriptName" label="脚本名称" name="script_name" rules={[{ required: true }]}>
-            <SearchSelect onChange={loadScript} />
+            <SearchSelect type="normal" onChange={loadScript} />
           </Form.Item>
           <Collapse expandIconPosition="right" expandIcon={function ({ isActive }) {
             return <span className={`icon fa fa-angle-double-${isActive ? "down" : "right"}`}></span>
@@ -119,15 +121,15 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
               <Radio value="by_time">测试时长</Radio>
               <div>
                 <Form.Item label="小时" className="WithoutLabel" name="by_time_h" rules={[{ type: "integer" }]}>
-                  <InputNumber disabled={basic} className="Time" min={-1} max={8759} />
+                  <InputNumber disabled={basic} className="Time" min={0} max={8759} />
                 </Form.Item>
                 <span className="Sep">:</span>
                 <Form.Item label="分钟" className="WithoutLabel" name="by_time_m" rules={[{ type: "integer" }]}>
-                  <InputNumber disabled={basic} className="Time" min={-1} max={60} />
+                  <InputNumber disabled={basic} className="Time" min={0} max={59} />
                 </Form.Item>
                 <span className="Sep">:</span>
                 <Form.Item label="秒" className="WithoutLabel" name="by_time_s" rules={[{ type: "integer" }]}>
-                  <InputNumber disabled={basic} className="Time" min={-1} max={60} />
+                  <InputNumber disabled={basic} className="Time" min={0} max={59} />
                 </Form.Item>
                 <span className="Format">HH:MM:SS</span>
               </div>
@@ -141,7 +143,7 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
             </Radio.Group>
           </Form.Item>
           <Form.Item labelCol={{ span: 3 }} labelAlign="left" label="采样间隔" name="sampling_interval" rules={[{ type: "integer" }]}>
-            <InputNumber className="InputNumber" min={0} addonAfter="MS" placeholder="默认2ms对TPS进行采样"/>
+            <InputNumber className="InputNumber" min={0} addonAfter="秒" placeholder="默认2ms对TPS进行采样" />
           </Form.Item>
           <Form.Item labelCol={{ span: 3 }} labelAlign="left" label="忽略采样数量" name="sampling_ignore" rules={[{ type: "integer" }]}>
             <InputNumber className="InputNumber" min={0} placeholder="请输入要忽略的采样个数。实际忽略的采样时间是 忽略的个数 * 采样间隔。" />
@@ -164,10 +166,10 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
             <InputNumber disabled={presure} className="InputNumber" min={0} />
           </Form.Item>
           <Form.Item labelCol={{ span: 3 }} labelAlign="left" label="初始等待时间" name="init_wait" rules={[{ type: "integer" }]}>
-            <InputNumber disabled={presure} className="InputNumber" min={0} addonAfter="MS" />
+            <TimePicker disabled={presure} />
           </Form.Item>
           <Form.Item labelCol={{ span: 3 }} labelAlign="left" label="进程增长间隔" name="growth_interval" rules={[{ type: "integer" }]}>
-            <InputNumber disabled={presure} addonAfter="MS" min={0} className="InputNumber" />
+            <TimePicker disabled={presure} />
           </Form.Item>
         </>}
         <Form.Item className="Buttons">
@@ -179,4 +181,29 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
       </Form>
     </Drawer>
   </>
+}
+
+function TimePicker(props: { disabled: boolean, value?: number, onChange?: (value: number) => void }) {
+  const [date, setDate] = useState(new Date(props.value && props.value > 0 ? props.value : 0))
+  const onChangeRef = useRef(debounce(function(date: Date){
+    setDate(date)
+    props.onChange?.(+date)
+  }, 100))
+  return <div className="TimePicker">
+    <InputNumber value={date.getUTCHours()} disabled={props.disabled} className="Time" min={0} max={23} onChange={function(value){
+      date.setUTCHours(value)
+      onChangeRef.current(date)
+    }}/>
+    <span className="Sep">:</span>
+    <InputNumber value={date.getMinutes()} disabled={props.disabled} className="Time" min={0} max={59} onChange={function(value){
+      date.setMinutes(value)
+      onChangeRef.current(date)
+    }}/>
+    <span className="Sep">:</span>
+    <InputNumber value={date.getSeconds()} disabled={props.disabled} className="Time" min={0} max={59} onChange={function(value){
+      date.setSeconds(value)
+      onChangeRef.current(date)
+    }}/>
+    <span className="Format">HH:MM:SS</span>
+  </div>
 }

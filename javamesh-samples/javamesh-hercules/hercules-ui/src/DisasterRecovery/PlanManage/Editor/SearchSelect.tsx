@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState } from "react"
 import { FileSearchOutlined, SearchOutlined } from '@ant-design/icons'
 import "./SearchSelect.scss"
 
-export default function App(props: { value?: string, onChange?: (value: string) => void, type?: string }) {
+export default function App(props: { value?: string, onChange?: (value: string) => void, type: string }) {
   const [options, setOptions] = useState()
   const [loading, setLoading] = useState(false)
   const [isModalVisible, setIsModalVisible] = useState(false)
@@ -88,7 +88,7 @@ function SearchSelectModal(props: { setIsModalVisible: (visible: boolean) => voi
       </Form.Item>
       <Button htmlType="submit" icon={<SearchOutlined />}>查找</Button>
     </Form>
-    <Table dataSource={data.data} size="middle" loading={loading} pagination={{ total: data.total, pageSize: 5 }} rowKey="script_name"
+    <Table dataSource={data.data} size="middle" loading={loading} pagination={{ total: data.total, pageSize: 5, showSizeChanger: false }} rowKey="script_name"
       rowSelection={{
         type: "radio", selectedRowKeys, onChange(selectedRowKeys) {
           setSelectedRowKeys(selectedRowKeys)

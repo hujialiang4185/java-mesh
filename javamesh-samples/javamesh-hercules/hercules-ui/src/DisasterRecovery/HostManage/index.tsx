@@ -34,6 +34,7 @@ export default function App() {
             }
             const res = await axios.get("/argus-emergency/api/host", { params })
             setData(res.data)
+            setSelectedRowKeys([])
             // 需要监听的任务列表
             keysRef.current = res.data.data.map(function (item: Data) {
                 return "/host/" + item.server_id
@@ -208,7 +209,7 @@ function AddHost(props: { load: () => void }) {
                         props.load()
                         message.success("创建成功")
                     } catch (error: any) {
-                        message.error("创建失败")
+                        message.error(error.message)
                     }
                 }}
             >

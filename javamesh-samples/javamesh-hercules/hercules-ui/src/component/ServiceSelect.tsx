@@ -4,13 +4,13 @@ import axios from 'axios';
 import { useState } from 'react';
 import { debounce } from 'lodash';
 
-export default function App(props: { url: string, value?: string, onChange?: (value: string) => void, placeholder?: string, allowClear?: boolean }) {
+export default function App(props: { url: string, params?: any, value?: string, onChange?: (value: string) => void, placeholder?: string, allowClear?: boolean }) {
     const [options, setOptions] = useState()
     const [loading, setLoading] = useState(false)
     async function loadBelongTo(value?: string) {
         setLoading(true)
         try {
-            const res = await axios.get(props.url, { params: { value } })
+            const res = await axios.get(props.url, { params: { ...props.params, value } })
             setOptions(res.data.data.map(function (item: string) {
                 return { value: item }
             }))

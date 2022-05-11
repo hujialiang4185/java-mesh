@@ -15,14 +15,12 @@ import ApproveFormItems from "../ApproveFormItems"
 import { useForm } from "antd/lib/form/Form"
 import socket from "../socket"
 import { debounce } from "lodash"
-import TaskView from "../../component/TaskView"
 
 export default function App() {
     const { path } = useRouteMatch();
     return <CacheSwitch>
         <CacheRoute exact path={path} component={Home} />
         <Route exact path={path + '/Editor'}><Editor /></Route>
-        <Route exact path={path + '/Report'}><TaskView /></Route>
     </CacheSwitch>
 }
 
@@ -115,19 +113,27 @@ function Home() {
                             columns={[
                                 {
                                     title: "任务名称", width: 300, dataIndex: "task_name", ellipsis: true, render(value, row) {
-                                        return !row.test_id ? value : <Link to={path + "/Report?test_id=" + row.test_id}>{value}</Link>
+                                        return !row.test_id ? value : <Link to={"/PerformanceTest/RunningLog/Detail/Report?test_id=" + row.test_id}>{value}</Link>
                                     }
                                 },
-                                { title: "场景名称", dataIndex: "scena_name", ellipsis: true,  },
+                                { title: "场景名称", dataIndex: "scena_name", ellipsis: true, },
                                 { title: "脚本名称", dataIndex: "script_name", ellipsis: true },
                                 { title: "脚本用途", dataIndex: "submit_info", ellipsis: true },
+                                {
+                                    title: "执行主机", dataIndex: "server_list", ellipsis: true, render(value?: {server_name: string}[]) {
+                                        return value?.map(function(item){
+                                            return item.server_name
+                                        }).join("\n")
+                                    }
+                                },
+                                { title: "虚拟用户数", dataIndex: "vuser", ellipsis: true },
                                 { title: "所有者", dataIndex: "user_id", ellipsis: true },
                                 { title: "标签", dataIndex: "tag_string", ellipsis: true },
                                 { title: "开始时间", dataIndex: "start_time", ellipsis: true },
-                                { title: "持续阈值", dataIndex: "duration", ellipsis: true },
+                                { title: "持续阈值(秒)", dataIndex: "duration", ellipsis: true },
                                 { title: "TPS", dataIndex: "tps", ellipsis: true },
                                 { title: "MTT", dataIndex: "mean_test_time", ellipsis: true },
-                                { title: "出错率(%)", dataIndex: "error_rate", ellipsis: true}
+                                { title: "出错率(%)", dataIndex: "error_rate", ellipsis: true }
                             ]}
                         />
                     }
@@ -149,6 +155,17 @@ function Home() {
                                 </Link>}
                                 {record.auditable && <ApprovePlan plan_id={plan_id} load={load} />}
                                 {record.status === "unapproved" && auth.includes("operator") && <SubmitReview load={load} group_id={record.group_id} plan_id={plan_id} />}
+                                {record.status === "running" && auth.includes("operator") && <Popconfirm title="是否停止?" onConfirm={async function () {
+                                    try {
+                                        await axios.post("/argus-emergency/api/plan/stop", { plan_id })
+                                        message.success("停止成功")
+                                        load()
+                                    } catch (error: any) {
+                                        message.error(error.message)
+                                    }
+                                }}>
+                                    <Button type="link" size="small">停止</Button>
+                                </Popconfirm>}
                                 {(record.status === "approved" || record.status === "ran") && auth.includes("operator") && <Button type="link" size="small" onClick={async function () {
                                     if (submit) return
                                     submit = true

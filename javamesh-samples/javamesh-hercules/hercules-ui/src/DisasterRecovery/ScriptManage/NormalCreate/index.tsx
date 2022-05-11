@@ -1,15 +1,15 @@
 import { Button, Form, FormInstance, Input, message, Radio } from "antd"
-import React, { useRef, useState } from "react"
+import React, { useState } from "react"
 import Breadcrumb from "../../../component/Breadcrumb"
 import Card from "../../../component/Card"
 import { useHistory, useLocation } from "react-router-dom"
 import axios from "axios"
-import { debounce } from 'lodash';
 import "./index.scss"
 import ServiceSelect from "../../../component/ServiceSelect"
 import Upload from "../../../component/Upload"
 import DebugScript from "../DebugScript"
 import Editor from "@monaco-editor/react";
+import { formatLanguage } from ".."
 
 export default function App() {
     let submit = false
@@ -65,7 +65,9 @@ export default function App() {
                 </Form.Item>
                 <Form.Item className="Buttons">
                     <Button className="Save" htmlType="submit" type="primary">提交</Button>
-                    <Button htmlType="reset">重置</Button>
+                    <Button onClick={function () {
+                        history.goBack()
+                    }}>取消</Button>
                 </Form.Item>
             </Form>
         </Card>
@@ -74,7 +76,8 @@ export default function App() {
 
 function Script({ form }: { form: FormInstance }) {
     const [scriptFrom, setScriptFrom] = useState("input")
-    const [script, setScript] = useState<string>()
+    const state = useLocation().state as any
+    console.log(state)
     return <>
         <div className="Line">
             <Form.Item className="Middle" name="script_from" label="脚本来源">
@@ -83,10 +86,10 @@ function Script({ form }: { form: FormInstance }) {
                 }} options={["手工录入", "脚本克隆", "本地导入"]} />
             </Form.Item>
             {scriptFrom === "脚本克隆" && <Form.Item className="Middle" name="content_from" label="克隆来源">
-                <ServiceSelect url='/argus-emergency/api/script/search' onChange={async function (name) {
+                <ServiceSelect url='/argus-emergency/api/script/search' params={{language: state.language}} onChange={async function (name) {
                     try {
                         const res = await axios.get("/argus-emergency/api/script/getByName", { params: { name } })
-                        setScript(res.data.data.content)
+                        form.setFields([{name: "content", value: res.data.data.content}])
                     } catch (error: any) {
                         message.error(error.message)
                     }
@@ -98,26 +101,9 @@ function Script({ form }: { form: FormInstance }) {
         </div>
         {scriptFrom !== "本地导入" && <>
             <Form.Item label="脚本内容" className="Editor WithoutLabel" name="content" rules={[{ required: true }]}>
-                <ScriptEditor script={script} setScript={setScript} />
+                <Editor className="MonacoEditor" height={200} language={formatLanguage(state.language)} />
             </Form.Item>
-            <DebugScript form={form} />
+            <DebugScript form={form} language={state.language}/>
         </>}
     </>
-}
-
-function ScriptEditor(props: { onChange?: (value?: string) => void, script?: string, setScript: (script?: string) => void }) {
-    const state = useLocation().state as any
-    let language = "python"
-    switch (state.language) {
-        case "Shell":
-            language = "shell"
-            break
-        case "Groovy":
-            language = "java"
-    }
-    const debounceRef = useRef(debounce(function (value?: string) {
-        props.setScript(value)
-        props.onChange?.(value)
-    }, 1000))
-    return <Editor className="MonacoEditor" height={200} language={language} value={props.script} onChange={debounceRef.current} />
 }

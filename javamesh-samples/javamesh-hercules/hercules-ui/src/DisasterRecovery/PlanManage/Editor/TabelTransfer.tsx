@@ -10,11 +10,13 @@ export default function App(props: { onChange?: (value: Data[]) => void, value?:
     const [rightData, setRightData] = useState<Data[]>(props.value || [])
     const [loading, setLoading] = useState(false)
     const stateRef = useRef<any>({excludes: props.value?.map(function (item){ return item.server_id})})
-    const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([])
+    const [leftSelectedRowKeys, setLeftSelectedRowKeys] = useState<Key[]>([])
+    const [rightSelectedRowKeys, setRightSelectedRowKeys] = useState<Key[]>([])
+    const [pageSize, setPageSize] = useState(10)
     async function load() {
         setLoading(true)
         const params = {
-            pageSize: stateRef.current.pagination?.pageSize || 5,
+            pageSize: stateRef.current.pagination?.pageSize || 10,
             current: stateRef.current.pagination?.current,
             sorter: stateRef.current.sorter?.field,
             order: stateRef.current.sorter?.order,
@@ -25,7 +27,8 @@ export default function App(props: { onChange?: (value: Data[]) => void, value?:
         try {
             const res = await axios.get("/argus-emergency/api/host", { params })
             setLeftData(res.data)
-            setSelectedRowKeys([])
+            setLeftSelectedRowKeys([])
+            setRightSelectedRowKeys([])
         } catch (error: any) {
             message.error(error.message)
         }
@@ -67,37 +70,43 @@ export default function App(props: { onChange?: (value: Data[]) => void, value?:
         if (props.direction === "left") {
             return <Table size="small" rowKey="server_id" dataSource={leftData.data} loading={loading}
                 onChange={function (pagination, filters, sorter) {
+                    props.onItemSelectAll(leftSelectedRowKeys as string[], false)
                     stateRef.current = { ...stateRef.current, pagination, filters, sorter }
                     load()
+                    const currentPageSize = pagination.pageSize
+                    if (currentPageSize && currentPageSize !== pageSize) {
+                        setPageSize(currentPageSize)
+                    }
                 }}
-                pagination={{ total: leftData.total, size: "small", pageSize: 5, showTotal() { return `共 ${leftData.total} 条` }, showSizeChanger: false }}
+                pagination={{ total: leftData.total, size: "small", pageSize, showSizeChanger: true, showTotal() { return `共 ${leftData.total} 条` } }}
                 rowSelection={{
-                    hideSelectAll: true,
-                    selectedRowKeys: selectedRowKeys,
-                    onSelect(record, selected) {
-                        const index = selectedRowKeys.indexOf(record.server_id)
-                        if (selected) {
-                            if (index === -1) {
-                                selectedRowKeys.push(record.server_id)
-                            } else {
-                                selectedRowKeys[index] = record.server_id
-                            }
-                        } else {
-                            selectedRowKeys.splice(index, 1)
-                        }
-                        setSelectedRowKeys([...selectedRowKeys])
-                        props.onItemSelect(record.server_id, selected)
+                    selectedRowKeys: leftSelectedRowKeys,
+                    onChange(selectedRowKeys) {
+                        props.onItemSelectAll(leftSelectedRowKeys as string[], false)
+                        setLeftSelectedRowKeys(selectedRowKeys)
+                        props.onItemSelectAll(selectedRowKeys as string[], true)
                     }
                 }}
                 columns={columns}
             />
         } else {
             return <Table size="small" rowKey="server_id" dataSource={rightData}
-                pagination={{ total: rightData.length, size: "small", pageSize: 5, showTotal() { return `共 ${rightData.length} 条` }, showSizeChanger: false }}
+                pagination={{ total: rightData.length, size: "small", pageSize, showSizeChanger: true, showTotal() { return `共 ${rightData.length} 条` } }}
+                onChange={function (pagination){
+                    props.onItemSelectAll(rightSelectedRowKeys as string[], false)
+                    stateRef.current.pagination = {...stateRef.current.pagination, pageSize: pagination.pageSize}
+                    load()
+                    const currentPageSize = pagination.pageSize
+                    if (currentPageSize && currentPageSize !== pageSize) {
+                        setPageSize(currentPageSize)
+                    }
+                }}
                 rowSelection={{
-                    hideSelectAll: true,
-                    onSelect(record, selected) {
-                        props.onItemSelect(record.server_id, selected)
+                    selectedRowKeys: rightSelectedRowKeys,
+                    onChange(selectedRowKeys) {
+                        props.onItemSelectAll(rightSelectedRowKeys as string[], false)
+                        setRightSelectedRowKeys(selectedRowKeys)
+                        props.onItemSelectAll(selectedRowKeys as string[], true)
                     }
                 }}
                 columns={columns}

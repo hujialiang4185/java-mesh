@@ -8,7 +8,7 @@ import axios from "axios"
 import { Link, Route, Switch, useLocation, useRouteMatch } from "react-router-dom"
 import Editor from "@monaco-editor/react";
 import { debounce } from 'lodash';
-import TaskView from "../../../component/TaskView"
+import TaskView from "../TaskView"
 
 export default function App() {
     const { path } = useRouteMatch();
@@ -100,7 +100,9 @@ function Home() {
                 scenaIdRef.current = scenaList[current]!.scena_id
                 loadTask(history_id)
             }}>{scenaList.map(function (item, index) {
-                return <Steps.Step key={item.key} status={item.status} title={item.scena_name} description={item.status_label} />
+                return <Steps.Step key={item.key} status={item.status} title={
+                    <span title={item.scena_name}>{item.scena_name}</span>
+                } description={item.status_label} />
             })}</Steps>
             <Divider />
             <Table size="middle" rowKey="key" loading={loading} dataSource={taskList} pagination={false}
@@ -161,7 +163,7 @@ function TaskReport(props: { record: Task }) {
     return <>
         <Button disabled={!props.record.test_id} type="primary" size="small" onClick={async function () {
             try {
-                const res = await axios.get("/argus-emergency/api/task/scenario/report", {params: {key: props.record.key}})
+                const res = await axios.get("/argus-emergency/api/task/scenario/report", { params: { key: props.record.key } })
                 setData(res.data.data)
             } catch (error: any) {
                 message.error(error.message)

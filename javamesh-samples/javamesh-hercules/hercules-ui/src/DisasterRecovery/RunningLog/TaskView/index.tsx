@@ -1,14 +1,21 @@
 import { Line, LineOptions, Liquid, LiquidOptions } from "@antv/g2plot";
-import {Descriptions, message, Table, Tabs, Tag } from "antd";
+import { Descriptions, message, Tabs, Tag } from "antd";
 import { PresetColorTypes } from "antd/lib/_util/colors";
 import axios from "axios";
 import moment from "moment";
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
-import Breadcrumb from "../Breadcrumb";
-import Card from "../Card";
-import ServiceSelect from "../ServiceSelect";
+import Breadcrumb from "../../../component/Breadcrumb";
+import Card from "../../../component/Card";
+import ServiceSelect from "../../../component/ServiceSelect";
+import BusinessCharts from "./BusinessCharts";
 import "./index.scss"
+
+function getTimeString(ms?: number) {
+    if (!ms) return
+    const date = new Date(ms)
+    return date.getUTCHours().toString().padStart(2, '0') + ":" + date.getMinutes().toString().padStart(2, '0') + ":" + date.getSeconds().toString().padStart(2, '0')
+}
 
 export default function App() {
     const [data, setData] = useState<any>({})
@@ -17,11 +24,9 @@ export default function App() {
 
     useEffect(function () {
         const interval = setInterval(load, 5000)
-        let clear = false
         async function load() {
             try {
                 const res = await axios.get("/argus-emergency/api/task/view", { params: { test_id } })
-                if (clear) return
                 setData(res.data.data)
             } catch (error: any) {
                 clearInterval(interval)
@@ -30,12 +35,11 @@ export default function App() {
         }
         load()
         return function () {
-            clear = true
             clearInterval(interval)
         }
     }, [test_id])
     return <div className="TaskView">
-        <Breadcrumb label="压测任务" sub={{ label: "实时TPS数据", parentUrl: "/PerformanceTest/TestTask" }} />
+        <Breadcrumb label="压测报告" sub={{ label: "实时TPS数据", parentUrl: "/PerformanceTest/RunningLog" }} />
         <Card>
             <div className="Label">基本信息</div>
             <div className="SubCard Info">
@@ -43,9 +47,21 @@ export default function App() {
                     <Descriptions.Item label={
                         <div className="Title">测试名称</div>
                     }>{data.test_name}</Descriptions.Item>
-                    <Descriptions.Item span={2} label={
+                    <Descriptions.Item label={
                         <div className="Title">压测状态</div>
                     }>{data.status_label}</Descriptions.Item>
+                    <Descriptions.Item label={
+                        <div className="Title">初始数</div>
+                    }>{data.init_value}</Descriptions.Item>
+                    <Descriptions.Item label={
+                        <div className="Title">增量</div>
+                    }>{data.increment}</Descriptions.Item>
+                    <Descriptions.Item label={
+                        <div className="Title">初始等待时间</div>
+                    }>{getTimeString(data.init_wait)}</Descriptions.Item>
+                    <Descriptions.Item  label={
+                        <div className="Title">进程增长间隔</div>
+                    }>{getTimeString(data.growth_interval)}</Descriptions.Item>
                     <Descriptions.Item label={
                         <div className="Title">标签</div>
                     }>{data.label?.map(function (item: string, index: number) {
@@ -89,6 +105,40 @@ export default function App() {
                     <div className="Value">{data.fail_count}</div>
                     <div className="Title">错误</div>
                 </div>
+                <div className="Item">
+                    <div className="Value">{data.agent}</div>
+                    <div className="Title">Agent数量</div>
+                </div>
+            </div>
+            <div className="SubCard Basic">
+                <div className="Item">
+                    <div className="Value">{data.start_time}</div>
+                    <div className="Title">开始时间</div>
+                </div>
+                <div className="Item">
+                    <div className="Value">{data.response_time25}</div>
+                    <div className="Title">响应时间中位数P25(ms)</div>
+                </div>
+                <div className="Item">
+                    <div className="Value">{data.response_time50}</div>
+                    <div className="Title">响应时间中位数P50(ms)</div>
+                </div>
+                <div className="Item">
+                    <div className="Value">{data.response_time75}</div>
+                    <div className="Title">响应时间中位数P75(ms)</div>
+                </div>
+                <div className="Item">
+                    <div className="Value">{data.response_time90}</div>
+                    <div className="Title">响应时间中位数P90(ms)</div>
+                </div>
+                <div className="Item">
+                    <div className="Value">{data.response_time95}</div>
+                    <div className="Title">响应时间中位数P95(ms)</div>
+                </div>
+                <div className="Item">
+                    <div className="Value">{data.response_time99}</div>
+                    <div className="Title">响应时间中位数P99(ms)</div>
+                </div>
             </div>
             <div className="Label">TPS图表</div>
             <Tabs type="card" size="small">
@@ -114,28 +164,6 @@ export default function App() {
             })}
         </Card>
     </div>
-}
-
-function BusinessCharts() {
-    const [data, setData] = useState()
-    const urlSearchParams = new URLSearchParams(useLocation().search)
-    const test_id = urlSearchParams.get("test_id")
-    useEffect(function () {
-        async function load() {
-            const res = await axios.get('/argus-emergency/api/task/service', { params: { test_id } })
-            setData(res.data.data)
-        }
-        load()
-        setInterval(load, 5000)
-    }, [test_id])
-    return <Table dataSource={data} size="small" rowKey="transaction" pagination={false} columns={[
-        { title: "事务名称", dataIndex: "transaction" },
-        { title: "TPS", dataIndex: "tps" },
-        { title: "响应时间(ms)", dataIndex: "response_ms" },
-        { title: "成功数", dataIndex: "success_count" },
-        { title: "失败数", dataIndex: "fail_count" },
-        { title: "失败率%", dataIndex: "fail_rate" }
-    ]} />
 }
 
 function ResourceCharts() {
@@ -382,7 +410,7 @@ function ResourceCharts() {
         }
     }
     return <div className="ResourceCharts">
-        <ServiceSelect value={data.ip} placeholder="IP地址" url={"/argus-emergency/api/task/search/ip?test_id="+test_id} onChange={function (value) {
+        <ServiceSelect value={data.ip} placeholder="IP地址" url={"/argus-emergency/api/task/search/ip?test_id=" + test_id} onChange={function (value) {
             ipRef.current = value
             load(test_id, true)
         }} />
@@ -688,10 +716,10 @@ function JvmCharts() {
         }
     }
     return <div className="ResourceCharts">
-        <ServiceSelect value={data.ip} placeholder="IP地址" url={"/argus-emergency/api/task/search/ip?test_id="+test_id} onChange={function(value) {
+        <ServiceSelect value={data.ip} placeholder="IP地址" url={"/argus-emergency/api/task/search/ip?test_id=" + test_id} onChange={function (value) {
             ipRef.current = value
             load(test_id, true)
-        }}/>
+        }} />
         <div className="Grid">
             <div className="Item">
                 <div ref={cpuRef} className="Line"></div>

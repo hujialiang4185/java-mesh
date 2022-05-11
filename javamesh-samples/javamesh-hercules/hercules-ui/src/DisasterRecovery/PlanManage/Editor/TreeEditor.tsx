@@ -1,5 +1,5 @@
 import React, { Key, useState } from 'react'
-import { Button, Table, Tree, Modal, Popconfirm, message, Form, Input, Switch } from 'antd';
+import { Button, Table, Tree, Modal, Popconfirm, message, Form, Input, Switch, Drawer } from 'antd';
 import "./TreeEditor.scss"
 import axios from 'axios';
 import AddPlanTask from "./AddPlanTask"
@@ -134,6 +134,14 @@ export default class App extends React.Component<{ plan_id: string }> {
           { title: "任务(场景)类型", dataIndex: "task_type", ellipsis: true },
           { title: "脚本名称", dataIndex: "script_name", ellipsis: true },
           { title: "脚本用途", dataIndex: "submit_info", ellipsis: true },
+          {
+            title: "执行主机", dataIndex: "server_list", ellipsis: true, render(value?: { server_name: string }[]) {
+              return value?.map(function (item) {
+                return item.server_name
+              }).join("\n")
+            }
+          },
+          { title: "虚拟用户数", dataIndex: "vuser", ellipsis: true },
           { title: "执行方式", dataIndex: "sync", ellipsis: true },
           {
             title: <AddScenaTask create initialValues={{}} onFinish={async values => {
@@ -160,7 +168,7 @@ export default class App extends React.Component<{ plan_id: string }> {
                   });
                   // 保存
                   this.save(data)
-                }} create/>
+                }} create />
                 {this.state.gData.find(function (item) {
                   return key === item.key;
                 }) ? <AddScenaTask initialValues={{ ...record, sync: record.sync === "同步" }} onFinish={async values => {
@@ -172,7 +180,7 @@ export default class App extends React.Component<{ plan_id: string }> {
                   data[index] = { ...data[index], ...values };
                   // 保存
                   setTimeout(() => { this.save(data) })
-                }}/> : <AddPlanTask initialValues={{ ...record, sync: record.sync === "同步" }} onFinish={async values => {
+                }} /> : <AddPlanTask initialValues={{ ...record, sync: record.sync === "同步" }} onFinish={async values => {
                   values.title = values.task_name
                   values.sync === false ? values.sync = "异步" : values.sync = "同步"
                   await axios.put("/argus-emergency/api/plan/task", { key, ...values })
@@ -205,7 +213,7 @@ function AddScenaTask(props: { onFinish: (values: any) => Promise<void>, initial
   const [form] = Form.useForm();
   return <>
     <Button type="link" size="small" onClick={function () { setIsModalVisible(true) }}>{props.create ? "加场景" : "修改"}</Button>
-    <Modal className="AddScenaTask" title={props.create ? "加场景" : "修改"} width={950} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () {
+    <Drawer className="AddScenaTask" title={props.create ? "加场景" : "修改"} width={1200} visible={isModalVisible} footer={null} onClose={function () {
       setIsModalVisible(false)
     }}>
       <Form form={form} labelCol={{ span: 2 }} initialValues={props.initialValues} onFinish={async (values) => {
@@ -236,6 +244,6 @@ function AddScenaTask(props: { onFinish: (values: any) => Promise<void>, initial
           }}>取消</Button>
         </Form.Item>
       </Form>
-    </Modal>
+    </Drawer>
   </>
 }

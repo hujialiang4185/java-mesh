@@ -3,7 +3,7 @@ import Checkbox from "antd/lib/checkbox/Checkbox"
 import { PlusCircleOutlined, MinusCircleOutlined } from '@ant-design/icons'
 import React, { useEffect, useRef, useState } from "react"
 import Editor from "@monaco-editor/react";
-import OSSUpload from "../OSSUpload"
+import OSSUpload from "../../../../component/OSSUpload";
 
 
 function defaultFieldsValues(type: string) {
@@ -41,8 +41,8 @@ export default function App(props: { type: String, onChange: () => void }) {
     switch (props.type) {
         case "TransactionController":
             return <>
-                <Form.Item name="presure" label="压力分配(%)" rules={[{ type: "integer" }]}>
-                    <InputNumber min={0} max={100} />
+                <Form.Item name="presure" label="压力分配(%)" rules={[{ type: "integer", max: 100, min: 0 }]}>
+                    <InputNumber />
                 </Form.Item>
             </>
         case "HTTPRequest":
@@ -51,7 +51,7 @@ export default function App(props: { type: String, onChange: () => void }) {
                 <Row gutter={24}>
                     <Col span="6">
                         <Form.Item label="协议" name="protocol">
-                            <Select options={[{ value: "http" }]} />
+                            <Select options={[{ value: "http" }]} onChange={props.onChange} />
                         </Form.Item>
                     </Col>
                     <Col span="12">
@@ -69,7 +69,7 @@ export default function App(props: { type: String, onChange: () => void }) {
                 <Row gutter={24}>
                     <Col span="6">
                         <Form.Item name="method">
-                            <Select options={[{ value: "GET" }, { value: "POST" }, { value: "PUT" }, { value: "DELETE" }, { value: "TRACE" }, { value: "HEAD" }, { value: "OPTIONS" }]} />
+                            <Select options={[{ value: "GET" }, { value: "POST" }, { value: "PUT" }, { value: "DELETE" }, { value: "TRACE" }, { value: "HEAD" }, { value: "OPTIONS" }]} onChange={props.onChange} />
                         </Form.Item>
                     </Col>
                     <Col span="12">
@@ -87,7 +87,7 @@ export default function App(props: { type: String, onChange: () => void }) {
                 <HTTPRequest name="parameters" />
                 <Divider orientation="left">消息体数据</Divider>
                 <Form.Item label="消息体" name="body">
-                    <Input.TextArea maxLength={1000} showCount />
+                    <Input.TextArea showCount />
                 </Form.Item>
             </>
         case "JARImport":
@@ -173,7 +173,7 @@ export default function App(props: { type: String, onChange: () => void }) {
                     <OSSUpload max={1} mark='&path=resource' onChange={props.onChange} />
                 </Form.Item>
                 <Form.Item label="文件编码" name="file_encoding">
-                    <Select options={[{ value: "UTF-8" }, { value: "UTF-16" }, { value: "ISO-8859-15" }, { value: "US-ASCII" }]} />
+                    <Select options={[{ value: "UTF-8" }, { value: "UTF-16" }, { value: "ISO-8859-15" }, { value: "US-ASCII" }]} onChange={props.onChange} />
                 </Form.Item>
                 <Form.Item label="变量名称(西文逗号间隔)" name="variable_names">
                     <Input />
@@ -194,7 +194,7 @@ export default function App(props: { type: String, onChange: () => void }) {
                     <Checkbox />
                 </Form.Item>
                 <Form.Item label="线程共享模式" name="share_mode">
-                    <Select options={[{ value: "ALL_THREADS" }, { value: "CURRENT_AGENT" }, { value: "CURRENT_PROCESS" }, { value: "CURRENT_THREAD" }]} />
+                    <Select options={[{ value: "ALL_THREADS" }, { value: "CURRENT_AGENT" }, { value: "CURRENT_PROCESS" }, { value: "CURRENT_THREAD" }]} onChange={props.onChange} />
                 </Form.Item>
             </>
         case "HTTPCookieManager":
@@ -238,7 +238,7 @@ function HTTPRequest(props: { name: string }) {
                 return <div key={item.name} className="FormList">
                     <Form.Item name={[item.name, "name"]} rules={[{ max: 32 }]}><Input /></Form.Item>
                     <span className="Equal">=</span>
-                    <Form.Item name={[item.name, "value"]} rules={[{ max: 32 }]}><Input /></Form.Item>
+                    <Form.Item name={[item.name, "value"]} rules={[{ max: 256 }]}><Input /></Form.Item>
                     <PlusCircleOutlined onClick={function () { add() }} />
                     {item.key !== 0 && <MinusCircleOutlined onClick={function () { remove(item.name) }} />}
                 </div>
