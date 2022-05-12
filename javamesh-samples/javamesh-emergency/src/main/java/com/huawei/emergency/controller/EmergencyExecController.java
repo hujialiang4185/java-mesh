@@ -1,5 +1,17 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2021. All rights reserved.
+ * Copyright (C) 2021-2022 Huawei Technologies Co., Ltd. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.huawei.emergency.controller;
@@ -11,7 +23,6 @@ import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyExecRecordDetail;
 import com.huawei.emergency.entity.EmergencyPlan;
 import com.huawei.emergency.entity.JwtUser;
-import com.huawei.emergency.mapper.EmergencyExecMapper;
 import com.huawei.emergency.service.EmergencyExecService;
 import com.huawei.logaudit.aop.WebOperationLog;
 import com.huawei.logaudit.constant.OperationDetails;
@@ -19,12 +30,8 @@ import com.huawei.logaudit.constant.OperationTypeEnum;
 import com.huawei.logaudit.constant.ResourceType;
 import com.huawei.script.exec.log.LogResponse;
 
-import cn.hutool.poi.excel.ExcelUtil;
-import cn.hutool.poi.excel.ExcelWriter;
 import io.swagger.annotations.Api;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -34,12 +41,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.io.IOException;
-import java.net.URLEncoder;
-
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * 执行记录管理，包括脚本调试记录，脚本调试日志，预案执行记录。
@@ -51,17 +52,13 @@ import javax.servlet.http.HttpServletResponse;
 @RestController
 @RequestMapping("/api/history")
 public class EmergencyExecController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(EmergencyExecController.class);
-
     @Autowired
     private EmergencyExecService execService;
-
-    @Autowired
-    private EmergencyExecMapper execMapper;
 
     /**
      * 重新执行某条失败的执行记录
      *
+     * @param authentication 登录信息
      * @param params {@link PlanQueryDto#getKey()} 执行记录ID
      * @return {@link CommonResult}
      */
@@ -71,7 +68,7 @@ public class EmergencyExecController {
         operationDetails = OperationDetails.RE_EXECUTE)
     public CommonResult reExec(UsernamePasswordAuthenticationToken authentication, @RequestBody PlanQueryDto params) {
         if (params.getKey() == null) {
-            return CommonResult.failed("请选择正确的执行记录");
+            return CommonResult.failed("请选择执行记录");
         }
         return execService.reExec(params.getKey(), ((JwtUser) authentication.getPrincipal()).getUsername());
     }
@@ -79,6 +76,7 @@ public class EmergencyExecController {
     /**
      * 人工确认某条执行记录是否成功
      *
+     * @param authentication 登录信息
      * @param params {@link PlanQueryDto#getKey()} 执行记录ID {@link PlanQueryDto#getConfirm()}} 确认结果
      * @return {@link CommonResult}
      */
@@ -102,6 +100,7 @@ public class EmergencyExecController {
     /**
      * 查询预案的执行记录
      *
+     * @param authentication 登录信息
      * @param planName 预案名称
      * @param pageSize 分页大小
      * @param current 页码
@@ -198,36 +197,6 @@ public class EmergencyExecController {
         return execService.getRecordLog(recordId, lineIndex);
     }
 
-    /**
-     * 执行记录下载
-     *
-     * @param response 请求响应
-     */
-    @GetMapping("/download")
-    @WebOperationLog(resourceType = ResourceType.EXECUTION_RECORD,
-        operationType = OperationTypeEnum.DOWNLOAD,
-        operationDetails = OperationDetails.DOWNLOAD_EXECUTION)
-    public void download(HttpServletResponse response) {
-        ExcelWriter excelWriter = null;
-        try {
-            final ServletOutputStream outputStream = response.getOutputStream();
-            String fileName = "exec_records.xlsx";
-            response.setCharacterEncoding("UTF-8");
-            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8");
-            response.setHeader("Content-Disposition",
-                "attachment;fileName=" + new String(URLEncoder.encode(fileName, "UTF-8").getBytes("UTF-8")));
-            excelWriter = ExcelUtil.getBigWriter();
-            excelWriter.renameSheet("执行记录汇总").write(execMapper.allRecords());
-            excelWriter.flush(outputStream);
-        } catch (IOException e) {
-            LOGGER.error("download error.", e);
-        } finally {
-            if (excelWriter != null) {
-                excelWriter.close();
-            }
-        }
-    }
-
     @PostMapping("/detail/stop")
     public CommonResult stopOneServer(UsernamePasswordAuthenticationToken authentication,
         @RequestBody EmergencyExecRecordDetail detail) {
@@ -263,7 +232,7 @@ public class EmergencyExecController {
      *
      * @param detailId 脚本调试产生的debugId或者任务分发后的执行明细ID
      * @param lineNum 日志开始行数，从第几行开始读写
-     * @return
+     * @return 日志信息
      */
     @GetMapping("/log")
     @WebOperationLog(resourceType = ResourceType.EXECUTION_RECORD,
@@ -279,7 +248,7 @@ public class EmergencyExecController {
     }
 
     @GetMapping("/get")
-    public CommonResult getPlanInfo(@RequestParam(value = "history_id") Integer execId) {
+    public CommonResult getPlanInfo(@RequestParam(value = "history_id") int execId) {
         return execService.getPlanInfo(execId);
     }
 

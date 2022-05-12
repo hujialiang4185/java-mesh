@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Ltd. 2021-2021. Huawei Technologies Co., All rights reserved
+ * Copyright (C) 2021-2022 Huawei Technologies Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import com.huawei.emergency.service.EmergencyArgusScriptService;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,11 +35,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
-
 /**
- * 用于原压测脚本管理页面
- * 脚本编辑框
+ * 用于原压测脚本管理页面 脚本编辑框
  *
  * @author y30010171
  * @since 2021-12-27
@@ -47,44 +45,50 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @RequestMapping("/api/script/argus/")
 public class EmergencyArgusScriptController {
-
     @Autowired
     EmergencyArgusScriptService argusScriptService;
 
     /**
      * 生成压测脚本的编排模板
      *
+     * @param authentication 登录信息
      * @param script {@link ArgusScript} 压测脚本信息
      * @return {@link CommonResult}
      */
     @ApiOperation(value = "生成压测脚本的编排模板", notes = "用于第一次编排时，生成压测脚本的编排模板", hidden = true)
     @PostMapping("/orchestrate")
-    public CommonResult createArgusOrchestrate(UsernamePasswordAuthenticationToken authentication,@RequestBody ArgusScript script) {
-        return argusScriptService.createArgusOrchestrate(((JwtUser) authentication.getPrincipal()).getUsername(),script);
+    public CommonResult createArgusOrchestrate(UsernamePasswordAuthenticationToken authentication,
+        @RequestBody ArgusScript script) {
+        return argusScriptService.createArgusOrchestrate(((JwtUser) authentication.getPrincipal()).getUsername(),
+            script);
     }
 
     /**
      * 获取压测脚本的编排模板，如果为空则返回默认模板
      *
+     * @param authentication 登录信息
      * @param path 压测脚本路径
      * @return {@link CommonResult}
      */
     @ApiOperation(value = "获取压测脚本的编排模板", notes = "获取压测脚本的编排模板，如果不存在则返回一个默认模板")
     @GetMapping("/orchestrate")
-    public CommonResult getArgusOrchestrate(UsernamePasswordAuthenticationToken authentication,@RequestParam("path") String path) {
-        return argusScriptService.getArgusOrchestrate(((JwtUser) authentication.getPrincipal()).getUsername(),path);
+    public CommonResult getArgusOrchestrate(UsernamePasswordAuthenticationToken authentication,
+        @RequestParam("path") String path) {
+        return argusScriptService.getArgusOrchestrate(((JwtUser) authentication.getPrincipal()).getUsername(), path);
     }
 
     /**
      * 保存压测脚本模板，返回生成的脚本信息
      *
-     * @param authentication      {@link UsernamePasswordAuthenticationToken} 解析出的token信息
+     * @param authentication {@link UsernamePasswordAuthenticationToken} 解析出的token信息
      * @param treeResponse {@link TreeResponse} 编排模板数据
      * @return {@link CommonResult}
      */
     @ApiOperation(value = "更新压测脚本的编排模板", notes = "更新压测脚本的编排模板，同时返回生成的脚本内容")
     @PutMapping("/orchestrate")
-    public CommonResult updateArgusOrchestrate(UsernamePasswordAuthenticationToken authentication, @RequestBody TreeResponse treeResponse) {
-        return argusScriptService.updateArgusOrchestrate(((JwtUser) authentication.getPrincipal()).getUsername(), treeResponse);
+    public CommonResult updateArgusOrchestrate(UsernamePasswordAuthenticationToken authentication,
+        @RequestBody TreeResponse treeResponse) {
+        return argusScriptService.updateArgusOrchestrate(((JwtUser) authentication.getPrincipal()).getUsername(),
+            treeResponse);
     }
 }

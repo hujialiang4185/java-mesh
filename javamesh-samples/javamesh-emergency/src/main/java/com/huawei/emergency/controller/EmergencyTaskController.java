@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Ltd. 2021-2021. Huawei Technologies Co., All rights reserved
+ * Copyright (C) 2021-2022 Huawei Technologies Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,13 +36,14 @@ import java.util.List;
 import java.util.Random;
 
 /**
+ * 压测任务
+ *
  * @author y30010171
  * @since 2022-01-24
  **/
 @RestController
 @RequestMapping("/api/task")
 public class EmergencyTaskController {
-
     private static Random usageRandom = new Random(100);
     private static List<String> mockTestIp = Arrays.asList("127.0.0.1", "0.0.0.0");
     private static TaskCommonReport mockCommonReport = new TaskCommonReport();
@@ -63,7 +64,7 @@ public class EmergencyTaskController {
      * @return {@link CommonResult}
      */
     @GetMapping("/scenario/report")
-    public CommonResult<TaskCommonReport[]> getTaskReport(@RequestParam("key") Integer recordId) {
+    public CommonResult<TaskCommonReport[]> getTaskReport(@RequestParam("key") int recordId) {
         return taskService.getTaskReport(recordId);
     }
 
@@ -74,7 +75,7 @@ public class EmergencyTaskController {
      * @return {@link CommonResult}
      */
     @GetMapping("/view")
-    public CommonResult<TaskCommonReport> getCommonReport(@RequestParam("test_id") Long perfTestId) {
+    public CommonResult<TaskCommonReport> getCommonReport(@RequestParam("test_id") long perfTestId) {
         CommonResult<TaskCommonReport> commonReport = taskService.getCommonReport(perfTestId);
         return commonReport.getData() == null ? CommonResult.success(mockCommon()) : commonReport;
     }
@@ -86,7 +87,7 @@ public class EmergencyTaskController {
      * @return {@link CommonResult}
      */
     @GetMapping("/search/ip")
-    public CommonResult<List<String>> getTestIp(@RequestParam("test_id") Integer testId) {
+    public CommonResult<List<String>> getTestIp(@RequestParam("test_id") int testId) {
         return CommonResult.success(mockTestIp);
     }
 
@@ -94,10 +95,11 @@ public class EmergencyTaskController {
      * 获取任务执行所在服务器下的资源消耗
      *
      * @param testId 测试id
+     * @param ip ip地址
      * @return {@link CommonResult}
      */
     @GetMapping("/resource")
-    public CommonResult<TaskResourceReport> getResourceReport(@RequestParam("test_id") Integer testId,
+    public CommonResult<TaskResourceReport> getResourceReport(@RequestParam("test_id") int testId,
         @RequestParam(value = "ip", required = false) String ip) {
         return CommonResult.success(mockResource(ip));
     }
@@ -106,16 +108,17 @@ public class EmergencyTaskController {
      * 获取任务执行所在服务器下agent的Jvm消耗
      *
      * @param testId 测试id
+     * @param ip ip地址
      * @return {@link CommonResult}
      */
     @GetMapping("/jvm")
-    public CommonResult<TaskJvmReport> getJvmReport(@RequestParam("test_id") Integer testId,
+    public CommonResult<TaskJvmReport> getJvmReport(@RequestParam("test_id") int testId,
         @RequestParam(value = "ip", required = false) String ip) {
         return CommonResult.success(mockJvm(ip));
     }
 
     @GetMapping("/service")
-    public CommonResult<List<TaskServiceReport>> getServiceReport(@RequestParam("test_id") Integer testId) {
+    public CommonResult<List<TaskServiceReport>> getServiceReport(@RequestParam("test_id") int testId) {
         return CommonResult.success(Arrays.asList(mockService()));
     }
 
@@ -123,10 +126,7 @@ public class EmergencyTaskController {
     public CommonResult getMetrics(@RequestParam(value = "test_id", defaultValue = "154") long perfTestId,
         @RequestParam("start") long startTime,
         @RequestParam("end") long endTime, @RequestParam(value = "step", defaultValue = "0") int step) {
-        if (step <= 0) {
-            step = 250;
-        }
-        return taskService.getMetricsReport(perfTestId, step);
+        return taskService.getMetricsReport(perfTestId, step <= 0 ? 250 : step);
     }
 
     public TaskCommonReport mockCommon() {

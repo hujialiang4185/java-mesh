@@ -1,5 +1,17 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2021. All rights reserved.
+ * Copyright (C) 2021-2022 Huawei Technologies Co., Ltd. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.huawei.emergency.controller;
@@ -24,8 +36,6 @@ import com.huawei.logaudit.constant.ResourceType;
 import io.swagger.annotations.Api;
 
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -52,14 +62,13 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api")
 public class EmergencyPlanController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(EmergencyPlanController.class);
-
     @Autowired
     private EmergencyPlanService planService;
 
     /**
      * 修改项目下的拓扑任务信息
      *
+     * @param authentication 登录信息
      * @param params {@link PlanSaveParams}
      * @return {@link CommonResult}
      */
@@ -75,6 +84,7 @@ public class EmergencyPlanController {
     /**
      * 项目执行
      *
+     * @param authentication 登录信息
      * @param plan {@link EmergencyPlan#getPlanId()} 项目ID
      * @return {@link CommonResult}
      */
@@ -92,6 +102,7 @@ public class EmergencyPlanController {
     /**
      * 项目启动,开始调度
      *
+     * @param authentication 登录信息
      * @param param {@link PlanQueryDto#getPlanId()} 项目ID {@link PlanQueryDto#getStartTime()} ()} 执行时间
      * @return {@link CommonResult}
      */
@@ -122,6 +133,7 @@ public class EmergencyPlanController {
     /**
      * 项目停止,停止调度
      *
+     * @param authentication 登录信息
      * @param plan {@link EmergencyPlan#getPlanId()} 项目ID
      * @return {@link CommonResult}
      */
@@ -161,6 +173,7 @@ public class EmergencyPlanController {
     /**
      * 查询项目以及项目下的任务信息
      *
+     * @param authentication 登录信息
      * @param planName 项目名称或编号
      * @param sceneName 场景名称或编号
      * @param taskName 任务名称或编号
@@ -226,6 +239,7 @@ public class EmergencyPlanController {
     /**
      * 新增一个任务
      *
+     * @param authentication 登录信息
      * @param taskNode 任务信息
      * @return {@link CommonResult}
      */
@@ -241,6 +255,7 @@ public class EmergencyPlanController {
     /**
      * 更新任务
      *
+     * @param authentication 登录信息
      * @param taskNode 任务信息
      * @return {@link CommonResult}
      */
@@ -256,6 +271,7 @@ public class EmergencyPlanController {
     /**
      * 新增一个项目
      *
+     * @param authentication 登录信息
      * @param emergencyPlan {@link EmergencyPlan#getPlanName()} 项目名称
      * @return {@link CommonResult}
      */
@@ -274,6 +290,7 @@ public class EmergencyPlanController {
     /**
      * 删除一个项目
      *
+     * @param authentication 登录信息
      * @param planId 项目ID
      * @return {@link CommonResult}
      */
@@ -307,7 +324,8 @@ public class EmergencyPlanController {
     /**
      * 项目审核
      *
-     * @param planQueryDto {@link PlanQueryDto#getPlanId()} 项目ID， {@link PlanQueryDto#getCheckResult()} 审核结果， {@link
+     * @param authentication 登录信息
+     * @param planQueryDto {@link PlanQueryDto#getPlanId()} 项目ID, {@link PlanQueryDto#getCheckResult()} 审核结果 {@link
      * PlanQueryDto#getCheckResult()} 审核意见
      * @return {@link CommonResult}
      */

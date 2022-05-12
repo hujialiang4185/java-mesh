@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Huawei Technologies Co., Ltd. 2021-2021. All rights reserved
+ * Copyright (C) 2021-2022 Huawei Technologies Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,14 @@ import com.huawei.common.api.CommonResult;
 import com.huawei.emergency.dto.ServerDto;
 import com.huawei.emergency.entity.EmergencyServer;
 import com.huawei.emergency.entity.JwtUser;
-import com.huawei.emergency.entity.UserEntity;
 import com.huawei.emergency.service.EmergencyServerService;
 import com.huawei.logaudit.aop.WebOperationLog;
 import com.huawei.logaudit.constant.OperationDetails;
 import com.huawei.logaudit.constant.OperationTypeEnum;
 import com.huawei.logaudit.constant.ResourceType;
+
 import io.swagger.annotations.Api;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,9 +41,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
-
 /**
+ * 压测引擎
+ *
  * @author y30010171
  * @since 2021-12-07
  **/
@@ -61,15 +62,17 @@ public class EmergencyServerController {
     }
 
     @GetMapping("/search")
-    public CommonResult allServerName(UsernamePasswordAuthenticationToken authentication,@RequestParam(value = "value", required = false) String serverName) {
+    public CommonResult allServerName(UsernamePasswordAuthenticationToken authentication,
+        @RequestParam(value = "value", required = false) String serverName) {
         return serverService.search(((JwtUser) authentication.getPrincipal()).getGroupName(), serverName);
     }
 
     @PostMapping
     @WebOperationLog(resourceType = ResourceType.SERVER_MANAGEMENT,
-            operationType = OperationTypeEnum.CREATE,
-            operationDetails = OperationDetails.CREATE_SERVER)
-    public CommonResult createServer(UsernamePasswordAuthenticationToken authentication, @RequestBody EmergencyServer server) {
+        operationType = OperationTypeEnum.CREATE,
+        operationDetails = OperationDetails.CREATE_SERVER)
+    public CommonResult createServer(UsernamePasswordAuthenticationToken authentication,
+        @RequestBody EmergencyServer server) {
         if ("有".equals(server.getHavePassword())) {
             server.setHavePassword("1");
             if ("平台".equals(server.getPasswordMode())) {
@@ -88,9 +91,10 @@ public class EmergencyServerController {
 
     @DeleteMapping
     @WebOperationLog(resourceType = ResourceType.SERVER_MANAGEMENT,
-            operationType = OperationTypeEnum.DELETE,
-            operationDetails = OperationDetails.DELETE_SERVER)
-    public CommonResult deleteServer(UsernamePasswordAuthenticationToken authentication, @RequestParam(value = "server_id[]", required = false) String[] serverIds) {
+        operationType = OperationTypeEnum.DELETE,
+        operationDetails = OperationDetails.DELETE_SERVER)
+    public CommonResult deleteServer(UsernamePasswordAuthenticationToken authentication,
+        @RequestParam(value = "server_id[]", required = false) String[] serverIds) {
         return serverService.deleteServerList(serverIds, ((JwtUser) authentication.getPrincipal()).getUsername());
     }
 
@@ -109,16 +113,16 @@ public class EmergencyServerController {
 
     @GetMapping
     @WebOperationLog(resourceType = ResourceType.SERVER_MANAGEMENT,
-            operationType = OperationTypeEnum.SELECT,
-            operationDetails = OperationDetails.QUERY_SERVER_INFO)
+        operationType = OperationTypeEnum.SELECT,
+        operationDetails = OperationDetails.QUERY_SERVER_INFO)
     public CommonResult queryServerInfo(UsernamePasswordAuthenticationToken authentication,
-                                        @RequestParam(value = "keywords", required = false) String keyword,
-                                        @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
-                                        @RequestParam(value = "current", defaultValue = "1") int current,
-                                        @RequestParam(value = "sorter", defaultValue = "create_time") String sorter,
-                                        @RequestParam(value = "order", defaultValue = "DESC") String order,
-                                        @RequestParam(value = "server_name", required = false) String serverName,
-                                        @RequestParam(value = "excludes[]", required = false) int[] excludeServerIds) {
+        @RequestParam(value = "keywords", required = false) String keyword,
+        @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
+        @RequestParam(value = "current", defaultValue = "1") int current,
+        @RequestParam(value = "sorter", defaultValue = "create_time") String sorter,
+        @RequestParam(value = "order", defaultValue = "DESC") String order,
+        @RequestParam(value = "server_name", required = false) String serverName,
+        @RequestParam(value = "excludes[]", required = false) int[] excludeServerIds) {
         CommonPage<EmergencyServer> params = new CommonPage<>();
         params.setPageSize(pageSize);
         params.setPageIndex(current);
@@ -132,6 +136,7 @@ public class EmergencyServerController {
         server.setServerName(serverName);
         params.setObject(server);
 
-        return serverService.queryServerInfo(((JwtUser) authentication.getPrincipal()).getGroupName(),params, keyword, excludeServerIds);
+        return serverService.queryServerInfo(((JwtUser) authentication.getPrincipal()).getGroupName(), params, keyword,
+            excludeServerIds);
     }
 }

@@ -1,5 +1,17 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2021-2021. All rights reserved.
+ * Copyright (C) 2021-2022 Huawei Technologies Co., Ltd. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.huawei.emergency.controller;
@@ -122,7 +134,18 @@ public class EmergencyScriptController {
     /**
      * 上传文件
      *
-     * @param file
+     * @param authentication 登录信息
+     * @param scriptName 脚本名称
+     * @param submitInfo 提交信息
+     * @param serverUser 服务器用户
+     * @param serverIp 服务器ip
+     * @param havePassword 有无密码
+     * @param scriptType 脚本类型
+     * @param param 参数
+     * @param isPublic 是否公有
+     * @param password 密码
+     * @param passwordMode 密码模式
+     * @param file 文件
      * @return {@link CommonResult} 上传结果
      */
     @PostMapping("/upload")
@@ -310,8 +333,9 @@ public class EmergencyScriptController {
     /**
      * 创建GUI脚本
      *
+     * @param authentication 登录信息
      * @param script {@link EmergencyScript script}
-     * @return
+     * @return {@link CommonResult}
      */
     @PostMapping("/orchestrate")
     @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
@@ -325,6 +349,7 @@ public class EmergencyScriptController {
     /**
      * 修改GUI脚本
      *
+     * @param authentication 登录信息
      * @param treeResponse {@link TreeResponse} 编排树
      * @return {@link CommonResult}
      */
@@ -354,8 +379,9 @@ public class EmergencyScriptController {
     /**
      * 创建IDE脚本
      *
+     * @param authentication 登录信息
      * @param scriptManageDto {@link ScriptManageDto} 脚本信息
-     * @return
+     * @return {@link CommonResult}
      */
     @PostMapping("/ide")
     @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
@@ -370,7 +396,7 @@ public class EmergencyScriptController {
      * 修改IDE脚本
      *
      * @param scriptManageDto {@link ScriptManageDto} 脚本信息
-     * @return
+     * @return {@link CommonResult}
      */
     @PutMapping("/ide")
     @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
@@ -384,13 +410,13 @@ public class EmergencyScriptController {
      * 获取IDE脚本
      *
      * @param scriptId 脚本ID
-     * @return
+     * @return {@link CommonResult}
      */
     @GetMapping("/ide/get")
     @WebOperationLog(resourceType = ResourceType.SCRIPT_MANAGEMENT,
         operationType = OperationTypeEnum.SELECT,
         operationDetails = OperationDetails.GET_IDE_SCRIPT)
-    public CommonResult getIdeScript(@RequestParam("script_id") Integer scriptId) {
+    public CommonResult getIdeScript(@RequestParam("script_id") int scriptId) {
         return selectScript(scriptId);
     }
 
