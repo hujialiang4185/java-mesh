@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Ltd. 2021-2021. Huawei Technologies Co., All rights reserved
+ * Copyright (C) 2021-2022 Huawei Technologies Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,22 @@ import java.util.Locale;
  **/
 @Getter
 public enum TaskTypeEnum {
+    /**
+     * 压测任务
+     */
     CUSTOM("1", "自定义脚本压测"),
+    /**
+     * 引流压测任务
+     */
     FLOW_RECORD("2", "全链路引流压测"),
+    /**
+     * 命令行脚本任务
+     */
     COMMAND("3", "命令行脚本"),
-    SCENE("4","场景");
+    /**
+     * 场景 不运行脚本
+     */
+    SCENE("4", "场景");
 
     private String value;
     private String desc;

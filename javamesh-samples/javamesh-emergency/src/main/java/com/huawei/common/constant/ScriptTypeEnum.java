@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Ltd. 2021-2021. Huawei Technologies Co., All rights reserved
+ * Copyright (C) 2021-2022 Huawei Technologies Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package com.huawei.common.constant;
 
 import lombok.Getter;
+
 import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
@@ -32,19 +33,28 @@ import java.util.Locale;
  **/
 @Getter
 public enum ScriptTypeEnum {
-    GUI("GUI","gui"),
-    IDE("IDE","gui"),
+    /**
+     * GUI脚本类型
+     */
+    GUI("GUI", "gui"),
+    /**
+     * IDE脚本类型
+     */
+    IDE("IDE", "gui"),
+    /**
+     * 命令行脚本类型
+     */
     NORMAL("NORMAL", "normal");
 
     private String value;
     private String key;
 
-    ScriptTypeEnum(String value,String key) {
+    ScriptTypeEnum(String value, String key) {
         this.value = value;
         this.key = key;
     }
 
-    public static List<ScriptTypeEnum> match (String key, ScriptTypeEnum defaultValue) {
+    public static List<ScriptTypeEnum> match(String key, ScriptTypeEnum defaultValue) {
         if (StringUtils.isEmpty(key)) {
             return Arrays.asList(defaultValue);
         }

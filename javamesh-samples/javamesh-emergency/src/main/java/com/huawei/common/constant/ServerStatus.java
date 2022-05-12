@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Huawei Technologies Co., Ltd. 2021-2021. All rights reserved
+ * Copyright (C) 2021-2022 Huawei Technologies Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,22 @@ import lombok.Getter;
  **/
 @Getter
 public enum ServerStatus {
-    PENDING("pending","准备中"),
-    RUNNING("running","运行中"),
-    SUCCESS("success","成功"),
-    FAIL("fail","失败");
+    /**
+     * 准备
+     */
+    PENDING("pending", "准备中"),
+    /**
+     * 运行中
+     */
+    RUNNING("running", "运行中"),
+    /**
+     * 运行成功
+     */
+    SUCCESS("success", "成功"),
+    /**
+     * 运行失败
+     */
+    FAIL("fail", "失败");
 
     private String value;
     private String description;

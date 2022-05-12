@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Ltd. 2021-2021. Huawei Technologies Co., All rights reserved
+ * Copyright (C) 2021-2022 Huawei Technologies Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,14 +31,37 @@ import java.util.Locale;
  **/
 @Getter
 public enum ScriptLanguageEnum {
-
+    /**
+     * shell脚本
+     */
     SHELL("Shell", "0", ScriptTypeEnum.NORMAL, "sh", "Shell"),
+    /**
+     * jython脚本
+     */
     JYTHON("Jython", "1", ScriptTypeEnum.NORMAL, "py", "Jython"),
+    /**
+     * groovy脚本
+     */
     GROOVY("Groovy", "2", ScriptTypeEnum.NORMAL, "groovy", "Groovy"),
+    /**
+     * gui脚本
+     */
     GUI("GUI", "3", ScriptTypeEnum.GUI, "groovy", "GUI"),
+    /**
+     * 压测jython脚本
+     */
     PERF_JYTHON("jython", "4", ScriptTypeEnum.IDE, "py", "IDE_Jython"),
+    /**
+     * 压测groovy脚本
+     */
     PERF_GROOVY("groovy", "5", ScriptTypeEnum.IDE, "groovy", "IDE_Groovy"),
+    /**
+     * 压测groovy_maven工程脚本
+     */
     PERF_GROOVY_MAVEN("groovy_maven", "6", ScriptTypeEnum.IDE, "groovy", "Groovy_Maven"),
+    /**
+     * JavaScript脚本
+     */
     JAVASCRIPT("JavaScript", "7", ScriptTypeEnum.NORMAL, "js", "JavaScript");
 
     private String language;
