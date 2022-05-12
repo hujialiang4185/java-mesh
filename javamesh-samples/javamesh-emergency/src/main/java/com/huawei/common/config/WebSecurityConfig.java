@@ -1,11 +1,27 @@
-package com.huawei.common.config;
+/*
+ * Copyright (C) 2021-2022 Huawei Technologies Co., Ltd. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
+package com.huawei.common.config;
 
 import com.huawei.common.filter.JwtAuthenticationTokenFilter;
 import com.huawei.common.security.RestAuthenticationEntryPoint;
 import com.huawei.common.security.RestfulAccessDeniedHandler;
 import com.huawei.common.util.JwtTokenUtil;
 import com.huawei.emergency.service.UserService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +39,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * 安全组策略
+ *
+ * @author h30009881
+ * @since 2021-10-30
+ */
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
@@ -33,42 +55,42 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
         ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry = httpSecurity
-                .authorizeRequests();
+            .authorizeRequests();
 
-        //不需要保护的资源路径允许访问
+        // 不需要保护的资源路径允许访问
         for (String url : ignoreUrlsConfig().getUrls()) {
             registry.antMatchers(url).permitAll();
         }
 
-        //允许跨域请求的OPTIONS请求
+        // 允许跨域请求的OPTIONS请求
         registry.antMatchers(HttpMethod.OPTIONS)
-                .permitAll();
+            .permitAll();
 
         // 任何请求需要身份认证
         registry.and()
-                .authorizeRequests()
-                .anyRequest()
-                .authenticated()
-                // 关闭跨站请求防护及不使用session
-                .and()
-                .csrf()
-                .disable()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                // 自定义权限拒绝处理类
-                .and()
-                .exceptionHandling()
-                .accessDeniedHandler(restfulAccessDeniedHandler())
-                .authenticationEntryPoint(restAuthenticationEntryPoint())
-                // 自定义权限拦截器JWT过滤器
-                .and()
-                .addFilterBefore(jwtAuthenticationTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+            .authorizeRequests()
+            .anyRequest()
+            .authenticated()
+            // 关闭跨站请求防护及不使用session
+            .and()
+            .csrf()
+            .disable()
+            .sessionManagement()
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            // 自定义权限拒绝处理类
+            .and()
+            .exceptionHandling()
+            .accessDeniedHandler(restfulAccessDeniedHandler())
+            .authenticationEntryPoint(restAuthenticationEntryPoint())
+            // 自定义权限拦截器JWT过滤器
+            .and()
+            .addFilterBefore(jwtAuthenticationTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService())
-                .passwordEncoder(passwordEncoder());
+            .passwordEncoder(passwordEncoder());
     }
 
     @Bean
@@ -102,6 +124,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         return new RestAuthenticationEntryPoint();
     }
 
+    @Override
     @Bean
     public UserDetailsService userDetailsService() {
         return username -> userService.loadUserByUsername(username);

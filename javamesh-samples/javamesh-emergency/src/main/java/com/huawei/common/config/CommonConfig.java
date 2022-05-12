@@ -32,11 +32,11 @@ import java.nio.charset.StandardCharsets;
 /**
  * 错误页面配置
  *
+ * @author h30009881
  * @since 2021-10-30
  */
 @Configuration
 public class CommonConfig {
-
     @Bean
     public TomcatServletWebServerFactory webServerFactory() {
         TomcatServletWebServerFactory factory = new TomcatServletWebServerFactory();

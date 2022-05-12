@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Ltd. 2021-2021. Huawei Technologies Co., All rights reserved
+ * Copyright (C) 2021-2022 Huawei Technologies Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,15 @@
 
 package com.huawei.common.config;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 /**
  * 接口文档配置
@@ -33,7 +34,6 @@ import springfox.documentation.spring.web.plugins.Docket;
  **/
 @Configuration
 public class SwaggerConfig {
-
     @Bean
     public Docket createRestApi() {
         return new Docket(DocumentationType.SWAGGER_2)
@@ -46,6 +46,7 @@ public class SwaggerConfig {
 
     /**
      * 用于定义API主界面的信息，比如可以声明所有的API的总标题、描述、版本
+     *
      * @return
      */
     private ApiInfo apiInfo() {
