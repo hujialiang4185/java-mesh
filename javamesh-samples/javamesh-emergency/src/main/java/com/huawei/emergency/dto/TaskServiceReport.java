@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Ltd. 2021-2021. Huawei Technologies Co., All rights reserved
+ * Copyright (C) 2021-2022 Huawei Technologies Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,18 @@
 
 package com.huawei.emergency.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
+ * 压测各事务报告
+ *
  * @author y30010171
  * @since 2022-01-24
  **/
 @NoArgsConstructor
 @Data
 public class TaskServiceReport {
-
     /**
      * 事务名称
      */

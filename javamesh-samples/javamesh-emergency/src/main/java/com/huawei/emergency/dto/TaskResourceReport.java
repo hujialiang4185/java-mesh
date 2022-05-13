@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Ltd. 2021-2021. Huawei Technologies Co., All rights reserved
+ * Copyright (C) 2021-2022 Huawei Technologies Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package com.huawei.emergency.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -29,67 +28,66 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class TaskResourceReport {
-
     /**
      * IP地址
      */
-        private String ip;
+    private String ip;
     /**
      * CPU核数
      */
-        private Integer cpu;
+    private Integer cpu;
     /**
      * 内存大小,单位G
      */
-        private Double memory;
+    private Double memory;
     /**
      * 启动时长,单位H
      */
-        private Double startUp;
+    private Double startUp;
     /**
      * CPU利用率
      */
-        private Double cpuUsage;
+    private Double cpuUsage;
     /**
      * 内存利用率
      */
-        private Double memoryUsage;
+    private Double memoryUsage;
     /**
      * IO繁忙率
      */
-        private Double ioBusy;
+    private Double ioBusy;
     /**
      * cpuUser
      */
-        private Double cpuUser;
+    private Double cpuUser;
     /**
      * cpuSys
      */
-        private Double cpuSys;
+    private Double cpuSys;
     /**
      * cpuWait
      */
-        private Double cpuWait;
+    private Double cpuWait;
     /**
      * cpuIdle
      */
-        private Double cpuIdle;
+    private Double cpuIdle;
     /**
      * memoryTotal
      */
-        private Double memoryTotal;
+    private Double memoryTotal;
     /**
      * memorySwap
      */
-        private Double memorySwap;
+    private Double memorySwap;
     /**
      * memoryBuffers
      */
-        private Double memoryBuffers;
+    private Double memoryBuffers;
     /**
      * memoryUsed
      */
-        private Double memoryUsed;
+    private Double memoryUsed;
     /**
      * diskRead
      */
