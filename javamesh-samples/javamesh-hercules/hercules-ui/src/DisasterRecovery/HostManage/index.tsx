@@ -208,6 +208,8 @@ function AddHost(props: { load: () => void }) {
                         setIsModalVisible(false)
                         props.load()
                         message.success("创建成功")
+                        setHasPwd(false)
+                        setIsLocal(true)
                     } catch (error: any) {
                         message.error(error.message)
                     }
