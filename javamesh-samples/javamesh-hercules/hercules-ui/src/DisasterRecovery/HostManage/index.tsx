@@ -161,7 +161,7 @@ export default function App() {
                     { ellipsis: true, title: "密码获取", dataIndex: "password_mode" },
                     { ellipsis: true, title: "Agent端口", dataIndex: "agent_port" },
                     {
-                        title: "许可",
+                        title: "许可(单击切换)",
                         dataIndex: "licensed",
                         width: 200,
                         render(licensed, record) {
