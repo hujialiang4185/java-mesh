@@ -16,9 +16,13 @@
 
 package com.huawei.heartbeat.client;
 
+import com.huawei.agent.entity.EmergencyAgent;
 import com.huawei.heartbeat.entity.Message;
+import com.huawei.heartbeat.entity.Message.HeartbeatMessage;
+import com.huawei.heartbeat.entity.Message.HeartbeatMessage.MessageType;
 import com.huawei.heartbeat.handler.ClientHandler;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.protobuf.ByteString;
 
 import io.netty.bootstrap.Bootstrap;
@@ -73,7 +77,10 @@ public class HeartbeatClient {
     private int reconnectInterval;
 
     @Value("${server.port}")
-    private String serverPort;
+    private int serverPort;
+
+    @Value("${agent.name}")
+    private String agentName;
 
     @PostConstruct
     public void start() {
@@ -107,9 +114,12 @@ public class HeartbeatClient {
         connect.addListener((ChannelFutureListener) channelFuture -> {
             if (channelFuture.isSuccess()) {
                 channel = channelFuture.channel();
-                Message.HeartbeatMessage message = Message.HeartbeatMessage.newBuilder()
-                    .setMessageType(Message.HeartbeatMessage.MessageType.REGISTER)
-                    .setRegister(ByteString.copyFrom(serverPort.getBytes(StandardCharsets.UTF_8)))
+                EmergencyAgent agent = new EmergencyAgent();
+                agent.setAgentName(agentName);
+                agent.setAgentPort(serverPort);
+                Message.HeartbeatMessage message = HeartbeatMessage.newBuilder()
+                    .setMessageType(MessageType.REGISTER)
+                    .setRegister(ByteString.copyFrom(JSONObject.toJSONString(agent).getBytes(StandardCharsets.UTF_8)))
                     .build();
                 channel.writeAndFlush(message);
             } else {

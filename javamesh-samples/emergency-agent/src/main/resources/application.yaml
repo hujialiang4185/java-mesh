@@ -24,3 +24,5 @@ script:
     keepAliveTime: 60
     blockingQueueSize: 1024
     timeOut: 300
+agent:
+  name: emergency_agent-9095
