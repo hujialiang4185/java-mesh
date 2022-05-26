@@ -13,6 +13,8 @@ public class EmergencyExecRecordDetail {
 
     private Integer serverId;
 
+    private Integer agentId;
+
     private String serverIp;
 
     private Integer perfTestId;
@@ -73,6 +75,14 @@ public class EmergencyExecRecordDetail {
 
     public void setServerId(Integer serverId) {
         this.serverId = serverId;
+    }
+
+    public Integer getAgentId() {
+        return agentId;
+    }
+
+    public void setAgentId(Integer agentId) {
+        this.agentId = agentId;
     }
 
     public String getServerIp() {

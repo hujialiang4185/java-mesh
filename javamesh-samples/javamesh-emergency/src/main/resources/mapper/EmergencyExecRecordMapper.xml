@@ -18,6 +18,7 @@
         <result column="script_type" jdbcType="VARCHAR" property="scriptType"/>
         <result column="script_params" jdbcType="VARCHAR" property="scriptParams"/>
         <result column="server_id" jdbcType="VARCHAR" property="serverId"/>
+        <result column="agent_ids" jdbcType="VARCHAR" property="agentIds"/>
         <result column="server_ip" jdbcType="VARCHAR" property="serverIp"/>
         <result column="server_user" jdbcType="VARCHAR" property="serverUser"/>
         <result column="have_password" jdbcType="VARCHAR" property="havePassword"/>
@@ -97,8 +98,9 @@
         record_id
         , exec_id, plan_id, plan_detail_id, scene_id, task_id, pre_scene_id, pre_task_id,
     parent_task_id, status, script_id, script_name, script_content, script_type, script_params, 
-    server_id, server_ip, server_user, have_password, password_mode, password, log, create_user, 
-    create_time, start_time, end_time, ensure_user, is_valid, sync, perf_test_id
+    server_id, agent_ids, server_ip, server_user, have_password, password_mode, password, 
+    log, create_user, create_time, start_time, end_time, ensure_user, is_valid, sync, 
+    perf_test_id
     </sql>
     <select id="selectByExample" parameterType="com.huawei.emergency.entity.EmergencyExecRecordExample"
             resultMap="BaseResultMap">
@@ -142,21 +144,23 @@
         pre_task_id, parent_task_id, status,
         script_id, script_name, script_content,
         script_type, script_params, server_id,
-        server_ip, server_user, have_password,
-        password_mode, password, log,
-        create_user, create_time, start_time,
-        end_time, ensure_user, is_valid,
-        sync, perf_test_id)
+        agent_ids, server_ip, server_user,
+        have_password, password_mode, password,
+        log, create_user, create_time,
+        start_time, end_time, ensure_user,
+        is_valid, sync, perf_test_id
+        )
         values (#{execId,jdbcType=INTEGER}, #{planId,jdbcType=INTEGER}, #{planDetailId,jdbcType=INTEGER},
         #{sceneId,jdbcType=INTEGER}, #{taskId,jdbcType=INTEGER}, #{preSceneId,jdbcType=INTEGER},
         #{preTaskId,jdbcType=INTEGER}, #{parentTaskId,jdbcType=INTEGER}, #{status,jdbcType=VARCHAR},
         #{scriptId,jdbcType=INTEGER}, #{scriptName,jdbcType=VARCHAR}, #{scriptContent,jdbcType=VARCHAR},
         #{scriptType,jdbcType=VARCHAR}, #{scriptParams,jdbcType=VARCHAR}, #{serverId,jdbcType=VARCHAR},
-        #{serverIp,jdbcType=VARCHAR}, #{serverUser,jdbcType=VARCHAR}, #{havePassword,jdbcType=VARCHAR},
-        #{passwordMode,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, #{log,jdbcType=VARCHAR},
-        #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{startTime,jdbcType=TIMESTAMP},
-        #{endTime,jdbcType=TIMESTAMP}, #{ensureUser,jdbcType=VARCHAR}, #{isValid,jdbcType=VARCHAR},
-        #{sync,jdbcType=VARCHAR}, #{perfTestId,jdbcType=INTEGER})
+        #{agentIds,jdbcType=VARCHAR}, #{serverIp,jdbcType=VARCHAR}, #{serverUser,jdbcType=VARCHAR},
+        #{havePassword,jdbcType=VARCHAR}, #{passwordMode,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR},
+        #{log,jdbcType=VARCHAR}, #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP},
+        #{startTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP}, #{ensureUser,jdbcType=VARCHAR},
+        #{isValid,jdbcType=VARCHAR}, #{sync,jdbcType=VARCHAR}, #{perfTestId,jdbcType=INTEGER}
+        )
     </insert>
     <insert id="insertSelective" parameterType="com.huawei.emergency.entity.EmergencyExecRecord">
         <selectKey keyProperty="recordId" order="AFTER" resultType="java.lang.Integer">
@@ -208,6 +212,9 @@
             </if>
             <if test="serverId != null">
                 server_id,
+            </if>
+            <if test="agentIds != null">
+                agent_ids,
             </if>
             <if test="serverIp != null">
                 server_ip,
@@ -297,6 +304,9 @@
             </if>
             <if test="serverId != null">
                 #{serverId,jdbcType=VARCHAR},
+            </if>
+            <if test="agentIds != null">
+                #{agentIds,jdbcType=VARCHAR},
             </if>
             <if test="serverIp != null">
                 #{serverIp,jdbcType=VARCHAR},
@@ -400,6 +410,9 @@
             <if test="record.serverId != null">
                 server_id = #{record.serverId,jdbcType=VARCHAR},
             </if>
+            <if test="record.agentIds != null">
+                agent_ids = #{record.agentIds,jdbcType=VARCHAR},
+            </if>
             <if test="record.serverIp != null">
                 server_ip = #{record.serverIp,jdbcType=VARCHAR},
             </if>
@@ -465,6 +478,7 @@
         script_type = #{record.scriptType,jdbcType=VARCHAR},
         script_params = #{record.scriptParams,jdbcType=VARCHAR},
         server_id = #{record.serverId,jdbcType=VARCHAR},
+        agent_ids = #{record.agentIds,jdbcType=VARCHAR},
         server_ip = #{record.serverIp,jdbcType=VARCHAR},
         server_user = #{record.serverUser,jdbcType=VARCHAR},
         have_password = #{record.havePassword,jdbcType=VARCHAR},
@@ -531,6 +545,9 @@
             <if test="serverId != null">
                 server_id = #{serverId,jdbcType=VARCHAR},
             </if>
+            <if test="agentIds != null">
+                agent_ids = #{agentIds,jdbcType=VARCHAR},
+            </if>
             <if test="serverIp != null">
                 server_ip = #{serverIp,jdbcType=VARCHAR},
             </if>
@@ -593,6 +610,7 @@
             script_type    = #{scriptType,jdbcType=VARCHAR},
             script_params  = #{scriptParams,jdbcType=VARCHAR},
             server_id      = #{serverId,jdbcType=VARCHAR},
+            agent_ids      = #{agentIds,jdbcType=VARCHAR},
             server_ip      = #{serverIp,jdbcType=VARCHAR},
             server_user    = #{serverUser,jdbcType=VARCHAR},
             have_password  = #{havePassword,jdbcType=VARCHAR},
@@ -609,7 +627,6 @@
             perf_test_id   = #{perfTestId,jdbcType=INTEGER}
         where record_id = #{recordId,jdbcType=INTEGER}
     </update>
-
     <select id="selectAllPlanDetail" parameterType="java.lang.Integer"
             resultType="com.huawei.emergency.entity.EmergencyExecRecord">
         SELECT plan.plan_id                     AS           plan_id,
@@ -620,6 +637,7 @@
                plan_detail.pre_task_id,
                plan_detail.parent_task_id,
                IFNULL(task.perf_test_id, scene.perf_test_id) perf_test_id,
+               task.agent_ids,
                (CASE
                     WHEN plan_detail.task_id IS NULL THEN scene_script.script_id
                     ELSE script.script_id END)               script_id,

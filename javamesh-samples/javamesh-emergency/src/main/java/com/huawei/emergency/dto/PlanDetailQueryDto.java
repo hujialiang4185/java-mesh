@@ -16,8 +16,6 @@
 
 package com.huawei.emergency.dto;
 
-import com.huawei.emergency.entity.EmergencyServer;
-
 import lombok.Data;
 
 import java.util.Date;
@@ -38,16 +36,18 @@ public class PlanDetailQueryDto {
     private String scenaName;
     private String taskNo;
     private String taskName;
+    private String taskType;
     private String subtaskNo;
     private String subtaskName;
     private String channelType;
     private String scriptName;
     private String submitInfo;
     private String serverId;
+    private String agentIds;
     private Long perfTestId; // 压测任务ID
     private Long testId;
     private Integer vuser;
-    private List<EmergencyServer> serverList;
+    private List<ServerAgentInfoDTO> serverList;
     private String userId; // 压测owner
     private Date startTime; // 压测开始时间
     private Long duration; // 压测持续时间

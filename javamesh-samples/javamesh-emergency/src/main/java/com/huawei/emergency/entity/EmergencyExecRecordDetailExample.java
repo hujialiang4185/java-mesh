@@ -415,6 +415,66 @@ public class EmergencyExecRecordDetailExample {
             return (Criteria) this;
         }
 
+        public Criteria andAgentIdIsNull() {
+            addCriterion("agent_id is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgentIdIsNotNull() {
+            addCriterion("agent_id is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgentIdEqualTo(Integer value) {
+            addCriterion("agent_id =", value, "agentId");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgentIdNotEqualTo(Integer value) {
+            addCriterion("agent_id <>", value, "agentId");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgentIdGreaterThan(Integer value) {
+            addCriterion("agent_id >", value, "agentId");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgentIdGreaterThanOrEqualTo(Integer value) {
+            addCriterion("agent_id >=", value, "agentId");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgentIdLessThan(Integer value) {
+            addCriterion("agent_id <", value, "agentId");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgentIdLessThanOrEqualTo(Integer value) {
+            addCriterion("agent_id <=", value, "agentId");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgentIdIn(List<Integer> values) {
+            addCriterion("agent_id in", values, "agentId");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgentIdNotIn(List<Integer> values) {
+            addCriterion("agent_id not in", values, "agentId");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgentIdBetween(Integer value1, Integer value2) {
+            addCriterion("agent_id between", value1, value2, "agentId");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgentIdNotBetween(Integer value1, Integer value2) {
+            addCriterion("agent_id not between", value1, value2, "agentId");
+            return (Criteria) this;
+        }
+
         public Criteria andServerIpIsNull() {
             addCriterion("server_ip is null");
             return (Criteria) this;

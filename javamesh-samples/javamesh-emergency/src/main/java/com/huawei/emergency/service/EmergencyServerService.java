@@ -6,7 +6,6 @@ package com.huawei.emergency.service;
 
 import com.huawei.common.api.CommonPage;
 import com.huawei.common.api.CommonResult;
-import com.huawei.emergency.entity.EmergencyPlan;
 import com.huawei.emergency.entity.EmergencyServer;
 
 import java.util.List;
@@ -32,7 +31,8 @@ public interface EmergencyServerService extends EmergencyCommonService<Emergency
      * @param params
      * @return
      */
-    CommonResult queryServerInfo(String groupName,CommonPage<EmergencyServer> params, String keyword, int[] excludeServerIds);
+    CommonResult queryServerInfo(String groupName, CommonPage<EmergencyServer> params, String keyword,
+        int[] excludeServerIds, int[] includeAgentIds, String agentType);
 
     CommonResult search(String groupName, String serverName);
 

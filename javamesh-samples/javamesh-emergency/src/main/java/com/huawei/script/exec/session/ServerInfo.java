@@ -5,6 +5,7 @@
 package com.huawei.script.exec.session;
 
 import lombok.Data;
+
 import org.apache.commons.lang.StringUtils;
 
 import java.util.Objects;
@@ -26,6 +27,10 @@ public class ServerInfo {
 
     public ServerInfo(String serverIp, String serverUser) {
         this(serverIp, serverUser, "", DEFAULT_PORT);
+    }
+
+    public ServerInfo(String serverIp, int serverPort) {
+        this(serverIp, DEFAULT_USER, "", serverPort);
     }
 
     public ServerInfo(String serverIp, String serverUser, int serverPort) {

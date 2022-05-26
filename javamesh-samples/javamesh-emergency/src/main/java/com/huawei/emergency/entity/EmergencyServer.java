@@ -43,6 +43,16 @@ public class EmergencyServer {
 
     private String groupName;
 
+    private Integer agentId;
+
+    public Integer getAgentId() {
+        return agentId;
+    }
+
+    public void setAgentId(Integer agentId) {
+        this.agentId = agentId;
+    }
+
     public Integer getServerId() {
         return serverId;
     }

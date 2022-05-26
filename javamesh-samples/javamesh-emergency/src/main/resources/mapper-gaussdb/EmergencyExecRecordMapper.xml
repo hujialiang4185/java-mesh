@@ -616,6 +616,7 @@
                plan_detail.pre_task_id,
                plan_detail.parent_task_id,
                NULLIF(task.perf_test_id, scene.perf_test_id) perf_test_id,
+               task.agent_ids,
                (CASE
                     WHEN plan_detail.task_id IS NULL THEN scene_script.script_id
                     ELSE script.script_id END)               script_id,

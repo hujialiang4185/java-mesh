@@ -492,6 +492,8 @@
                (CASE WHEN t1.task_id IS NULL THEN t2.script_name ELSE t4.script_name END)          script_name,
                (CASE WHEN t1.task_id IS NULL THEN t2.submit_info ELSE t4.submit_info END)          submit_info,
                t4.server_id,
+               t4.agent_ids,
+               t4.task_type,
                t5.vuser_per_agent vuser,
                (
 	SELECT

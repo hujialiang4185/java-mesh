@@ -10,6 +10,7 @@
         <result column="scene_id" jdbcType="INTEGER" property="sceneId"/>
         <result column="script_id" jdbcType="INTEGER" property="scriptId"/>
         <result column="server_id" jdbcType="VARCHAR" property="serverId"/>
+        <result column="agent_ids" jdbcType="VARCHAR" property="agentIds"/>
         <result column="pre_task_id" jdbcType="INTEGER" property="preTaskId"/>
         <result column="create_user" jdbcType="VARCHAR" property="createUser"/>
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
@@ -82,8 +83,8 @@
     <sql id="Base_Column_List">
         task_id
         , task_no, task_name, task_type, task_desc, scene_id, script_id, server_id,
-    pre_task_id, create_user, create_time, is_valid, channel_type, script_name, submit_info, 
-    perf_test_id
+    agent_ids, pre_task_id, create_user, create_time, is_valid, channel_type, script_name, 
+    submit_info, perf_test_id
     </sql>
     <select id="selectByExample" parameterType="com.huawei.emergency.entity.EmergencyTaskExample"
             resultMap="BaseResultMap">
@@ -124,16 +125,16 @@
         </selectKey>
         insert into emergency_task (task_no, task_name, task_type,
         task_desc, scene_id, script_id,
-        server_id, pre_task_id, create_user,
-        create_time, is_valid, channel_type,
-        script_name, submit_info, perf_test_id
-        )
+        server_id, agent_ids, pre_task_id,
+        create_user, create_time, is_valid,
+        channel_type, script_name, submit_info,
+        perf_test_id)
         values (#{taskNo,jdbcType=VARCHAR}, #{taskName,jdbcType=VARCHAR}, #{taskType,jdbcType=VARCHAR},
         #{taskDesc,jdbcType=VARCHAR}, #{sceneId,jdbcType=INTEGER}, #{scriptId,jdbcType=INTEGER},
-        #{serverId,jdbcType=VARCHAR}, #{preTaskId,jdbcType=INTEGER}, #{createUser,jdbcType=VARCHAR},
-        #{createTime,jdbcType=TIMESTAMP}, #{isValid,jdbcType=VARCHAR}, #{channelType,jdbcType=VARCHAR},
-        #{scriptName,jdbcType=VARCHAR}, #{submitInfo,jdbcType=VARCHAR}, #{perfTestId,jdbcType=INTEGER}
-        )
+        #{serverId,jdbcType=VARCHAR}, #{agentIds,jdbcType=VARCHAR}, #{preTaskId,jdbcType=INTEGER},
+        #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{isValid,jdbcType=VARCHAR},
+        #{channelType,jdbcType=VARCHAR}, #{scriptName,jdbcType=VARCHAR}, #{submitInfo,jdbcType=VARCHAR},
+        #{perfTestId,jdbcType=INTEGER})
     </insert>
     <insert id="insertSelective" parameterType="com.huawei.emergency.entity.EmergencyTask">
         <selectKey keyProperty="taskId" order="AFTER" resultType="java.lang.Integer">
@@ -161,6 +162,9 @@
             </if>
             <if test="serverId != null">
                 server_id,
+            </if>
+            <if test="agentIds != null">
+                agent_ids,
             </if>
             <if test="preTaskId != null">
                 pre_task_id,
@@ -208,6 +212,9 @@
             </if>
             <if test="serverId != null">
                 #{serverId,jdbcType=VARCHAR},
+            </if>
+            <if test="agentIds != null">
+                #{agentIds,jdbcType=VARCHAR},
             </if>
             <if test="preTaskId != null">
                 #{preTaskId,jdbcType=INTEGER},
@@ -269,6 +276,9 @@
             <if test="record.serverId != null">
                 server_id = #{record.serverId,jdbcType=VARCHAR},
             </if>
+            <if test="record.agentIds != null">
+                agent_ids = #{record.agentIds,jdbcType=VARCHAR},
+            </if>
             <if test="record.preTaskId != null">
                 pre_task_id = #{record.preTaskId,jdbcType=INTEGER},
             </if>
@@ -308,6 +318,7 @@
         scene_id = #{record.sceneId,jdbcType=INTEGER},
         script_id = #{record.scriptId,jdbcType=INTEGER},
         server_id = #{record.serverId,jdbcType=VARCHAR},
+        agent_ids = #{record.agentIds,jdbcType=VARCHAR},
         pre_task_id = #{record.preTaskId,jdbcType=INTEGER},
         create_user = #{record.createUser,jdbcType=VARCHAR},
         create_time = #{record.createTime,jdbcType=TIMESTAMP},
@@ -343,6 +354,9 @@
             </if>
             <if test="serverId != null">
                 server_id = #{serverId,jdbcType=VARCHAR},
+            </if>
+            <if test="agentIds != null">
+                agent_ids = #{agentIds,jdbcType=VARCHAR},
             </if>
             <if test="preTaskId != null">
                 pre_task_id = #{preTaskId,jdbcType=INTEGER},
@@ -380,6 +394,7 @@
             scene_id     = #{sceneId,jdbcType=INTEGER},
             script_id    = #{scriptId,jdbcType=INTEGER},
             server_id    = #{serverId,jdbcType=VARCHAR},
+            agent_ids    = #{agentIds,jdbcType=VARCHAR},
             pre_task_id  = #{preTaskId,jdbcType=INTEGER},
             create_user  = #{createUser,jdbcType=VARCHAR},
             create_time  = #{createTime,jdbcType=TIMESTAMP},

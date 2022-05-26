@@ -16,6 +16,7 @@
 
 package com.huawei.emergency.mapper;
 
+import com.huawei.emergency.dto.ServerAgentInfoDTO;
 import com.huawei.emergency.entity.EmergencyServer;
 import com.huawei.emergency.entity.EmergencyServerExample;
 
@@ -46,7 +47,8 @@ public interface EmergencyServerMapper {
 
     EmergencyServer selectByPrimaryKey(Integer serverId);
 
-    int updateByExampleSelective(@Param("record") EmergencyServer record, @Param("example") EmergencyServerExample example);
+    int updateByExampleSelective(@Param("record") EmergencyServer record,
+        @Param("example") EmergencyServerExample example);
 
     int updateByExample(@Param("record") EmergencyServer record, @Param("example") EmergencyServerExample example);
 
@@ -54,10 +56,12 @@ public interface EmergencyServerMapper {
 
     int updateByPrimaryKey(EmergencyServer record);
 
-    List<EmergencyServer> selectByKeyword(String groupName,
-                                          @Param("server") EmergencyServer server,
-                                          @Param("keyword") String keyword,
-                                          @Param("excludeServerIds") int[] excludeServerIds);
+    List<ServerAgentInfoDTO> selectByKeyword(String groupName,
+        @Param("server") EmergencyServer server,
+        @Param("keyword") String keyword,
+        @Param("excludeServerIds") int[] excludeServerIds,
+        @Param("includeAgentIds") int[] includeAgentIds,
+        @Param("agentType") String agentType);
 
     List<Integer> selectAgentIdsByServerIds(@Param("allServerIds") List<String> allServerIds);
 }

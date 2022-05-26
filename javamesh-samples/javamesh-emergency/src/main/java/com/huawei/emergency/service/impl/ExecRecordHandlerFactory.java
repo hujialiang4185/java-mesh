@@ -6,11 +6,14 @@ package com.huawei.emergency.service.impl;
 
 import com.huawei.argus.restcontroller.RestPerfTestController;
 import com.huawei.common.api.CommonResult;
+import com.huawei.common.constant.AgentStatusEnum;
 import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.common.exception.ApiException;
 import com.huawei.common.util.PasswordUtil;
 import com.huawei.common.ws.WebSocketServer;
+import com.huawei.emergency.entity.EmergencyAgent;
+import com.huawei.emergency.entity.EmergencyAgentExample;
 import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyExecRecordDetail;
 import com.huawei.emergency.entity.EmergencyExecRecordDetailExample;
@@ -18,6 +21,7 @@ import com.huawei.emergency.entity.EmergencyExecRecordExample;
 import com.huawei.emergency.entity.EmergencyScript;
 import com.huawei.emergency.entity.EmergencyServer;
 import com.huawei.emergency.entity.EmergencyServerExample;
+import com.huawei.emergency.mapper.EmergencyAgentMapper;
 import com.huawei.emergency.mapper.EmergencyExecRecordDetailMapper;
 import com.huawei.emergency.mapper.EmergencyExecRecordMapper;
 import com.huawei.emergency.mapper.EmergencyScriptMapper;
@@ -108,6 +112,9 @@ public class ExecRecordHandlerFactory {
     @Autowired
     private EmergencyScriptMapper scriptMapper;
 
+    @Autowired
+    private EmergencyAgentMapper agentMapper;
+
     /**
      * 获取一个执行器实例
      *
@@ -165,7 +172,6 @@ public class ExecRecordHandlerFactory {
                 String url =
                     String.format(Locale.ROOT, "http://%s:%s/agent/execute", remoteServerInfo.getServerIp(),
                         remoteServerInfo.getServerPort());
-                execInfo.setRemoteServerInfo(null);
                 CommonResult result = restTemplate.postForObject(url, execInfo, CommonResult.class);
                 if (StringUtils.isNotEmpty(result.getMsg())) {
                     LOGGER.error("Failed to exec script, {}", result.getMsg());
@@ -307,11 +313,14 @@ public class ExecRecordHandlerFactory {
             String[] split = record.getScriptParams().split(SPLIT_SIGN);
             execInfo.setParams(split);
         }
-        if (recordDetail.getServerId() != null) {
-            EmergencyServer server = serverMapper.selectByPrimaryKey(recordDetail.getServerId());
-            if (server != null) {
-                ServerInfo serverInfo =
-                    new ServerInfo(server.getServerIp(), server.getServerUser());
+        if (recordDetail.getPerfTestId() == null) { // 非压测任务
+            if (recordDetail.getAgentId() != null) {
+                EmergencyAgent agent = agentMapper.selectByPrimaryKey(recordDetail.getAgentId());
+                ServerInfo serverInfo = new ServerInfo(agent.getAgentIp(), agent.getAgentPort());
+                execInfo.setRemoteServerInfo(serverInfo);
+            } else if (recordDetail.getServerId() != null) { // 兼容之前只选择server的任务
+                EmergencyServer server = serverMapper.selectByPrimaryKey(recordDetail.getServerId());
+                ServerInfo serverInfo = new ServerInfo(server.getServerIp(), server.getServerUser());
                 if (server.getAgentPort() != null) {
                     serverInfo.setServerPort(server.getAgentPort());
                 }
@@ -367,7 +376,37 @@ public class ExecRecordHandlerFactory {
     private List<EmergencyExecRecordDetail> createNormalRecordDetail(EmergencyExecRecord record,
         List<EmergencyServer> serverList) {
         List<EmergencyExecRecordDetail> result = new ArrayList<>();
-        for (EmergencyServer server : serverList) {
+        if (StringUtils.isNotEmpty(record.getAgentIds())) { // 选择了agent,
+            EmergencyAgentExample agentExample = new EmergencyAgentExample();
+            agentExample.createCriteria()
+                .andAgentIdIn(Arrays.stream(record.getAgentIds().split(SPLIT_SIGN)).map(Integer::valueOf).collect(
+                    Collectors.toList()));
+            agentMapper.selectByExample(agentExample).forEach(agent -> {
+                if (ValidEnum.IN_VALID.equals(agent.getIsValid()) || AgentStatusEnum.INACTIVE.getValue()
+                    .equals(agent.getAgentStatus())) {
+                    LOGGER.warn("agent {} [{}:{}] is invalid or inactive.", agent.getAgentName(), agent.getAgentIp(),
+                        agent.getAgentPort());
+                    return;
+                }
+                EmergencyExecRecordDetail recordDetail = new EmergencyExecRecordDetail();
+                recordDetail.setExecId(record.getExecId());
+                recordDetail.setRecordId(record.getRecordId());
+                recordDetail.setStatus(RecordStatus.PENDING.getValue());
+                EmergencyServerExample serverExample = new EmergencyServerExample();
+                serverExample.createCriteria().andServerIpEqualTo(agent.getAgentIp())
+                    .andIsValidEqualTo(ValidEnum.VALID.getValue());
+                List<EmergencyServer> servers = serverMapper.selectByExample(serverExample);
+                if (servers.size() > 0) {
+                    recordDetail.setServerId(servers.get(0).getServerId());
+                }
+                recordDetail.setAgentId(agent.getAgentId());
+                recordDetail.setServerIp(agent.getAgentIp());
+                recordDetailMapper.insertSelective(recordDetail);
+                result.add(recordDetail);
+            });
+            return result;
+        }
+        for (EmergencyServer server : serverList) { // 兼容之前选择server的任务
             if (server == null) {
                 continue;
             }
@@ -392,19 +431,23 @@ public class ExecRecordHandlerFactory {
         if (record.getPerfTestId() != null) { // 如果是自定义脚本压测，根据此压测模板生成压测任务
             PerfTest perfTest = planService.copyPerfTestByTestId(record.getPerfTestId());
             perfTest.setAgentCount(serverList.size());
-            List<Integer> agentIds = new ArrayList<>();
-            for (EmergencyServer server : serverList) {
-                List<Integer> agent = serverMapper.selectAgentIdsByServerIds(
-                    Arrays.asList(server.getServerId().toString()));
-                if (agent.size() > 0) {
-                    agentIds.add(agent.get(0));
-                    LOGGER.debug("found agent {} by ip {}.", agent.get(0), server.getServerIp());
-                } else {
-                    LOGGER.warn("can't found agent by ip {}.", server.getServerIp());
+            if (StringUtils.isNotEmpty(record.getAgentIds())) {
+                perfTest.setAgentIds(record.getAgentIds());
+            } else {
+                List<Integer> agentIds = new ArrayList<>();
+                for (EmergencyServer server : serverList) {
+                    List<Integer> agent = serverMapper.selectAgentIdsByServerIds(
+                        Arrays.asList(server.getServerId().toString()));
+                    if (agent.size() > 0) {
+                        agentIds.add(agent.get(0));
+                        LOGGER.debug("found agent {} by ip {}.", agent.get(0), server.getServerIp());
+                    } else {
+                        LOGGER.warn("can't found agent by ip {}.", server.getServerIp());
+                    }
                 }
-            }
-            if (agentIds.size() > 0) {
-                perfTest.setAgentIds(StringUtils.join(agentIds, SPLIT_SIGN));
+                if (agentIds.size() > 0) {
+                    perfTest.setAgentIds(StringUtils.join(agentIds, SPLIT_SIGN));
+                }
             }
             perfTestService.save(perfTest.getCreatedUser(), perfTest);
             recordDetail.setPerfTestId(perfTest.getId().intValue());

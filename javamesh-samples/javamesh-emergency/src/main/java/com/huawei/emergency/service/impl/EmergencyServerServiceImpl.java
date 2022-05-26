@@ -9,6 +9,7 @@ import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.common.util.PasswordUtil;
 import com.huawei.common.ws.WebSocketServer;
+import com.huawei.emergency.dto.ServerAgentInfoDTO;
 import com.huawei.emergency.entity.EmergencyServer;
 import com.huawei.emergency.entity.EmergencyServerExample;
 import com.huawei.emergency.mapper.EmergencyServerMapper;
@@ -152,14 +153,15 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
 
     @Override
     public CommonResult queryServerInfo(String groupName, CommonPage<EmergencyServer> params, String keyword,
-        int[] excludeServerIds) {
-        Page<EmergencyServer> pageInfo = PageHelper
+        int[] excludeServerIds, int[] includeAgentIds, String agentType) {
+        Page<ServerAgentInfoDTO> pageInfo = PageHelper
             .startPage(params.getPageIndex(), params.getPageSize(), StringUtils.isEmpty(params.getSortType()) ? ""
                 : params.getSortField() + System.lineSeparator() + params.getSortType())
             .doSelectPage(() -> {
-                serverMapper.selectByKeyword(groupName, params.getObject(), keyword, excludeServerIds);
+                serverMapper.selectByKeyword(groupName, params.getObject(), keyword, excludeServerIds,
+                    includeAgentIds, agentType);
             });
-        List<EmergencyServer> result = pageInfo.getResult();
+        List<ServerAgentInfoDTO> result = pageInfo.getResult();
         return CommonResult.success(result, (int) pageInfo.getTotal());
     }
 
@@ -167,7 +169,7 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
     public CommonResult search(String groupName, String serverName) {
         EmergencyServer server = new EmergencyServer();
         server.setServerName(serverName);
-        Object[] objects = serverMapper.selectByKeyword(groupName, server, null, null).stream()
+        Object[] objects = serverMapper.selectByKeyword(groupName, server, null, null, null, "").stream()
             .map(EmergencyServer::getServerName)
             .toArray();
         return CommonResult.success(objects, objects.length);
@@ -268,7 +270,7 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
             String tarCommand = String.format(Locale.ROOT, "cd %s && tar -xf %s", uploadPath, agentPackage.getName());
             execResult = remoteExecutor.exec(session, tarCommand, null, -1);
             if (!execResult.isSuccess()) {
-                LOGGER.error("解压agent失败。 {}", execResult.getMsg());
+                LOGGER.error("release agent failed. {}", execResult.getMsg());
                 return CommonResult.failed("解压agent失败");
             }
             String agentHome = uploadPath + "ngrinder-agent";
@@ -277,13 +279,13 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
                 agentHome, InetAddress.getLocalHost().getHostAddress(), config.getControllerPort());
             execResult = remoteExecutor.exec(session, createStartCommand, null, -1);
             if (!execResult.isSuccess()) {
-                LOGGER.error("初始化agent失败。 {}", execResult.getMsg());
+                LOGGER.error("init agent failed. {}", execResult.getMsg());
                 return CommonResult.failed("初始化agent失败");
             }
             String startCommand = String.format(Locale.ROOT, "source /etc/profile && cd %s && ./start.sh", agentHome);
             execResult = remoteExecutor.exec(session, startCommand, null, -1);
             if (!execResult.isSuccess()) {
-                LOGGER.error("启动agent失败。 {}", execResult.getMsg());
+                LOGGER.error("start agent failed. {}", execResult.getMsg());
                 return CommonResult.failed("启动agent失败");
             }
         } catch (JSchException e) {

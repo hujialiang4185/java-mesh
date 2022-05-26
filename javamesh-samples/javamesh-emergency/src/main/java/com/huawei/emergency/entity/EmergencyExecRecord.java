@@ -35,6 +35,8 @@ public class EmergencyExecRecord {
 
     private String serverId;
 
+    private String agentIds;
+
     private String serverIp;
 
     private String serverUser;
@@ -62,6 +64,8 @@ public class EmergencyExecRecord {
     private String sync;
 
     private Integer perfTestId;
+
+    private Integer debugId;
 
     public Integer getRecordId() {
         return recordId;
@@ -191,6 +195,14 @@ public class EmergencyExecRecord {
         this.serverId = serverId == null ? null : serverId.trim();
     }
 
+    public String getAgentIds() {
+        return agentIds;
+    }
+
+    public void setAgentIds(String agentIds) {
+        this.agentIds = agentIds == null ? null : agentIds.trim();
+    }
+
     public String getServerIp() {
         return serverIp;
     }
@@ -302,8 +314,6 @@ public class EmergencyExecRecord {
     public void setPerfTestId(Integer perfTestId) {
         this.perfTestId = perfTestId;
     }
-
-    private Integer debugId;
 
     public Integer getDebugId() {
         return debugId;

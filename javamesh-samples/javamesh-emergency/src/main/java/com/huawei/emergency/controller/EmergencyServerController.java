@@ -122,7 +122,9 @@ public class EmergencyServerController {
         @RequestParam(value = "sorter", defaultValue = "create_time") String sorter,
         @RequestParam(value = "order", defaultValue = "DESC") String order,
         @RequestParam(value = "server_name", required = false) String serverName,
-        @RequestParam(value = "excludes[]", required = false) int[] excludeServerIds) {
+        @RequestParam(value = "excludes[]", required = false) int[] excludeServerIds,
+        @RequestParam(value = "includes[]", required = false) int[] includeAgentIds,
+        @RequestParam(value = "type", required = false) String agentType) {
         CommonPage<EmergencyServer> params = new CommonPage<>();
         params.setPageSize(pageSize);
         params.setPageIndex(current);
@@ -135,8 +137,7 @@ public class EmergencyServerController {
         EmergencyServer server = new EmergencyServer();
         server.setServerName(serverName);
         params.setObject(server);
-
         return serverService.queryServerInfo(((JwtUser) authentication.getPrincipal()).getGroupName(), params, keyword,
-            excludeServerIds);
+            excludeServerIds, includeAgentIds, agentType);
     }
 }

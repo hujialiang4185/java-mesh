@@ -1125,6 +1125,76 @@ public class EmergencyExecRecordExample {
             return (Criteria) this;
         }
 
+        public Criteria andAgentIdsIsNull() {
+            addCriterion("agent_ids is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgentIdsIsNotNull() {
+            addCriterion("agent_ids is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgentIdsEqualTo(String value) {
+            addCriterion("agent_ids =", value, "agentIds");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgentIdsNotEqualTo(String value) {
+            addCriterion("agent_ids <>", value, "agentIds");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgentIdsGreaterThan(String value) {
+            addCriterion("agent_ids >", value, "agentIds");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgentIdsGreaterThanOrEqualTo(String value) {
+            addCriterion("agent_ids >=", value, "agentIds");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgentIdsLessThan(String value) {
+            addCriterion("agent_ids <", value, "agentIds");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgentIdsLessThanOrEqualTo(String value) {
+            addCriterion("agent_ids <=", value, "agentIds");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgentIdsLike(String value) {
+            addCriterion("agent_ids like", value, "agentIds");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgentIdsNotLike(String value) {
+            addCriterion("agent_ids not like", value, "agentIds");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgentIdsIn(List<String> values) {
+            addCriterion("agent_ids in", values, "agentIds");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgentIdsNotIn(List<String> values) {
+            addCriterion("agent_ids not in", values, "agentIds");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgentIdsBetween(String value1, String value2) {
+            addCriterion("agent_ids between", value1, value2, "agentIds");
+            return (Criteria) this;
+        }
+
+        public Criteria andAgentIdsNotBetween(String value1, String value2) {
+            addCriterion("agent_ids not between", value1, value2, "agentIds");
+            return (Criteria) this;
+        }
+
         public Criteria andServerIpIsNull() {
             addCriterion("server_ip is null");
             return (Criteria) this;

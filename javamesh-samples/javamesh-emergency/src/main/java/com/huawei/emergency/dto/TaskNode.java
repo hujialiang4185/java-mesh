@@ -16,8 +16,6 @@
 
 package com.huawei.emergency.dto;
 
-import com.huawei.emergency.entity.EmergencyServer;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -49,7 +47,8 @@ public class TaskNode {
     private Integer scriptId;
     private String scriptName;
     private String serverId;
-    private List<EmergencyServer> serverList;
+    private String agentIds;
+    private List<ServerAgentInfoDTO> serverList;
     private String submitInfo;
     private String sync;
     private List<TaskNode> children;

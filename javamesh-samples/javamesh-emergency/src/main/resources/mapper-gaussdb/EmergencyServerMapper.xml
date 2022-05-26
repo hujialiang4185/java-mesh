@@ -416,33 +416,64 @@
             status        = #{status,jdbcType=VARCHAR}
         where server_id = #{serverId,jdbcType=INTEGER}
     </update>
-    <select id="selectByKeyword" resultType="com.huawei.emergency.entity.EmergencyServer">
-        select server_id,
-        server_ip,
-        server_user,
-        server_port,
-        server_group as group_name,
-        case when have_password = '0' then '无' else '有' end have_password,
-        case when password_mode = '0' then '本地' when password_mode = '1' then '平台' else password_mode end password_mode,
-        server_name,
-        agent_port,
-        status,
-        case when status = 'pending' then '准备中'
-        when status = 'running' then '运行中'
-        when status = 'success' then '成功'
-        when status = 'fail' then '失败'
-        else status end status_label,
-        case when licensed = '0' then 'false' when licensed = '1' then 'true' else licensed end licensed
-        from emergency_server
-        where is_valid = '1'
+    <select id="selectByKeyword" resultType="com.huawei.emergency.dto.ServerAgentInfoDTO">
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        server_table.server_id,
+        server_table.`server_name`,
+        server_table.server_ip,
+        server_table.server_user,
+        CASE
+
+        WHEN server_table.have_password = '0' THEN
+        '无' ELSE '有'
+        END have_password,
+        CASE
+
+        WHEN server_table.password_mode = '0' THEN
+        '本地'
+        WHEN server_table.password_mode = '1' THEN
+        '平台' ELSE password_mode
+        END password_mode,
+        agent_table.agent_id,
+        agent_table.agent_name,
+        agent_table.agent_port,
+        'normal' agent_type,
+        agent_table.agent_status,
+        CASE
+
+        WHEN agent_table.agent_status = 'READY' THEN
+        '就绪'
+        WHEN agent_table.agent_status = 'BUSY' THEN
+        '运行中'
+        WHEN agent_table.agent_status = 'INACTIVE' THEN
+        '下线'
+        END status_label,
+        CASE
+
+        WHEN licensed = '0' THEN
+        'false'
+        WHEN licensed = '1' THEN
+        'true' ELSE licensed
+        END licensed,
+        server_group AS group_name,
+        server_table.create_time
+        FROM
+        emergency_server server_table
+        JOIN emergency_agent agent_table ON server_table.server_ip = agent_table.agent_ip
+        WHERE
+        server_table.is_valid = '1'
         <if test="groupName != null and groupName != ''">
             and server_group = #{groupName}
         </if>
         <if test="keyword !=null and keyword != ''">
-            and (instr(#{keyword},server_name) &gt; -1 or instr(#{keyword},server_ip) &gt; -1)
+            and (locate(#{keyword},`server_name`) &gt; 0 or locate(#{keyword},`server_ip`) &gt; 0)
         </if>
         <if test="server !=null and server.serverName != null and server.serverName != ''">
-            and instr(#{server.serverName},server_name) &gt; -1
+            and locate(#{server.serverName},`server_name`) &gt; 0
         </if>
         <if test=" excludeServerIds != null and excludeServerIds.length > 0">
             and server_id not in
@@ -450,7 +481,74 @@
                 #{serverId}
             </foreach>
         </if>
-        order by create_time desc
+        UNION
+        SELECT
+        server_table.server_id,
+        server_table.`server_name`,
+        server_table.server_ip,
+        server_table.server_user,
+        CASE
+
+        WHEN server_table.have_password = '0' THEN
+        '无' ELSE '有'
+        END have_password,
+        CASE
+
+        WHEN server_table.password_mode = '0' THEN
+        '本地'
+        WHEN server_table.password_mode = '1' THEN
+        '平台' ELSE password_mode
+        END password_mode,
+        agent_table.id agent_id,
+        agent_table.hostName agent_name,
+        agent_table.PORT agent_port,
+        'gui' agent_type,
+        agent_table.state agent_status,
+        CASE
+
+        WHEN agent_table.state = 'READY' THEN
+        '就绪'
+        WHEN agent_table.state = 'BUSY' THEN
+        '运行中'
+        WHEN agent_table.state = 'INACTIVE' THEN
+        '下线'
+        END status_label,
+        CASE
+
+        WHEN licensed = '0' THEN
+        'false'
+        WHEN licensed = '1' THEN
+        'true' ELSE licensed
+        END licensed,
+        server_group AS group_name,
+        server_table.create_time
+        FROM
+        emergency_server server_table
+        JOIN AGENT agent_table ON server_table.server_ip = agent_table.ip
+        WHERE
+        server_table.is_valid = '1'
+        <if test="groupName != null and groupName != ''">
+            and server_group = #{groupName}
+        </if>
+        <if test="keyword !=null and keyword != ''">
+            and (locate(#{keyword},`server_name`) &gt; 0 or locate(#{keyword},`server_ip`) &gt; 0)
+        </if>
+        <if test="server !=null and server.serverName != null and server.serverName != ''">
+            and locate(#{server.serverName},`server_name`) &gt; 0
+        </if>
+        <if test=" excludeServerIds != null and excludeServerIds.length > 0">
+            and server_id not in
+            <foreach close=")" collection="excludeServerIds" index="index" item="serverId" open="(" separator=",">
+                #{serverId}
+            </foreach>
+        </if>
+        ) t1
+        where 1 = 1
+        <if test="agentType != null and agentType != ''">
+            and t1.agent_type = #{agentType}
+        </if>
+        ORDER BY
+        create_time DESC
     </select>
     <select id="selectAgentIdsByServerIds" resultType="java.lang.Integer">
         select t2.id

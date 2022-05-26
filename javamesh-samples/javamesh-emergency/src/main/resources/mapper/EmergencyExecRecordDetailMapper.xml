@@ -7,6 +7,7 @@
         <result column="record_id" jdbcType="INTEGER" property="recordId"/>
         <result column="status" jdbcType="VARCHAR" property="status"/>
         <result column="server_id" jdbcType="INTEGER" property="serverId"/>
+        <result column="agent_id" jdbcType="INTEGER" property="agentId"/>
         <result column="server_ip" jdbcType="VARCHAR" property="serverIp"/>
         <result column="perf_test_id" jdbcType="INTEGER" property="perfTestId"/>
         <result column="log" jdbcType="VARCHAR" property="log"/>
@@ -81,8 +82,9 @@
     </sql>
     <sql id="Base_Column_List">
         detail_id
-        , exec_id, record_id, status, server_id, server_ip, perf_test_id, log, create_user,
-    create_time, start_time, end_time, ensure_user, ensure_time, is_valid, pid
+        , exec_id, record_id, status, server_id, agent_id, server_ip, perf_test_id,
+    log, create_user, create_time, start_time, end_time, ensure_user, ensure_time, is_valid, 
+    pid
     </sql>
     <select id="selectByExample" parameterType="com.huawei.emergency.entity.EmergencyExecRecordDetailExample"
             resultMap="BaseResultMap">
@@ -122,17 +124,17 @@
             SELECT LAST_INSERT_ID()
         </selectKey>
         insert into emergency_exec_record_detail (exec_id, record_id, status,
-        server_id, server_ip, perf_test_id,
-        log, create_user, create_time,
-        start_time, end_time, ensure_user,
-        ensure_time, is_valid, pid
-        )
+        server_id, agent_id, server_ip,
+        perf_test_id, log, create_user,
+        create_time, start_time, end_time,
+        ensure_user, ensure_time, is_valid,
+        pid)
         values (#{execId,jdbcType=INTEGER}, #{recordId,jdbcType=INTEGER}, #{status,jdbcType=VARCHAR},
-        #{serverId,jdbcType=INTEGER}, #{serverIp,jdbcType=VARCHAR}, #{perfTestId,jdbcType=INTEGER},
-        #{log,jdbcType=VARCHAR}, #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP},
-        #{startTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP}, #{ensureUser,jdbcType=VARCHAR},
-        #{ensureTime,jdbcType=TIMESTAMP}, #{isValid,jdbcType=VARCHAR}, #{pid,jdbcType=INTEGER}
-        )
+        #{serverId,jdbcType=INTEGER}, #{agentId,jdbcType=INTEGER}, #{serverIp,jdbcType=VARCHAR},
+        #{perfTestId,jdbcType=INTEGER}, #{log,jdbcType=VARCHAR}, #{createUser,jdbcType=VARCHAR},
+        #{createTime,jdbcType=TIMESTAMP}, #{startTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP},
+        #{ensureUser,jdbcType=VARCHAR}, #{ensureTime,jdbcType=TIMESTAMP}, #{isValid,jdbcType=VARCHAR},
+        #{pid,jdbcType=INTEGER})
     </insert>
     <insert id="insertSelective" parameterType="com.huawei.emergency.entity.EmergencyExecRecordDetail">
         <selectKey keyProperty="detailId" order="AFTER" resultType="java.lang.Integer">
@@ -151,6 +153,9 @@
             </if>
             <if test="serverId != null">
                 server_id,
+            </if>
+            <if test="agentId != null">
+                agent_id,
             </if>
             <if test="serverIp != null">
                 server_ip,
@@ -198,6 +203,9 @@
             </if>
             <if test="serverId != null">
                 #{serverId,jdbcType=INTEGER},
+            </if>
+            <if test="agentId != null">
+                #{agentId,jdbcType=INTEGER},
             </if>
             <if test="serverIp != null">
                 #{serverIp,jdbcType=VARCHAR},
@@ -259,6 +267,9 @@
             <if test="record.serverId != null">
                 server_id = #{record.serverId,jdbcType=INTEGER},
             </if>
+            <if test="record.agentId != null">
+                agent_id = #{record.agentId,jdbcType=INTEGER},
+            </if>
             <if test="record.serverIp != null">
                 server_ip = #{record.serverIp,jdbcType=VARCHAR},
             </if>
@@ -304,6 +315,7 @@
         record_id = #{record.recordId,jdbcType=INTEGER},
         status = #{record.status,jdbcType=VARCHAR},
         server_id = #{record.serverId,jdbcType=INTEGER},
+        agent_id = #{record.agentId,jdbcType=INTEGER},
         server_ip = #{record.serverIp,jdbcType=VARCHAR},
         perf_test_id = #{record.perfTestId,jdbcType=INTEGER},
         log = #{record.log,jdbcType=VARCHAR},
@@ -333,6 +345,9 @@
             </if>
             <if test="serverId != null">
                 server_id = #{serverId,jdbcType=INTEGER},
+            </if>
+            <if test="agentId != null">
+                agent_id = #{agentId,jdbcType=INTEGER},
             </if>
             <if test="serverIp != null">
                 server_ip = #{serverIp,jdbcType=VARCHAR},
@@ -376,6 +391,7 @@
             record_id    = #{recordId,jdbcType=INTEGER},
             status       = #{status,jdbcType=VARCHAR},
             server_id    = #{serverId,jdbcType=INTEGER},
+            agent_id     = #{agentId,jdbcType=INTEGER},
             server_ip    = #{serverIp,jdbcType=VARCHAR},
             perf_test_id = #{perfTestId,jdbcType=INTEGER},
             log          = #{log,jdbcType=VARCHAR},
@@ -389,7 +405,6 @@
             pid          = #{pid,jdbcType=INTEGER}
         where detail_id = #{detailId,jdbcType=INTEGER}
     </update>
-
     <select id="selectAllServerDetail" resultType="com.huawei.emergency.entity.EmergencyExecRecordDetail">
         select t1.detail_id,
                IFNULL(t1.server_ip, 'local') server_ip,

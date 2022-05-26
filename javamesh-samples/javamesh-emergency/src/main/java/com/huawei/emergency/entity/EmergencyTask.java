@@ -19,6 +19,8 @@ public class EmergencyTask {
 
     private String serverId;
 
+    private String agentIds;
+
     private Integer preTaskId;
 
     private String createUser;
@@ -97,6 +99,14 @@ public class EmergencyTask {
 
     public void setServerId(String serverId) {
         this.serverId = serverId == null ? null : serverId.trim();
+    }
+
+    public String getAgentIds() {
+        return agentIds;
+    }
+
+    public void setAgentIds(String agentIds) {
+        this.agentIds = agentIds == null ? null : agentIds.trim();
     }
 
     public Integer getPreTaskId() {

@@ -26,10 +26,12 @@ import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ScheduleType;
 import com.huawei.common.constant.TaskTypeEnum;
 import com.huawei.common.constant.ValidEnum;
+import com.huawei.common.exception.ApiException;
 import com.huawei.common.ws.WebSocketServer;
 import com.huawei.emergency.dto.PlanDetailQueryDto;
 import com.huawei.emergency.dto.PlanQueryDto;
 import com.huawei.emergency.dto.PlanQueryParams;
+import com.huawei.emergency.dto.ServerAgentInfoDTO;
 import com.huawei.emergency.dto.TaskNode;
 import com.huawei.emergency.entity.EmergencyExec;
 import com.huawei.emergency.entity.EmergencyExecRecord;
@@ -105,6 +107,11 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     private static final Logger LOGGER = LoggerFactory.getLogger(EmergencyPlanServiceImpl.class);
     private static final String MODE_TEST = "test";
     private static final String MODE_DEV = "dev";
+    private static final String AUTH_ADMIN = "admin";
+    private static final String AUTH_APPROVER = "approver";
+    private static final int MAX_SUBTASK = 99;
+    private static final long ONE_THOUSAND = 1000L;
+    private static final int ONE_HUNDRED = 100;
 
     @Resource(name = "scriptExecThreadPool")
     private ThreadPoolExecutor threadPoolExecutor;
@@ -147,9 +154,6 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
 
     @Autowired
     private UserRepository userRepository;
-
-    private static final String AUTH_ADMIN = "admin";
-    private static final String AUTH_APPROVER = "approver";
 
     @Autowired
     private EmergencyServerMapper serverMapper;
@@ -196,22 +200,17 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     @Override
     public CommonResult delete(EmergencyPlan emergencyPlan) {
         if (emergencyPlan.getPlanId() == null) {
-            return CommonResult.failed("请选择正确的项目");
+            return CommonResult.failed("请选择项目");
         }
-
-        // 是否正在执行
         if (haveRunning(emergencyPlan.getPlanId())) {
             return CommonResult.failed("当前项目正在执行中，无法删除。");
         }
-
         EmergencyPlan updatePlan = new EmergencyPlan();
         updatePlan.setIsValid(ValidEnum.IN_VALID.getValue());
         updatePlan.setPlanId(emergencyPlan.getPlanId());
         updatePlan.setUpdateUser(emergencyPlan.getUpdateUser());
         updatePlan.setUpdateTime(new Date());
-        if (planMapper.updateByPrimaryKeySelective(updatePlan) == 0) {
-            return CommonResult.failed("请选择正确的项目");
-        }
+        planMapper.updateByPrimaryKeySelective(updatePlan);
         EmergencyPlanDetail updatePlanDetail = new EmergencyPlanDetail();
         updatePlanDetail.setIsValid(ValidEnum.IN_VALID.getValue());
         EmergencyPlanDetailExample updatePlanDetailCondition = new EmergencyPlanDetailExample();
@@ -223,21 +222,15 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     @Override
     public CommonResult update(EmergencyPlan emergencyPlan) {
         if (emergencyPlan.getPlanId() == 0) {
-            return CommonResult.failed("请选择正确的项目");
+            return CommonResult.failed("请选择项目");
         }
-
-        // 是否审核通过
-        if (havePass(emergencyPlan.getPlanId())) {
+        if (havePass(emergencyPlan.getPlanId())) { // 是否审核通过
             return CommonResult.failed("当前项目已经审核通过，无法修改。");
         }
-
         EmergencyPlan updatePlan = new EmergencyPlan();
         updatePlan.setPlanId(emergencyPlan.getPlanId());
-        updatePlan.setPlanNo(emergencyPlan.getPlanNo());
         updatePlan.setPlanName(emergencyPlan.getPlanName());
-        if (planMapper.updateByPrimaryKeySelective(updatePlan) == 0) {
-            return CommonResult.failed("请选择正确的项目");
-        }
+        planMapper.updateByPrimaryKeySelective(updatePlan);
         return CommonResult.success();
     }
 
@@ -506,17 +499,19 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             if (children.size() > 0) {
                 scene.setChildren(children);
             }
-
-            // 查找场景下的子任务
-            children.forEach(task -> {
+            children.forEach(task -> { // 查找场景下的子任务
                 TaskTypeEnum subTaskTypeEnum = TaskTypeEnum.matchByValue(task.getTaskType());
                 if (subTaskTypeEnum != null) {
                     task.setTaskType(subTaskTypeEnum.getDesc());
                 }
-                task.setServerList(queryServer(task.getServerId()));
+                if (StringUtils.isEmpty(task.getAgentIds())) {
+                    task.setServerList(queryServer(task.getServerId()));
+                } else {
+                    task.setServerList(queryAgent(task.getAgentIds(), subTaskTypeEnum));
+                }
                 queryPerfTest(task);
-                // 查找子任务下的子任务
-                List<TaskNode> taskChildren = getChildren(task.getPlanId(), task.getSceneId(), task.getTaskId());
+                List<TaskNode> taskChildren = getChildren(task.getPlanId(), task.getSceneId(),
+                    task.getTaskId()); // 查找子任务下的子任务
                 if (taskChildren.size() > 0) {
                     task.setChildren(taskChildren);
                 }
@@ -525,13 +520,31 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         return CommonResult.success(taskNodes);
     }
 
-    public List<EmergencyServer> queryServer(String serverIds) {
+    public List<ServerAgentInfoDTO> queryServer(String serverIds) {
         if (StringUtils.isNotEmpty(serverIds)) {
             EmergencyServerExample serverExample = new EmergencyServerExample();
             serverExample.createCriteria()
                 .andServerIdIn(Arrays.stream(serverIds.split(",")).map(Integer::valueOf
                 ).collect(Collectors.toList()));
-            return serverMapper.selectByExample(serverExample);
+            return serverMapper.selectByExample(serverExample).stream().map(server -> {
+                ServerAgentInfoDTO agentInfo = new ServerAgentInfoDTO();
+                BeanUtils.copyProperties(server, agentInfo);
+                return agentInfo;
+            }).collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
+
+    public List<ServerAgentInfoDTO> queryAgent(String agentIds, TaskTypeEnum taskTypeEnum) {
+        int[] includeAgentIds = Arrays.stream(agentIds.split(",")).mapToInt(Integer::valueOf).toArray();
+        if (taskTypeEnum == TaskTypeEnum.COMMAND) {
+            return serverMapper.selectByKeyword(null, new EmergencyServer(), null,
+                null,
+                includeAgentIds, "normal");
+        } else if (taskTypeEnum == TaskTypeEnum.CUSTOM) {
+            return serverMapper.selectByKeyword(null, new EmergencyServer(), null,
+                null,
+                includeAgentIds, "gui");
         }
         return Collections.emptyList();
     }
@@ -560,20 +573,19 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         if (StringUtils.isNotEmpty(test.getTargetHosts())) {
             node.setHosts(new ArrayList<>());
             for (String hostStr : test.getTargetHosts().split(",")) {
-                TaskNode.HostsDTO hostsDTO = new TaskNode.HostsDTO();
-                if (hostStr.indexOf(":") > -1) {
-                    hostsDTO.setDomain(hostStr.substring(0, hostStr.indexOf(":")));
-                    hostsDTO.setIp(hostStr.substring(hostStr.indexOf(":")));
-                } else {
-
+                TaskNode.HostsDTO host = new TaskNode.HostsDTO();
+                int index = hostStr.indexOf(":");
+                if (index > -1) {
+                    host.setDomain(hostStr.substring(0, index));
+                    host.setIp(hostStr.substring(index));
                 }
-                node.getHosts().add(hostsDTO);
+                node.getHosts().add(host);
             }
         }
         node.setBasic("D".equals(test.getThreshold()) ? "by_time" : "by_count");
         node.setByCount(test.getRunCount());
         if (test.getDuration() != null) {
-            long seconds = test.getDuration() / 1000;
+            long seconds = test.getDuration() / ONE_THOUSAND;
             node.setByTimeH((int) (seconds / 3600));
             node.setByTimeM((int) (seconds % 3600) / 60);
             node.setByTimeS((int) (seconds % 3600) % 60);
@@ -626,6 +638,10 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
                     .filter(server -> server.getServerId() != null)
                     .map(EmergencyServer::getServerId)
                     .collect(Collectors.toList()), ","));
+                task.setAgentIds(StringUtils.join(taskNode.getServerList().stream()
+                    .filter(server -> server.getAgentId() != null)
+                    .map(EmergencyServer::getAgentId)
+                    .collect(Collectors.toList()), ","));
             }
             task.setCreateUser(taskNode.getCreateUser());
             task.setTaskType(taskType.getValue());
@@ -642,6 +658,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
                 perfTest.setCreatedUser(ngrinderUser);
                 perfTest.setCreatedDate(new Date());
                 perfTest.setScriptName(scriptService.grinderPath(emergencyScripts.get(0)));
+                perfTest.setAgentIds(task.getAgentIds());
                 PerfTest insertPerfTest = perfTestController.saveOne(ngrinderUser, perfTest);
                 if (insertPerfTest == null || insertPerfTest.getId() == null) {
                     return CommonResult.failed("创建压测任务失败");
@@ -663,15 +680,14 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     @Override
     public CommonResult plan(CommonPage<PlanQueryParams> params, JwtUser jwtUser) {
         Page<PlanQueryDto> pageInfo = PageHelper
-            .startPage(params.getPageIndex(), params.getPageSize(), StringUtils.isEmpty(params.getSortType()) ? "" :
-                params.getSortField() + System.lineSeparator() + params.getSortType())
+            .startPage(params.getPageIndex(), params.getPageSize(), StringUtils.isEmpty(params.getSortType()) ? ""
+                : params.getSortField() + System.lineSeparator() + params.getSortType())
             .doSelectPage(() -> planMapper.queryPlanDto(params.getObject()));
         List<PlanQueryDto> result = pageInfo.getResult();
         List<String> auth = jwtUser.getAuthList();
         String userName = jwtUser.getUsername();
         String group = jwtUser.getGroupName();
-        // 查询明细
-        result.forEach(planQueryDto -> {
+        result.forEach(planQueryDto -> { // 查询明细
             if ("approving".equals(planQueryDto.getStatus()) && ("admin".equals(userName) || (
                 (auth.contains(AUTH_ADMIN) || (auth.contains(AUTH_APPROVER)
                     && userName.equals(planQueryDto.getCheckUser()))) && group.equals(planQueryDto.getGroupName())))) {
@@ -679,7 +695,12 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             }
             List<PlanDetailQueryDto> planDetails = planMapper.queryPlanDetailDto(planQueryDto.getPlanId());
             planDetails.forEach(planDetail -> {
-                planDetail.setServerList(queryServer(planDetail.getServerId()));
+                if (StringUtils.isEmpty(planDetail.getAgentIds())) {
+                    planDetail.setServerList(queryServer(planDetail.getServerId()));
+                } else {
+                    planDetail.setServerList(
+                        queryAgent(planDetail.getAgentIds(), TaskTypeEnum.matchByValue(planDetail.getTaskType())));
+                }
                 if (planDetail.getPerfTestId() == null) {
                     return;
                 }
@@ -689,7 +710,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
                     planDetail.setStartTime(perfTest.getStartTime());
                     if (perfTest.getFinishTime() != null && perfTest.getStartTime() != null) {
                         planDetail.setDuration(
-                            (perfTest.getFinishTime().getTime() - perfTest.getStartTime().getTime()) / 1000L);
+                            (perfTest.getFinishTime().getTime() - perfTest.getStartTime().getTime()) / ONE_THOUSAND);
                     }
                     planDetail.setTagString(perfTest.getTagString());
                     planDetail.setTps(perfTest.getTps());
@@ -701,7 +722,8 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
                         planDetail.setErrorRate(0D);
                     } else {
                         planDetail.setErrorRate(
-                            (perfTest.getErrors() == null ? 0D : perfTest.getErrors().doubleValue()) * 100 / testCount);
+                            (perfTest.getErrors() == null ? 0D : perfTest.getErrors().doubleValue()) * ONE_HUNDRED
+                                / testCount);
                     }
                     planDetail.setStatus(perfTest.getStatus().getIconName());
                 }
@@ -719,7 +741,6 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         if (haveRunning(planId)) {
             return CommonResult.failed("正在运行无法修改");
         }
-
         EmergencyPlan updatePlan = new EmergencyPlan();
         updatePlan.setPlanId(planId);
         markStatusByMode(updatePlan);
@@ -731,8 +752,6 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         EmergencyPlanDetailExample updateCondition = new EmergencyPlanDetailExample();
         updateCondition.createCriteria().andPlanIdEqualTo(planId);
         detailMapper.updateByExampleSelective(oldDetails, updateCondition);
-
-        String planNO = generatePlanNo(planId);
         Integer preSceneId = null;
         for (int i = 0; i < listNodes.size(); i++) {
             TaskNode scene = listNodes.get(i);
@@ -754,7 +773,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             detailMapper.insertSelective(insertDetail);
             EmergencyTask updateScene = new EmergencyTask();
             updateScene.setTaskId(scene.getKey());
-            updateScene.setTaskNo(generateSceneNo(planNO, i + 1));
+            updateScene.setTaskNo(generateSceneNo(generatePlanNo(planId), i + 1));
             taskMapper.updateByPrimaryKeySelective(updateScene);
             handleChildren(insertDetail, scene.getChildren(), updateScene.getTaskNo(), false);
         }
@@ -855,7 +874,11 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             PerfTest perfTest = taskNode.parse();
             if (emergencyScripts.get(0) != null) {
                 User ngrinderUser = findNgrinderUserByUserId(emergencyScripts.get(0).getScriptUser());
-                perfTest.setCreatedUser(ngrinderUser);
+                PerfTest originTest = perfTestService.getOne(originTask.getPerfTestId().longValue());
+                if (!originTest.getCreatedUser().getUserId().equals(ngrinderUser.getUserId())) {
+                    throw new ApiException(String.format("修改任务时不能选择非创建用户目录下的脚本，创建用户为%s，当前脚本用户为%s。",
+                        originTest.getCreatedUser().getUserId(), ngrinderUser.getUserId()));
+                }
                 perfTest.setScriptName(scriptService.grinderPath(emergencyScripts.get(0)));
             }
             perfTest.setId(originTask.getPerfTestId().longValue());
@@ -944,8 +967,10 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
     /**
      * 迭代查找此任务的子任务
      *
+     * @param planId 项目ID
+     * @param sceneId 场景Id
      * @param taskId 任务ID
-     * @return
+     * @return 子任务集合
      */
     public List<TaskNode> getChildren(int planId, int sceneId, int taskId) {
         List<TaskNode> result = detailMapper.selectTaskNodeByTaskId(planId, sceneId, taskId);
@@ -954,7 +979,11 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             if (taskTypeEnum != null) {
                 detail.setTaskType(taskTypeEnum.getDesc());
             }
-            detail.setServerList(queryServer(detail.getServerId()));
+            if (StringUtils.isEmpty(detail.getAgentIds())) {
+                detail.setServerList(queryServer(detail.getServerId()));
+            } else {
+                detail.setServerList(queryAgent(detail.getAgentIds(), taskTypeEnum));
+            }
             queryPerfTest(detail);
             List<TaskNode> children = getChildren(detail.getPlanId(), detail.getSceneId(), detail.getTaskId());
             if (children.size() > 0) {
@@ -968,7 +997,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
      * 项目是否正在运行
      *
      * @param planId 项目ID
-     * @return
+     * @return 是否运行
      */
     private boolean haveRunning(int planId) {
         EmergencyExecRecordExample isRunningCondition = new EmergencyExecRecordExample();
@@ -983,7 +1012,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
      * 项目是否通过审核
      *
      * @param planId 项目ID
-     * @return
+     * @return 是否通过审核
      */
     private boolean havePass(int planId) {
         EmergencyPlanExample havePassCondition = new EmergencyPlanExample();
@@ -994,33 +1023,33 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         return planMapper.countByExample(havePassCondition) > 0;
     }
 
-    public String generatePlanNo(int planId) {
+    private String generatePlanNo(int planId) {
         return String.format(Locale.ROOT, "P%06d", planId);
     }
 
-    public String generateSceneNo(String planNo, int index) {
+    private String generateSceneNo(String planNo, int index) {
         return String.format(Locale.ROOT, "%sS%02d", planNo, validIndex(index));
     }
 
-    public String generateTaskNo(String sceneNo, int index) {
+    private String generateTaskNo(String sceneNo, int index) {
         return String.format(Locale.ROOT, "%sT%02d", sceneNo, validIndex(index));
     }
 
-    public String generateSubTaskNo(String taskNo) {
+    private String generateSubTaskNo(String taskNo) {
         String preFix = taskNo + "C";
         int index = taskMapper.selectMaxSubTaskNo(preFix);
         return String.format(Locale.ROOT, "%s%02d", preFix, validIndex(index + 1));
     }
 
-    public int validIndex(int index) {
+    private int validIndex(int index) {
         int result = Math.abs(index);
-        if (index > 99) {
+        if (index > MAX_SUBTASK) {
             throw new RuntimeException("最大子任务数量不能超过99");
         }
         return result;
     }
 
-    public void markStatusByMode(EmergencyPlan plan) {
+    private void markStatusByMode(EmergencyPlan plan) {
         // 如果是dev或test则不需要提审审核脚本
         if (MODE_DEV.equals(mode) || MODE_TEST.equals(mode)) {
             plan.setStatus(PlanStatus.APPROVED.getValue());

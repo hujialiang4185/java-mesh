@@ -325,7 +325,8 @@
                t1.sync,
                t2.task_type,
                t2.task_desc AS scena_desc,
-               t2.server_id
+               t2.server_id,
+               t2.agent_ids
         FROM emergency_plan_detail t1
                  LEFT JOIN emergency_task t2 ON t1.scene_id = t2.task_id
                  LEFT JOIN emergency_script t3 ON t2.script_id = t3.script_id
@@ -347,7 +348,8 @@
                t1.sync,
                t2.perf_test_id,
                t2.task_type,
-               t2.server_id
+               t2.server_id,
+               t2.agent_ids
         FROM emergency_plan_detail t1
                  LEFT JOIN emergency_task t2 ON t1.task_id = t2.task_id
                  LEFT JOIN emergency_script t3 ON t2.script_id = t3.script_id
@@ -371,7 +373,8 @@
                t1.sync,
                t2.perf_test_id,
                t2.task_type,
-               t2.server_id
+               t2.server_id,
+               t2.agent_ids
         FROM emergency_plan_detail t1
                  LEFT JOIN emergency_task t2 ON t1.task_id = t2.task_id
                  LEFT JOIN emergency_script t3 ON t2.script_id = t3.script_id
