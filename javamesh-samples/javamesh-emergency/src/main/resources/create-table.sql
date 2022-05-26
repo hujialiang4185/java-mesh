@@ -120,6 +120,7 @@ CREATE TABLE IF NOT EXISTS `emergency_task`
     `scene_id`     int(11)                                                 NULL     DEFAULT NULL COMMENT '场景ID',
     `script_id`    int(11)                                                 NULL     DEFAULT NULL COMMENT '脚本ID',
     `server_id`    varchar(255)                                            NULL     DEFAULT NULL COMMENT '服务器ID集合',
+    `agent_ids`    text CHARACTER SET utf8 COLLATE utf8_general_ci         NULL COMMENT 'agentId集合',
     `pre_task_id`  int(11)                                                 NULL     DEFAULT NULL COMMENT '所依赖的任务ID',
     `create_user`  varchar(40) CHARACTER SET utf8 COLLATE utf8_general_ci  NULL     DEFAULT NULL COMMENT '创建人',
     `create_time`  timestamp                                               NULL     DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -197,6 +198,7 @@ CREATE TABLE IF NOT EXISTS `emergency_exec_record`
     `script_type`    varchar(1) CHARACTER SET utf8 COLLATE utf8_general_ci   NULL     DEFAULT NULL COMMENT '脚本类型 0 shell 1 jython 2 gr0ovy',
     `script_params`  varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL     DEFAULT NULL COMMENT '脚本参数',
     `server_id`      varchar(255)                                            NULL     DEFAULT NULL COMMENT '服务器ID集合',
+    `agent_ids`      text CHARACTER SET utf8 COLLATE utf8_general_ci         NULL COMMENT 'agentId集合',
     `server_ip`      varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL     DEFAULT NULL COMMENT '远程服务器IP',
     `server_user`    varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL     DEFAULT NULL COMMENT '服务器用户',
     `have_password`  varchar(1) CHARACTER SET utf8 COLLATE utf8_general_ci   NULL     DEFAULT NULL COMMENT '有无密码 0:无密码,1:有密码',
@@ -229,6 +231,7 @@ CREATE TABLE IF NOT EXISTS `emergency_exec_record_detail`
     `record_id`    int(11)                                                 NOT NULL COMMENT '执行记录ID',
     `status`       varchar(1) CHARACTER SET utf8 COLLATE utf8_general_ci   NOT NULL DEFAULT '0' COMMENT '执行状态（0 待执行 1执行中 2执行成功 3执行失败 4执行取消 5人工确认成功 6人工确认失败）',
     `server_id`    int(11)                                                 NULL     DEFAULT NULL COMMENT '服务器ID',
+    `agent_id`     int(11)                                                 NULL COMMENT 'agent Id',
     `server_ip`    varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL     DEFAULT NULL COMMENT '远程服务器IP',
     `perf_test_id` int(11)                                                 NULL     DEFAULT NULL COMMENT '性能测试ID',
     `log`          text CHARACTER SET utf8 COLLATE utf8_general_ci         NULL COMMENT '运行日志',
@@ -342,6 +345,25 @@ CREATE TABLE IF NOT EXISTS `emergency_log_audit`
     PRIMARY KEY
         (
          `id`
+            ) USING BTREE
+) ENGINE = InnoDB
+  AUTO_INCREMENT = 1
+  CHARACTER SET = utf8
+  COLLATE = utf8_general_ci
+  ROW_FORMAT = Compact;
+$$$
+
+CREATE TABLE IF NOT EXISTS `emergency_agent`
+(
+    `agent_id`     int(11)                                                 NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `agent_name`   varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT 'agent名称',
+    `agent_ip`     varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT 'IP',
+    `agent_port`   int(5)                                                  NOT NULL COMMENT 'port',
+    `agent_status` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '0' COMMENT 'agent状态  INACTIVE,READY,BUSY',
+    `is_valid`     varchar(1) CHARACTER SET utf8 COLLATE utf8_general_ci   NOT NULL DEFAULT '1' COMMENT '是否生效 0失效 1生效',
+    PRIMARY KEY
+        (
+         `agent_id`
             ) USING BTREE
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1
