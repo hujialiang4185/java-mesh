@@ -450,6 +450,7 @@
         END password_mode,
         agent_table.agent_id,
         agent_table.agent_name,
+        agent_table.agent_ip,
         agent_table.agent_port,
         'normal' agent_type,
         agent_table.agent_status,
@@ -462,13 +463,7 @@
         WHEN agent_table.agent_status = 'INACTIVE' THEN
         '下线'
         END status_label,
-        CASE
-
-        WHEN licensed = '0' THEN
-        'false'
-        WHEN licensed = '1' THEN
-        'true' ELSE licensed
-        END licensed,
+        'true' licensed,
         server_group AS group_name,
         server_table.create_time
         FROM
@@ -511,7 +506,8 @@
         END password_mode,
         agent_table.id agent_id,
         agent_table.hostName agent_name,
-        agent_table.PORT agent_port,
+        agent_table.ip agent_ip,
+        agent_table.port agent_port,
         'gui' agent_type,
         agent_table.state agent_status,
         CASE
@@ -525,10 +521,8 @@
         END status_label,
         CASE
 
-        WHEN licensed = '0' THEN
-        'false'
-        WHEN licensed = '1' THEN
-        'true' ELSE licensed
+        WHEN agent_table.approved = 'T' THEN
+        'true' ELSE 'false'
         END licensed,
         server_group AS group_name,
         server_table.create_time

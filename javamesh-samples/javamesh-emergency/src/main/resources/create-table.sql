@@ -370,3 +370,17 @@ CREATE TABLE IF NOT EXISTS `emergency_agent`
   CHARACTER SET = utf8
   COLLATE = utf8_general_ci
   ROW_FORMAT = Compact;
+$$$
+
+CREATE TABLE
+    IF
+    NOT EXISTS `emergency_agent_config`
+(
+    `agent_id`     INT(11) NOT NULL COMMENT 'agent id',
+    `agent_config` text    NULL COMMENT 'agent配置',
+    PRIMARY KEY (`agent_id`) USING BTREE
+) ENGINE = INNODB
+  CHARACTER
+      SET = utf8
+  COLLATE = utf8_general_ci
+  ROW_FORMAT = Compact;
