@@ -7,6 +7,7 @@
         <result column="server_user" jdbcType="VARCHAR" property="serverUser"/>
         <result column="server_ip" jdbcType="VARCHAR" property="serverIp"/>
         <result column="server_port" jdbcType="INTEGER" property="serverPort"/>
+        <result column="server_memory" jdbcType="INTEGER" property="serverMemory"/>
         <result column="have_password" jdbcType="VARCHAR" property="havePassword"/>
         <result column="password_mode" jdbcType="VARCHAR" property="passwordMode"/>
         <result column="password_uri" jdbcType="VARCHAR" property="passwordUri"/>
@@ -83,7 +84,7 @@
     </sql>
     <sql id="Base_Column_List">
         server_id
-        , server_name, server_user, server_ip, server_port, have_password, password_mode,
+        , server_name, server_user, server_ip, server_port, server_memory, have_password, password_mode,
     password_uri, password, licensed, agent_name, agent_port, create_user, create_time, 
     update_time, update_user, is_valid, status
     </sql>
@@ -123,13 +124,14 @@
     <insert id="insert" keyColumn="server_id" keyProperty="serverId"
             parameterType="com.huawei.emergency.entity.EmergencyServer" useGeneratedKeys="true">
         insert into emergency_server (server_name, server_user, server_ip,
-                                      server_port, have_password, password_mode,
+                                      server_port, server_memory, have_password, password_mode,
                                       password_uri, password, licensed,
                                       agent_name, agent_port, create_user,
                                       create_time, update_time, update_user,
                                       is_valid, status)
         values (#{serverName,jdbcType=VARCHAR}, #{serverUser,jdbcType=VARCHAR}, #{serverIp,jdbcType=VARCHAR},
-                #{serverPort,jdbcType=INTEGER}, #{havePassword,jdbcType=VARCHAR}, #{passwordMode,jdbcType=VARCHAR},
+                #{serverPort,jdbcType=INTEGER}, #{serverMemory,jdbcType=INTEGER}, #{havePassword,jdbcType=VARCHAR},
+                #{passwordMode,jdbcType=VARCHAR},
                 #{passwordUri,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, #{licensed,jdbcType=VARCHAR},
                 #{agentName,jdbcType=VARCHAR}, #{agentPort,jdbcType=INTEGER}, #{createUser,jdbcType=VARCHAR},
                 #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{updateUser,jdbcType=VARCHAR},
@@ -150,6 +152,9 @@
             </if>
             <if test="serverPort != null">
                 server_port,
+            </if>
+            <if test="serverMemory != null">
+                server_memory,
             </if>
             <if test="havePassword != null">
                 have_password,
@@ -270,6 +275,9 @@
             <if test="record.serverPort != null">
                 server_port = #{record.serverPort,jdbcType=INTEGER},
             </if>
+            <if test="record.serverMemory != null">
+                server_memory = #{record.serverMemory,jdbcType=INTEGER},
+            </if>
             <if test="record.havePassword != null">
                 have_password = #{record.havePassword,jdbcType=VARCHAR},
             </if>
@@ -321,6 +329,7 @@
         server_user = #{record.serverUser,jdbcType=VARCHAR},
         server_ip = #{record.serverIp,jdbcType=VARCHAR},
         server_port = #{record.serverPort,jdbcType=INTEGER},
+        server_memory = #{record.serverMemory,jdbcType=INTEGER},
         have_password = #{record.havePassword,jdbcType=VARCHAR},
         password_mode = #{record.passwordMode,jdbcType=VARCHAR},
         password_uri = #{record.passwordUri,jdbcType=VARCHAR},
@@ -352,6 +361,9 @@
             </if>
             <if test="serverPort != null">
                 server_port = #{serverPort,jdbcType=INTEGER},
+            </if>
+            <if test="serverMemory != null">
+                server_memory = #{serverMemory,jdbcType=INTEGER},
             </if>
             <if test="havePassword != null">
                 have_password = #{havePassword,jdbcType=VARCHAR},
@@ -401,6 +413,7 @@
             server_user   = #{serverUser,jdbcType=VARCHAR},
             server_ip     = #{serverIp,jdbcType=VARCHAR},
             server_port   = #{serverPort,jdbcType=INTEGER},
+            server_memory = #{serverMemory,jdbcType=INTEGER},
             have_password = #{havePassword,jdbcType=VARCHAR},
             password_mode = #{passwordMode,jdbcType=VARCHAR},
             password_uri  = #{passwordUri,jdbcType=VARCHAR},

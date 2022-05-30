@@ -13,6 +13,8 @@ public class EmergencyServer {
 
     private Integer serverPort;
 
+    private Integer serverMemory;
+
     private String havePassword;
 
     private String passwordMode;
@@ -91,6 +93,14 @@ public class EmergencyServer {
 
     public void setServerPort(Integer serverPort) {
         this.serverPort = serverPort;
+    }
+
+    public Integer getServerMemory() {
+        return serverMemory;
+    }
+
+    public void setServerMemory(Integer serverMemory) {
+        this.serverMemory = serverMemory;
     }
 
     public String getHavePassword() {

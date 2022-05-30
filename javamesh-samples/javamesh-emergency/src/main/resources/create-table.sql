@@ -261,6 +261,7 @@ CREATE TABLE IF NOT EXISTS `emergency_server`
     `server_user`   varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT 'root' COMMENT '服务器用户',
     `server_ip`     varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '服务器IP',
     `server_port`   int(5)                                                  NOT NULL DEFAULT 22 COMMENT '服务器端口',
+    `server_memory` int(11)                                                 NULL     DEFAULT NULL COMMENT '服务器内存',
     `have_password` varchar(1) CHARACTER SET utf8 COLLATE utf8_general_ci   NOT NULL COMMENT '有无密码 0:无密码,1:有密码',
     `password_mode` varchar(1) CHARACTER SET utf8 COLLATE utf8_general_ci   NULL     DEFAULT NULL COMMENT '密码获取方式 0:本地,1:平台',
     `password_uri`  varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL     DEFAULT NULL COMMENT '密码平台地址',
