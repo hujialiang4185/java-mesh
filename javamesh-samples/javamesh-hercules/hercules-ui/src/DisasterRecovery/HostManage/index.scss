@@ -49,6 +49,9 @@
 .AddHost {
     .Line {
         display: flex;
+        &>div {
+            flex: 1;
+        }
     }
     .Buttons {
         text-align: center;

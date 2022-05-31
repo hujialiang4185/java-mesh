@@ -16,6 +16,13 @@ li {
   max-width: 99%;
 }
 
+.Buttons {
+  text-align: center;
+  button + button {
+      margin-left: 10px;
+  }
+}
+
 .ant-form-item-label>label::after {
   content: "";
 }

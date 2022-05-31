@@ -2,7 +2,7 @@ import { Button, Form, Input, InputNumber, message, Modal, Radio, Table } from "
 import React, { Key, useContext, useEffect, useRef, useState } from "react"
 import Breadcrumb from "../../component/Breadcrumb"
 import Card from "../../component/Card"
-import { SearchOutlined, PlusOutlined, ExclamationCircleOutlined, CloseOutlined, ArrowDownOutlined } from '@ant-design/icons'
+import { SearchOutlined, PlusOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
 import "./index.scss"
 import ServiceSelect from "../../component/ServiceSelect"
 import axios from "axios"
@@ -10,13 +10,13 @@ import { useForm } from "antd/lib/form/Form"
 import { debounce } from "lodash"
 import socket from "../socket"
 import Context from "../../ContextProvider"
+import Editor from "@monaco-editor/react"
 
-type Data = { server_id: string, status: string, status_label: string }
+type Data = { server_id: string, agent_status: string, agent_status_label: string, agent_type: string, agent_id: string }
 
 export default function App() {
     let submit = false
     const [data, setData] = useState<{ data: Data[], total: number }>({ data: [], total: 0 })
-    const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
     const [loading, setLoading] = useState(false)
     const stateRef = useRef<any>({})
     const keysRef = useRef<Key[]>([])
@@ -34,7 +34,7 @@ export default function App() {
             }
             const res = await axios.get("/argus-emergency/api/host", { params })
             setData(res.data)
-            setSelectedRowKeys([])
+            // setSelectedRowKeys([])
             // 需要监听的任务列表
             keysRef.current = res.data.data.map(function (item: Data) {
                 return "/host/" + item.server_id
@@ -64,13 +64,13 @@ export default function App() {
         })
         submit = false
     }
-    async function batchStop(selectedRowKeys: React.Key[]) {
+    async function batchInstall(selectedRowKeys: React.Key[]) {
         if (submit) return
         submit = true
         Modal.confirm({
             title: '是否安装?',
             icon: <ExclamationCircleOutlined />,
-            content: '将批量安装代理, 请谨慎操作',
+            content: '将执行安装代理, 请谨慎操作',
             okType: 'danger',
             async onOk() {
                 try {
@@ -100,27 +100,15 @@ export default function App() {
         }
     }, [])
     const statusMap = new Map<string, string>()
-    statusMap.set("running", "#1A99FE")
-    statusMap.set("pending", "#8090B0")
-    statusMap.set("success", "#2BBF2A")
-    statusMap.set("fail", "#FF4E4E")
+    statusMap.set("PROGRESSING", "#1A99FE")
+    statusMap.set("INACTIVE", "#8090B0")
+    statusMap.set("READY", "#2BBF2A")
+    statusMap.set("ERROR", "#FF4E4E")
     return <div className="HostManage">
         <Breadcrumb label="引擎管理" />
         <Card>
             <div className="ToolBar">
                 <AddHost load={load} />
-                <Button disabled={!auth.includes("operator")} icon={<ArrowDownOutlined />} onClick={function () {
-                    if (selectedRowKeys.length === 0) {
-                        return
-                    }
-                    batchStop(selectedRowKeys)
-                }}>批量安装代理</Button>
-                <Button disabled={!auth.includes("operator")} icon={<CloseOutlined />} onClick={function () {
-                    if (selectedRowKeys.length === 0) {
-                        return
-                    }
-                    batchDelete(selectedRowKeys)
-                }}>批量删除</Button>
                 <div className="Space"></div>
                 <Form layout="inline" onFinish={function (values) {
                     stateRef.current.search = values
@@ -132,8 +120,7 @@ export default function App() {
                     <Button htmlType="submit" icon={<SearchOutlined />}>查找</Button>
                 </Form>
             </div>
-            <Table size="middle" rowKey="server_id" loading={loading} dataSource={data.data}
-                rowSelection={{ selectedRowKeys, onChange(selectedRowKeys) { setSelectedRowKeys(selectedRowKeys) } }}
+            <Table size="middle" rowKey="id" loading={loading} dataSource={data.data}
                 pagination={{ total: data.total, size: "small", showTotal() { return `共 ${data.total} 条` }, showSizeChanger: true }}
                 onChange={function (pagination, filters, sorter) {
                     stateRef.current = { ...stateRef.current, pagination, filters, sorter }
@@ -142,11 +129,11 @@ export default function App() {
                 columns={[
                     {
                         title: "状态",
-                        dataIndex: "status",
+                        dataIndex: "agent_status",
                         render(_, record) {
-                            return <div title={record.status_label}>
+                            return <div title={record.agent_status_label}>
                                 <span className="icon md"
-                                    style={{ fontSize: 24, color: statusMap.get(record.status) }}>lightbulb_outline</span>
+                                    style={{ fontSize: 24, color: statusMap.get(record.agent_status) }}>lightbulb_outline</span>
                             </div>
                         },
                         align: "center",
@@ -154,15 +141,10 @@ export default function App() {
                         sorter: true,
                         ellipsis: true
                     },
-                    { ellipsis: true, title: "引擎名称", dataIndex: "server_name" },
-                    { ellipsis: true, title: "服务器IP", dataIndex: "server_ip" },
-                    { ellipsis: true, title: "SSH用户", dataIndex: "server_user" },
-                    { ellipsis: true, title: "有无密码", dataIndex: "have_password" },
-                    { ellipsis: true, title: "密码获取", dataIndex: "password_mode" },
-                    { ellipsis: true, title: "Agent端口", dataIndex: "agent_port" },
                     {
-                        title: "许可(单击切换)",
+                        title: "许可(单击可切换)",
                         dataIndex: "licensed",
+                        align: "center",
                         width: 200,
                         render(licensed, record) {
                             if (licensed === undefined) return null
@@ -183,11 +165,70 @@ export default function App() {
                             </span>
                         }
                     },
+                    { ellipsis: true, title: "服务器名称", dataIndex: "server_name" },
+                    { ellipsis: true, title: "服务器IP", dataIndex: "server_ip" },
+                    { ellipsis: true, title: "服务器内存(MB)", dataIndex: "server_memory" },
+                    { ellipsis: true, title: "SSH用户", dataIndex: "server_user" },
+                    { ellipsis: true, title: "有无密码", dataIndex: "have_password" },
+                    { ellipsis: true, title: "密码获取", dataIndex: "password_mode" },
+                    { ellipsis: true, title: "Agent名称", dataIndex: "agent_name" },
+                    { ellipsis: true, title: "Agent端口", dataIndex: "agent_port" },
+                    { ellipsis: true, title: "Agent类型", dataIndex: "agent_type_label" },
                     { ellipsis: true, title: "分组", dataIndex: "group_name" },
+                    {
+                        title: "操作", width: 150, dataIndex: "server_id", render(server_id, record) {
+                            return <>
+                                {auth.includes("operator") && <Button type="link" size="small" onClick={function () {
+                                    batchDelete([server_id])
+                                }}>删除</Button>}
+                                {auth.includes("operator") && record.agent_type === "gui" && <ConfigHost agent_id={record.agent_id}/>}
+                                {auth.includes("operator") && !record.agent_type && <Button type="link" size="small" onClick={function () {
+                                    batchInstall([server_id])
+                                }}>安装Agent</Button>}
+                            </>
+                        }
+                    }
                 ]}
             />
         </Card>
     </div>
+}
+
+function ConfigHost(props: {agent_id: string}) {
+    const [isModalVisible, setIsModalVisible] = useState(false)
+    const [form] = Form.useForm()
+    return <>
+        <Button type="link" size="small" onClick={async function () {
+            try {
+                const res = await axios.get("/argus-emergency/api/host/agent_config", {params: {agent_id: props.agent_id}})
+                form.setFieldsValue(res.data.data)
+                setIsModalVisible(true)
+            } catch (error: any) {
+                message.error(error.message)
+            }
+            
+        }}>修改配置</Button>
+        <Modal className="ConfigHost" title="修改配置" visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () { setIsModalVisible(false) }}>
+            <Form form={form} onFinish={async function (value) {
+                try {
+                    JSON.parse(value.agent_config)
+                    await axios.post("/argus-emergency/api/host/agent_config", {agent_id: props.agent_id, agent_config: value.agent_config})
+                } catch (error: any) {
+                    message.error(error.message)
+                }
+            }}>
+                <Form.Item label="脚本内容" className="Editor WithoutLabel" name="agent_config">
+                    <Editor language="json" height={450} />
+                </Form.Item>
+                <Form.Item className="Buttons">
+                    <Button className="Save" htmlType="submit" type="primary">提交</Button>
+                    <Button onClick={function () {
+                        setIsModalVisible(false)
+                    }}>取消</Button>
+                </Form.Item>
+            </Form>
+        </Modal>
+    </>
 }
 
 function AddHost(props: { load: () => void }) {
@@ -197,9 +238,9 @@ function AddHost(props: { load: () => void }) {
     const [form] = useForm()
     const { auth } = useContext(Context)
     return <>
-        <Button disabled={!auth.includes("operator")} type="primary" icon={<PlusOutlined />} onClick={function () { setIsModalVisible(true) }}>添加引擎</Button>
-        <Modal className="AddHost" title="添加引擎" visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () { setIsModalVisible(false) }}>
-            <Form form={form}  labelCol={{ span: 4 }}
+        <Button disabled={!auth.includes("operator")} type="primary" icon={<PlusOutlined />} onClick={function () { setIsModalVisible(true) }}>添加服务器</Button>
+        <Modal className="AddHost" title="添加服务器" width={700} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () { setIsModalVisible(false) }}>
+            <Form form={form} labelCol={{ span: 4 }}
                 initialValues={{ have_password: "无", password_mode: "本地", server_port: 22 }}
                 onFinish={async function (values) {
                     try {
@@ -215,9 +256,14 @@ function AddHost(props: { load: () => void }) {
                     }
                 }}
             >
-                <Form.Item name="server_name" label="引擎名称" rules={[{ required: true, max: 32 }]}>
-                    <Input />
-                </Form.Item>
+                <div className="Line">
+                    <Form.Item labelCol={{ span: 8 }} name="server_name" label="服务器名称" rules={[{ required: true, max: 32 }]}>
+                        <Input />
+                    </Form.Item>
+                    <Form.Item labelCol={{ span: 8 }} name="server_memory" label="内存大小(MB)" rules={[{ type: "integer" }]}>
+                        <InputNumber min={0} />
+                    </Form.Item>
+                </div>
                 <div className="Line">
                     <Form.Item labelCol={{ span: 8 }} name="server_ip" label="服务器IP" rules={[{
                         required: true,
@@ -226,7 +272,7 @@ function AddHost(props: { load: () => void }) {
                     }]}>
                         <Input />
                     </Form.Item>
-                    <Form.Item labelCol={{ span: 6 }} name="server_port" label="端口" rules={[{ type: "integer", required: true }]}>
+                    <Form.Item labelCol={{ span: 8 }} name="server_port" label="端口" rules={[{ type: "integer", required: true }]}>
                         <InputNumber min={0} max={65535} />
                     </Form.Item>
                 </div>

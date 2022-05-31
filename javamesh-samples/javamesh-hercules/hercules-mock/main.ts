@@ -962,19 +962,35 @@ app.get("/argus-emergency/api/history/scenario/task/log", function (req, res) {
 })
 const hosts = Array.from({ length: 101 }, function (_, index) {
     return {
-        status: ["running", "pending", "success", "fail"][index % 4],
-        status_label: ["运行中", "准备中", "成功", "失败"][index % 4],
+        id: index,
+        agent_status: ["INACTIVE","READY","PROGRESSING","ERROR"][index % 4],
+        agent_status_label: ["失效", "正常", "运行中", "失败"][index % 4],
         server_id: String(index),
         server_name: "服务名称" + index,
         server_ip: "192.168.0.1",
+        server_memory: "512",
         server_user: "root",
         have_password: "有",
         password_mode: "本地",
+        agent_name: "代理名称",
         agent_port: "19001",
+        agent_type: ["gui", "normal", null][index % 3],
+        agent_type_label: ["GUI", "NORMAL", ""][index % 3],
         licensed: false,
+        agent_id: index,
         group_id: 1,
         group_name: "分组1"
     }
+})
+app.get("/argus-emergency/api/host/agent_config", function (req, res) {
+    res.json({
+        data: {
+            agent_config: 
+`{
+    "a": "a"
+}`
+        }
+    });
 })
 app.get("/argus-emergency/api/host", function (req, res) {
     const excludes = req.query.excludes as string[]
