@@ -208,7 +208,7 @@ function ConfigHost(props: {agent_id: string}) {
             }
             
         }}>修改配置</Button>
-        <Modal className="ConfigHost" title="修改配置" visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () { setIsModalVisible(false) }}>
+        <Modal className="ConfigHost" width={750} title="修改配置" visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () { setIsModalVisible(false) }}>
             <Form form={form} onFinish={async function (value) {
                 try {
                     JSON.parse(value.agent_config)
@@ -239,7 +239,7 @@ function AddHost(props: { load: () => void }) {
     const { auth } = useContext(Context)
     return <>
         <Button disabled={!auth.includes("operator")} type="primary" icon={<PlusOutlined />} onClick={function () { setIsModalVisible(true) }}>添加服务器</Button>
-        <Modal className="AddHost" title="添加服务器" width={700} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () { setIsModalVisible(false) }}>
+        <Modal className="AddHost" title="添加服务器" width={750} visible={isModalVisible} maskClosable={false} footer={null} onCancel={function () { setIsModalVisible(false) }}>
             <Form form={form} labelCol={{ span: 4 }}
                 initialValues={{ have_password: "无", password_mode: "本地", server_port: 22 }}
                 onFinish={async function (values) {
