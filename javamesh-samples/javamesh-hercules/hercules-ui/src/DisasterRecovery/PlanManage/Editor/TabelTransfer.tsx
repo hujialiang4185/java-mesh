@@ -22,10 +22,10 @@ export default function App(props: { onChange?: (value: Data[]) => void, value?:
             order: stateRef.current.sorter?.order,
             ...stateRef.current.search,
             ...stateRef.current.filters,
-            excludes: stateRef.current.excludes
+            // excludes: stateRef.current.excludes
         }
         try {
-            const res = await axios.get("/api/host/agent_active/"+props.type, { params })
+            const res = await axios.get("/argus-emergency/api/host/agent_active/"+props.type, { params })
             setLeftData(res.data)
             setLeftSelectedRowKeys([])
             setRightSelectedRowKeys([])
@@ -37,10 +37,10 @@ export default function App(props: { onChange?: (value: Data[]) => void, value?:
     useEffect(function () {
         load()
     }, [load])
-    const debounceRef = useRef(debounce(load, 1000))
+    const debounceRef = useRef(debounce(load, 100))
     return <Transfer className="TabelTransfer" showSearch showSelectAll={false}
-        onSearch={function (_, server_name) {
-            stateRef.current.search = { server_name }
+        onSearch={function (_, agent_name) {
+            stateRef.current.search = { agent_name }
             debounceRef.current()
         }}
         onChange={function (_, direction, moveKeys) {
@@ -58,9 +58,11 @@ export default function App(props: { onChange?: (value: Data[]) => void, value?:
             }
             setRightData(rightDataNew)
             props.onChange?.(rightDataNew)
-            const rightKeys = rightDataNew.map(function (item) { return item.agent_id })
-            stateRef.current.excludes = rightKeys
-            load()
+            setLeftSelectedRowKeys([])
+            setRightSelectedRowKeys([])
+            // const rightKeys = rightDataNew.map(function (item) { return item.agent_id })
+            // stateRef.current.excludes = rightKeys
+            // load()
         }}
     >{function (props) {
         const columns = [
@@ -85,6 +87,13 @@ export default function App(props: { onChange?: (value: Data[]) => void, value?:
                         props.onItemSelectAll(leftSelectedRowKeys as string[], false)
                         setLeftSelectedRowKeys(selectedRowKeys)
                         props.onItemSelectAll(selectedRowKeys as string[], true)
+                    },
+                    getCheckboxProps(record) {
+                        return {
+                            disabled: rightData.some(function(item){
+                                return item.agent_id === record.agent_id
+                            }),
+                        }
                     }
                 }}
                 columns={columns}

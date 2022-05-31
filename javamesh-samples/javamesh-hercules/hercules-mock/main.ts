@@ -993,16 +993,17 @@ app.get("/argus-emergency/api/host/agent_config", function (req, res) {
     });
 })
 function hostList(req: any, res: any) {
-    const excludes = req.query.excludes as string[]
-    const server_name = req.query.server_name as string
+    // const excludes = req.query.excludes as string[]
+    const agent_name = req.query.agent_name as string
     const pageSize = Number(req.query.pageSize)
     const end = Number(req.query.current || 1) * pageSize
-    let data = hosts.filter(function (item) {
-        return !excludes?.includes(item.server_id)
-    })
-    if (server_name) {
-        data = data.filter(function(item) {
-            return item.server_name.includes(server_name)
+    // let data = hosts.filter(function (item) {
+    //     return !excludes?.includes(item.server_id)
+    // })
+    let data = hosts
+    if (agent_name) {
+        data = hosts.filter(function(item) {
+            return item.server_name.includes(agent_name)
         })
     }
     res.json({
@@ -1010,8 +1011,8 @@ function hostList(req: any, res: any) {
         total: data.length
     })
 }
-app.get("/api/host/agent_active/gui", hostList)
-app.get("/api/host/agent_active/normal", hostList)
+app.get("/argus-emergency/api/host/agent_active/gui", hostList)
+app.get("/argus-emergency/api/host/agent_active/normal", hostList)
 app.get("/argus-emergency/api/host", hostList)
 app.get("/argus-emergency/api/host/search", function (req, res) {
     res.json({
