@@ -56,12 +56,11 @@ public interface EmergencyServerMapper {
 
     int updateByPrimaryKey(EmergencyServer record);
 
-    List<ServerAgentInfoDTO> selectByKeyword(String groupName,
-        @Param("server") EmergencyServer server,
-        @Param("keyword") String keyword,
+    List<ServerAgentInfoDTO> selectByKeyword(
+        @Param("server") ServerAgentInfoDTO server,
+        @Param("nameOrIp") String nameOrIp,
         @Param("excludeServerIds") int[] excludeServerIds,
-        @Param("includeAgentIds") int[] includeAgentIds,
-        @Param("agentType") String agentType);
+        @Param("includeAgentIds") int[] includeAgentIds);
 
     List<Integer> selectAgentIdsByServerIds(@Param("allServerIds") List<String> allServerIds);
 }

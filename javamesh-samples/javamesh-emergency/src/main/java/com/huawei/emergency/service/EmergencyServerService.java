@@ -7,6 +7,7 @@ package com.huawei.emergency.service;
 import com.huawei.common.api.CommonPage;
 import com.huawei.common.api.CommonResult;
 import com.huawei.emergency.dto.AgentConfigDTO;
+import com.huawei.emergency.dto.ServerAgentInfoDTO;
 import com.huawei.emergency.entity.EmergencyAgentConfig;
 import com.huawei.emergency.entity.EmergencyServer;
 
@@ -33,8 +34,8 @@ public interface EmergencyServerService extends EmergencyCommonService<Emergency
      * @param params
      * @return
      */
-    CommonResult queryServerInfo(String groupName, CommonPage<EmergencyServer> params, String keyword,
-        int[] excludeServerIds, int[] includeAgentIds, String agentType);
+    CommonResult queryServerInfo(CommonPage<ServerAgentInfoDTO> params, String nameOrIp,
+        int[] excludeServerIds, int[] includeAgentIds);
 
     CommonResult search(String groupName, String serverName);
 
@@ -70,11 +71,10 @@ public interface EmergencyServerService extends EmergencyCommonService<Emergency
      * agentType agent类型 gui / normal
      *
      * @param params 请求分页参数
-     * @param agentType agent类型 normal / gui
      * @param excludeAgentIds 排除的id
-     * @param agentName agent名称或者IP
+     * @param nameOrIp agent名称或者IP
      * @return
      */
-    CommonResult getActiveAgent(CommonPage<EmergencyServer> params, String agentType, int[] excludeAgentIds,
-        String agentName);
+    CommonResult getActiveAgent(CommonPage<ServerAgentInfoDTO> params, int[] excludeAgentIds,
+        String nameOrIp);
 }

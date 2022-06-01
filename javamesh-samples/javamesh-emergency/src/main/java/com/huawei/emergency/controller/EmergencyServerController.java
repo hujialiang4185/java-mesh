@@ -18,6 +18,7 @@ package com.huawei.emergency.controller;
 
 import com.huawei.common.api.CommonPage;
 import com.huawei.common.api.CommonResult;
+import com.huawei.emergency.dto.ServerAgentInfoDTO;
 import com.huawei.emergency.dto.ServerDto;
 import com.huawei.emergency.entity.EmergencyAgentConfig;
 import com.huawei.emergency.entity.EmergencyServer;
@@ -34,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -118,7 +120,7 @@ public class EmergencyServerController {
         operationType = OperationTypeEnum.SELECT,
         operationDetails = OperationDetails.QUERY_SERVER_INFO)
     public CommonResult queryServerInfo(UsernamePasswordAuthenticationToken authentication,
-        @RequestParam(value = "keywords", required = false) String keyword,
+        @RequestParam(value = "keywords", required = false) String nameOrIp,
         @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
         @RequestParam(value = "current", defaultValue = "1") int current,
         @RequestParam(value = "sorter", defaultValue = "create_time") String sorter,
@@ -127,7 +129,7 @@ public class EmergencyServerController {
         @RequestParam(value = "excludes[]", required = false) int[] excludeServerIds,
         @RequestParam(value = "includes[]", required = false) int[] includeAgentIds,
         @RequestParam(value = "type", required = false) String agentType) {
-        CommonPage<EmergencyServer> params = new CommonPage<>();
+        CommonPage<ServerAgentInfoDTO> params = new CommonPage<>();
         params.setPageSize(pageSize);
         params.setPageIndex(current);
         params.setSortField(sorter);
@@ -136,24 +138,29 @@ public class EmergencyServerController {
         } else if ("descend".equals(order)) {
             params.setSortType("DESC");
         }
-        EmergencyServer server = new EmergencyServer();
-        server.setServerName(serverName);
-        params.setObject(server);
-        return serverService.queryServerInfo(((JwtUser) authentication.getPrincipal()).getGroupName(), params, keyword,
-            excludeServerIds, includeAgentIds, agentType);
+        params.setObject(new ServerAgentInfoDTO());
+        params.getObject().setServerName(serverName);
+        params.getObject().setServerGroup(((JwtUser) authentication.getPrincipal()).getGroupName());
+        params.getObject().setAgentType(agentType);
+        return serverService.queryServerInfo(params, nameOrIp,
+            excludeServerIds, includeAgentIds);
     }
 
     @GetMapping("/agent_active/{agent_type}")
-    public CommonResult getActiveAgent(@PathVariable("agent_type") String agentType,
+    public CommonResult getActiveAgent(
+        @PathVariable("agent_type") String agentType,
         @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
         @RequestParam(value = "current", defaultValue = "1") int current,
         @RequestParam(value = "excludes[]", required = false) int[] excludeAgentIds,
-        @RequestParam(value = "agent_name", required = false) String agentName) {
-        CommonPage<EmergencyServer> params = new CommonPage<>();
+        @RequestParam(value = "agent_name", required = false) String nameOrIp) {
+        CommonPage<ServerAgentInfoDTO> params = new CommonPage<>();
         params.setPageSize(pageSize);
         params.setPageIndex(current);
-        params.setObject(new EmergencyServer());
-        return serverService.getActiveAgent(params, agentType, excludeAgentIds, agentName);
+        params.setObject(new ServerAgentInfoDTO());
+        params.getObject().setGroupName(
+            ((JwtUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getGroupName());
+        params.getObject().setAgentType(agentType);
+        return serverService.getActiveAgent(params, excludeAgentIds, nameOrIp);
     }
 
     @GetMapping("/agent_config")

@@ -39,4 +39,5 @@ public class ServerAgentInfoDTO extends EmergencyServer {
     private String agentTypeLabel;
     private String statusLabel;
     private String groupName;
+    private String filterActive;
 }

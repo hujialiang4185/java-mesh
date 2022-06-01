@@ -521,12 +521,13 @@
         ) agent_table ON server_table.server_ip = agent_table.agent_ip
         WHERE
         server_table.is_valid = '1'
-        <if test="groupName != null and groupName != ''">
-            and server_group = #{groupName}
+        <if test="server != null and server.serverGroup != null and server.serverGroup != ''">
+            and server_group = #{server.serverGroup}
         </if>
-        <if test="keyword !=null and keyword != ''">
-            and (locate(#{keyword},server_table.server_name) &gt; 0 or locate(#{keyword},server_table.server_ip) &gt; 0
-            or locate(#{keyword},agent_table.agent_name) &gt; 0)
+        <if test="nameOrIp !=null and nameOrIp != ''">
+            and (locate(#{nameOrIp},server_table.server_name) &gt; 0 or locate(#{nameOrIp},server_table.server_ip) &gt;
+            0
+            or locate(#{nameOrIp},agent_table.agent_name) &gt; 0)
         </if>
         <if test="server !=null and server.serverName != null and server.serverName != ''">
             and locate(#{server.serverName},server_table.server_name) &gt; 0
@@ -537,8 +538,11 @@
                 #{serverId}
             </foreach>
         </if>
-        <if test="agentType != null and agentType != ''">
-            and agent_type = #{agentType}
+        <if test="server != null and server.agentType != null and server.agentType != ''">
+            and agent_type = #{server.agentType}
+        </if>
+        <if test="server != null and server.filterActive != null and server.filterActive != ''">
+            and agent_status != 'INACTIVE'
         </if>
         <if test=" includeAgentIds != null and includeAgentIds.length &gt; 0">
             and agent_id in

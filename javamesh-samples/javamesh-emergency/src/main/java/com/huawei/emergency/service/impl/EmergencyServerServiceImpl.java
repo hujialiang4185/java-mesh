@@ -16,7 +16,6 @@ import com.huawei.emergency.entity.EmergencyAgentExample;
 import com.huawei.emergency.entity.EmergencyAgentExample.Criteria;
 import com.huawei.emergency.entity.EmergencyServer;
 import com.huawei.emergency.entity.EmergencyServerExample;
-import com.huawei.emergency.entity.JwtUser;
 import com.huawei.emergency.mapper.EmergencyAgentConfigMapper;
 import com.huawei.emergency.mapper.EmergencyAgentMapper;
 import com.huawei.emergency.mapper.EmergencyServerMapper;
@@ -42,7 +41,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -173,14 +171,14 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
     }
 
     @Override
-    public CommonResult queryServerInfo(String groupName, CommonPage<EmergencyServer> params, String keyword,
-        int[] excludeServerIds, int[] includeAgentIds, String agentType) {
+    public CommonResult queryServerInfo(CommonPage<ServerAgentInfoDTO> params, String nameOrIp,
+        int[] excludeServerIds, int[] includeAgentIds) {
         Page<ServerAgentInfoDTO> pageInfo = PageHelper
             .startPage(params.getPageIndex(), params.getPageSize(), StringUtils.isEmpty(params.getSortType()) ? ""
                 : params.getSortField() + System.lineSeparator() + params.getSortType())
             .doSelectPage(() -> {
-                serverMapper.selectByKeyword(groupName, params.getObject(), keyword, excludeServerIds,
-                    includeAgentIds, agentType);
+                serverMapper.selectByKeyword(params.getObject(), nameOrIp, excludeServerIds,
+                    includeAgentIds);
             });
         List<ServerAgentInfoDTO> result = pageInfo.getResult();
         return CommonResult.success(result, (int) pageInfo.getTotal());
@@ -188,9 +186,10 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
 
     @Override
     public CommonResult search(String groupName, String serverName) {
-        EmergencyServer server = new EmergencyServer();
+        ServerAgentInfoDTO server = new ServerAgentInfoDTO();
         server.setServerName(serverName);
-        Object[] objects = serverMapper.selectByKeyword(groupName, server, null, null, null, "").stream()
+        server.setServerGroup(groupName);
+        Object[] objects = serverMapper.selectByKeyword(server, null, null, null).stream()
             .map(EmergencyServer::getServerName)
             .toArray();
         return CommonResult.success(objects, objects.length);
@@ -288,10 +287,10 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
     }
 
     @Override
-    public CommonResult getActiveAgent(CommonPage<EmergencyServer> params, String agentType, int[] excludeAgentIds,
-        String agentName) {
-        JwtUser userInfo = (JwtUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return queryServerInfo(userInfo.getGroupName(), params, agentName, excludeAgentIds, null, agentType);
+    public CommonResult getActiveAgent(CommonPage<ServerAgentInfoDTO> params, int[] excludeAgentIds,
+        String nameOrIp) {
+        params.getObject().setFilterActive(Boolean.TRUE.toString());
+        return queryServerInfo(params, nameOrIp, excludeAgentIds, null);
     }
 
     private List<ServerAgentInfoDTO> getActiveGrinderAgent() {

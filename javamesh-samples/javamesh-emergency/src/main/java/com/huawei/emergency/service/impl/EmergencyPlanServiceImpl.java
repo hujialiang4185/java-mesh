@@ -537,14 +537,17 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
 
     public List<ServerAgentInfoDTO> queryAgent(String agentIds, TaskTypeEnum taskTypeEnum) {
         int[] includeAgentIds = Arrays.stream(agentIds.split(",")).mapToInt(Integer::valueOf).toArray();
+        ServerAgentInfoDTO queryCondition = new ServerAgentInfoDTO();
         if (taskTypeEnum == TaskTypeEnum.COMMAND) {
-            return serverMapper.selectByKeyword(null, new EmergencyServer(), null,
+            queryCondition.setAgentType("normal");
+            return serverMapper.selectByKeyword(queryCondition, null,
                 null,
-                includeAgentIds, "normal");
+                includeAgentIds);
         } else if (taskTypeEnum == TaskTypeEnum.CUSTOM) {
-            return serverMapper.selectByKeyword(null, new EmergencyServer(), null,
+            queryCondition.setAgentType("gui");
+            return serverMapper.selectByKeyword(queryCondition, null,
                 null,
-                includeAgentIds, "gui");
+                includeAgentIds);
         }
         return Collections.emptyList();
     }
