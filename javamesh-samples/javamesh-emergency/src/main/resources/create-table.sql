@@ -360,7 +360,8 @@ CREATE TABLE IF NOT EXISTS `emergency_agent`
     `agent_name`   varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT 'agent名称',
     `agent_ip`     varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT 'IP',
     `agent_port`   int(5)                                                  NOT NULL COMMENT 'port',
-    `agent_status` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '0' COMMENT 'agent状态  INACTIVE,READY,BUSY',
+    `agent_status` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '0' COMMENT 'agent状态
+INACTIVE,READY,PROGRESSING,ERROR',
     `is_valid`     varchar(1) CHARACTER SET utf8 COLLATE utf8_general_ci   NOT NULL DEFAULT '1' COMMENT '是否生效 0失效 1生效',
     PRIMARY KEY
         (

@@ -349,21 +349,21 @@ public class ExecRecordHandlerFactory {
             recordDetailMapper.insertSelective(recordDetail);
             return Arrays.asList(recordDetail);
         }
-        if (StringUtils.isEmpty(record.getServerId())) {
+        if (StringUtils.isEmpty(record.getServerId()) && StringUtils.isEmpty(record.getAgentIds())) {
             LOGGER.warn("The server list is empty. recordId={}", record.getRecordId());
             throw new ApiException("未选择执行的agent");
         }
         try {
-            List<Integer> serverIdList = Arrays.stream(record.getServerId().split(SPLIT_SIGN))
-                .map(Integer::valueOf)
-                .collect(Collectors.toList());
-            EmergencyServerExample allServerExample = new EmergencyServerExample();
-            allServerExample.createCriteria()
-                .andServerIdIn(serverIdList)
-                .andIsValidEqualTo(ValidEnum.VALID.getValue());
-            List<EmergencyServer> serverList = filterServer(serverMapper.selectByExample(allServerExample));
-            if (serverList.size() == 0) {
-                throw new ApiException("选择的agent服务器不可用");
+            List<EmergencyServer> serverList = new ArrayList<>();
+            if (StringUtils.isNotEmpty(record.getServerId())) {
+                List<Integer> serverIdList = Arrays.stream(record.getServerId().split(SPLIT_SIGN))
+                    .map(Integer::valueOf)
+                    .collect(Collectors.toList());
+                EmergencyServerExample allServerExample = new EmergencyServerExample();
+                allServerExample.createCriteria()
+                    .andServerIdIn(serverIdList)
+                    .andIsValidEqualTo(ValidEnum.VALID.getValue());
+                serverList = filterServer(serverMapper.selectByExample(allServerExample));
             }
             return record.getPerfTestId() == null ? createNormalRecordDetail(record, serverList)
                 : createPerfTestRecordDetail(record, serverList);
@@ -430,7 +430,6 @@ public class ExecRecordHandlerFactory {
         recordDetail.setStatus(RecordStatus.PENDING.getValue());
         if (record.getPerfTestId() != null) { // 如果是自定义脚本压测，根据此压测模板生成压测任务
             PerfTest perfTest = planService.copyPerfTestByTestId(record.getPerfTestId());
-            perfTest.setAgentCount(serverList.size());
             if (StringUtils.isNotEmpty(record.getAgentIds())) {
                 perfTest.setAgentIds(record.getAgentIds());
             } else {
@@ -614,6 +613,9 @@ public class ExecRecordHandlerFactory {
             }
             try {
                 List<EmergencyExecRecordDetail> emergencyExecRecordDetails = generateRecordDetail(record);
+                if (emergencyExecRecordDetails.size() == 0) {
+                    throw new ApiException("选择的agent不可用");
+                }
                 if (RecordStatus.CANCEL.getValue().equals(record.getStatus())) {
                     emergencyExecRecordDetails.forEach(recordDetail -> {
                         recordDetail.setStatus(RecordStatus.CANCEL.getValue());

@@ -37,7 +37,13 @@ public enum AgentStatusEnum {
     /**
      * 运行状态
      */
-    PROGRESSING("BUSY", "PROGRESSING");
+    PROGRESSING("PROGRESSING", "PROGRESSING"),
+
+    /**
+     * 错误状态
+     */
+    ERROR("ERROR", "ERROR");
+
     private String value;
     private String desc;
 

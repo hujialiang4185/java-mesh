@@ -6,6 +6,8 @@ package com.huawei.emergency.service;
 
 import com.huawei.common.api.CommonPage;
 import com.huawei.common.api.CommonResult;
+import com.huawei.emergency.dto.AgentConfigDTO;
+import com.huawei.emergency.entity.EmergencyAgentConfig;
 import com.huawei.emergency.entity.EmergencyServer;
 
 import java.util.List;
@@ -47,4 +49,31 @@ public interface EmergencyServerService extends EmergencyCommonService<Emergency
      * @return
      */
     CommonResult install(List<Integer> serverIds);
+
+    /**
+     * 保存agent的启动配置
+     *
+     * @param agentConfigDto {@link AgentConfigDTO agentConfigDto}
+     * @return {@link CommonResult}
+     */
+    CommonResult saveAgentConfig(EmergencyAgentConfig config);
+
+    /**
+     * 查询agent的启动配置
+     *
+     * @param agentId agent id
+     * @return {@link CommonResult}
+     */
+    CommonResult queryAgentConfig(int agentId);
+
+    /**
+     * agentType agent类型 gui / normal
+     *
+     * @param params 请求分页参数
+     * @param agentType agent类型 normal / gui
+     * @param excludeAgentIds 排除的id
+     * @param agentName agent名称或者IP
+     * @return
+     */
+    CommonResult getActiveAgent(CommonPage params, String agentType, int[] excludeAgentIds, String agentName);
 }

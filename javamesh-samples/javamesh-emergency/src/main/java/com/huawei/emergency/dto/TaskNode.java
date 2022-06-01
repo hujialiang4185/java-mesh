@@ -49,6 +49,7 @@ public class TaskNode {
     private String serverId;
     private String agentIds;
     private List<ServerAgentInfoDTO> serverList;
+    private List<ServerAgentInfoDTO> guiServerList;
     private String submitInfo;
     private String sync;
     private List<TaskNode> children;
@@ -121,7 +122,7 @@ public class TaskNode {
         perfTest.setParam(this.getTestParam());
         perfTest.setUseRampUp(this.isIncreased());
         if (perfTest.getUseRampUp()) {
-            perfTest.setRampUpType("线程".equals(this.getConcurrency()) ? RampUp.THREAD : RampUp.PROCESS);
+            perfTest.setRampUpType("进程".equals(this.getConcurrency()) ? RampUp.PROCESS : RampUp.THREAD);
             perfTest.setRampUpInitCount(this.getInitValue());
             perfTest.setRampUpStep(this.getIncrement());
             perfTest.setRampUpInitSleepTime(this.getInitWait());
@@ -129,6 +130,36 @@ public class TaskNode {
         }
         perfTest.setStatus(Status.SAVED);
         perfTest.setCreatedDate(new Date());
+        return perfTest;
+    }
+
+    public PerfTest parse(PerfTest perfTest) {
+        perfTest.setTestName(StringUtils.isEmpty(this.getTestName()) ? this.getTaskName() : this.getTestName());
+        perfTest.setAgentCount(this.getServerList() == null ? 0 : this.getServerList().size());
+        if (this.getVuser() != null) {
+            perfTest.setProcesses(getProcessCount(this.getVuser()));
+            perfTest.setThreads(this.getVuser() / perfTest.getProcesses());
+            perfTest.setVuserPerAgent(this.getVuser());
+        }
+        perfTest.setTagString(StringUtils.join(this.getLabel(), ","));
+        perfTest.setDescription(this.getDesc());
+        perfTest.setTargetHosts(targetHostStr());
+        perfTest.setThreshold("by_time".equals(this.getBasic()) ? "D" : "R");
+        perfTest.setRunCount(this.getByCount());
+        perfTest.setDuration(getDurationTime());
+        perfTest.setIgnoreSampleCount(this.getSamplingIgnore());
+        perfTest.setSamplingInterval(this.getSamplingInterval());
+        perfTest.setSafeDistribution(this.isSafe());
+        perfTest.setParam(this.getTestParam());
+        perfTest.setUseRampUp(this.isIncreased());
+        if (perfTest.getUseRampUp()) {
+            perfTest.setRampUpType("进程".equals(this.getConcurrency()) ? RampUp.PROCESS : RampUp.THREAD);
+            perfTest.setRampUpInitCount(this.getInitValue());
+            perfTest.setRampUpStep(this.getIncrement());
+            perfTest.setRampUpInitSleepTime(this.getInitWait());
+            perfTest.setRampUpIncrementInterval(this.getGrowthInterval());
+        }
+        perfTest.setStatus(Status.SAVED);
         return perfTest;
     }
 

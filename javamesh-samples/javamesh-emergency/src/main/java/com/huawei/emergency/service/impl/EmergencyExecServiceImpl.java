@@ -11,6 +11,7 @@ import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ScriptLanguageEnum;
 import com.huawei.common.constant.ScriptTypeEnum;
 import com.huawei.common.constant.ValidEnum;
+import com.huawei.common.exception.ApiException;
 import com.huawei.emergency.controller.EmergencyPlanController;
 import com.huawei.emergency.dto.PlanQueryDto;
 import com.huawei.emergency.dto.SceneExecDto;
@@ -158,6 +159,9 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
         recordMapper.insertSelective(record);
 
         List<EmergencyExecRecordDetail> emergencyExecRecordDetails = handlerFactory.generateRecordDetail(record);
+        if (emergencyExecRecordDetails.size() == 0) {
+            throw new ApiException("agent不可用");
+        }
         emergencyExecRecordDetails.forEach(recordDetail -> {
             threadPoolExecutor.execute(handlerFactory.handleDetail(record, recordDetail));
         });
@@ -208,6 +212,9 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
         recordMapper.insertSelective(record);
 
         List<EmergencyExecRecordDetail> emergencyExecRecordDetails = handlerFactory.generateRecordDetail(record);
+        if (emergencyExecRecordDetails.size() == 0) {
+            throw new ApiException("agent不可用");
+        }
         emergencyExecRecordDetails.forEach(recordDetail -> {
             threadPoolExecutor.execute(handlerFactory.handleDetail(record, recordDetail));
         });

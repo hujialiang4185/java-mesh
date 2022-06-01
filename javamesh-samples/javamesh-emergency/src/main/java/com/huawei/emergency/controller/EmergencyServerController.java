@@ -19,6 +19,7 @@ package com.huawei.emergency.controller;
 import com.huawei.common.api.CommonPage;
 import com.huawei.common.api.CommonResult;
 import com.huawei.emergency.dto.ServerDto;
+import com.huawei.emergency.entity.EmergencyAgentConfig;
 import com.huawei.emergency.entity.EmergencyServer;
 import com.huawei.emergency.entity.JwtUser;
 import com.huawei.emergency.service.EmergencyServerService;
@@ -35,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -139,5 +141,27 @@ public class EmergencyServerController {
         params.setObject(server);
         return serverService.queryServerInfo(((JwtUser) authentication.getPrincipal()).getGroupName(), params, keyword,
             excludeServerIds, includeAgentIds, agentType);
+    }
+
+    @GetMapping("/agent_active/{agent_type}")
+    public CommonResult getActiveAgent(@PathVariable("agent_type") String agentType,
+        @RequestParam(value = "pageSize", defaultValue = "10") int pageSize,
+        @RequestParam(value = "current", defaultValue = "1") int current,
+        @RequestParam(value = "excludes[]", required = false) int[] excludeAgentIds,
+        @RequestParam(value = "agent_name", required = false) String agentName) {
+        CommonPage<EmergencyServer> params = new CommonPage<>();
+        params.setPageSize(pageSize);
+        params.setPageIndex(current);
+        return serverService.getActiveAgent(params, agentType, excludeAgentIds, agentName);
+    }
+
+    @GetMapping("/agent_config")
+    public CommonResult queryAgentConfig(@RequestParam("agent_id") int agentId) {
+        return serverService.queryAgentConfig(agentId);
+    }
+
+    @PostMapping("/agent_config")
+    public CommonResult saveAgentConfig(@RequestBody EmergencyAgentConfig config) {
+        return serverService.saveAgentConfig(config);
     }
 }

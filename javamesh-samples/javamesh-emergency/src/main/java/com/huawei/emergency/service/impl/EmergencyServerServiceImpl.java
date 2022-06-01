@@ -6,12 +6,18 @@ package com.huawei.emergency.service.impl;
 
 import com.huawei.common.api.CommonPage;
 import com.huawei.common.api.CommonResult;
+import com.huawei.common.constant.AgentStatusEnum;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.common.util.PasswordUtil;
 import com.huawei.common.ws.WebSocketServer;
 import com.huawei.emergency.dto.ServerAgentInfoDTO;
+import com.huawei.emergency.entity.EmergencyAgentConfig;
+import com.huawei.emergency.entity.EmergencyAgentExample;
+import com.huawei.emergency.entity.EmergencyAgentExample.Criteria;
 import com.huawei.emergency.entity.EmergencyServer;
 import com.huawei.emergency.entity.EmergencyServerExample;
+import com.huawei.emergency.mapper.EmergencyAgentConfigMapper;
+import com.huawei.emergency.mapper.EmergencyAgentMapper;
 import com.huawei.emergency.mapper.EmergencyServerMapper;
 import com.huawei.emergency.service.EmergencyServerService;
 import com.huawei.script.exec.ExecResult;
@@ -19,6 +25,7 @@ import com.huawei.script.exec.executor.RemoteScriptExecutor;
 import com.huawei.script.exec.session.ServerInfo;
 import com.huawei.script.exec.session.ServerSessionFactory;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.jcraft.jsch.JSchException;
@@ -26,8 +33,10 @@ import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 
 import org.apache.commons.lang.StringUtils;
+import org.ngrinder.agent.service.AgentManagerService;
 import org.ngrinder.agent.service.AgentPackageService;
 import org.ngrinder.infra.config.Config;
+import org.ngrinder.model.AgentInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +53,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
@@ -83,6 +93,15 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
 
     @Autowired
     private Config config;
+
+    @Autowired
+    private AgentManagerService agentManagerService;
+
+    @Autowired
+    private EmergencyAgentConfigMapper agentConfigMapper;
+
+    @Autowired
+    private EmergencyAgentMapper agentMapper;
 
     @Override
     public CommonResult<EmergencyServer> add(EmergencyServer server) {
@@ -177,6 +196,9 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
 
     @Override
     public CommonResult license(EmergencyServer server) {
+        if (1 == 1) {
+            return CommonResult.failed("许可修改暂未开放");
+        }
         if (server.getServerId() == null || StringUtils.isEmpty(server.getLicensed())) {
             return CommonResult.failed("请选择主机和许可类型");
         }
@@ -240,6 +262,85 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
             }
         }));
         return CommonResult.success();
+    }
+
+    @Override
+    public CommonResult saveAgentConfig(EmergencyAgentConfig config) {
+        if (config == null || config.getAgentId() == null) {
+            return CommonResult.failed("请选择agent");
+        }
+        EmergencyAgentConfig agentConfig = new EmergencyAgentConfig();
+        agentConfig.setAgentId(config.getAgentId());
+        agentConfig.setAgentConfig(config.getAgentConfig());
+        if (agentConfigMapper.updateByPrimaryKey(agentConfig) == 0) { //
+            agentConfigMapper.insertSelective(agentConfig);
+        }
+        agentManagerService.updateConfig(config.getAgentId().longValue(),
+            JSONObject.parseObject(config.getAgentConfig(), Properties.class));
+        return CommonResult.success();
+    }
+
+    @Override
+    public CommonResult queryAgentConfig(int agentId) {
+        return CommonResult.success(agentConfigMapper.selectByPrimaryKey(agentId));
+    }
+
+    @Override
+    public CommonResult getActiveAgent(CommonPage params, String agentType, int[] excludeAgentIds, String agentName) {
+        List<ServerAgentInfoDTO> agentList = new ArrayList<>();
+        if ("normal".equals(agentType)) {
+            agentList = getActiveShellAgent(agentName);
+        }
+        if ("gui".equals(agentType)) {
+            agentList = getActiveGrinderAgent(agentName);
+        }
+        return CommonResult.success(
+            EmergencyServerServiceImpl.rowBounds(params.getPageIndex(), params.getPageSize(), agentList),
+            agentList.size());
+    }
+
+    private List<ServerAgentInfoDTO> getActiveGrinderAgent(String agentName) {
+        List<AgentInfo> allActive = agentManagerService.getAllActive();
+        return allActive.stream().
+            filter(agent -> {
+                if (StringUtils.isNotEmpty(agentName)) {
+                    if (!agent.getName().contains(agentName)) {
+                        return false;
+                    }
+                }
+                return true;
+            }).
+            map(agent -> {
+                ServerAgentInfoDTO agentInfo = new ServerAgentInfoDTO();
+                agentInfo.setAgentId(agent.getId().intValue());
+                agentInfo.setAgentName(agent.getName());
+                agentInfo.setAgentIp(agent.getIp());
+                agentInfo.setServerIp(agent.getIp());
+                agentInfo.setAgentType("gui");
+                return agentInfo;
+            }).
+            collect(Collectors.toList());
+    }
+
+    private List<ServerAgentInfoDTO> getActiveShellAgent(String agentName) {
+        EmergencyAgentExample agentExample = new EmergencyAgentExample();
+        Criteria criteria = agentExample.createCriteria()
+            .andIsValidEqualTo(ValidEnum.VALID.getValue())
+            .andAgentPortIsNotNull()
+            .andAgentStatusNotEqualTo(AgentStatusEnum.INACTIVE.getValue());
+        if (StringUtils.isNotEmpty(agentName)) {
+            criteria.andAgentNameLike(agentName);
+        }
+        return agentMapper.selectByExample(agentExample).stream()
+            .map(agent -> {
+                ServerAgentInfoDTO agentInfo = new ServerAgentInfoDTO();
+                agentInfo.setAgentId(agent.getAgentId());
+                agentInfo.setAgentName(agent.getAgentName());
+                agentInfo.setAgentIp(agent.getAgentIp());
+                agentInfo.setServerIp(agent.getAgentIp());
+                agentInfo.setAgentType("normal");
+                return agentInfo;
+            }).collect(Collectors.toList());
     }
 
     public CommonResult sendAgentToServer(EmergencyServer server) {
@@ -310,6 +411,7 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
         newServer.setServerPort(source.getServerPort());
         newServer.setHavePassword(source.getHavePassword());
         newServer.setPasswordMode(source.getPasswordMode());
+        newServer.setServerMemory(source.getServerMemory());
         newServer.setServerName(source.getServerName());
         if ("1".equals(source.getHavePassword())) {
             try {
@@ -339,5 +441,21 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
             "0".equals(server.getPasswordMode())
                 ? server.getPassword()
                 : getPassword(server.getServerIp(), server.getServerUser()));
+    }
+
+    public static List rowBounds(int pageNum, int pageSize, List list) {
+        int startRow = 0;
+        int endRow = 0;
+        if (list == null || list.size() == 0) {
+            return list;
+        }
+        int totalCount = list.size();
+        startRow = pageNum > 0 ? pageNum * pageSize : 0;
+        endRow = startRow + pageSize;
+        endRow = Math.min(endRow, totalCount);
+        while (startRow > endRow) {
+            startRow -= pageSize;
+        }
+        return list.subList(startRow, endRow);
     }
 }

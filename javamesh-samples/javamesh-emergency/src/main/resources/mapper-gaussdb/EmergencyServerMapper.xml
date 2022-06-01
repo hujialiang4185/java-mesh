@@ -209,6 +209,9 @@
             <if test="serverPort != null">
                 #{serverPort,jdbcType=INTEGER},
             </if>
+            <if test="serverMemory != null">
+                #{serverMemory,jdbcType=INTEGER},
+            </if>
             <if test="havePassword != null">
                 #{havePassword,jdbcType=VARCHAR},
             </if>
@@ -431,7 +434,17 @@
     </update>
     <select id="selectByKeyword" resultType="com.huawei.emergency.dto.ServerAgentInfoDTO">
         SELECT
-        *
+        concat(t1.agent_id,'-',t1.agent_type) id,
+        CASE
+
+        WHEN t1.agent_status = 'READY' THEN
+        '准备中'
+        WHEN t1.agent_status = 'PROGRESSING' THEN
+        '运行中'
+        WHEN t1.agent_status = 'INACTIVE' THEN
+        '不可用' else t1.agent_status
+        END agent_status_label,
+        t1.*
         FROM
         (
         SELECT
@@ -456,16 +469,8 @@
         agent_table.agent_ip,
         agent_table.agent_port,
         'normal' agent_type,
+        '命令行agent' agent_type_label,
         agent_table.agent_status,
-        CASE
-
-        WHEN agent_table.agent_status = 'READY' THEN
-        '就绪'
-        WHEN agent_table.agent_status = 'BUSY' THEN
-        '运行中'
-        WHEN agent_table.agent_status = 'INACTIVE' THEN
-        '下线'
-        END status_label,
         'true' licensed,
         server_group AS group_name,
         server_table.create_time
@@ -496,6 +501,7 @@
         server_table.server_ip,
         server_table.server_user,
         CASE
+
         WHEN server_table.have_password = '0' THEN
         '无' ELSE '有'
         END have_password,
@@ -511,17 +517,14 @@
         agent_table.ip agent_ip,
         agent_table.port agent_port,
         'gui' agent_type,
-        agent_table.state agent_status,
+        '压测agent' agent_type_label,
+        case when agent_table.state in ('STARTED','READY','FINISHED') then 'READY'
+        when agent_table.state in ('INACTIVE','WRONG_REGION','UNKNOWN') then 'INACTIVE'
+        when agent_table.state in ('BUSY','UPDATING') then 'PROGRESSING'
+        else agent_table.state
+        end agent_status,
         CASE
 
-        WHEN agent_table.state = 'READY' THEN
-        '就绪'
-        WHEN agent_table.state = 'BUSY' THEN
-        '运行中'
-        WHEN agent_table.state = 'INACTIVE' THEN
-        '下线'
-        END status_label,
-        CASE
         WHEN agent_table.approved = 'T' THEN
         'true' ELSE 'false'
         END licensed,
@@ -551,6 +554,12 @@
         where 1 = 1
         <if test="agentType != null and agentType != ''">
             and t1.agent_type = #{agentType}
+        </if>
+        <if test=" includeAgentIds != null and includeAgentIds.length > 0">
+            and agent_id in
+            <foreach close=")" collection="includeAgentIds" index="index" item="agentId" open="(" separator=",">
+                #{agentId}
+            </foreach>
         </if>
         ORDER BY
         create_time DESC

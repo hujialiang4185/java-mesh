@@ -16,25 +16,18 @@
 
 package com.huawei.emergency.dto;
 
-import com.huawei.emergency.entity.EmergencyServer;
-
 import lombok.Data;
 
+import java.util.Properties;
+
 /**
- * agent in emergency server
+ * agent config DTO
  *
  * @author y30010171
- * @since 2022-05-24
+ * @since 2022-05-30
  **/
 @Data
-public class ServerAgentInfoDTO extends EmergencyServer {
-    private String id;
+public class AgentConfigDTO {
     private Integer agentId;
-    private String agentName;
-    private String agentIp;
-    private Integer agentPort;
-    private String agentStatus;
-    private String agentStatusLabel;
-    private String agentType;
-    private String agentTypeLabel;
+    private Properties agentConfig;
 }

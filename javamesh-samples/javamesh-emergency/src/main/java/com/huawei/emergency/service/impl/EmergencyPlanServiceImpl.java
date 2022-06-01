@@ -633,15 +633,20 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             task.setScriptName(StringUtils.isNotEmpty(taskNode.getScriptName()) ? taskNode.getScriptName()
                 : taskNode.getGuiScriptName());
             task.setChannelType(taskNode.getChannelType());
-            if (taskNode.getServerList() != null) {
-                task.setServerId(StringUtils.join(taskNode.getServerList().stream()
-                    .filter(server -> server.getServerId() != null)
-                    .map(EmergencyServer::getServerId)
-                    .collect(Collectors.toList()), ","));
+            if (taskType == TaskTypeEnum.COMMAND && taskNode.getServerList() != null) {
                 task.setAgentIds(StringUtils.join(taskNode.getServerList().stream()
                     .filter(server -> server.getAgentId() != null)
                     .map(EmergencyServer::getAgentId)
                     .collect(Collectors.toList()), ","));
+            }
+            if (taskType == TaskTypeEnum.CUSTOM && taskNode.getGuiServerList() != null) {
+                task.setAgentIds(StringUtils.join(taskNode.getGuiServerList().stream()
+                    .filter(server -> server.getAgentId() != null)
+                    .map(EmergencyServer::getAgentId)
+                    .collect(Collectors.toList()), ","));
+            }
+            if (StringUtils.isEmpty(task.getAgentIds())) {
+                return CommonResult.failed("请选择agent");
             }
             task.setCreateUser(taskNode.getCreateUser());
             task.setTaskType(taskType.getValue());
@@ -659,6 +664,7 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
                 perfTest.setCreatedDate(new Date());
                 perfTest.setScriptName(scriptService.grinderPath(emergencyScripts.get(0)));
                 perfTest.setAgentIds(task.getAgentIds());
+                perfTest.setAgentCount(task.getAgentIds().split(",").length);
                 PerfTest insertPerfTest = perfTestController.saveOne(ngrinderUser, perfTest);
                 if (insertPerfTest == null || insertPerfTest.getId() == null) {
                     return CommonResult.failed("创建压测任务失败");
@@ -854,13 +860,20 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         updateTask.setScriptName(
             StringUtils.isNotEmpty(taskNode.getScriptName()) ? taskNode.getScriptName() : taskNode.getGuiScriptName());
         updateTask.setChannelType(taskNode.getChannelType());
-        if (taskNode.getServerList() != null) {
-            updateTask.setServerId(StringUtils.join(taskNode.getServerList().stream()
-                .filter(server -> server.getServerId() != null)
-                .map(EmergencyServer::getServerId)
+        if (taskTypeEnum == TaskTypeEnum.COMMAND && taskNode.getServerList() != null) {
+            updateTask.setAgentIds(StringUtils.join(taskNode.getServerList().stream()
+                .filter(server -> server.getAgentId() != null)
+                .map(ServerAgentInfoDTO::getAgentId)
                 .collect(Collectors.toList()), ","));
-        } else {
-            updateTask.setServerId("");
+        }
+        if (taskTypeEnum == TaskTypeEnum.CUSTOM && taskNode.getGuiServerList() != null) {
+            updateTask.setAgentIds(StringUtils.join(taskNode.getGuiServerList().stream()
+                .filter(server -> server.getAgentId() != null)
+                .map(ServerAgentInfoDTO::getAgentId)
+                .collect(Collectors.toList()), ","));
+        }
+        if (StringUtils.isEmpty(updateTask.getAgentIds())) {
+            return CommonResult.failed("请选择agent");
         }
         EmergencyScriptExample scriptExample = new EmergencyScriptExample();
         scriptExample.createCriteria().andScriptNameEqualTo(updateTask.getScriptName());
@@ -871,18 +884,20 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             updateTask.setScriptName(emergencyScripts.get(0).getScriptName());
         }
         if (originTask.getPerfTestId() != null) {
-            PerfTest perfTest = taskNode.parse();
+            PerfTest originTest = perfTestService.getOne(originTask.getPerfTestId().longValue());
+            taskNode.parse(originTest);
             if (emergencyScripts.get(0) != null) {
                 User ngrinderUser = findNgrinderUserByUserId(emergencyScripts.get(0).getScriptUser());
-                PerfTest originTest = perfTestService.getOne(originTask.getPerfTestId().longValue());
-                if (!originTest.getCreatedUser().getUserId().equals(ngrinderUser.getUserId())) {
+                if (originTest.getCreatedUser() != null && !originTest.getCreatedUser().getUserId()
+                    .equals(ngrinderUser.getUserId())) {
                     throw new ApiException(String.format("修改任务时不能选择非创建用户目录下的脚本，创建用户为%s，当前脚本用户为%s。",
                         originTest.getCreatedUser().getUserId(), ngrinderUser.getUserId()));
                 }
-                perfTest.setScriptName(scriptService.grinderPath(emergencyScripts.get(0)));
+                originTest.setScriptName(scriptService.grinderPath(emergencyScripts.get(0)));
             }
-            perfTest.setId(originTask.getPerfTestId().longValue());
-            perfTestRepository.saveAndFlush(perfTest);
+            originTest.setAgentIds(updateTask.getAgentIds());
+            originTest.setAgentCount(updateTask.getAgentIds().split(",").length);
+            perfTestRepository.saveAndFlush(originTest);
         }
         taskMapper.updateByPrimaryKeySelective(updateTask);
         return CommonResult.success(taskNode);
