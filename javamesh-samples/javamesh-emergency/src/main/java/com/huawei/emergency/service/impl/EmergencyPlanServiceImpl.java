@@ -636,13 +636,13 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             if (taskType == TaskTypeEnum.COMMAND && taskNode.getServerList() != null) {
                 task.setAgentIds(StringUtils.join(taskNode.getServerList().stream()
                     .filter(server -> server.getAgentId() != null)
-                    .map(EmergencyServer::getAgentId)
+                    .map(ServerAgentInfoDTO::getAgentId)
                     .collect(Collectors.toList()), ","));
             }
             if (taskType == TaskTypeEnum.CUSTOM && taskNode.getGuiServerList() != null) {
                 task.setAgentIds(StringUtils.join(taskNode.getGuiServerList().stream()
                     .filter(server -> server.getAgentId() != null)
-                    .map(EmergencyServer::getAgentId)
+                    .map(ServerAgentInfoDTO::getAgentId)
                     .collect(Collectors.toList()), ","));
             }
             if (StringUtils.isEmpty(task.getAgentIds())) {

@@ -41,19 +41,7 @@ public class EmergencyServer {
 
     private String status;
 
-    private String statusLabel;
-
-    private String groupName;
-
-    private Integer agentId;
-
-    public Integer getAgentId() {
-        return agentId;
-    }
-
-    public void setAgentId(Integer agentId) {
-        this.agentId = agentId;
-    }
+    private String serverGroup;
 
     public Integer getServerId() {
         return serverId;
@@ -207,19 +195,11 @@ public class EmergencyServer {
         this.status = status == null ? null : status.trim();
     }
 
-    public String getStatusLabel() {
-        return statusLabel;
+    public String getServerGroup() {
+        return serverGroup;
     }
 
-    public void setStatusLabel(String statusLabel) {
-        this.statusLabel = statusLabel;
-    }
-
-    public String getGroupName() {
-        return groupName;
-    }
-
-    public void setGroupName(String groupName) {
-        this.groupName = groupName;
+    public void setServerGroup(String serverGroup) {
+        this.serverGroup = serverGroup == null ? null : serverGroup.trim();
     }
 }

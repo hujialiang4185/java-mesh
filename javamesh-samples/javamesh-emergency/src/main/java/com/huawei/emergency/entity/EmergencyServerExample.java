@@ -435,6 +435,66 @@ public class EmergencyServerExample {
             return (Criteria) this;
         }
 
+        public Criteria andServerMemoryIsNull() {
+            addCriterion("server_memory is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerMemoryIsNotNull() {
+            addCriterion("server_memory is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerMemoryEqualTo(Integer value) {
+            addCriterion("server_memory =", value, "serverMemory");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerMemoryNotEqualTo(Integer value) {
+            addCriterion("server_memory <>", value, "serverMemory");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerMemoryGreaterThan(Integer value) {
+            addCriterion("server_memory >", value, "serverMemory");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerMemoryGreaterThanOrEqualTo(Integer value) {
+            addCriterion("server_memory >=", value, "serverMemory");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerMemoryLessThan(Integer value) {
+            addCriterion("server_memory <", value, "serverMemory");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerMemoryLessThanOrEqualTo(Integer value) {
+            addCriterion("server_memory <=", value, "serverMemory");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerMemoryIn(List<Integer> values) {
+            addCriterion("server_memory in", values, "serverMemory");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerMemoryNotIn(List<Integer> values) {
+            addCriterion("server_memory not in", values, "serverMemory");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerMemoryBetween(Integer value1, Integer value2) {
+            addCriterion("server_memory between", value1, value2, "serverMemory");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerMemoryNotBetween(Integer value1, Integer value2) {
+            addCriterion("server_memory not between", value1, value2, "serverMemory");
+            return (Criteria) this;
+        }
+
         public Criteria andHavePasswordIsNull() {
             addCriterion("have_password is null");
             return (Criteria) this;
@@ -1312,6 +1372,76 @@ public class EmergencyServerExample {
 
         public Criteria andStatusNotBetween(String value1, String value2) {
             addCriterion("status not between", value1, value2, "status");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerGroupIsNull() {
+            addCriterion("server_group is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerGroupIsNotNull() {
+            addCriterion("server_group is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerGroupEqualTo(String value) {
+            addCriterion("server_group =", value, "serverGroup");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerGroupNotEqualTo(String value) {
+            addCriterion("server_group <>", value, "serverGroup");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerGroupGreaterThan(String value) {
+            addCriterion("server_group >", value, "serverGroup");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerGroupGreaterThanOrEqualTo(String value) {
+            addCriterion("server_group >=", value, "serverGroup");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerGroupLessThan(String value) {
+            addCriterion("server_group <", value, "serverGroup");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerGroupLessThanOrEqualTo(String value) {
+            addCriterion("server_group <=", value, "serverGroup");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerGroupLike(String value) {
+            addCriterion("server_group like", value, "serverGroup");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerGroupNotLike(String value) {
+            addCriterion("server_group not like", value, "serverGroup");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerGroupIn(List<String> values) {
+            addCriterion("server_group in", values, "serverGroup");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerGroupNotIn(List<String> values) {
+            addCriterion("server_group not in", values, "serverGroup");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerGroupBetween(String value1, String value2) {
+            addCriterion("server_group between", value1, value2, "serverGroup");
+            return (Criteria) this;
+        }
+
+        public Criteria andServerGroupNotBetween(String value1, String value2) {
+            addCriterion("server_group not between", value1, value2, "serverGroup");
             return (Criteria) this;
         }
     }

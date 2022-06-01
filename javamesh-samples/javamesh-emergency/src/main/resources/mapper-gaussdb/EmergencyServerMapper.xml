@@ -434,20 +434,6 @@
     </update>
     <select id="selectByKeyword" resultType="com.huawei.emergency.dto.ServerAgentInfoDTO">
         SELECT
-        concat(t1.agent_id,'-',t1.agent_type) id,
-        CASE
-
-        WHEN t1.agent_status = 'READY' THEN
-        '准备中'
-        WHEN t1.agent_status = 'PROGRESSING' THEN
-        '运行中'
-        WHEN t1.agent_status = 'INACTIVE' THEN
-        '不可用' else t1.agent_status
-        END agent_status_label,
-        t1.*
-        FROM
-        (
-        SELECT
         server_table.server_id,
         server_table.`server_name`,
         server_table.server_ip,
@@ -464,85 +450,70 @@
         WHEN server_table.password_mode = '1' THEN
         '平台' ELSE password_mode
         END password_mode,
-        agent_table.agent_id,
-        agent_table.agent_name,
-        agent_table.agent_ip,
-        agent_table.agent_port,
-        'normal' agent_type,
-        '命令行agent' agent_type_label,
-        agent_table.agent_status,
-        'true' licensed,
         server_group AS group_name,
-        server_table.create_time
+        server_table.create_time,
+        CASE
+
+        WHEN agent_table.agent_status = 'READY' THEN
+        '准备中'
+        WHEN agent_table.agent_status = 'PROGRESSING' THEN
+        '运行中'
+        WHEN agent_table.agent_status = 'INACTIVE' THEN
+        '不可用' ELSE agent_table.agent_status
+        END agent_status_label,
+        concat( agent_table.agent_id, '-', agent_table.agent_type ) id,
+        agent_table.*
         FROM
         emergency_server server_table
-        JOIN emergency_agent agent_table ON server_table.server_ip = agent_table.agent_ip
-        WHERE
-        server_table.is_valid = '1'
-        <if test="groupName != null and groupName != ''">
-            and server_group = #{groupName}
-        </if>
-        <if test="keyword !=null and keyword != ''">
-            and (locate(#{keyword},`server_name`) &gt; 0 or locate(#{keyword},`server_ip`) &gt; 0)
-        </if>
-        <if test="server !=null and server.serverName != null and server.serverName != ''">
-            and locate(#{server.serverName},`server_name`) &gt; 0
-        </if>
-        <if test=" excludeServerIds != null and excludeServerIds.length > 0">
-            and server_id not in
-            <foreach close=")" collection="excludeServerIds" index="index" item="serverId" open="(" separator=",">
-                #{serverId}
-            </foreach>
-        </if>
-        UNION
+        LEFT JOIN (
         SELECT
-        server_table.server_id,
-        server_table.`server_name`,
-        server_table.server_ip,
-        server_table.server_user,
-        CASE
-
-        WHEN server_table.have_password = '0' THEN
-        '无' ELSE '有'
-        END have_password,
-        CASE
-
-        WHEN server_table.password_mode = '0' THEN
-        '本地'
-        WHEN server_table.password_mode = '1' THEN
-        '平台' ELSE password_mode
-        END password_mode,
-        agent_table.id agent_id,
-        agent_table.hostName agent_name,
-        agent_table.ip agent_ip,
-        agent_table.port agent_port,
+        id agent_id,
+        hostName agent_name,
+        ip agent_ip,
+        PORT agent_port,
         'gui' agent_type,
         '压测agent' agent_type_label,
-        case when agent_table.state in ('STARTED','READY','FINISHED') then 'READY'
-        when agent_table.state in ('INACTIVE','WRONG_REGION','UNKNOWN') then 'INACTIVE'
-        when agent_table.state in ('BUSY','UPDATING') then 'PROGRESSING'
-        else agent_table.state
-        end agent_status,
         CASE
 
-        WHEN agent_table.approved = 'T' THEN
+        WHEN state IN ( 'STARTED', 'READY', 'FINISHED' ) THEN
+        'READY'
+        WHEN state IN ( 'INACTIVE', 'WRONG_REGION', 'UNKNOWN' ) THEN
+        'INACTIVE'
+        WHEN state IN ( 'BUSY', 'UPDATING' ) THEN
+        'PROGRESSING' ELSE state
+        END agent_status,
+        CASE
+
+        WHEN approved = 'T' THEN
         'true' ELSE 'false'
-        END licensed,
-        server_group AS group_name,
-        server_table.create_time
+        END licensed
         FROM
-        emergency_server server_table
-        JOIN AGENT agent_table ON server_table.server_ip = agent_table.ip
+        AGENT UNION
+        SELECT
+        agent_id,
+        agent_name,
+        agent_ip,
+        agent_port,
+        'normal' agent_type,
+        '命令行agent' agent_type_label,
+        agent_status,
+        'true' licensed
+        FROM
+        emergency_agent
+        WHERE
+        is_valid = '1'
+        ) agent_table ON server_table.server_ip = agent_table.agent_ip
         WHERE
         server_table.is_valid = '1'
         <if test="groupName != null and groupName != ''">
             and server_group = #{groupName}
         </if>
         <if test="keyword !=null and keyword != ''">
-            and (locate(#{keyword},`server_name`) &gt; 0 or locate(#{keyword},`server_ip`) &gt; 0)
+            and (locate(#{keyword},server_table.server_name) > 0 or locate(#{keyword},server_table.server_ip) > 0
+            or locate(#{keyword},agent_table.agent_name) &gt; 0)
         </if>
         <if test="server !=null and server.serverName != null and server.serverName != ''">
-            and locate(#{server.serverName},`server_name`) &gt; 0
+            and locate(#{server.serverName},server_table.server_name) > 0
         </if>
         <if test=" excludeServerIds != null and excludeServerIds.length > 0">
             and server_id not in
@@ -550,12 +521,10 @@
                 #{serverId}
             </foreach>
         </if>
-        ) t1
-        where 1 = 1
         <if test="agentType != null and agentType != ''">
-            and t1.agent_type = #{agentType}
+            and agent_type = #{agentType}
         </if>
-        <if test=" includeAgentIds != null and includeAgentIds.length > 0">
+        <if test=" includeAgentIds != null and includeAgentIds.length &gt; 0">
             and agent_id in
             <foreach close=")" collection="includeAgentIds" index="index" item="agentId" open="(" separator=",">
                 #{agentId}

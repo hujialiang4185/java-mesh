@@ -75,5 +75,6 @@ public interface EmergencyServerService extends EmergencyCommonService<Emergency
      * @param agentName agent名称或者IP
      * @return
      */
-    CommonResult getActiveAgent(CommonPage params, String agentType, int[] excludeAgentIds, String agentName);
+    CommonResult getActiveAgent(CommonPage<EmergencyServer> params, String agentType, int[] excludeAgentIds,
+        String agentName);
 }

@@ -87,7 +87,7 @@ public class EmergencyServerController {
         }
         JwtUser jwtUser = (JwtUser) authentication.getPrincipal();
         server.setCreateUser(jwtUser.getUsername());
-        server.setGroupName(jwtUser.getGroupName());
+        server.setServerGroup(jwtUser.getGroupName());
         return serverService.add(server);
     }
 
@@ -152,6 +152,7 @@ public class EmergencyServerController {
         CommonPage<EmergencyServer> params = new CommonPage<>();
         params.setPageSize(pageSize);
         params.setPageIndex(current);
+        params.setObject(new EmergencyServer());
         return serverService.getActiveAgent(params, agentType, excludeAgentIds, agentName);
     }
 

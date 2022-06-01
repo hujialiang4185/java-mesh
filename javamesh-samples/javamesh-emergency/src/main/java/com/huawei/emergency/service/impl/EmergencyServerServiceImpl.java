@@ -16,6 +16,7 @@ import com.huawei.emergency.entity.EmergencyAgentExample;
 import com.huawei.emergency.entity.EmergencyAgentExample.Criteria;
 import com.huawei.emergency.entity.EmergencyServer;
 import com.huawei.emergency.entity.EmergencyServerExample;
+import com.huawei.emergency.entity.JwtUser;
 import com.huawei.emergency.mapper.EmergencyAgentConfigMapper;
 import com.huawei.emergency.mapper.EmergencyAgentMapper;
 import com.huawei.emergency.mapper.EmergencyServerMapper;
@@ -41,6 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -126,7 +128,7 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
         }
         EmergencyServer insertServer = serverResult.getData();
         insertServer.setCreateUser(server.getCreateUser());
-        insertServer.setGroupName(server.getGroupName());
+        insertServer.setServerGroup(server.getServerGroup());
         insertServer.setCreateTime(new Date());
         insertServer.setUpdateUser(server.getCreateUser());
         insertServer.setUpdateTime(insertServer.getCreateTime());
@@ -286,30 +288,15 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
     }
 
     @Override
-    public CommonResult getActiveAgent(CommonPage params, String agentType, int[] excludeAgentIds, String agentName) {
-        List<ServerAgentInfoDTO> agentList = new ArrayList<>();
-        if ("normal".equals(agentType)) {
-            agentList = getActiveShellAgent(agentName);
-        }
-        if ("gui".equals(agentType)) {
-            agentList = getActiveGrinderAgent(agentName);
-        }
-        return CommonResult.success(
-            EmergencyServerServiceImpl.rowBounds(params.getPageIndex(), params.getPageSize(), agentList),
-            agentList.size());
+    public CommonResult getActiveAgent(CommonPage<EmergencyServer> params, String agentType, int[] excludeAgentIds,
+        String agentName) {
+        JwtUser userInfo = (JwtUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return queryServerInfo(userInfo.getGroupName(), params, agentName, excludeAgentIds, null, agentType);
     }
 
-    private List<ServerAgentInfoDTO> getActiveGrinderAgent(String agentName) {
+    private List<ServerAgentInfoDTO> getActiveGrinderAgent() {
         List<AgentInfo> allActive = agentManagerService.getAllActive();
         return allActive.stream().
-            filter(agent -> {
-                if (StringUtils.isNotEmpty(agentName)) {
-                    if (!agent.getName().contains(agentName)) {
-                        return false;
-                    }
-                }
-                return true;
-            }).
             map(agent -> {
                 ServerAgentInfoDTO agentInfo = new ServerAgentInfoDTO();
                 agentInfo.setAgentId(agent.getId().intValue());
@@ -322,15 +309,12 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
             collect(Collectors.toList());
     }
 
-    private List<ServerAgentInfoDTO> getActiveShellAgent(String agentName) {
+    private List<ServerAgentInfoDTO> getActiveShellAgent() {
         EmergencyAgentExample agentExample = new EmergencyAgentExample();
         Criteria criteria = agentExample.createCriteria()
             .andIsValidEqualTo(ValidEnum.VALID.getValue())
             .andAgentPortIsNotNull()
             .andAgentStatusNotEqualTo(AgentStatusEnum.INACTIVE.getValue());
-        if (StringUtils.isNotEmpty(agentName)) {
-            criteria.andAgentNameLike(agentName);
-        }
         return agentMapper.selectByExample(agentExample).stream()
             .map(agent -> {
                 ServerAgentInfoDTO agentInfo = new ServerAgentInfoDTO();
@@ -413,6 +397,7 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
         newServer.setPasswordMode(source.getPasswordMode());
         newServer.setServerMemory(source.getServerMemory());
         newServer.setServerName(source.getServerName());
+        newServer.setServerGroup(source.getServerGroup());
         if ("1".equals(source.getHavePassword())) {
             try {
                 newServer.setPassword(passwordUtil.encodePassword(
@@ -441,21 +426,5 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
             "0".equals(server.getPasswordMode())
                 ? server.getPassword()
                 : getPassword(server.getServerIp(), server.getServerUser()));
-    }
-
-    public static List rowBounds(int pageNum, int pageSize, List list) {
-        int startRow = 0;
-        int endRow = 0;
-        if (list == null || list.size() == 0) {
-            return list;
-        }
-        int totalCount = list.size();
-        startRow = pageNum > 0 ? pageNum * pageSize : 0;
-        endRow = startRow + pageSize;
-        endRow = Math.min(endRow, totalCount);
-        while (startRow > endRow) {
-            startRow -= pageSize;
-        }
-        return list.subList(startRow, endRow);
     }
 }
