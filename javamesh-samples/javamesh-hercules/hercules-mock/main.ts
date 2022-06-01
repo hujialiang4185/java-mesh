@@ -992,6 +992,9 @@ app.get("/argus-emergency/api/host/agent_config", function (req, res) {
         }
     });
 })
+app.post("/argus-emergency/api/host/agent_config", function (req, res) {
+    res.json()
+})
 function hostList(req: any, res: any) {
     // const excludes = req.query.excludes as string[]
     const agent_name = req.query.agent_name as string

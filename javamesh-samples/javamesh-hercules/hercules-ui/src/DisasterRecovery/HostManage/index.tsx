@@ -213,6 +213,8 @@ function ConfigHost(props: {agent_id: string}) {
                 try {
                     JSON.parse(value.agent_config)
                     await axios.post("/argus-emergency/api/host/agent_config", {agent_id: props.agent_id, agent_config: value.agent_config})
+                    message.success("修改成功")
+                    setIsModalVisible(false)
                 } catch (error: any) {
                     message.error(error.message)
                 }
