@@ -845,7 +845,7 @@ app.get("/argus-emergency/api/plan/task", function (req, res) {
                     sampling_ignore: 10,
                     sampling_interval: 100,
                     test_param: "param",
-                    server_list: [{ agent_id: "1", agent_name: "代理名称1", server_ip: "192.168.0.1" }],
+                    server_list: [{ agent_id: 1, agent_name: "代理名称1", server_ip: "192.168.0.1" }],
                     sync: "同步",
                 }]
             }]
