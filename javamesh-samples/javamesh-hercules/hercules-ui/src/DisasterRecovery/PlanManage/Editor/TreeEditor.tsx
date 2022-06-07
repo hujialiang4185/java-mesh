@@ -135,9 +135,9 @@ export default class App extends React.Component<{ plan_id: string }> {
           { title: "脚本名称", dataIndex: "script_name", ellipsis: true },
           { title: "脚本用途", dataIndex: "submit_info", ellipsis: true },
           {
-            title: "执行主机", dataIndex: "server_list", ellipsis: true, render(value?: { server_name: string }[]) {
+            title: "执行主机", dataIndex: "server_list", ellipsis: true, render(value?: { agent_name: string }[]) {
               return value?.map(function (item) {
-                return item.server_name
+                return item.agent_name
               }).join("\n")
             }
           },

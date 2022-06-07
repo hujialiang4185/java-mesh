@@ -724,8 +724,8 @@ app.get("/argus-emergency/api/plan", function (req, res) {
                         key: 2, scena_name: "场景一", task_name: "任务一", channel_type: "SSH",
                         script_name: "C01T01.sh", submit_info: "提交信息", test_id: 1,
                         server_list: [
-                            { server_id: 0, server_name: "服务名称0", server_ip: "192.168.0.1" },
-                            { server_id: 1, server_name: "服务名称1", server_ip: "192.168.0.1" }
+                            { agent_id: 0, agent_name: "代理名称0", server_ip: "192.168.0.1" },
+                            { agent_id: 1, agent_name: "代理名称0", server_ip: "192.168.0.1" }
                         ], vuser: 100
                     },
                     {
@@ -823,8 +823,8 @@ app.get("/argus-emergency/api/plan/task", function (req, res) {
                 submit_info: "xxx",
                 sync: "同步",
                 server_list: [
-                    { server_id: 0, server_name: "服务名称0", server_ip: "192.168.0.1" },
-                    { server_id: 1, server_name: "服务名称1", server_ip: "192.168.0.1" }
+                    { agent_id: 0, agent_name: "代理名称0", server_ip: "192.168.0.1" },
+                    { agent_id: 1, agent_name: "代理名称1", server_ip: "192.168.0.1" }
                 ],
                 children: [{
                     key: 3,
@@ -845,7 +845,7 @@ app.get("/argus-emergency/api/plan/task", function (req, res) {
                     sampling_ignore: 10,
                     sampling_interval: 100,
                     test_param: "param",
-                    server_list: [{ server_id: "1", server_name: "服务名称0", server_ip: "192.168.0.1" }],
+                    server_list: [{ agent_id: 1, agent_name: "代理名称1", server_ip: "192.168.0.1" }],
                     sync: "同步",
                 }]
             }]
@@ -962,38 +962,61 @@ app.get("/argus-emergency/api/history/scenario/task/log", function (req, res) {
 })
 const hosts = Array.from({ length: 101 }, function (_, index) {
     return {
-        status: ["running", "pending", "success", "fail"][index % 4],
-        status_label: ["运行中", "准备中", "成功", "失败"][index % 4],
+        id: index,
+        agent_status: ["INACTIVE","READY","PROGRESSING","ERROR"][index % 4],
+        agent_status_label: ["失效", "正常", "运行中", "失败"][index % 4],
         server_id: String(index),
         server_name: "服务名称" + index,
         server_ip: "192.168.0.1",
+        server_memory: "512",
         server_user: "root",
         have_password: "有",
         password_mode: "本地",
+        agent_name: "代理名称" + index,
         agent_port: "19001",
+        agent_type: ["gui", "normal", null][index % 3],
+        agent_type_label: ["GUI", "NORMAL", ""][index % 3],
         licensed: false,
+        agent_id: index,
         group_id: 1,
         group_name: "分组1"
     }
 })
-app.get("/argus-emergency/api/host", function (req, res) {
-    const excludes = req.query.excludes as string[]
-    const server_name = req.query.server_name as string
+app.get("/argus-emergency/api/host/agent_config", function (req, res) {
+    res.json({
+        data: {
+            agent_config: 
+`{
+    "a": "a"
+}`
+        }
+    });
+})
+app.post("/argus-emergency/api/host/agent_config", function (req, res) {
+    res.json()
+})
+function hostList(req: any, res: any) {
+    // const excludes = req.query.excludes as string[]
+    const agent_name = req.query.agent_name as string
     const pageSize = Number(req.query.pageSize)
     const end = Number(req.query.current || 1) * pageSize
-    let data = hosts.filter(function (item) {
-        return !excludes?.includes(item.server_id)
-    })
-    if (server_name) {
-        data = data.filter(function(item) {
-            return item.server_name.includes(server_name)
+    // let data = hosts.filter(function (item) {
+    //     return !excludes?.includes(item.server_id)
+    // })
+    let data = hosts
+    if (agent_name) {
+        data = hosts.filter(function(item) {
+            return item.server_name.includes(agent_name)
         })
     }
     res.json({
         data: data.slice(end - pageSize, end),
         total: data.length
     })
-})
+}
+app.get("/argus-emergency/api/host/agent_active/gui", hostList)
+app.get("/argus-emergency/api/host/agent_active/normal", hostList)
+app.get("/argus-emergency/api/host", hostList)
 app.get("/argus-emergency/api/host/search", function (req, res) {
     res.json({
         data: ["192.168.0.1"]

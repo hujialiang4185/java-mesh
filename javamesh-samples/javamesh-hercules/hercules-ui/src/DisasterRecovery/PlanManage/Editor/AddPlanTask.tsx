@@ -9,13 +9,13 @@ import { debounce } from "lodash";
 
 export default function App(props: { onFinish: (values: any) => Promise<void>, initialValues: any, create?: boolean }) {
   props.initialValues.gui_script_name = props.initialValues.script_name
+  props.initialValues.gui_server_list = props.initialValues.server_list
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [isCmd, setIsCmd] = useState(props.initialValues.task_type === "命令行脚本")
   const [script, setScript] = useState({ submit_info: "", content: "" })
   const [basic, setBasic] = useState(props.initialValues.basic === "by_count")
   const [presure, setPresure] = useState(!props.initialValues.is_increased)
   const [form] = Form.useForm();
-  const types = ["自定义脚本压测", "引流压测", "命令行脚本"]
 
   async function loadScript(name?: string) {
     if (!name) return
@@ -41,6 +41,9 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
           if (values.gui_script_name) {
             values.script_name = values.gui_script_name
           }
+          if (values.gui_server_list) {
+            values.server_list = values.gui_server_list
+          }
           try {
             await props.onFinish(values)
             if (props.create) {
@@ -60,25 +63,19 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
           <Form.Item labelCol={{ span: 4 }} className="Middle" label="任务类型" name="task_type" rules={[{ required: true }]}>
             <Radio.Group onChange={function (e) {
               setIsCmd(e.target.value === "命令行脚本")
-              console.log("set xxx")
-              form.setFields([{ name: "script_name", value: "" }, { name: "gui_script_name", value: "" }])
+              form.setFields([{ name: "script_name", value: "" }, { name: "gui_script_name", value: "" }, { name: "server_list", value: [] }, { name: "gui_server_list", value: [] }])
               setScript({ submit_info: "", content: "" })
-            }} options={types.map(function (item, index) {
-              return {
-                value: item,
-                label: item,
-                disabled: index === 1,
-              }
-            })} />
+            }} options={["自定义脚本压测", "命令行脚本"]} />
           </Form.Item>
           <Form.Item labelCol={{ span: 4 }} className="Middle" label="执行方式" name="sync" valuePropName="checked">
             <Switch checkedChildren="同步" unCheckedChildren="异步" defaultChecked />
           </Form.Item>
         </div>
-        <Form.Item label="执行主机" name="server_list" rules={[{ required: true }]}>
-          <TabelTransfer />
-        </Form.Item>
+
         {isCmd ? <>
+          <Form.Item label="执行主机" name="server_list" rules={[{ required: true }]}>
+            <TabelTransfer type={isCmd ? "normal" : "gui"} />
+          </Form.Item>
           <Form.Item className="ScriptName" label="脚本名称" name="script_name" rules={[{ required: true }]}>
             <SearchSelect type="normal" onChange={loadScript} />
           </Form.Item>
@@ -95,6 +92,9 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
             </Collapse.Panel>
           </Collapse>
         </> : <>
+          <Form.Item label="执行主机" name="gui_server_list" rules={[{ required: true }]}>
+            <TabelTransfer type={isCmd ? "normal" : "gui"} />
+          </Form.Item>
           <Form.Item className="ScriptName" label="脚本名称" name="gui_script_name" rules={[{ required: true }]}>
             <SearchSelect type="gui" onChange={loadScript} />
           </Form.Item>
@@ -185,25 +185,25 @@ export default function App(props: { onFinish: (values: any) => Promise<void>, i
 
 function TimePicker(props: { disabled: boolean, value?: number, onChange?: (value: number) => void }) {
   const [date, setDate] = useState(new Date(props.value && props.value > 0 ? props.value : 0))
-  const onChangeRef = useRef(debounce(function(date: Date){
+  const onChangeRef = useRef(debounce(function (date: Date) {
     setDate(date)
     props.onChange?.(+date)
   }, 100))
   return <div className="TimePicker">
-    <InputNumber value={date.getUTCHours()} disabled={props.disabled} className="Time" min={0} max={23} onChange={function(value){
+    <InputNumber value={date.getUTCHours()} disabled={props.disabled} className="Time" min={0} max={23} onChange={function (value) {
       date.setUTCHours(value)
       onChangeRef.current(date)
-    }}/>
+    }} />
     <span className="Sep">:</span>
-    <InputNumber value={date.getMinutes()} disabled={props.disabled} className="Time" min={0} max={59} onChange={function(value){
+    <InputNumber value={date.getMinutes()} disabled={props.disabled} className="Time" min={0} max={59} onChange={function (value) {
       date.setMinutes(value)
       onChangeRef.current(date)
-    }}/>
+    }} />
     <span className="Sep">:</span>
-    <InputNumber value={date.getSeconds()} disabled={props.disabled} className="Time" min={0} max={59} onChange={function(value){
+    <InputNumber value={date.getSeconds()} disabled={props.disabled} className="Time" min={0} max={59} onChange={function (value) {
       date.setSeconds(value)
       onChangeRef.current(date)
-    }}/>
+    }} />
     <span className="Format">HH:MM:SS</span>
   </div>
 }
