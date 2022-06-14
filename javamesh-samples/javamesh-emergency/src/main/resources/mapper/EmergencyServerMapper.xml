@@ -12,15 +12,11 @@
         <result column="password_mode" jdbcType="VARCHAR" property="passwordMode"/>
         <result column="password_uri" jdbcType="VARCHAR" property="passwordUri"/>
         <result column="password" jdbcType="VARCHAR" property="password"/>
-        <result column="licensed" jdbcType="VARCHAR" property="licensed"/>
-        <result column="agent_name" jdbcType="VARCHAR" property="agentName"/>
-        <result column="agent_port" jdbcType="INTEGER" property="agentPort"/>
         <result column="create_user" jdbcType="VARCHAR" property="createUser"/>
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
         <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
         <result column="update_user" jdbcType="VARCHAR" property="updateUser"/>
         <result column="is_valid" jdbcType="VARCHAR" property="isValid"/>
-        <result column="status" jdbcType="VARCHAR" property="status"/>
         <result column="server_group" jdbcType="VARCHAR" property="serverGroup"/>
     </resultMap>
     <sql id="Example_Where_Clause">
@@ -86,8 +82,8 @@
     <sql id="Base_Column_List">
         server_id
         , server_name, server_user, server_ip, server_port, server_memory, have_password,
-    password_mode, password_uri, password, licensed, agent_name, agent_port, create_user, 
-    create_time, update_time, update_user, is_valid, status, server_group
+    password_mode, password_uri, password, create_user, create_time, update_time, update_user, 
+    is_valid, server_group
     </sql>
     <select id="selectByExample" parameterType="com.huawei.emergency.entity.EmergencyServerExample"
             resultMap="BaseResultMap">
@@ -122,25 +118,27 @@
             <include refid="Example_Where_Clause"/>
         </if>
     </delete>
-    <insert id="insert" keyColumn="server_id" keyProperty="serverId"
-            parameterType="com.huawei.emergency.entity.EmergencyServer" useGeneratedKeys="true">
+    <insert id="insert" parameterType="com.huawei.emergency.entity.EmergencyServer">
+        <selectKey keyProperty="serverId" order="AFTER" resultType="java.lang.Integer">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
         insert into emergency_server (server_name, server_user, server_ip,
-                                      server_port, server_memory, have_password,
-                                      password_mode, password_uri, password,
-                                      licensed, agent_name, agent_port,
-                                      create_user, create_time, update_time,
-                                      update_user, is_valid, status,
-                                      server_group)
+        server_port, server_memory, have_password,
+        password_mode, password_uri, password,
+        create_user, create_time, update_time,
+        update_user, is_valid, server_group
+        )
         values (#{serverName,jdbcType=VARCHAR}, #{serverUser,jdbcType=VARCHAR}, #{serverIp,jdbcType=VARCHAR},
-                #{serverPort,jdbcType=INTEGER}, #{serverMemory,jdbcType=INTEGER}, #{havePassword,jdbcType=VARCHAR},
-                #{passwordMode,jdbcType=VARCHAR}, #{passwordUri,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR},
-                #{licensed,jdbcType=VARCHAR}, #{agentName,jdbcType=VARCHAR}, #{agentPort,jdbcType=INTEGER},
-                #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP},
-                #{updateUser,jdbcType=VARCHAR}, #{isValid,jdbcType=VARCHAR}, #{status,jdbcType=VARCHAR},
-                #{serverGroup,jdbcType=VARCHAR})
+        #{serverPort,jdbcType=INTEGER}, #{serverMemory,jdbcType=INTEGER}, #{havePassword,jdbcType=VARCHAR},
+        #{passwordMode,jdbcType=VARCHAR}, #{passwordUri,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR},
+        #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP},
+        #{updateUser,jdbcType=VARCHAR}, #{isValid,jdbcType=VARCHAR}, #{serverGroup,jdbcType=VARCHAR}
+        )
     </insert>
-    <insert id="insertSelective" keyColumn="server_id" keyProperty="serverId"
-            parameterType="com.huawei.emergency.entity.EmergencyServer" useGeneratedKeys="true">
+    <insert id="insertSelective" parameterType="com.huawei.emergency.entity.EmergencyServer">
+        <selectKey keyProperty="serverId" order="AFTER" resultType="java.lang.Integer">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
         insert into emergency_server
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="serverName != null">
@@ -170,15 +168,6 @@
             <if test="password != null">
                 password,
             </if>
-            <if test="licensed != null">
-                licensed,
-            </if>
-            <if test="agentName != null">
-                agent_name,
-            </if>
-            <if test="agentPort != null">
-                agent_port,
-            </if>
             <if test="createUser != null">
                 create_user,
             </if>
@@ -193,9 +182,6 @@
             </if>
             <if test="isValid != null">
                 is_valid,
-            </if>
-            <if test="status != null">
-                status,
             </if>
             <if test="serverGroup != null">
                 server_group,
@@ -229,15 +215,6 @@
             <if test="password != null">
                 #{password,jdbcType=VARCHAR},
             </if>
-            <if test="licensed != null">
-                #{licensed,jdbcType=VARCHAR},
-            </if>
-            <if test="agentName != null">
-                #{agentName,jdbcType=VARCHAR},
-            </if>
-            <if test="agentPort != null">
-                #{agentPort,jdbcType=INTEGER},
-            </if>
             <if test="createUser != null">
                 #{createUser,jdbcType=VARCHAR},
             </if>
@@ -252,9 +229,6 @@
             </if>
             <if test="isValid != null">
                 #{isValid,jdbcType=VARCHAR},
-            </if>
-            <if test="status != null">
-                #{status,jdbcType=VARCHAR},
             </if>
             <if test="serverGroup != null">
                 #{serverGroup,jdbcType=VARCHAR},
@@ -301,15 +275,6 @@
             <if test="record.password != null">
                 password = #{record.password,jdbcType=VARCHAR},
             </if>
-            <if test="record.licensed != null">
-                licensed = #{record.licensed,jdbcType=VARCHAR},
-            </if>
-            <if test="record.agentName != null">
-                agent_name = #{record.agentName,jdbcType=VARCHAR},
-            </if>
-            <if test="record.agentPort != null">
-                agent_port = #{record.agentPort,jdbcType=INTEGER},
-            </if>
             <if test="record.createUser != null">
                 create_user = #{record.createUser,jdbcType=VARCHAR},
             </if>
@@ -324,9 +289,6 @@
             </if>
             <if test="record.isValid != null">
                 is_valid = #{record.isValid,jdbcType=VARCHAR},
-            </if>
-            <if test="record.status != null">
-                status = #{record.status,jdbcType=VARCHAR},
             </if>
             <if test="record.serverGroup != null">
                 server_group = #{record.serverGroup,jdbcType=VARCHAR},
@@ -348,15 +310,11 @@
         password_mode = #{record.passwordMode,jdbcType=VARCHAR},
         password_uri = #{record.passwordUri,jdbcType=VARCHAR},
         password = #{record.password,jdbcType=VARCHAR},
-        licensed = #{record.licensed,jdbcType=VARCHAR},
-        agent_name = #{record.agentName,jdbcType=VARCHAR},
-        agent_port = #{record.agentPort,jdbcType=INTEGER},
         create_user = #{record.createUser,jdbcType=VARCHAR},
         create_time = #{record.createTime,jdbcType=TIMESTAMP},
         update_time = #{record.updateTime,jdbcType=TIMESTAMP},
         update_user = #{record.updateUser,jdbcType=VARCHAR},
         is_valid = #{record.isValid,jdbcType=VARCHAR},
-        status = #{record.status,jdbcType=VARCHAR},
         server_group = #{record.serverGroup,jdbcType=VARCHAR}
         <if test="_parameter != null">
             <include refid="Update_By_Example_Where_Clause"/>
@@ -392,15 +350,6 @@
             <if test="password != null">
                 password = #{password,jdbcType=VARCHAR},
             </if>
-            <if test="licensed != null">
-                licensed = #{licensed,jdbcType=VARCHAR},
-            </if>
-            <if test="agentName != null">
-                agent_name = #{agentName,jdbcType=VARCHAR},
-            </if>
-            <if test="agentPort != null">
-                agent_port = #{agentPort,jdbcType=INTEGER},
-            </if>
             <if test="createUser != null">
                 create_user = #{createUser,jdbcType=VARCHAR},
             </if>
@@ -415,9 +364,6 @@
             </if>
             <if test="isValid != null">
                 is_valid = #{isValid,jdbcType=VARCHAR},
-            </if>
-            <if test="status != null">
-                status = #{status,jdbcType=VARCHAR},
             </if>
             <if test="serverGroup != null">
                 server_group = #{serverGroup,jdbcType=VARCHAR},
@@ -436,15 +382,11 @@
             password_mode = #{passwordMode,jdbcType=VARCHAR},
             password_uri  = #{passwordUri,jdbcType=VARCHAR},
             password      = #{password,jdbcType=VARCHAR},
-            licensed      = #{licensed,jdbcType=VARCHAR},
-            agent_name    = #{agentName,jdbcType=VARCHAR},
-            agent_port    = #{agentPort,jdbcType=INTEGER},
             create_user   = #{createUser,jdbcType=VARCHAR},
             create_time   = #{createTime,jdbcType=TIMESTAMP},
             update_time   = #{updateTime,jdbcType=TIMESTAMP},
             update_user   = #{updateUser,jdbcType=VARCHAR},
             is_valid      = #{isValid,jdbcType=VARCHAR},
-            status        = #{status,jdbcType=VARCHAR},
             server_group  = #{serverGroup,jdbcType=VARCHAR}
         where server_id = #{serverId,jdbcType=INTEGER}
     </update>

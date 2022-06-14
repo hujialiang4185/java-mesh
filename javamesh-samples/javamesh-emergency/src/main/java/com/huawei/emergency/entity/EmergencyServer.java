@@ -23,12 +23,6 @@ public class EmergencyServer {
 
     private String password;
 
-    private String licensed;
-
-    private String agentName;
-
-    private Integer agentPort;
-
     private String createUser;
 
     private Date createTime;
@@ -38,8 +32,6 @@ public class EmergencyServer {
     private String updateUser;
 
     private String isValid;
-
-    private String status;
 
     private String serverGroup;
 
@@ -123,30 +115,6 @@ public class EmergencyServer {
         this.password = password == null ? null : password.trim();
     }
 
-    public String getLicensed() {
-        return licensed;
-    }
-
-    public void setLicensed(String licensed) {
-        this.licensed = licensed == null ? null : licensed.trim();
-    }
-
-    public String getAgentName() {
-        return agentName;
-    }
-
-    public void setAgentName(String agentName) {
-        this.agentName = agentName == null ? null : agentName.trim();
-    }
-
-    public Integer getAgentPort() {
-        return agentPort;
-    }
-
-    public void setAgentPort(Integer agentPort) {
-        this.agentPort = agentPort;
-    }
-
     public String getCreateUser() {
         return createUser;
     }
@@ -185,14 +153,6 @@ public class EmergencyServer {
 
     public void setIsValid(String isValid) {
         this.isValid = isValid == null ? null : isValid.trim();
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status == null ? null : status.trim();
     }
 
     public String getServerGroup() {

@@ -266,15 +266,11 @@ CREATE TABLE IF NOT EXISTS `emergency_server`
     `password_mode` varchar(1) CHARACTER SET utf8 COLLATE utf8_general_ci   NULL     DEFAULT NULL COMMENT '密码获取方式 0:本地,1:平台',
     `password_uri`  varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL     DEFAULT NULL COMMENT '密码平台地址',
     `password`      varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL     DEFAULT NULL COMMENT '密码',
-    `licensed`      varchar(1) CHARACTER SET utf8 COLLATE utf8_general_ci   NULL     DEFAULT NULL COMMENT 'agent代理 0未许可 1已许可',
-    `agent_name`    varchar(1) CHARACTER SET utf8 COLLATE utf8_general_ci   NULL     DEFAULT NULL COMMENT 'agent类型 0ngrider 1其它',
-    `agent_port`    int(5)                                                  NULL     DEFAULT NULL COMMENT 'agent启动端口',
     `create_user`   varchar(40) CHARACTER SET utf8 COLLATE utf8_general_ci  NOT NULL COMMENT '创建人',
     `create_time`   timestamp                                               NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time`   timestamp                                               NULL     DEFAULT NULL COMMENT '修改时间',
     `update_user`   varchar(40) CHARACTER SET utf8 COLLATE utf8_general_ci  NULL     DEFAULT NULL COMMENT '修改人',
     `is_valid`      varchar(1) CHARACTER SET utf8 COLLATE utf8_general_ci   NOT NULL DEFAULT '1' COMMENT '是否生效',
-    `status`        varchar(40) CHARACTER SET utf8 COLLATE utf8_general_ci  NOT NULL DEFAULT 'pending' COMMENT '状态 pending,running,success,fail',
     `server_group`  varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL     DEFAULT NULL COMMENT '服务器分组',
     PRIMARY KEY
         (

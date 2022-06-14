@@ -108,7 +108,6 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
         if (StringUtils.isEmpty(server.getServerIp()) || StringUtils.isEmpty(server.getServerName())) {
             return CommonResult.failed("请填写ip地址和名称");
         }
-
         EmergencyServerExample isServerNameExist = new EmergencyServerExample();
         isServerNameExist.createCriteria()
             .andServerNameEqualTo(server.getServerName())
@@ -119,9 +118,8 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
         if (serverMapper.countByExample(isServerNameExist) > 0) {
             return CommonResult.failed("本组或其他组已存在服务器名称或服务器ip相同的主机");
         }
-
         CommonResult<EmergencyServer> serverResult = generateServer(server);
-        if (StringUtils.isNotEmpty(serverResult.getMsg())) {
+        if (!serverResult.isSuccess()) {
             return serverResult;
         }
         EmergencyServer insertServer = serverResult.getData();
@@ -155,7 +153,7 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
             return CommonResult.failed("请选择服务器");
         }
         CommonResult<EmergencyServer> serverResult = generateServer(server);
-        if (StringUtils.isNotEmpty(serverResult.getMsg())) {
+        if (!serverResult.isSuccess()) {
             return serverResult;
         }
         EmergencyServer updateServer = serverResult.getData();
@@ -200,14 +198,13 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
         if (1 == 1) {
             return CommonResult.failed("许可修改暂未开放");
         }
-        if (server.getServerId() == null || StringUtils.isEmpty(server.getLicensed())) {
-            return CommonResult.failed("请选择主机和许可类型");
+        if (server.getServerId() == null) {
+            return CommonResult.failed("请选择主机");
         }
 
         EmergencyServerExample isAgentOnline = new EmergencyServerExample();
         isAgentOnline.createCriteria()
             .andIsValidEqualTo(ValidEnum.VALID.getValue())
-            .andAgentPortIsNotNull()
             .andServerIdEqualTo(server.getServerId());
         if (serverMapper.countByExample(isAgentOnline) == 0) {
             return CommonResult.failed("机器尚未安装agent,无需操作许可");
@@ -215,7 +212,6 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
 
         EmergencyServer updateServer = new EmergencyServer();
         updateServer.setServerId(server.getServerId());
-        updateServer.setLicensed(!Boolean.parseBoolean(server.getLicensed()) ? "1" : "0");
         serverMapper.updateByPrimaryKeySelective(updateServer);
         return CommonResult.success();
     }
