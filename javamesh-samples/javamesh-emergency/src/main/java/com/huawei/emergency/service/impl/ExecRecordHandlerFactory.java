@@ -320,10 +320,7 @@ public class ExecRecordHandlerFactory {
                 execInfo.setRemoteServerInfo(serverInfo);
             } else if (recordDetail.getServerId() != null) { // 兼容之前只选择server的任务
                 EmergencyServer server = serverMapper.selectByPrimaryKey(recordDetail.getServerId());
-                ServerInfo serverInfo = new ServerInfo(server.getServerIp(), server.getServerUser());
-                if (server.getAgentPort() != null) {
-                    serverInfo.setServerPort(server.getAgentPort());
-                }
+                ServerInfo serverInfo = new ServerInfo(server.getServerIp(), server.getServerUser(), 9095);
                 execInfo.setRemoteServerInfo(serverInfo);
             }
         }
@@ -566,13 +563,22 @@ public class ExecRecordHandlerFactory {
                     PerfTest one = perfTestService.getOne(recordDetail.getPerfTestId().longValue());
                     perfTestService.stop(one.getCreatedUser(), one.getId());
                 } else {
-                    EmergencyServer server = serverMapper.selectByPrimaryKey(recordDetail.getServerId());
+                    String ip = "";
+                    Integer port = 0;
+                    if (recordDetail.getAgentId() != null) {
+                        EmergencyAgent agent = agentMapper.selectByPrimaryKey(recordDetail.getAgentId());
+                        ip = agent.getAgentIp();
+                        port = agent.getAgentPort();
+                    } else {
+                        EmergencyServer server = serverMapper.selectByPrimaryKey(recordDetail.getServerId());
+                        ip = server.getServerIp();
+                        port = 9095;
+                    }
                     ScriptExecInfo execInfo = new ScriptExecInfo();
                     execInfo.setDetailId(recordDetail.getDetailId());
                     execInfo.setScriptType(execRecord.getScriptType());
                     String url =
-                        String.format(Locale.ROOT, "http://%s:%s/agent/cancel", server.getServerIp(),
-                            server.getAgentPort());
+                        String.format(Locale.ROOT, "http://%s:%s/agent/cancel", ip, port);
                     restTemplate.postForObject(url, execInfo, CommonResult.class);
                 }
             });

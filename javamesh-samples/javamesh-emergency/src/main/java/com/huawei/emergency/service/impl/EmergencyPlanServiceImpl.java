@@ -636,18 +636,10 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             task.setScriptName(StringUtils.isNotEmpty(taskNode.getScriptName()) ? taskNode.getScriptName()
                 : taskNode.getGuiScriptName());
             task.setChannelType(taskNode.getChannelType());
-            if (taskType == TaskTypeEnum.COMMAND && taskNode.getServerList() != null) {
-                task.setAgentIds(StringUtils.join(taskNode.getServerList().stream()
-                    .filter(server -> server.getAgentId() != null)
-                    .map(ServerAgentInfoDTO::getAgentId)
-                    .collect(Collectors.toList()), ","));
-            }
-            if (taskType == TaskTypeEnum.CUSTOM && taskNode.getGuiServerList() != null) {
-                task.setAgentIds(StringUtils.join(taskNode.getGuiServerList().stream()
-                    .filter(server -> server.getAgentId() != null)
-                    .map(ServerAgentInfoDTO::getAgentId)
-                    .collect(Collectors.toList()), ","));
-            }
+            task.setAgentIds(StringUtils.join(taskNode.getServerList().stream()
+                .filter(server -> server.getAgentId() != null)
+                .map(ServerAgentInfoDTO::getAgentId)
+                .collect(Collectors.toList()), ","));
             if (StringUtils.isEmpty(task.getAgentIds())) {
                 return CommonResult.failed("请选择agent");
             }
@@ -863,18 +855,10 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         updateTask.setScriptName(
             StringUtils.isNotEmpty(taskNode.getScriptName()) ? taskNode.getScriptName() : taskNode.getGuiScriptName());
         updateTask.setChannelType(taskNode.getChannelType());
-        if (taskTypeEnum == TaskTypeEnum.COMMAND && taskNode.getServerList() != null) {
-            updateTask.setAgentIds(StringUtils.join(taskNode.getServerList().stream()
-                .filter(server -> server.getAgentId() != null)
-                .map(ServerAgentInfoDTO::getAgentId)
-                .collect(Collectors.toList()), ","));
-        }
-        if (taskTypeEnum == TaskTypeEnum.CUSTOM && taskNode.getGuiServerList() != null) {
-            updateTask.setAgentIds(StringUtils.join(taskNode.getGuiServerList().stream()
-                .filter(server -> server.getAgentId() != null)
-                .map(ServerAgentInfoDTO::getAgentId)
-                .collect(Collectors.toList()), ","));
-        }
+        updateTask.setAgentIds(StringUtils.join(taskNode.getServerList().stream()
+            .filter(server -> server.getAgentId() != null)
+            .map(ServerAgentInfoDTO::getAgentId)
+            .collect(Collectors.toList()), ","));
         if (StringUtils.isEmpty(updateTask.getAgentIds())) {
             return CommonResult.failed("请选择agent");
         }
