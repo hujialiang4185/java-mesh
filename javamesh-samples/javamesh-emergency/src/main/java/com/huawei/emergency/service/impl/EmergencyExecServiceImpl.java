@@ -13,6 +13,7 @@ import com.huawei.common.constant.ScriptTypeEnum;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.common.exception.ApiException;
 import com.huawei.emergency.controller.EmergencyPlanController;
+import com.huawei.emergency.dto.LogResponse;
 import com.huawei.emergency.dto.PlanQueryDto;
 import com.huawei.emergency.dto.SceneExecDto;
 import com.huawei.emergency.dto.ScriptManageDto;
@@ -36,10 +37,6 @@ import com.huawei.emergency.service.EmergencyPlanService;
 import com.huawei.emergency.service.EmergencySceneService;
 import com.huawei.emergency.service.EmergencyTaskService;
 import com.huawei.script.exec.ExecResult;
-import com.huawei.script.exec.executor.ScriptExecutor;
-import com.huawei.script.exec.log.LogMemoryStore;
-import com.huawei.script.exec.log.LogResponse;
-import com.huawei.script.exec.session.ServerInfo;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -102,9 +99,6 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
 
     @Autowired
     private EmergencyPlanMapper planMapper;
-
-    @Autowired
-    private Map<String, ScriptExecutor> scriptExecutors;
 
     @Autowired
     private EmergencyPlanService planService;
@@ -228,16 +222,6 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
 
     @Override
     public LogResponse getLog(int detailId, int line) {
-        /*String log = getLog(recordId);
-        if (StringUtils.isEmpty(log)) {
-            return LogMemoryStore.getLog(recordId, line);
-        }
-        String[] split = log.split(System.lineSeparator());
-        if (split.length >= line) {
-            String[] needLogs = Arrays.copyOfRange(split, line - 1, split.length);
-            return new LogResponse(null, needLogs);
-        }
-        return new LogResponse(null, new String[]{log});*/
         return logOneServer(detailId, line);
     }
 
@@ -254,7 +238,7 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
         List<EmergencyExecRecordDetail> emergencyExecRecordDetails =
             recordDetailMapper.selectByExample(recordDetailExample);
         if (emergencyExecRecordDetails.size() == 0) {
-            return LogResponse.END;
+            return LogResponse.endLog();
         }
         return logOneServer(emergencyExecRecordDetails.get(0).getDetailId(), line);
     }
@@ -325,7 +309,6 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
             !ValidEnum.VALID.getValue().equals(oldRecord.getIsValid())) {
             return CommonResult.failed("请选择执行失败的执行记录");
         }
-
         EmergencyExecRecord updateRecord = new EmergencyExecRecord();
         updateRecord.setRecordId(oldRecord.getRecordId());
         updateRecord.setIsValid(ValidEnum.IN_VALID.getValue());
@@ -353,35 +336,15 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
             || recordDetail.getPid() == null) {
             return CommonResult.failed("请选择正在执行中的记录");
         }
-        ExecResult cancelResult;
-        if (recordDetail.getServerId() == null) {
-            cancelResult = scriptExecutors.get("localScriptExecutor").cancel(null, recordDetail.getPid());
-        } else {
-            EmergencyServer server = serverMapper.selectByPrimaryKey(recordDetail.getServerId());
-            if (server == null) {
-                return CommonResult.failed("获取服务器信息失败");
-            }
-            ServerInfo serverInfo =
-                new ServerInfo(server.getServerIp(), server.getServerUser(), server.getServerPort());
-            if ("1".equals(server.getHavePassword())) {
-                serverInfo.setServerPassword(
-                    handlerFactory.parsePassword(server.getPasswordMode(), server.getPassword()));
-            }
-            cancelResult = scriptExecutors.get("remoteScriptExecutor").cancel(serverInfo, recordDetail.getPid());
-        }
+        ExecResult cancelResult = ExecResult.fail("禁止停止某一个agent的执行"); // 2022-06-17 屏蔽
         if (!cancelResult.isSuccess()) {
             return CommonResult.failed(cancelResult.getMsg());
         }
-
         EmergencyExecRecordDetail updateDetail = new EmergencyExecRecordDetail();
         updateDetail.setDetailId(detailId);
         updateDetail.setStatus(RecordStatus.CANCEL.getValue());
         updateDetail.setEndTime(new Date());
-        LogResponse logResponse = LogMemoryStore.getLog(detailId, 1);
         StringBuilder logBuilder = new StringBuilder();
-        for (String log : logResponse.getData()) {
-            logBuilder.append(log);
-        }
         logBuilder.append(userName).append("于")
             .append(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)).append("取消执行");
         updateDetail.setLog(logBuilder.toString());
@@ -464,18 +427,14 @@ public class EmergencyExecServiceImpl implements EmergencyExecService {
     public LogResponse logOneServer(int detailId, int line) {
         EmergencyExecRecordDetail recordDetail = recordDetailMapper.selectByPrimaryKey(detailId);
         if (recordDetail == null || ValidEnum.IN_VALID.equals(recordDetail.getIsValid())) {
-            return LogResponse.END;
+            return LogResponse.endLog();
         }
         if (StringUtils.isEmpty(recordDetail.getLog())) {
-            LogResponse log = LogMemoryStore.getLog(detailId, line);
-            if (log.getLine() != null || log.getData().length > 0) {
-                return log;
-            }
             if (RecordStatus.PENDING.getValue().equals(recordDetail.getStatus()) || RecordStatus.RUNNING.getValue()
                 .equals(recordDetail.getStatus())) {
-                return new LogResponse(line, LogMemoryStore.EMPTY_ARRAY); // 可能开始执行 但还未生成日志
+                return LogResponse.emptyLog(line); // 可能开始执行 但还未生成日志
             } else {
-                return LogResponse.END;
+                return LogResponse.endLog();
             }
         }
         return LogResponse.parse(recordDetail.getLog(), line);

@@ -9,6 +9,8 @@ import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.AgentStatusEnum;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.common.util.PasswordUtil;
+import com.huawei.common.util.RemoteServerUtil;
+import com.huawei.common.util.ServerInfo;
 import com.huawei.common.ws.WebSocketServer;
 import com.huawei.emergency.dto.ServerAgentInfoDTO;
 import com.huawei.emergency.entity.EmergencyAgentConfig;
@@ -21,9 +23,6 @@ import com.huawei.emergency.mapper.EmergencyAgentMapper;
 import com.huawei.emergency.mapper.EmergencyServerMapper;
 import com.huawei.emergency.service.EmergencyServerService;
 import com.huawei.script.exec.ExecResult;
-import com.huawei.script.exec.executor.RemoteScriptExecutor;
-import com.huawei.script.exec.session.ServerInfo;
-import com.huawei.script.exec.session.ServerSessionFactory;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
@@ -80,10 +79,7 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
     private EmergencyServerMapper serverMapper;
 
     @Autowired
-    private RemoteScriptExecutor remoteExecutor;
-
-    @Autowired
-    private ServerSessionFactory sessionFactory;
+    private RemoteServerUtil remoteServerUtil;
 
     @Resource(name = "sendAgentThreadPool")
     ThreadPoolExecutor executor;
@@ -342,13 +338,13 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
         File agentPackage = packageService.createAgentPackage();
         Session session = null;
         try {
-            session = sessionFactory.getSession(serverInfo);
-            ExecResult execResult = remoteExecutor.uploadFile(session, uploadPath, agentPackage);
+            session = remoteServerUtil.getSession(serverInfo);
+            ExecResult execResult = remoteServerUtil.uploadFile(session, uploadPath, agentPackage);
             if (!execResult.isSuccess()) {
                 return CommonResult.failed("上传agent失败");
             }
             String tarCommand = String.format(Locale.ROOT, "cd %s && tar -xf %s", uploadPath, agentPackage.getName());
-            execResult = remoteExecutor.exec(session, tarCommand, null, -1);
+            execResult = remoteServerUtil.exec(session, tarCommand);
             if (!execResult.isSuccess()) {
                 LOGGER.error("release agent failed. {}", execResult.getMsg());
                 return CommonResult.failed("解压agent失败");
@@ -357,13 +353,13 @@ public class EmergencyServerServiceImpl implements EmergencyServerService {
             String createStartCommand = String.format(Locale.ROOT, "cd %s && echo \" sh ./run_agent_bg.sh -ah %s -ch "
                     + "%s -cp %s -r NONE \" > start.sh && chmod 777 start.sh", agentHome,
                 agentHome, InetAddress.getLocalHost().getHostAddress(), config.getControllerPort());
-            execResult = remoteExecutor.exec(session, createStartCommand, null, -1);
+            execResult = remoteServerUtil.exec(session, createStartCommand);
             if (!execResult.isSuccess()) {
                 LOGGER.error("init agent failed. {}", execResult.getMsg());
                 return CommonResult.failed("初始化agent失败");
             }
             String startCommand = String.format(Locale.ROOT, "source /etc/profile && cd %s && ./start.sh", agentHome);
-            execResult = remoteExecutor.exec(session, startCommand, null, -1);
+            execResult = remoteServerUtil.exec(session, startCommand);
             if (!execResult.isSuccess()) {
                 LOGGER.error("start agent failed. {}", execResult.getMsg());
                 return CommonResult.failed("启动agent失败");

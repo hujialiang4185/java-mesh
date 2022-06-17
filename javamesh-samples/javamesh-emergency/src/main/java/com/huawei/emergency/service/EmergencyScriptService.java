@@ -1,12 +1,12 @@
 package com.huawei.emergency.service;
 
 import com.huawei.common.api.CommonResult;
+import com.huawei.emergency.dto.LogResponse;
 import com.huawei.emergency.dto.ScriptManageDto;
 import com.huawei.emergency.entity.EmergencyScript;
 import com.huawei.emergency.entity.JwtUser;
 import com.huawei.emergency.entity.UserEntity;
 import com.huawei.emergency.layout.TreeResponse;
-import com.huawei.script.exec.log.LogResponse;
 
 import org.springframework.web.multipart.MultipartFile;
 

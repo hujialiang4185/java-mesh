@@ -21,6 +21,7 @@ import com.huawei.common.constant.FailedInfo;
 import com.huawei.common.constant.ResultCode;
 import com.huawei.common.constant.ScriptLanguageEnum;
 import com.huawei.common.constant.ScriptTypeEnum;
+import com.huawei.emergency.dto.LogResponse;
 import com.huawei.emergency.dto.ScriptManageDto;
 import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyScript;
@@ -33,7 +34,6 @@ import com.huawei.logaudit.constant.OperationDetails;
 import com.huawei.logaudit.constant.OperationTypeEnum;
 import com.huawei.logaudit.constant.ResourceType;
 import com.huawei.script.exec.ExecResult;
-import com.huawei.script.exec.log.LogResponse;
 
 import io.swagger.annotations.Api;
 

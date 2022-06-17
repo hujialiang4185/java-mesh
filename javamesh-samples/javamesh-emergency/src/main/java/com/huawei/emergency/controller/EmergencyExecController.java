@@ -18,6 +18,7 @@ package com.huawei.emergency.controller;
 
 import com.huawei.common.api.CommonPage;
 import com.huawei.common.api.CommonResult;
+import com.huawei.emergency.dto.LogResponse;
 import com.huawei.emergency.dto.PlanQueryDto;
 import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyExecRecordDetail;
@@ -28,7 +29,6 @@ import com.huawei.logaudit.aop.WebOperationLog;
 import com.huawei.logaudit.constant.OperationDetails;
 import com.huawei.logaudit.constant.OperationTypeEnum;
 import com.huawei.logaudit.constant.ResourceType;
-import com.huawei.script.exec.log.LogResponse;
 
 import io.swagger.annotations.Api;
 

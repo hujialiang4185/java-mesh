@@ -30,6 +30,7 @@ import com.huawei.common.util.EscapeUtil;
 import com.huawei.common.util.FileUtil;
 import com.huawei.common.util.PasswordUtil;
 import com.huawei.emergency.dto.ArgusScript;
+import com.huawei.emergency.dto.LogResponse;
 import com.huawei.emergency.dto.ScriptManageDto;
 import com.huawei.emergency.entity.EmergencyElement;
 import com.huawei.emergency.entity.EmergencyElementExample;
@@ -52,7 +53,6 @@ import com.huawei.emergency.service.EmergencyExecService;
 import com.huawei.emergency.service.EmergencyPlanService;
 import com.huawei.emergency.service.EmergencyResourceService;
 import com.huawei.emergency.service.EmergencyScriptService;
-import com.huawei.script.exec.log.LogResponse;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;

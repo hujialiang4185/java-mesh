@@ -11,7 +11,9 @@ import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ValidEnum;
 import com.huawei.common.exception.ApiException;
 import com.huawei.common.util.PasswordUtil;
+import com.huawei.common.util.ServerInfo;
 import com.huawei.common.ws.WebSocketServer;
+import com.huawei.emergency.dto.ScriptExecInfo;
 import com.huawei.emergency.entity.EmergencyAgent;
 import com.huawei.emergency.entity.EmergencyAgentExample;
 import com.huawei.emergency.entity.EmergencyExecRecord;
@@ -30,9 +32,6 @@ import com.huawei.emergency.service.EmergencyPlanService;
 import com.huawei.emergency.service.EmergencySceneService;
 import com.huawei.emergency.service.EmergencyTaskService;
 import com.huawei.script.exec.ExecResult;
-import com.huawei.script.exec.executor.ScriptExecInfo;
-import com.huawei.script.exec.log.LogMemoryStore;
-import com.huawei.script.exec.session.ServerInfo;
 
 import org.apache.commons.lang.StringUtils;
 import org.ngrinder.common.constant.WebConstants;
@@ -208,14 +207,6 @@ public class ExecRecordHandlerFactory {
             updateRecordDetail.setDetailId(recordDetail.getDetailId());
             updateRecordDetail.setEndTime(endTime);
             updateRecordDetail.setLog(execResult.getMsg());
-            if (execResult.isError()) {
-                StringBuilder finalLog = new StringBuilder();
-                for (String log : LogMemoryStore.removeLog(recordDetail.getDetailId())) {
-                    finalLog.append(log).append(System.lineSeparator());
-                }
-                finalLog.append(execResult.getMsg());
-                updateRecordDetail.setLog(finalLog.toString());
-            }
             updateRecordDetail.setStatus(
                 execResult.isSuccess() ? RecordStatus.SUCCESS.getValue() : RecordStatus.ENSURE_FAILED.getValue()
             );
@@ -236,9 +227,6 @@ public class ExecRecordHandlerFactory {
                     }
                 }
             }
-
-            // 清除实时日志的在内存中的日志残留
-            LogMemoryStore.removeLog(recordDetail.getDetailId());
         } finally {
             notifySceneRefresh(record.getExecId(), record.getSceneId());
         }
@@ -286,9 +274,6 @@ public class ExecRecordHandlerFactory {
                     }
                 }
             }
-
-            // 清除实时日志的在内存中的日志残留
-            LogMemoryStore.removeLog(detail.getRecordId());
         } finally {
             notifySceneRefresh(detail.getExecId(), record.getSceneId());
         }
