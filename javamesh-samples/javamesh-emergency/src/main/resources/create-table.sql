@@ -172,7 +172,9 @@ CREATE TABLE IF NOT EXISTS `emergency_exec`
     PRIMARY KEY
         (
          `exec_id`
-            ) USING BTREE
+            ) USING BTREE,
+    INDEX `plan_id` (`plan_id`) USING BTREE,
+    INDEX `is_valid` (`is_valid`) USING BTREE
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1
   CHARACTER SET = utf8
@@ -216,7 +218,9 @@ CREATE TABLE IF NOT EXISTS `emergency_exec_record`
     PRIMARY KEY
         (
          `record_id`
-            ) USING BTREE
+            ) USING BTREE,
+    INDEX `exec_id` (`exec_id`) USING BTREE,
+    INDEX `is_valid` (`is_valid`) USING BTREE
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 1
   CHARACTER SET = utf8
