@@ -33,7 +33,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 /**
- * 任务调度器，以预案为单位
+ * 任务定时调度器，以项目为单位
  *
  * @author y30010171
  * @since 2021-11-19
@@ -179,7 +179,7 @@ public class TaskScheduleCenter {
             LOGGER.info("The {} is running now.", SCHEDULE_THREAD_NAME);
             while (!isScheduleStop) {
                 long now = System.currentTimeMillis();
-                List<EmergencyPlan> scheduledPlans = new ArrayList<>();
+                List<EmergencyPlan> plans = new ArrayList<>();
                 InterProcessMutex lock = new InterProcessMutex(zookeeperClient, "/" + applicationName + "/lock");
                 try {
                     if (lock.acquire(ONE_THOUSAND, TimeUnit.MILLISECONDS)) {
@@ -188,8 +188,8 @@ public class TaskScheduleCenter {
                             .andIsValidEqualTo(ValidEnum.VALID.getValue())
                             .andScheduleStatusEqualTo(ValidEnum.VALID.getValue())
                             .andTriggerNextTimeLessThan(now + PRE_READ);
-                        scheduledPlans = planMapper.selectByExample(needScheduled);
-                        scheduledPlans.forEach(plan -> {
+                        plans = planMapper.selectByExample(needScheduled);
+                        plans.forEach(plan -> {
                             handleScheduledPlan(plan, now);
                         });
                     }
@@ -206,7 +206,7 @@ public class TaskScheduleCenter {
                     try {
                         // 如果当前周期没有待执行任务，则跳过该周期。有则扫描每一秒
                         TimeUnit.MILLISECONDS.sleep(
-                            (scheduledPlans.size() > 0 ? ONE_THOUSAND : PRE_READ)
+                            (plans.size() > 0 ? ONE_THOUSAND : PRE_READ)
                                 - System.currentTimeMillis() % ONE_THOUSAND);
                     } catch (InterruptedException e) {
                         LOGGER.error("Skip period error.", e);
