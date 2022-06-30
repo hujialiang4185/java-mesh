@@ -4,7 +4,7 @@ import moment from 'moment'
 
 const app = express()
 // WS
-const wss1 = new ws.WebSocketServer({ port: 8081 });
+const wss1 = new ws.WebSocketServer({ port: 8082 });
 let client1: ws
 wss1.on('connection', function connection(ws) {
     client1 = ws

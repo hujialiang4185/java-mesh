@@ -5,7 +5,7 @@ if (loc.protocol === "https:") {
 }
 let wsUrl = protocol + '://' + loc.host + "/argus-emergency/ws"
 if (process && process.env.NODE_ENV === 'development') {
-    wsUrl = "ws://localhost:8081/argus-emergency/ws"
+    wsUrl = "ws://localhost:8082/argus-emergency/ws"
 }
 const socket = new WebSocket(wsUrl);
 export default socket
