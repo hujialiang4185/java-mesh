@@ -17,6 +17,7 @@
 package com.huawei.emergency.layout.template;
 
 import lombok.Data;
+
 import org.apache.commons.lang.StringUtils;
 
 import java.io.BufferedReader;
@@ -38,22 +39,43 @@ import java.util.List;
  **/
 @Data
 public class GroovyClassTemplate {
+    /**
+     * 格式化字符 4个空格
+     */
     public static final String FORMAT = "    ";
+    /**
+     * groovy 模板文件名
+     */
     public static final String GROOVY_TEMPLATE = "GroovyTemplate";
+    /**
+     * 获取虚拟用户总数
+     */
+    public static final GroovyMethodTemplate USER_METHOD = new GroovyMethodTemplate();
+    /**
+     * 获取当前线程在整个压测任务中的顺序号
+     */
+    public static final GroovyMethodTemplate RUN_THREAD_NUM_METHOD = new GroovyMethodTemplate();
+    /**
+     * 获取事务时的递增顺序号
+     */
+    public static final GroovyMethodTemplate TEST_NUMBER_METHOD = new GroovyMethodTemplate();
+    /**
+     * 多个事务时的递增顺序号字段
+     */
+    public static final GroovyFieldTemplate TEST_NUMBER_FIELD = GroovyFieldTemplate.create(
+        "    public static int testNumber = 0;");
 
     private List<GroovyMethodTemplate> allMethods = new ArrayList<>();
     private List<GroovyFieldTemplate> allFields = new ArrayList<>();
 
-    public static final GroovyMethodTemplate USER_METHOD = new GroovyMethodTemplate();
-    public static final GroovyMethodTemplate RUN_THREAD_NUM_METHOD = new GroovyMethodTemplate();
-    public static final GroovyMethodTemplate TEST_NUMBER_METHOD = new GroovyMethodTemplate();
-    public static final GroovyFieldTemplate TEST_NUMBER_FIELD = GroovyFieldTemplate.create("    public static int testNumber = 0;");
-
     static {
         USER_METHOD.start("public int getVusers() {", 1)
-            .addContent("int totalAgents = Integer.parseInt(grinder.getProperties().get(\"grinder.agents\").toString())", 2)
-            .addContent("int totalProcesses = Integer.parseInt(grinder.properties.get(\"grinder.processes\").toString())", 2)
-            .addContent("int totalThreads = Integer.parseInt(grinder.properties.get(\"grinder.threads\").toString())", 2)
+            .addContent(
+                "int totalAgents = Integer.parseInt(grinder.getProperties().get(\"grinder.agents\").toString())", 2)
+            .addContent(
+                "int totalProcesses = Integer.parseInt(grinder.properties.get(\"grinder.processes\").toString())", 2)
+            .addContent("int totalThreads = Integer.parseInt(grinder.properties.get(\"grinder.threads\").toString())",
+                2)
             .addContent("return totalAgents * totalProcesses * totalThreads", 2)
             .end("}", 1)
             .setMethodName("getVusers");
@@ -89,7 +111,6 @@ public class GroovyClassTemplate {
             GroovyMethodTemplate currentMethod = null;
             GroovyClassTemplate template = new GroovyClassTemplate();
             while ((line = bufferedReader.readLine()) != null) {
-
                 if (template.importIndex == null && line.trim().startsWith("import")) {
                     template.importIndex = index;
                 }
@@ -106,8 +127,7 @@ public class GroovyClassTemplate {
                     index++;
                     continue;
                 }
-                // 处理属性和方法
-                if (isMethod(line)) {
+                if (isMethod(line)) { // 处理属性和方法
                     List<String> annotations = new ArrayList<>();
                     annotations.addAll(currentAnnotations);
                     currentAnnotations.clear();
@@ -256,7 +276,7 @@ public class GroovyClassTemplate {
      * 判断某行字符串是否符合变量属性声明
      *
      * @param fieldStr 属性声明字符串
-     * @return
+     * @return 是否属于属性声明
      */
     public static boolean isField(String fieldStr) {
         if (StringUtils.isEmpty(fieldStr) || "}".equals(fieldStr.trim())) {
@@ -269,7 +289,7 @@ public class GroovyClassTemplate {
      * 判断某行字符串是否符合方法声明
      *
      * @param methodStr 方法声明的字符串
-     * @return
+     * @return 是否属于方法声明
      */
     public static boolean isMethod(String methodStr) {
         return methodStr.trim().startsWith("public static void")
@@ -278,6 +298,12 @@ public class GroovyClassTemplate {
             || methodStr.trim().startsWith("void");
     }
 
+    /**
+     * 是否包含方法
+     *
+     * @param methodName 方法名
+     * @return 是否包含
+     */
     public boolean containsMethod(String methodName) {
         return allMethods.stream().filter(method -> methodName.equals(method.getMethodName())).count() > 0;
     }
