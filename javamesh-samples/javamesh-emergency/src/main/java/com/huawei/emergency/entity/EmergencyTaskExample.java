@@ -705,63 +705,63 @@ public class EmergencyTaskExample {
             return (Criteria) this;
         }
 
-        public Criteria andPreTaskIdIsNull() {
-            addCriterion("pre_task_id is null");
+        public Criteria andPerfTestIdIsNull() {
+            addCriterion("perf_test_id is null");
             return (Criteria) this;
         }
 
-        public Criteria andPreTaskIdIsNotNull() {
-            addCriterion("pre_task_id is not null");
+        public Criteria andPerfTestIdIsNotNull() {
+            addCriterion("perf_test_id is not null");
             return (Criteria) this;
         }
 
-        public Criteria andPreTaskIdEqualTo(Integer value) {
-            addCriterion("pre_task_id =", value, "preTaskId");
+        public Criteria andPerfTestIdEqualTo(Integer value) {
+            addCriterion("perf_test_id =", value, "perfTestId");
             return (Criteria) this;
         }
 
-        public Criteria andPreTaskIdNotEqualTo(Integer value) {
-            addCriterion("pre_task_id <>", value, "preTaskId");
+        public Criteria andPerfTestIdNotEqualTo(Integer value) {
+            addCriterion("perf_test_id <>", value, "perfTestId");
             return (Criteria) this;
         }
 
-        public Criteria andPreTaskIdGreaterThan(Integer value) {
-            addCriterion("pre_task_id >", value, "preTaskId");
+        public Criteria andPerfTestIdGreaterThan(Integer value) {
+            addCriterion("perf_test_id >", value, "perfTestId");
             return (Criteria) this;
         }
 
-        public Criteria andPreTaskIdGreaterThanOrEqualTo(Integer value) {
-            addCriterion("pre_task_id >=", value, "preTaskId");
+        public Criteria andPerfTestIdGreaterThanOrEqualTo(Integer value) {
+            addCriterion("perf_test_id >=", value, "perfTestId");
             return (Criteria) this;
         }
 
-        public Criteria andPreTaskIdLessThan(Integer value) {
-            addCriterion("pre_task_id <", value, "preTaskId");
+        public Criteria andPerfTestIdLessThan(Integer value) {
+            addCriterion("perf_test_id <", value, "perfTestId");
             return (Criteria) this;
         }
 
-        public Criteria andPreTaskIdLessThanOrEqualTo(Integer value) {
-            addCriterion("pre_task_id <=", value, "preTaskId");
+        public Criteria andPerfTestIdLessThanOrEqualTo(Integer value) {
+            addCriterion("perf_test_id <=", value, "perfTestId");
             return (Criteria) this;
         }
 
-        public Criteria andPreTaskIdIn(List<Integer> values) {
-            addCriterion("pre_task_id in", values, "preTaskId");
+        public Criteria andPerfTestIdIn(List<Integer> values) {
+            addCriterion("perf_test_id in", values, "perfTestId");
             return (Criteria) this;
         }
 
-        public Criteria andPreTaskIdNotIn(List<Integer> values) {
-            addCriterion("pre_task_id not in", values, "preTaskId");
+        public Criteria andPerfTestIdNotIn(List<Integer> values) {
+            addCriterion("perf_test_id not in", values, "perfTestId");
             return (Criteria) this;
         }
 
-        public Criteria andPreTaskIdBetween(Integer value1, Integer value2) {
-            addCriterion("pre_task_id between", value1, value2, "preTaskId");
+        public Criteria andPerfTestIdBetween(Integer value1, Integer value2) {
+            addCriterion("perf_test_id between", value1, value2, "perfTestId");
             return (Criteria) this;
         }
 
-        public Criteria andPreTaskIdNotBetween(Integer value1, Integer value2) {
-            addCriterion("pre_task_id not between", value1, value2, "preTaskId");
+        public Criteria andPerfTestIdNotBetween(Integer value1, Integer value2) {
+            addCriterion("perf_test_id not between", value1, value2, "perfTestId");
             return (Criteria) this;
         }
 
@@ -892,6 +892,76 @@ public class EmergencyTaskExample {
 
         public Criteria andCreateTimeNotBetween(Date value1, Date value2) {
             addCriterion("create_time not between", value1, value2, "createTime");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsSharedIsNull() {
+            addCriterion("is_shared is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsSharedIsNotNull() {
+            addCriterion("is_shared is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsSharedEqualTo(String value) {
+            addCriterion("is_shared =", value, "isShared");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsSharedNotEqualTo(String value) {
+            addCriterion("is_shared <>", value, "isShared");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsSharedGreaterThan(String value) {
+            addCriterion("is_shared >", value, "isShared");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsSharedGreaterThanOrEqualTo(String value) {
+            addCriterion("is_shared >=", value, "isShared");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsSharedLessThan(String value) {
+            addCriterion("is_shared <", value, "isShared");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsSharedLessThanOrEqualTo(String value) {
+            addCriterion("is_shared <=", value, "isShared");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsSharedLike(String value) {
+            addCriterion("is_shared like", value, "isShared");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsSharedNotLike(String value) {
+            addCriterion("is_shared not like", value, "isShared");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsSharedIn(List<String> values) {
+            addCriterion("is_shared in", values, "isShared");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsSharedNotIn(List<String> values) {
+            addCriterion("is_shared not in", values, "isShared");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsSharedBetween(String value1, String value2) {
+            addCriterion("is_shared between", value1, value2, "isShared");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsSharedNotBetween(String value1, String value2) {
+            addCriterion("is_shared not between", value1, value2, "isShared");
             return (Criteria) this;
         }
 
@@ -1172,66 +1242,6 @@ public class EmergencyTaskExample {
 
         public Criteria andSubmitInfoNotBetween(String value1, String value2) {
             addCriterion("submit_info not between", value1, value2, "submitInfo");
-            return (Criteria) this;
-        }
-
-        public Criteria andPerfTestIdIsNull() {
-            addCriterion("perf_test_id is null");
-            return (Criteria) this;
-        }
-
-        public Criteria andPerfTestIdIsNotNull() {
-            addCriterion("perf_test_id is not null");
-            return (Criteria) this;
-        }
-
-        public Criteria andPerfTestIdEqualTo(Integer value) {
-            addCriterion("perf_test_id =", value, "perfTestId");
-            return (Criteria) this;
-        }
-
-        public Criteria andPerfTestIdNotEqualTo(Integer value) {
-            addCriterion("perf_test_id <>", value, "perfTestId");
-            return (Criteria) this;
-        }
-
-        public Criteria andPerfTestIdGreaterThan(Integer value) {
-            addCriterion("perf_test_id >", value, "perfTestId");
-            return (Criteria) this;
-        }
-
-        public Criteria andPerfTestIdGreaterThanOrEqualTo(Integer value) {
-            addCriterion("perf_test_id >=", value, "perfTestId");
-            return (Criteria) this;
-        }
-
-        public Criteria andPerfTestIdLessThan(Integer value) {
-            addCriterion("perf_test_id <", value, "perfTestId");
-            return (Criteria) this;
-        }
-
-        public Criteria andPerfTestIdLessThanOrEqualTo(Integer value) {
-            addCriterion("perf_test_id <=", value, "perfTestId");
-            return (Criteria) this;
-        }
-
-        public Criteria andPerfTestIdIn(List<Integer> values) {
-            addCriterion("perf_test_id in", values, "perfTestId");
-            return (Criteria) this;
-        }
-
-        public Criteria andPerfTestIdNotIn(List<Integer> values) {
-            addCriterion("perf_test_id not in", values, "perfTestId");
-            return (Criteria) this;
-        }
-
-        public Criteria andPerfTestIdBetween(Integer value1, Integer value2) {
-            addCriterion("perf_test_id between", value1, value2, "perfTestId");
-            return (Criteria) this;
-        }
-
-        public Criteria andPerfTestIdNotBetween(Integer value1, Integer value2) {
-            addCriterion("perf_test_id not between", value1, value2, "perfTestId");
             return (Criteria) this;
         }
     }

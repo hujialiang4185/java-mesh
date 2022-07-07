@@ -11,14 +11,14 @@
         <result column="script_id" jdbcType="INTEGER" property="scriptId"/>
         <result column="server_id" jdbcType="VARCHAR" property="serverId"/>
         <result column="agent_ids" jdbcType="VARCHAR" property="agentIds"/>
-        <result column="pre_task_id" jdbcType="INTEGER" property="preTaskId"/>
+        <result column="perf_test_id" jdbcType="INTEGER" property="perfTestId"/>
         <result column="create_user" jdbcType="VARCHAR" property="createUser"/>
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="is_shared" jdbcType="VARCHAR" property="isShared"/>
         <result column="is_valid" jdbcType="VARCHAR" property="isValid"/>
         <result column="channel_type" jdbcType="VARCHAR" property="channelType"/>
         <result column="script_name" jdbcType="VARCHAR" property="scriptName"/>
         <result column="submit_info" jdbcType="VARCHAR" property="submitInfo"/>
-        <result column="perf_test_id" jdbcType="INTEGER" property="perfTestId"/>
     </resultMap>
     <sql id="Example_Where_Clause">
         <where>
@@ -83,8 +83,8 @@
     <sql id="Base_Column_List">
         task_id
         , task_no, task_name, task_type, task_desc, scene_id, script_id, server_id,
-    agent_ids, pre_task_id, create_user, create_time, is_valid, channel_type, script_name, 
-    submit_info, perf_test_id
+    agent_ids, perf_test_id, create_user, create_time, is_shared, is_valid, channel_type, 
+    script_name, submit_info
     </sql>
     <select id="selectByExample" parameterType="com.huawei.emergency.entity.EmergencyTaskExample"
             resultMap="BaseResultMap">
@@ -125,16 +125,16 @@
         </selectKey>
         insert into emergency_task (task_no, task_name, task_type,
         task_desc, scene_id, script_id,
-        server_id, agent_ids, pre_task_id,
-        create_user, create_time, is_valid,
-        channel_type, script_name, submit_info,
-        perf_test_id)
+        server_id, agent_ids, perf_test_id,
+        create_user, create_time, is_shared,
+        is_valid, channel_type, script_name,
+        submit_info)
         values (#{taskNo,jdbcType=VARCHAR}, #{taskName,jdbcType=VARCHAR}, #{taskType,jdbcType=VARCHAR},
         #{taskDesc,jdbcType=VARCHAR}, #{sceneId,jdbcType=INTEGER}, #{scriptId,jdbcType=INTEGER},
-        #{serverId,jdbcType=VARCHAR}, #{agentIds,jdbcType=VARCHAR}, #{preTaskId,jdbcType=INTEGER},
-        #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{isValid,jdbcType=VARCHAR},
-        #{channelType,jdbcType=VARCHAR}, #{scriptName,jdbcType=VARCHAR}, #{submitInfo,jdbcType=VARCHAR},
-        #{perfTestId,jdbcType=INTEGER})
+        #{serverId,jdbcType=VARCHAR}, #{agentIds,jdbcType=VARCHAR}, #{perfTestId,jdbcType=INTEGER},
+        #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{isShared,jdbcType=VARCHAR},
+        #{isValid,jdbcType=VARCHAR}, #{channelType,jdbcType=VARCHAR}, #{scriptName,jdbcType=VARCHAR},
+        #{submitInfo,jdbcType=VARCHAR})
     </insert>
     <insert id="insertSelective" parameterType="com.huawei.emergency.entity.EmergencyTask">
         <selectKey keyProperty="taskId" order="AFTER" resultType="java.lang.Integer">
@@ -166,14 +166,17 @@
             <if test="agentIds != null">
                 agent_ids,
             </if>
-            <if test="preTaskId != null">
-                pre_task_id,
+            <if test="perfTestId != null">
+                perf_test_id,
             </if>
             <if test="createUser != null">
                 create_user,
             </if>
             <if test="createTime != null">
                 create_time,
+            </if>
+            <if test="isShared != null">
+                is_shared,
             </if>
             <if test="isValid != null">
                 is_valid,
@@ -186,9 +189,6 @@
             </if>
             <if test="submitInfo != null">
                 submit_info,
-            </if>
-            <if test="perfTestId != null">
-                perf_test_id,
             </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
@@ -216,14 +216,17 @@
             <if test="agentIds != null">
                 #{agentIds,jdbcType=VARCHAR},
             </if>
-            <if test="preTaskId != null">
-                #{preTaskId,jdbcType=INTEGER},
+            <if test="perfTestId != null">
+                #{perfTestId,jdbcType=INTEGER},
             </if>
             <if test="createUser != null">
                 #{createUser,jdbcType=VARCHAR},
             </if>
             <if test="createTime != null">
                 #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="isShared != null">
+                #{isShared,jdbcType=VARCHAR},
             </if>
             <if test="isValid != null">
                 #{isValid,jdbcType=VARCHAR},
@@ -236,9 +239,6 @@
             </if>
             <if test="submitInfo != null">
                 #{submitInfo,jdbcType=VARCHAR},
-            </if>
-            <if test="perfTestId != null">
-                #{perfTestId,jdbcType=INTEGER},
             </if>
         </trim>
     </insert>
@@ -279,14 +279,17 @@
             <if test="record.agentIds != null">
                 agent_ids = #{record.agentIds,jdbcType=VARCHAR},
             </if>
-            <if test="record.preTaskId != null">
-                pre_task_id = #{record.preTaskId,jdbcType=INTEGER},
+            <if test="record.perfTestId != null">
+                perf_test_id = #{record.perfTestId,jdbcType=INTEGER},
             </if>
             <if test="record.createUser != null">
                 create_user = #{record.createUser,jdbcType=VARCHAR},
             </if>
             <if test="record.createTime != null">
                 create_time = #{record.createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="record.isShared != null">
+                is_shared = #{record.isShared,jdbcType=VARCHAR},
             </if>
             <if test="record.isValid != null">
                 is_valid = #{record.isValid,jdbcType=VARCHAR},
@@ -299,9 +302,6 @@
             </if>
             <if test="record.submitInfo != null">
                 submit_info = #{record.submitInfo,jdbcType=VARCHAR},
-            </if>
-            <if test="record.perfTestId != null">
-                perf_test_id = #{record.perfTestId,jdbcType=INTEGER},
             </if>
         </set>
         <if test="_parameter != null">
@@ -319,14 +319,14 @@
         script_id = #{record.scriptId,jdbcType=INTEGER},
         server_id = #{record.serverId,jdbcType=VARCHAR},
         agent_ids = #{record.agentIds,jdbcType=VARCHAR},
-        pre_task_id = #{record.preTaskId,jdbcType=INTEGER},
+        perf_test_id = #{record.perfTestId,jdbcType=INTEGER},
         create_user = #{record.createUser,jdbcType=VARCHAR},
         create_time = #{record.createTime,jdbcType=TIMESTAMP},
+        is_shared = #{record.isShared,jdbcType=VARCHAR},
         is_valid = #{record.isValid,jdbcType=VARCHAR},
         channel_type = #{record.channelType,jdbcType=VARCHAR},
         script_name = #{record.scriptName,jdbcType=VARCHAR},
-        submit_info = #{record.submitInfo,jdbcType=VARCHAR},
-        perf_test_id = #{record.perfTestId,jdbcType=INTEGER}
+        submit_info = #{record.submitInfo,jdbcType=VARCHAR}
         <if test="_parameter != null">
             <include refid="Update_By_Example_Where_Clause"/>
         </if>
@@ -358,14 +358,17 @@
             <if test="agentIds != null">
                 agent_ids = #{agentIds,jdbcType=VARCHAR},
             </if>
-            <if test="preTaskId != null">
-                pre_task_id = #{preTaskId,jdbcType=INTEGER},
+            <if test="perfTestId != null">
+                perf_test_id = #{perfTestId,jdbcType=INTEGER},
             </if>
             <if test="createUser != null">
                 create_user = #{createUser,jdbcType=VARCHAR},
             </if>
             <if test="createTime != null">
                 create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="isShared != null">
+                is_shared = #{isShared,jdbcType=VARCHAR},
             </if>
             <if test="isValid != null">
                 is_valid = #{isValid,jdbcType=VARCHAR},
@@ -378,9 +381,6 @@
             </if>
             <if test="submitInfo != null">
                 submit_info = #{submitInfo,jdbcType=VARCHAR},
-            </if>
-            <if test="perfTestId != null">
-                perf_test_id = #{perfTestId,jdbcType=INTEGER},
             </if>
         </set>
         where task_id = #{taskId,jdbcType=INTEGER}
@@ -395,14 +395,14 @@
             script_id    = #{scriptId,jdbcType=INTEGER},
             server_id    = #{serverId,jdbcType=VARCHAR},
             agent_ids    = #{agentIds,jdbcType=VARCHAR},
-            pre_task_id  = #{preTaskId,jdbcType=INTEGER},
+            perf_test_id = #{perfTestId,jdbcType=INTEGER},
             create_user  = #{createUser,jdbcType=VARCHAR},
             create_time  = #{createTime,jdbcType=TIMESTAMP},
+            is_shared    = #{isShared,jdbcType=VARCHAR},
             is_valid     = #{isValid,jdbcType=VARCHAR},
             channel_type = #{channelType,jdbcType=VARCHAR},
             script_name  = #{scriptName,jdbcType=VARCHAR},
-            submit_info  = #{submitInfo,jdbcType=VARCHAR},
-            perf_test_id = #{perfTestId,jdbcType=INTEGER}
+            submit_info  = #{submitInfo,jdbcType=VARCHAR}
         where task_id = #{taskId,jdbcType=INTEGER}
     </update>
     <select id="countPassedPlanByTaskId" parameterType="Integer" resultType="java.lang.Long">

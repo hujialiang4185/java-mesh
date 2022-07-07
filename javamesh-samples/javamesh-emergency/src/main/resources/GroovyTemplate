@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
+import net.grinder.scriptengine.groovy.junit.annotation.RunRate
 import com.huawei.test.asserts.RegularAssert;
 import com.huawei.test.configelement.enums.SharingMode;
 import com.huawei.test.configelement.impl.CommonCounter;
 import com.huawei.test.configelement.config.CounterConfig;
 import com.huawei.test.scriptexecutor.impl.JavaScriptExecutor;
+import com.huawei.test.ShareTest;
 import HTTPClient.Cookie
 import net.grinder.scriptengine.groovy.junit.annotation.AfterProcess;
 import net.grinder.scriptengine.groovy.junit.annotation.AfterThread;
@@ -46,7 +48,7 @@ import HTTPClient.HTTPResponse;
 import HTTPClient.NVPair;
 
 @RunWith(GrinderRunner)
-class GroovyTemplate {
+class TestRunner {
 
     public static HTTPRequest httpRequest;
     public static HTTPResponse httpResult;

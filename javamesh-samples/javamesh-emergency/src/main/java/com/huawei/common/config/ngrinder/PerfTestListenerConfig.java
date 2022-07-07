@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.huawei.common.config;
+package com.huawei.common.config.ngrinder;
 
 import com.huawei.argus.listener.ITestLifeCycleListener;
 import com.huawei.common.constant.ValidEnum;

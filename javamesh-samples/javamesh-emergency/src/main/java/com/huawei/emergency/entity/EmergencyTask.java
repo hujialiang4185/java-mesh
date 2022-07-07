@@ -21,11 +21,13 @@ public class EmergencyTask {
 
     private String agentIds;
 
-    private Integer preTaskId;
+    private Integer perfTestId;
 
     private String createUser;
 
     private Date createTime;
+
+    private String isShared;
 
     private String isValid;
 
@@ -34,8 +36,6 @@ public class EmergencyTask {
     private String scriptName;
 
     private String submitInfo;
-
-    private Integer perfTestId;
 
     public Integer getTaskId() {
         return taskId;
@@ -109,12 +109,12 @@ public class EmergencyTask {
         this.agentIds = agentIds == null ? null : agentIds.trim();
     }
 
-    public Integer getPreTaskId() {
-        return preTaskId;
+    public Integer getPerfTestId() {
+        return perfTestId;
     }
 
-    public void setPreTaskId(Integer preTaskId) {
-        this.preTaskId = preTaskId;
+    public void setPerfTestId(Integer perfTestId) {
+        this.perfTestId = perfTestId;
     }
 
     public String getCreateUser() {
@@ -131,6 +131,14 @@ public class EmergencyTask {
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
+    }
+
+    public String getIsShared() {
+        return isShared;
+    }
+
+    public void setIsShared(String isShared) {
+        this.isShared = isShared == null ? null : isShared.trim();
     }
 
     public String getIsValid() {
@@ -163,13 +171,5 @@ public class EmergencyTask {
 
     public void setSubmitInfo(String submitInfo) {
         this.submitInfo = submitInfo == null ? null : submitInfo.trim();
-    }
-
-    public Integer getPerfTestId() {
-        return perfTestId;
-    }
-
-    public void setPerfTestId(Integer perfTestId) {
-        this.perfTestId = perfTestId;
     }
 }

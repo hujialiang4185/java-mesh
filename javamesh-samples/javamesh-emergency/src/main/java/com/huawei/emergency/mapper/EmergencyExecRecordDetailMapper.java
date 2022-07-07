@@ -4,6 +4,7 @@
 
 package com.huawei.emergency.mapper;
 
+import com.huawei.emergency.entity.EmergencyExecRecord;
 import com.huawei.emergency.entity.EmergencyExecRecordDetail;
 import com.huawei.emergency.entity.EmergencyExecRecordDetailExample;
 
@@ -47,4 +48,6 @@ public interface EmergencyExecRecordDetailMapper {
     List<EmergencyExecRecordDetail> selectAllServerDetail(int recordId);
 
     int updateLogIfAbsent(@Param("detailId") int detailId, @Param("log") String log);
+
+    EmergencyExecRecord selectRecordByPerfTestId(Long perfTestId);
 }

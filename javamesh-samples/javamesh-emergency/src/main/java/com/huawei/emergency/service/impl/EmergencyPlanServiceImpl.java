@@ -622,16 +622,14 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             return CommonResult.failed("不支持的任务类型");
         }
         EmergencyTask task = new EmergencyTask();
-        if (taskType == TaskTypeEnum.SCENE) {
-            task.setTaskName(taskNode.getTaskName());
-            task.setTaskType(taskType.getValue());
-            task.setCreateUser(taskNode.getCreateUser());
-            task.setTaskDesc(taskNode.getScenaDesc());
-        } else {
+        task.setTaskName(taskNode.getTaskName());
+        task.setTaskType(taskType.getValue());
+        task.setCreateUser(taskNode.getCreateUser());
+        task.setTaskDesc(taskNode.getScenaDesc());
+        if (taskType != TaskTypeEnum.SCENE) {
             if (StringUtils.isEmpty(taskNode.getScriptName())) {
                 return CommonResult.failed("请选择脚本");
             }
-            task.setTaskName(taskNode.getTaskName());
             task.setScriptId(taskNode.getScriptId());
             task.setScriptName(StringUtils.isNotEmpty(taskNode.getScriptName()) ? taskNode.getScriptName()
                 : taskNode.getGuiScriptName());
@@ -643,8 +641,6 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
             if (StringUtils.isEmpty(task.getAgentIds())) {
                 return CommonResult.failed("请选择agent");
             }
-            task.setCreateUser(taskNode.getCreateUser());
-            task.setTaskType(taskType.getValue());
             if (taskType == TaskTypeEnum.CUSTOM) { // 创建自定义脚本压测任务
                 PerfTest perfTest = taskNode.parse();
                 perfTest.setScriptName(task.getScriptName());
@@ -691,7 +687,8 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         result.forEach(planQueryDto -> { // 查询明细
             if ("approving".equals(planQueryDto.getStatus()) && ("admin".equals(userName) || (
                 (auth.contains(AUTH_ADMIN) || (auth.contains(AUTH_APPROVER)
-                    && userName.equals(planQueryDto.getCheckUser()))) && group.equals(planQueryDto.getGroupName())))) {
+                    && userName.equals(planQueryDto.getCheckUser()))) && group.equals(
+                    planQueryDto.getGroupName())))) {
                 planQueryDto.setAuditable(true);
             }
             List<PlanDetailQueryDto> planDetails = planMapper.queryPlanDetailDto(planQueryDto.getPlanId());
@@ -711,13 +708,15 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
                     planDetail.setStartTime(perfTest.getStartTime());
                     if (perfTest.getFinishTime() != null && perfTest.getStartTime() != null) {
                         planDetail.setDuration(
-                            (perfTest.getFinishTime().getTime() - perfTest.getStartTime().getTime()) / ONE_THOUSAND);
+                            (perfTest.getFinishTime().getTime() - perfTest.getStartTime().getTime())
+                                / ONE_THOUSAND);
                     }
                     planDetail.setTagString(perfTest.getTagString());
                     planDetail.setTps(perfTest.getTps());
                     planDetail.setMeanTestTime(perfTest.getMeanTestTime());
                     long testCount =
-                        (perfTest.getTests() == null ? 0L : perfTest.getTests()) + (perfTest.getErrors() == null ? 0L
+                        (perfTest.getTests() == null ? 0L : perfTest.getTests()) + (perfTest.getErrors() == null
+                            ? 0L
                             : perfTest.getErrors());
                     if (testCount == 0) {
                         planDetail.setErrorRate(0D);
@@ -829,7 +828,8 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         List<EmergencyPlan> taskPlans = detailMapper.selectPlanByTaskId(taskNode.getKey());
         for (EmergencyPlan taskPlan : taskPlans) {
             if (haveRunning(taskPlan.getPlanId())) {
-                return CommonResult.failed(String.format(Locale.ROOT, "存在项目[%s]处于执行态，无法修改。", taskPlan.getPlanName()));
+                return CommonResult.failed(
+                    String.format(Locale.ROOT, "存在项目[%s]处于执行态，无法修改。", taskPlan.getPlanName()));
             }
         }
         EmergencyTask originTask = taskMapper.selectByPrimaryKey(taskNode.getKey());
@@ -853,7 +853,8 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
         updateTask.setTaskName(taskNode.getTaskName());
         updateTask.setScriptId(taskNode.getScriptId());
         updateTask.setScriptName(
-            StringUtils.isNotEmpty(taskNode.getScriptName()) ? taskNode.getScriptName() : taskNode.getGuiScriptName());
+            StringUtils.isNotEmpty(taskNode.getScriptName()) ? taskNode.getScriptName()
+                : taskNode.getGuiScriptName());
         updateTask.setChannelType(taskNode.getChannelType());
         updateTask.setAgentIds(StringUtils.join(taskNode.getServerList().stream()
             .filter(server -> server.getAgentId() != null)
@@ -962,7 +963,8 @@ public class EmergencyPlanServiceImpl implements EmergencyPlanService {
                 updateTask.setTaskNo(generateTaskNo(parentNo, i + 1));
             }
             taskMapper.updateByPrimaryKeySelective(updateTask);
-            handleChildren(insertTaskDetail, task.getChildren(), isSubTask ? parentNo : updateTask.getTaskNo(), true);
+            handleChildren(insertTaskDetail, task.getChildren(), isSubTask ? parentNo : updateTask.getTaskNo(),
+                true);
         }
     }
 

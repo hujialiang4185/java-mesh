@@ -430,4 +430,13 @@
         where detail_id = #{detailId}
           and log is null
     </update>
+
+    <select id="selectRecordByPerfTestId" resultType="com.huawei.emergency.entity.EmergencyExecRecord">
+        SELECT t2.*
+        FROM emergency_exec_record_detail t1,
+             emergency_exec_record t2
+        WHERE t1.record_id = t2.record_id
+          AND t1.perf_test_id = #{perfTestId}
+          AND t1.is_valid = '1'
+    </select>
 </mapper>

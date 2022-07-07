@@ -7,6 +7,7 @@ package com.huawei.emergency.service.impl;
 import com.huawei.common.api.CommonResult;
 import com.huawei.common.constant.RecordStatus;
 import com.huawei.common.constant.ValidEnum;
+import com.huawei.common.exception.ApiException;
 import com.huawei.emergency.dto.TaskCommonReport;
 import com.huawei.emergency.dto.TaskMetricsDTO;
 import com.huawei.emergency.entity.EmergencyExecRecord;
@@ -15,6 +16,9 @@ import com.huawei.emergency.entity.EmergencyScript;
 import com.huawei.emergency.entity.EmergencyScriptExample;
 import com.huawei.emergency.entity.EmergencyTask;
 import com.huawei.emergency.entity.EmergencyTaskExample;
+import com.huawei.emergency.layout.template.GroovyClassTemplate;
+import com.huawei.emergency.layout.template.GroovyFieldTemplate;
+import com.huawei.emergency.layout.template.GroovyMethodTemplate;
 import com.huawei.emergency.mapper.EmergencyExecRecordMapper;
 import com.huawei.emergency.mapper.EmergencyScriptMapper;
 import com.huawei.emergency.mapper.EmergencyTaskMapper;
@@ -30,8 +34,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -242,6 +248,14 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
     }
 
     @Override
+    public boolean isTaskShared(Integer taskId) {
+        EmergencyTask task = taskMapper.selectByPrimaryKey(taskId);
+        return task != null && ValidEnum.VALID.getValue().equals(task.getIsValid()) && ValidEnum.VALID.getValue()
+            .equals(
+                task.getIsShared());
+    }
+
+    @Override
     public CommonResult getCommonReport(Long perfTestId) {
         if (perfTestId == null) {
             return CommonResult.failed("请选择压测任务");
@@ -320,6 +334,48 @@ public class EmergencyTaskServiceImpl implements EmergencyTaskService {
             }
         }
         return CommonResult.success(taskMetrics);
+    }
+
+    @Override
+    public List<EmergencyScript> getAllScriptOnTaskShared(Integer taskId) {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public String generateScriptOnTaskShared(List<EmergencyScript> allScriptInfo) {
+        try {
+            GroovyClassTemplate template = GroovyClassTemplate.template();
+            for (int i = 1; i <= allScriptInfo.size(); i++) {
+                template.addFiled(GroovyFieldTemplate.create(String.format(Locale.ROOT, "    public ShareTest "
+                    + "shareTest%s = new share%s.TestRunner()", i, i)));
+                template.addFiled(
+                    GroovyFieldTemplate.create(String.format(Locale.ROOT, "    public static GTest test%s = new GTest"
+                        + "(%s, \"%s\")", i, i, allScriptInfo.get(i - 1).getScriptName())));
+                template.getBeforeProcessMethod().addContent(String.format(Locale.ROOT, "share%s.TestRunner"
+                    + ".beforeProcess()", i), 2);
+                template.getBeforeThreadMethod().addContent(String.format(Locale.ROOT, "test%s.record(this, "
+                    + "\"invoke %s\")", i, allScriptInfo.get(i - 1).getScriptName()), 2);
+                template.getBeforeThreadMethod()
+                    .addContent(String.format(Locale.ROOT, "shareTest%s.beforeThread()", i), 2);
+                template.getAfterProcessMethod().addContent(String.format(Locale.ROOT, "share%s.TestRunner"
+                    + ".afterProcess()", i), 2);
+                template.getAfterThreadMethod()
+                    .addContent(String.format(Locale.ROOT, "shareTest%s.afterThread()", i), 2);
+                GroovyMethodTemplate testMethod = new GroovyMethodTemplate().addAnnotation("    @Test")
+                    .start(String.format(Locale.ROOT, "    public void \"invoke %s\"() {",
+                        allScriptInfo.get(i - 1).getScriptName()), 1)
+                    .addContent(String.format(Locale.ROOT, "shareTest%s.before()", i), 2)
+                    .addContent(String.format(Locale.ROOT, "shareTest%s.invokeTest()", i), 2)
+                    .addContent(String.format(Locale.ROOT, "shareTest%s.after()", i), 2)
+                    .end("}", 1);
+                template.addMethod(testMethod);
+            }
+            template.print(System.out);
+        } catch (IOException e) {
+            LOGGER.error("can't not found GroovyClassTemplate, please check out file.");
+            throw new ApiException("生成共享脚本失败");
+        }
+        return null;
     }
 
     private Long stringToLong(String str) {
